@@ -1,6 +1,30 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Link } from "react-router-dom";
 import { Eye, Bell, TrendingUp, Activity } from "lucide-react";
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  BarChart, Bar,
+} from "recharts";
+
+const apiUsageData = [
+  { day: "Mon", requests: 180 },
+  { day: "Tue", requests: 320 },
+  { day: "Wed", requests: 247 },
+  { day: "Thu", requests: 410 },
+  { day: "Fri", requests: 390 },
+  { day: "Sat", requests: 150 },
+  { day: "Sun", requests: 95 },
+];
+
+const alertsData = [
+  { day: "Mon", triggered: 1 },
+  { day: "Tue", triggered: 0 },
+  { day: "Wed", triggered: 2 },
+  { day: "Thu", triggered: 0 },
+  { day: "Fri", triggered: 1 },
+  { day: "Sat", triggered: 0 },
+  { day: "Sun", triggered: 1 },
+];
 
 export default function Dashboard() {
   return (
@@ -24,6 +48,55 @@ export default function Dashboard() {
             <div className="mt-2 text-2xl font-bold">{stat.value}</div>
           </div>
         ))}
+      </div>
+
+      {/* Charts row */}
+      <div className="mt-8 grid gap-6 lg:grid-cols-2">
+        {/* API usage chart */}
+        <div className="rounded-lg border border-border bg-card p-5">
+          <h2 className="text-sm font-semibold mb-4">API Requests (7d)</h2>
+          <div className="h-48">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={apiUsageData}>
+                <defs>
+                  <linearGradient id="apiGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="hsl(187 85% 53%)" stopOpacity={0.3} />
+                    <stop offset="100%" stopColor="hsl(187 85% 53%)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(222 15% 18%)" />
+                <XAxis dataKey="day" tick={{ fill: "hsl(222 10% 50%)", fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: "hsl(222 10% 50%)", fontSize: 11 }} axisLine={false} tickLine={false} />
+                <Tooltip
+                  contentStyle={{ background: "hsl(222 25% 9%)", border: "1px solid hsl(222 15% 18%)", borderRadius: 8, fontSize: 12 }}
+                  labelStyle={{ color: "hsl(222 10% 60%)" }}
+                  itemStyle={{ color: "hsl(187 85% 53%)" }}
+                />
+                <Area type="monotone" dataKey="requests" stroke="hsl(187 85% 53%)" fill="url(#apiGrad)" strokeWidth={2} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Alerts triggered chart */}
+        <div className="rounded-lg border border-border bg-card p-5">
+          <h2 className="text-sm font-semibold mb-4">Alerts Triggered (7d)</h2>
+          <div className="h-48">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={alertsData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(222 15% 18%)" />
+                <XAxis dataKey="day" tick={{ fill: "hsl(222 10% 50%)", fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: "hsl(222 10% 50%)", fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
+                <Tooltip
+                  contentStyle={{ background: "hsl(222 25% 9%)", border: "1px solid hsl(222 15% 18%)", borderRadius: 8, fontSize: 12 }}
+                  labelStyle={{ color: "hsl(222 10% 60%)" }}
+                  itemStyle={{ color: "hsl(187 85% 53%)" }}
+                />
+                <Bar dataKey="triggered" fill="hsl(187 85% 53%)" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
       </div>
 
       {/* Recent watchlist */}

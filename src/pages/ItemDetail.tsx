@@ -1,9 +1,35 @@
 import { PublicLayout } from "@/components/PublicLayout";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Eye, Bell, ExternalLink } from "lucide-react";
+import { useState } from "react";
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+} from "recharts";
+
+// Generate realistic price history data
+function generatePriceData(days: number) {
+  const data = [];
+  let price = 12.0;
+  const now = new Date();
+  for (let i = days; i >= 0; i--) {
+    const date = new Date(now);
+    date.setDate(date.getDate() - i);
+    price += (Math.random() - 0.48) * 0.6;
+    price = Math.max(price, 8);
+    data.push({
+      date: date.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+      price: parseFloat(price.toFixed(2)),
+    });
+  }
+  return data;
+}
+
+const rangeMap: Record<string, number> = { "7D": 7, "30D": 30, "90D": 90, "1Y": 365, "All": 730 };
 
 export default function ItemDetail() {
   const { itemId } = useParams();
+  const [range, setRange] = useState("30D");
+  const priceData = generatePriceData(rangeMap[range]);
 
   return (
     <PublicLayout>
@@ -39,25 +65,70 @@ export default function ItemDetail() {
               </div>
             </div>
 
-            {/* Chart area */}
+            {/* Price history chart */}
             <div className="mt-6 rounded-lg border border-border bg-card p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold">Price History</h2>
                 <div className="flex gap-1">
-                  {["7D", "30D", "90D", "1Y", "All"].map((range) => (
+                  {Object.keys(rangeMap).map((r) => (
                     <button
-                      key={range}
-                      className={`rounded-md px-2.5 py-1 text-xs font-medium ${
-                        range === "30D" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary"
+                      key={r}
+                      onClick={() => setRange(r)}
+                      className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                        range === r ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary"
                       }`}
                     >
-                      {range}
+                      {r}
                     </button>
                   ))}
                 </div>
               </div>
-              <div className="flex h-56 items-center justify-center rounded-md bg-secondary/30 text-sm text-muted-foreground">
-                Chart placeholder — candle / line data would render here
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={priceData}>
+                    <defs>
+                      <linearGradient id="priceGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="hsl(187 85% 53%)" stopOpacity={0.25} />
+                        <stop offset="100%" stopColor="hsl(187 85% 53%)" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(222 15% 18%)" />
+                    <XAxis
+                      dataKey="date"
+                      tick={{ fill: "hsl(222 10% 50%)", fontSize: 11 }}
+                      axisLine={false}
+                      tickLine={false}
+                      interval="preserveStartEnd"
+                      minTickGap={40}
+                    />
+                    <YAxis
+                      tick={{ fill: "hsl(222 10% 50%)", fontSize: 11 }}
+                      axisLine={false}
+                      tickLine={false}
+                      domain={["auto", "auto"]}
+                      tickFormatter={(v: number) => `$${v.toFixed(0)}`}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        background: "hsl(222 25% 9%)",
+                        border: "1px solid hsl(222 15% 18%)",
+                        borderRadius: 8,
+                        fontSize: 12,
+                      }}
+                      labelStyle={{ color: "hsl(222 10% 60%)" }}
+                      formatter={(value: number) => [`$${value.toFixed(2)}`, "Price"]}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="price"
+                      stroke="hsl(187 85% 53%)"
+                      fill="url(#priceGrad)"
+                      strokeWidth={2}
+                      dot={false}
+                      activeDot={{ r: 4, fill: "hsl(187 85% 53%)", stroke: "hsl(222 25% 9%)", strokeWidth: 2 }}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
               </div>
             </div>
 
