@@ -25,6 +25,8 @@ import type {
   ChildAPIKeyUpdateRequest,
   CheckoutRequest,
   CheckoutResponse,
+  CryptoCheckoutRequest,
+  CryptoCheckoutResponse,
   DeleteAccountResponse,
   EmailChangeRequest,
   EmailSetRequest,
@@ -308,6 +310,13 @@ export const webApi = {
 
   createCheckout(data: CheckoutRequest): Promise<CheckoutResponse> {
     return request("/v1/web/account/billing/checkout", {
+      method: "POST",
+      body: data,
+    });
+  },
+
+  createCryptoCheckout(data: CryptoCheckoutRequest): Promise<CryptoCheckoutResponse> {
+    return request("/v1/web/account/billing/crypto/checkout", {
       method: "POST",
       body: data,
     });

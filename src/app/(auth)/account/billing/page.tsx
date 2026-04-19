@@ -6,12 +6,15 @@ import { useQueryClient } from "@tanstack/react-query";
 import {
   AlertCircle,
   ArrowUpRight,
+  Bitcoin,
   CreditCard,
   Download,
   ExternalLink,
   RefreshCw,
   X,
 } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,6 +37,7 @@ function quarterlyTotalCents(monthlyCents: number) {
 }
 
 type CycleChoice = "monthly" | "quarterly";
+type PaymentMethodChoice = "card" | "crypto";
 type PendingAction = {
   plan: PlanInfo;
   mode: "checkout" | "switch";
@@ -51,6 +55,7 @@ export default function AccountBillingPage() {
   const [cancellingChange, setCancellingChange] = useState(false);
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
   const [cycleChoice, setCycleChoice] = useState<CycleChoice>("monthly");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethodChoice>("card");
 
   const currentPlan =
     plans?.plans.find((plan) => plan.code === overview?.current_plan.code) ?? null;
@@ -74,6 +79,24 @@ export default function AccountBillingPage() {
     try {
       const response = await webApi.createCheckout({
         price_id: priceId,
+        success_url: `${window.location.origin}/account/billing`,
+        cancel_url: `${window.location.origin}/api-info#pricing`,
+      });
+      window.location.href = response.checkout_url;
+    } finally {
+      setCheckoutLoadingCode(null);
+    }
+  }
+
+  async function startCryptoCheckout(
+    tierCode: string,
+    interval: CycleChoice,
+  ) {
+    setCheckoutLoadingCode(tierCode);
+    try {
+      const response = await webApi.createCryptoCheckout({
+        tier_code: tierCode,
+        billing_interval: interval,
         success_url: `${window.location.origin}/account/billing`,
         cancel_url: `${window.location.origin}/api-info#pricing`,
       });
@@ -269,6 +292,7 @@ export default function AccountBillingPage() {
                         variant="outline"
                         onClick={() => {
                           setCycleChoice("monthly");
+                          setPaymentMethod("card");
                           setPendingAction({ plan, mode: "switch" });
                         }}
                         disabled={changePlanLoadingCode === plan.code}
@@ -281,6 +305,7 @@ export default function AccountBillingPage() {
                         size="sm"
                         onClick={() => {
                           setCycleChoice("monthly");
+                          setPaymentMethod("card");
                           setPendingAction({ plan, mode: "checkout" });
                         }}
                         disabled={checkoutLoadingCode === plan.code}
@@ -391,6 +416,8 @@ export default function AccountBillingPage() {
         action={pendingAction}
         cycle={cycleChoice}
         onCycleChange={setCycleChoice}
+        paymentMethod={paymentMethod}
+        onPaymentMethodChange={setPaymentMethod}
         onClose={() => setPendingAction(null)}
         onConfirm={async () => {
           if (!pendingAction) return;
@@ -402,7 +429,11 @@ export default function AccountBillingPage() {
           if (!priceId) return;
           setPendingAction(null);
           if (mode === "checkout") {
-            await startCheckout(priceId, plan.code);
+            if (paymentMethod === "crypto") {
+              await startCryptoCheckout(plan.code, cycleChoice);
+            } else {
+              await startCheckout(priceId, plan.code);
+            }
           } else {
             await handleChangePlan(priceId, plan.code);
           }
@@ -420,6 +451,8 @@ function SubscriptionCycleDialog({
   action,
   cycle,
   onCycleChange,
+  paymentMethod,
+  onPaymentMethodChange,
   onClose,
   onConfirm,
   loading,
@@ -427,11 +460,14 @@ function SubscriptionCycleDialog({
   action: PendingAction | null;
   cycle: CycleChoice;
   onCycleChange: (c: CycleChoice) => void;
+  paymentMethod: PaymentMethodChoice;
+  onPaymentMethodChange: (m: PaymentMethodChoice) => void;
   onClose: () => void;
   onConfirm: () => void;
   loading: boolean;
 }) {
   const plan = action?.plan ?? null;
+  const isCheckout = action?.mode === "checkout";
   const hasQuarterly = !!plan?.billing_price_quarterly_id;
   const monthlyCents = plan?.monthly_price_cents ?? 0;
   const currency = plan?.currency ?? "USD";
@@ -442,7 +478,7 @@ function SubscriptionCycleDialog({
     <Dialog open={!!action} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Choose your billing cycle</DialogTitle>
+          <DialogTitle>{isCheckout ? "Subscribe" : "Choose your billing cycle"}</DialogTitle>
           <DialogDescription>
             {plan ? `Select how long you want to subscribe to ${plan.display_name}.` : ""}
           </DialogDescription>
@@ -500,6 +536,50 @@ function SubscriptionCycleDialog({
           </button>
         </div>
 
+        {isCheckout && (
+          <div className="space-y-2 border-t border-border/50 pt-4">
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              Payment method
+            </p>
+            <RadioGroup
+              value={paymentMethod}
+              onValueChange={(v) => onPaymentMethodChange(v as PaymentMethodChoice)}
+              className="grid gap-2"
+            >
+              <Label
+                htmlFor="pm-card"
+                className={`flex cursor-pointer items-center gap-3 rounded-md border-2 p-3 transition-colors ${
+                  paymentMethod === "card"
+                    ? "border-primary bg-primary/5"
+                    : "border-border hover:border-primary/50"
+                }`}
+              >
+                <RadioGroupItem id="pm-card" value="card" />
+                <CreditCard className="h-4 w-4 text-muted-foreground" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-foreground">Card</p>
+                  <p className="text-xs text-muted-foreground">Pay with credit or debit card via Stripe</p>
+                </div>
+              </Label>
+              <Label
+                htmlFor="pm-crypto"
+                className={`flex cursor-pointer items-center gap-3 rounded-md border-2 p-3 transition-colors ${
+                  paymentMethod === "crypto"
+                    ? "border-primary bg-primary/5"
+                    : "border-border hover:border-primary/50"
+                }`}
+              >
+                <RadioGroupItem id="pm-crypto" value="crypto" />
+                <Bitcoin className="h-4 w-4 text-muted-foreground" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-foreground">Crypto</p>
+                  <p className="text-xs text-muted-foreground">Pay with crypto via NOWPayments</p>
+                </div>
+              </Label>
+            </RadioGroup>
+          </div>
+        )}
+
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={loading}>
             Cancel
@@ -508,7 +588,9 @@ function SubscriptionCycleDialog({
             {loading
               ? "Redirecting…"
               : action?.mode === "checkout"
-                ? "Continue to checkout"
+                ? paymentMethod === "crypto"
+                  ? "Continue to crypto checkout"
+                  : "Continue to checkout"
                 : "Confirm switch"}
           </Button>
         </DialogFooter>
