@@ -400,10 +400,24 @@ export default function AccountApiKeysPage() {
               </div>
 
               <div className="flex flex-wrap items-center gap-3">
-                <Button variant="outline" onClick={handleResetIp} disabled={resettingIp}>
-                  <Globe className="mr-2 h-4 w-4" />
-                  {resettingIp ? "Rebinding…" : "Rebind to current IP"}
-                </Button>
+                <TooltipProvider delayDuration={150}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="outline" onClick={handleResetIp} disabled={resettingIp}>
+                        <Globe className="mr-2 h-4 w-4" />
+                        {resettingIp ? "Rebinding…" : "Rebind to current IP"}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="max-w-xs">
+                      <p>
+                        Clears the bound IP so the next request from your key sets a new one.
+                      </p>
+                      <p className="mt-1 text-muted-foreground">
+                        IP binding only applies on the Free tier — paid tiers can use the key from any IP.
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
                 {resetIpMessage && <p className="text-sm text-muted-foreground">{resetIpMessage}</p>}
               </div>
             </div>
