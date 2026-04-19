@@ -6,12 +6,15 @@ import { useQueryClient } from "@tanstack/react-query";
 import {
   AlertCircle,
   ArrowUpRight,
+  Bitcoin,
   CreditCard,
   Download,
   ExternalLink,
   RefreshCw,
   X,
 } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,6 +37,7 @@ function quarterlyTotalCents(monthlyCents: number) {
 }
 
 type CycleChoice = "monthly" | "quarterly";
+type PaymentMethodChoice = "card" | "crypto";
 type PendingAction = {
   plan: PlanInfo;
   mode: "checkout" | "switch";
