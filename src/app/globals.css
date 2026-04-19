@@ -138,13 +138,13 @@
 
   /* Upscale tiny mono utility classes used everywhere
      so labels, table headers, and meta text are readable. */
-  .font-mono.text-\[8px\] { font-size: 12px; letter-spacing: 0.06em; }
-  .font-mono.text-\[9px\] { font-size: 13px; letter-spacing: 0.05em; }
-  .font-mono.text-\[10px\] { font-size: 13.5px; letter-spacing: 0.04em; }
-  .font-mono.text-\[11px\] { font-size: 14px; }
+  .font-mono.text-\[8px\] { font-size: 13px; letter-spacing: 0.06em; }
+  .font-mono.text-\[9px\] { font-size: 13.5px; letter-spacing: 0.05em; }
+  .font-mono.text-\[10px\] { font-size: 14px; letter-spacing: 0.04em; }
+  .font-mono.text-\[11px\] { font-size: 15px; }
   /* text-xs (12px) and text-sm (14px) defaults are too small for mono labels */
-  .font-mono.text-xs { font-size: 14px; }
-  .font-mono.text-sm { font-size: 15px; }
+  .font-mono.text-xs { font-size: 15px; }
+  .font-mono.text-sm { font-size: 16px; }
 }
 
 @layer utilities {
