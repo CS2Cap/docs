@@ -298,10 +298,13 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                   </span>
                 </div>
 
-                <div className="hidden grid-cols-[minmax(0,1.2fr)_100px_120px_120px] gap-4 border-b border-border px-4 py-2 font-mono text-[9px] tracking-widest text-muted-foreground md:grid">
+                <div className="hidden grid-cols-[40px_minmax(0,1.4fr)_110px_110px_130px_120px_120px] gap-3 border-b border-border px-4 py-2 font-mono text-[9px] tracking-widest text-muted-foreground md:grid">
+                  <div>#</div>
                   <div>PROVIDER</div>
                   <div className="text-right">QTY</div>
                   <div className="text-right">PRICE</div>
+                  <div className="text-right">VS BEST</div>
+                  <div className="text-right">UPDATED</div>
                   <div />
                 </div>
 

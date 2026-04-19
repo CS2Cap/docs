@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ChevronDown, ExternalLink } from "lucide-react";
 import { ProviderIdentity } from "@/components/ProviderIdentity";
 import { formatPriceMinor, getProvider, providerLabel } from "@/lib/api";
@@ -13,6 +13,22 @@ function formatNumber(value?: number | null) {
   return value.toLocaleString();
 }
 
+function formatRelativeTime(value?: string | null) {
+  if (!value) return null;
+  const ts = new Date(value).getTime();
+  if (Number.isNaN(ts)) return null;
+  const diffMs = Date.now() - ts;
+  if (diffMs < 0) return "just now";
+  const sec = Math.floor(diffMs / 1000);
+  if (sec < 60) return `${sec}s ago`;
+  const min = Math.floor(sec / 60);
+  if (min < 60) return `${min}m ago`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr}h ago`;
+  const day = Math.floor(hr / 24);
+  return `${day}d ago`;
+}
+
 export function CollapsibleAsksList({
   rows,
   providers,
@@ -21,6 +37,12 @@ export function CollapsibleAsksList({
   providers: ProviderInfo[];
 }) {
   const [expanded, setExpanded] = useState(false);
+
+  const bestAsk = useMemo(
+    () => (rows.length ? Math.min(...rows.map((r) => r.lowest_ask)) : 0),
+    [rows],
+  );
+
   const visibleRows = expanded ? rows : rows.slice(0, INITIAL_VISIBLE);
   const hiddenCount = Math.max(rows.length - INITIAL_VISIBLE, 0);
 
@@ -34,27 +56,54 @@ export function CollapsibleAsksList({
 
   return (
     <>
-      {visibleRows.map((row) => {
+      {visibleRows.map((row, index) => {
         const link = row.link || row.url;
+        const updated = formatRelativeTime(row.last_updated ?? row.timestamp);
+        const spreadPct =
+          bestAsk > 0 ? ((row.lowest_ask - bestAsk) / bestAsk) * 100 : 0;
+        const isBest = row.lowest_ask === bestAsk;
 
         return (
           <div
-            key={`${row.provider}-${row.lowest_ask}`}
-            className="grid gap-3 border-b border-border px-4 py-3 last:border-0 md:grid-cols-[minmax(0,1.2fr)_100px_120px_120px] md:items-center"
+            key={`${row.provider}-${row.lowest_ask}-${index}`}
+            className="grid gap-3 border-b border-border px-4 py-3 last:border-0 md:grid-cols-[40px_minmax(0,1.4fr)_110px_110px_130px_120px_120px] md:items-center"
           >
-            <div>
+            <div className="hidden font-mono text-[10px] text-muted-foreground md:block">
+              #{index + 1}
+            </div>
+            <div className="flex items-center gap-2">
               <ProviderIdentity
                 provider={getProvider(row.provider, providers)}
                 fallback={providerLabel(row.provider, providers)}
-                logoSize={18}
+                logoSize={20}
                 textClassName="font-mono text-xs font-bold text-foreground"
               />
+              {isBest ? (
+                <span className="hidden border border-success/40 bg-success/10 px-1.5 py-0.5 font-mono text-[8px] tracking-widest text-success md:inline">
+                  BEST
+                </span>
+              ) : null}
             </div>
             <div className="font-mono text-xs text-muted-foreground md:text-right">
               {formatNumber(row.quantity)}
             </div>
             <div className="font-mono text-xs font-bold text-foreground md:text-right">
               {formatPriceMinor(row.lowest_ask)}
+            </div>
+            <div className="font-mono text-[11px] md:text-right">
+              {isBest ? (
+                <span className="text-success">— best price</span>
+              ) : (
+                <span className="text-muted-foreground">
+                  +{spreadPct.toFixed(2)}%{" "}
+                  <span className="text-muted-foreground/60">
+                    ({formatPriceMinor(row.lowest_ask - bestAsk)})
+                  </span>
+                </span>
+              )}
+            </div>
+            <div className="font-mono text-[10px] text-muted-foreground md:text-right">
+              {updated ?? "—"}
             </div>
             <div className="flex justify-start md:justify-end">
               {link ? (
