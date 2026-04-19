@@ -38,6 +38,16 @@ const SEARCH_CATEGORY_MAP: Record<string, string | undefined> = {
 };
 
 const SEARCH_PAGE_SIZE = 24;
+const SEARCH_GROUP_FETCH_LIMIT = 200;
+const SEARCH_GROUP_MAX_SCAN = 1000;
+const WEAR_ORDER: Record<string, number> = {
+  "Factory New": 0,
+  "Minimal Wear": 1,
+  "Field-Tested": 2,
+  "Well-Worn": 3,
+  "Battle-Scarred": 4,
+};
+const WEAR_SUFFIX_PATTERN = /\s*\((Factory New|Minimal Wear|Field-Tested|Well-Worn|Battle-Scarred)\)\s*$/;
 const LANDING_TICKER_ITEM_IDS = [
   9879,
   12199,
