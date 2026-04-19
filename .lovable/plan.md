@@ -1,64 +1,40 @@
 
 
-## Goal
-Add a CS2-related hero-side visual on the right of the homepage hero, matching the dark navy / cyan brand and the existing brutalist/technical aesthetic.
+## Problem
+The hero PNG has a dark navy fill across the whole canvas. Even though it's close to the page bg, the rectangle edges are visible as a hard vertical seam (see image 2: a clear value step between the image's bg and the page bg).
 
-## Investigation notes
-- Hero lives in `src/components/HeroSection.tsx` (already viewed). Currently uses `max-w-4xl` content on the left and the right side is empty.
-- Hero is rendered from `src/app/(public)/page.tsx`.
-- Brand: dark navy/near-black, cyan accents, Space Grotesk headings / Inter body, restrained glow (per `mem://style/branding`).
-- We can generate a high-quality image via Lovable AI image gateway (Nano banana pro for hero quality) and store it in `public/assets/`.
-- Layout currently uses `max-w-4xl` single column. We need to convert to a two-column grid on `lg:` while keeping mobile stacked, and ensure the stats grid + CTAs still look right.
+The user circled the actual subject (the floating market card + AWP). Everything outside that ellipse should be fully transparent so only the card/weapon shows on top of the real page background.
 
-## Plan
+## Approach
+Replace the full-rectangle PNG with one that has a **transparent background**, where only the floating card UI + the AWP + their natural glow are visible. No painted backdrop at all.
 
-### 1. Generate the hero artwork
-Write a one-off Node script (run via `code--exec`) that calls the Lovable AI gateway with `google/gemini-3-pro-image-preview` to render the visual described by the user. Save it as `public/assets/hero-market-card.png`.
+Two viable ways to produce that asset:
 
-Prompt distilled from the brief, with brand specifics:
-- Dark navy / near-black bg with subtle cyan grid + faint geometric wireframes
-- Floating angled "market item card" / inspect panel
-- Centerpiece: AWP Asiimov (primary choice — most iconic, fits cyan/orange contrast, best rendered by image models). Fallback: Karambit Doppler.
-- Card overlays: Best Ask, Best Bid, 24h Volume, 7d Trend, # marketplaces, mini sparkline
-- Cyan/blue accents, subtle glassmorphism, premium engineered look
-- Negative space preserved, no characters/explosions, no logos
+**Option A — Re-isolate the existing image (recommended)**
+Use Python + Pillow on `public/assets/hero-market-card.png` to:
+1. Build an alpha mask from luminance (dark navy → transparent, bright cyan/orange/white card pixels → opaque).
+2. Apply a soft radial falloff centered on the card so the card's own ambient cyan glow fades smoothly to 0 alpha (no hard ellipse edge).
+3. Crop tight bounding box around non-transparent pixels to remove wasted space.
+4. Save back to `public/assets/hero-market-card.png` (PNG with alpha).
 
-QA the image (view it back) and regenerate if it has artifacts, garbled text, or off-brand colors.
+This keeps the exact visual the user already approved, just removes the backdrop.
 
-### 2. Wire image into `HeroSection.tsx`
-- Change the inner container from a single `max-w-4xl` column to a responsive grid:
-  - Mobile / `md`: current single column, image hidden or below
-  - `lg`: two-column `grid-cols-12` — text spans 7 cols, visual spans 5 cols on the right
-- Add the visual as a `next/image` with `priority`, sized responsively, with subtle ambient glow (cyan radial behind it) and a faint border to match the brutalist frame language already in the page.
-- Keep the existing decorative squares/dots but reposition so they don't collide with the new visual.
-- Stats grid stays under the left column (does not extend under the image) so the visual reads as a clean centerpiece.
+**Option B — Regenerate from scratch** with a prompt that demands a pure black/transparent background. Less reliable (models often paint in subtle gradients) and slower. Use only as fallback if A's mask looks dirty.
 
-### 3. Verify
-- Run `npx tsc --noEmit` to confirm no type regressions.
-- Visually check at the user's current viewport (1541×859) and on mobile widths via the layout rules — image hidden below `lg`, text fills width.
+Plan: do A first, QA by compositing the result onto the actual page bg color (`hsl(220 20% 4%)`) and inspecting. If edges still show, iterate on the luminance threshold + feather radius. Only fall back to B if A can't produce a clean result.
 
-## Technical details
-- Files touched:
-  - `public/assets/hero-market-card.png` (new, generated)
-  - `src/components/HeroSection.tsx` (layout + image)
-- No new dependencies. Uses existing `next/image`.
-- Image generation uses `LOVABLE_API_KEY` env var (already available in sandbox via Lovable AI gateway). Output base64 → decoded to PNG file in `public/assets/`.
-- Responsive rules:
-  ```
-  grid lg:grid-cols-12 gap-12 items-center
-  left:  lg:col-span-7
-  right: hidden lg:block lg:col-span-5
-  ```
-- The visual gets a subtle wrapper:
-  ```
-  relative
-  ::before  cyan radial blur (opacity ~20%)
-  border border-border/60
-  rounded-none (brutalist)
-  ```
+## Steps
+
+1. **Isolate subject** — Python script reads current PNG, builds luminance-based alpha with smooth threshold (e.g. linear ramp from L=0.04 → L=0.12), multiplies by a soft radial mask centered on the card, crops to content bbox.
+2. **QA** — composite onto a flat `hsl(220 20% 4%)` canvas and view; check the seam area from image 2 to confirm no rectangle edge is visible. Iterate thresholds if needed.
+3. **No component changes needed** — `HeroSection.tsx` already renders the PNG without a frame; the new transparent PNG will simply float on the page bg. Width/height props will be updated to the new cropped dimensions.
+4. **Verify** — `tsc --noEmit`, then visual check at 1541×859.
+
+## Files touched
+- `public/assets/hero-market-card.png` — replaced with transparent-bg, cropped version
+- `src/components/HeroSection.tsx` — only updates `width`/`height` to match new dimensions
 
 ## Out of scope
-- No copy/CTA changes.
-- No new sections.
-- No changes to other pages.
+- Changing the artwork itself (skin, layout, stats).
+- Changing hero copy or layout grid.
 
