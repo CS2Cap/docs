@@ -292,6 +292,7 @@ export default function AccountBillingPage() {
                         variant="outline"
                         onClick={() => {
                           setCycleChoice("monthly");
+                          setPaymentMethod("card");
                           setPendingAction({ plan, mode: "switch" });
                         }}
                         disabled={changePlanLoadingCode === plan.code}
@@ -304,6 +305,7 @@ export default function AccountBillingPage() {
                         size="sm"
                         onClick={() => {
                           setCycleChoice("monthly");
+                          setPaymentMethod("card");
                           setPendingAction({ plan, mode: "checkout" });
                         }}
                         disabled={checkoutLoadingCode === plan.code}
