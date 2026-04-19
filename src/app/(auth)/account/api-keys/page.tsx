@@ -237,6 +237,7 @@ export default function AccountApiKeysPage() {
   if (!sessionData) return null;
 
   const { active_key_summary, tier_info } = sessionData;
+  const needsEmail = !sessionData.email || !sessionData.email_verified_at;
   const activeKey = active_key_summary.key;
   const maskedPrefix = activeKey ? `${activeKey.key_prefix}${"•".repeat(24)}` : null;
   const canManageSubKeys =
