@@ -77,25 +77,14 @@ export function HeroSection({
 
           {/* Hero visual */}
           <div className="hidden lg:block lg:col-span-5 animate-fade-in-up" style={{ animationDelay: "0.25s" }}>
-            <div className="relative">
-              {/* Ambient cyan glow */}
-              <div className="absolute -inset-8 bg-primary/20 blur-3xl opacity-40 pointer-events-none" aria-hidden />
-              {/* Corner ticks */}
-              <div className="absolute -top-2 -left-2 h-4 w-4 border-l-2 border-t-2 border-primary/60 pointer-events-none" aria-hidden />
-              <div className="absolute -top-2 -right-2 h-4 w-4 border-r-2 border-t-2 border-primary/60 pointer-events-none" aria-hidden />
-              <div className="absolute -bottom-2 -left-2 h-4 w-4 border-l-2 border-b-2 border-primary/60 pointer-events-none" aria-hidden />
-              <div className="absolute -bottom-2 -right-2 h-4 w-4 border-r-2 border-b-2 border-primary/60 pointer-events-none" aria-hidden />
-              <div className="relative border-2 border-border/60 bg-card/40 overflow-hidden">
-                <Image
-                  src="/assets/hero-market-card.png"
-                  alt="CS2 market analytics inspect panel showing AWP Asiimov with live prices, bids, and sparkline"
-                  width={848}
-                  height={1264}
-                  priority
-                  className="h-auto w-full"
-                />
-              </div>
-            </div>
+            <Image
+              src="/assets/hero-market-card.png"
+              alt="CS2 market analytics inspect panel showing AWP Asiimov with live prices, bids, and sparkline"
+              width={768}
+              height={1376}
+              priority
+              className="h-auto w-full select-none pointer-events-none"
+            />
           </div>
         </div>
       </div>
