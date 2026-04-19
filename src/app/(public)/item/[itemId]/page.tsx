@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { Bell, ChevronRight, ExternalLink } from "lucide-react";
+import { Bell, ChevronRight } from "lucide-react";
 import { FooterSection } from "@/components/FooterSection";
 import { ProviderIdentity } from "@/components/ProviderIdentity";
 import { WatchItemButton } from "@/components/WatchItemButton";
