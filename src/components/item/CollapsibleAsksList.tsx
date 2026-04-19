@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ChevronDown, ExternalLink } from "lucide-react";
 import { ProviderIdentity } from "@/components/ProviderIdentity";
 import { formatPriceMinor, getProvider, providerLabel } from "@/lib/api";
-import type { PriceItem, ProviderInfo } from "@/lib/api/types";
+import type { MarketItem, ProviderInfo } from "@/lib/api/types";
 
 const INITIAL_VISIBLE = 10;
 
@@ -17,7 +17,7 @@ export function CollapsibleAsksList({
   rows,
   providers,
 }: {
-  rows: PriceItem[];
+  rows: MarketItem[];
   providers: ProviderInfo[];
 }) {
   const [expanded, setExpanded] = useState(false);
