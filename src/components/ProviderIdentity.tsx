@@ -6,7 +6,7 @@ export function ProviderIdentity({
   fallback,
   logoSize = 15,
   textClassName = "font-mono text-xs font-bold text-foreground",
-  className = "inline-flex min-w-0 items-center gap-2",
+  className = "flex min-w-0 items-center gap-2",
 }: {
   provider?: ProviderInfo | null;
   fallback: string;
@@ -22,7 +22,7 @@ export function ProviderIdentity({
           alt={provider.name ?? provider.code ?? provider.key ?? fallback}
           width={logoSize}
           height={logoSize}
-          className="h-auto shrink-0 rounded-sm"
+          className="h-auto shrink-0 rounded-sm object-contain"
         />
       ) : (
         <span
@@ -31,7 +31,9 @@ export function ProviderIdentity({
           aria-hidden="true"
         />
       )}
-      <span className={`truncate ${textClassName}`}>{provider?.name ?? fallback}</span>
+      <span className={`min-w-0 flex-1 truncate ${textClassName}`}>
+        {provider?.name ?? fallback}
+      </span>
     </span>
   );
 }

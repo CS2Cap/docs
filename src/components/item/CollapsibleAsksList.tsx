@@ -66,24 +66,19 @@ export function CollapsibleAsksList({
         return (
           <div
             key={`${row.provider}-${row.lowest_ask}-${index}`}
-            className="grid gap-3 border-b border-border px-4 py-3 last:border-0 md:grid-cols-[40px_minmax(0,1.4fr)_110px_110px_130px_120px_120px] md:items-center"
+            className="grid gap-3 border-b border-border px-4 py-3 last:border-0 md:grid-cols-[48px_minmax(180px,1.9fr)_100px_110px_150px_96px_110px] md:items-center"
           >
             <div className="hidden font-mono text-[10px] text-muted-foreground md:block">
               #{index + 1}
             </div>
-            <div className="flex min-w-0 items-center gap-2">
+            <div className="flex min-w-0 items-center">
               <ProviderIdentity
                 provider={getProvider(row.provider, providers)}
                 fallback={providerLabel(row.provider, providers)}
                 logoSize={20}
                 textClassName="font-mono text-xs font-bold text-foreground"
-                className="inline-flex min-w-0 flex-1 items-center gap-2"
+                className="flex min-w-0 flex-1 items-center gap-2"
               />
-              {isBest ? (
-                <span className="hidden shrink-0 border border-success/40 bg-success/10 px-1.5 py-0.5 font-mono text-[8px] tracking-widest text-success md:inline">
-                  BEST
-                </span>
-              ) : null}
             </div>
             <div className="font-mono text-xs text-muted-foreground md:text-right">
               {formatNumber(row.quantity)}
