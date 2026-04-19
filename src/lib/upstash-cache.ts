@@ -7,13 +7,32 @@ const UPSTASH_REDIS_REST_URL = process.env.UPSTASH_REDIS_REST_URL;
 const UPSTASH_REDIS_REST_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
 
 const SNAPSHOT_CACHE_PREFIX = "market-snapshot:v1";
-const SNAPSHOT_CACHE_TTL_SECONDS = 60 * 60;
+// Keep entries in Redis for 24h so we can always serve a stale copy while we refresh in the background.
+const SNAPSHOT_CACHE_TTL_SECONDS = 60 * 60 * 24;
+// Consider the snapshot "fresh" for 5 minutes — beyond that we revalidate in the background (SWR).
+const SNAPSHOT_FRESH_SECONDS = 60 * 5;
 const SNAPSHOT_CHUNK_SIZE = 4_000_000;
+
+// In-memory L1 cache so hot requests on the same server instance skip the Upstash roundtrip entirely.
+const MEMORY_CACHE_TTL_MS = 60 * 1000;
+type MemoryCacheEntry = {
+  snapshot: MarketItemsSnapshotResponse;
+  cachedAt: number;
+  expiresAt: number;
+};
+const memoryCache = new Map<MarketTimeframe, MemoryCacheEntry>();
+const inflightRefreshes = new Map<MarketTimeframe, Promise<void>>();
 
 type SnapshotCacheMeta = {
   encoding: "gzip-base64";
   chunkCount: number;
   cachedAt: string;
+};
+
+export type CachedSnapshotResult = {
+  snapshot: MarketItemsSnapshotResponse;
+  cachedAt: number;
+  isStale: boolean;
 };
 
 function hasUpstashConfig() {
