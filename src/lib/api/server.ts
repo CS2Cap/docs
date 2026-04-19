@@ -157,12 +157,32 @@ export const serverApi = {
   ) {
     void revalidate;
     const timeframe = params.timeframe ?? "24h";
-    const cachedSnapshot = await getCachedMarketItemsSnapshot(timeframe);
-    if (cachedSnapshot) {
-      return cachedSnapshot;
+    const cached = await getCachedMarketItemsSnapshot(timeframe);
+
+    const fetchAndStore = async () => {
+      const fresh = await serverFetch<MarketItemsSnapshotResponse>(
+        `/v1/web/market/items${buildQuery(params)}`,
+        {
+          revalidate: false,
+          timeoutMs: 20000,
+        },
+      );
+
+      if (fresh) {
+        await setCachedMarketItemsSnapshot(timeframe, fresh);
+      }
+    };
+
+    if (cached) {
+      // Stale-while-revalidate: serve immediately, refresh in the background if stale.
+      if (cached.isStale) {
+        refreshMarketItemsSnapshotInBackground(timeframe, fetchAndStore);
+      }
+      return cached.snapshot;
     }
 
-    const freshSnapshot = await serverFetch<MarketItemsSnapshotResponse>(
+    // Cold cache — we have to wait, but cap the wait so the page never hangs forever.
+    const fresh = await serverFetch<MarketItemsSnapshotResponse>(
       `/v1/web/market/items${buildQuery(params)}`,
       {
         revalidate: false,
@@ -170,11 +190,11 @@ export const serverApi = {
       },
     );
 
-    if (freshSnapshot) {
-      void setCachedMarketItemsSnapshot(timeframe, freshSnapshot);
+    if (fresh) {
+      void setCachedMarketItemsSnapshot(timeframe, fresh);
     }
 
-    return freshSnapshot;
+    return fresh;
   },
   getMarketItem(itemId: number, revalidate: number | false = false) {
     return serverFetch<MarketItemAnalyticsResponse>(`/v1/web/market/items/${itemId}`, {
