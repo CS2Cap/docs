@@ -71,15 +71,16 @@ export function CollapsibleAsksList({
             <div className="hidden font-mono text-[10px] text-muted-foreground md:block">
               #{index + 1}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex min-w-0 items-center gap-2">
               <ProviderIdentity
                 provider={getProvider(row.provider, providers)}
                 fallback={providerLabel(row.provider, providers)}
                 logoSize={20}
                 textClassName="font-mono text-xs font-bold text-foreground"
+                className="inline-flex min-w-0 flex-1 items-center gap-2"
               />
               {isBest ? (
-                <span className="hidden border border-success/40 bg-success/10 px-1.5 py-0.5 font-mono text-[8px] tracking-widest text-success md:inline">
+                <span className="hidden shrink-0 border border-success/40 bg-success/10 px-1.5 py-0.5 font-mono text-[8px] tracking-widest text-success md:inline">
                   BEST
                 </span>
               ) : null}
