@@ -134,13 +134,13 @@ export default function AccountApiKeysPage() {
     setResetIpMessage(null);
     try {
       await webApi.resetAPIKeyIP();
-      setResetIpMessage("IP restriction removed.");
+      setResetIpMessage("IP rebound. Your next request will set the new bound IP.");
       await refetchSession();
     } catch (error: unknown) {
       setResetIpMessage(
         error && typeof error === "object" && "message" in error
           ? String((error as { message: string }).message)
-          : "Failed to remove IP restriction.",
+          : "Failed to rebind IP.",
       );
     } finally {
       setResettingIp(false);
@@ -386,7 +386,7 @@ export default function AccountApiKeysPage() {
                   </div>
                 </div>
                 <div className="rounded-lg border border-border/50 bg-secondary/20 p-4">
-                  <div className="text-sm text-muted-foreground">IP Restriction</div>
+                  <div className="text-sm text-muted-foreground">Bound IP</div>
                   <div className="mt-1 text-lg font-semibold text-foreground">
                     {activeKey.bound_ip ?? "None"}
                   </div>
@@ -396,7 +396,7 @@ export default function AccountApiKeysPage() {
               <div className="flex flex-wrap items-center gap-3">
                 <Button variant="outline" onClick={handleResetIp} disabled={resettingIp}>
                   <Globe className="mr-2 h-4 w-4" />
-                  {resettingIp ? "Removing…" : "Remove IP Restriction"}
+                  {resettingIp ? "Rebinding…" : "Rebind to current IP"}
                 </Button>
                 {resetIpMessage && <p className="text-sm text-muted-foreground">{resetIpMessage}</p>}
               </div>
