@@ -80,8 +80,8 @@ export function HeroSection({
             <Image
               src="/assets/hero-market-card.png"
               alt="CS2 market analytics inspect panel showing AWP Asiimov with live prices, bids, and sparkline"
-              width={845}
-              height={1067}
+              width={814}
+              height={1025}
               priority
               className="h-auto w-full select-none pointer-events-none"
             />
