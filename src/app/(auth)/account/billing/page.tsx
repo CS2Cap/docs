@@ -55,6 +55,7 @@ export default function AccountBillingPage() {
   const [cancellingChange, setCancellingChange] = useState(false);
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
   const [cycleChoice, setCycleChoice] = useState<CycleChoice>("monthly");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethodChoice>("card");
 
   const currentPlan =
     plans?.plans.find((plan) => plan.code === overview?.current_plan.code) ?? null;
@@ -78,6 +79,24 @@ export default function AccountBillingPage() {
     try {
       const response = await webApi.createCheckout({
         price_id: priceId,
+        success_url: `${window.location.origin}/account/billing`,
+        cancel_url: `${window.location.origin}/api-info#pricing`,
+      });
+      window.location.href = response.checkout_url;
+    } finally {
+      setCheckoutLoadingCode(null);
+    }
+  }
+
+  async function startCryptoCheckout(
+    tierCode: string,
+    interval: CycleChoice,
+  ) {
+    setCheckoutLoadingCode(tierCode);
+    try {
+      const response = await webApi.createCryptoCheckout({
+        tier_code: tierCode,
+        billing_interval: interval,
         success_url: `${window.location.origin}/account/billing`,
         cancel_url: `${window.location.origin}/api-info#pricing`,
       });
