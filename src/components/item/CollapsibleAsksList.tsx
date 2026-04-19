@@ -66,7 +66,7 @@ export function CollapsibleAsksList({
         return (
           <div
             key={`${row.provider}-${row.lowest_ask}-${index}`}
-            className="grid gap-3 border-b border-border px-4 py-3 last:border-0 md:grid-cols-[48px_minmax(180px,1.9fr)_100px_110px_150px_96px_110px] md:items-center"
+            className="grid gap-3 border-b border-border px-4 py-3 last:border-0 md:grid-cols-[44px_minmax(140px,1.7fr)_72px_88px_minmax(120px,1fr)_72px_88px] md:items-center"
           >
             <div className="hidden font-mono text-[10px] text-muted-foreground md:block">
               #{index + 1}
@@ -107,7 +107,7 @@ export function CollapsibleAsksList({
                   href={link}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex items-center gap-1 border-brutal px-3 py-1 font-mono text-[9px] tracking-wider brutalist-hover hover:border-primary"
+                  className="flex items-center gap-1 border-brutal px-2.5 py-1 font-mono text-[8px] tracking-wider brutalist-hover hover:border-primary"
                 >
                   VIEW <ExternalLink className="h-2.5 w-2.5" />
                 </a>
