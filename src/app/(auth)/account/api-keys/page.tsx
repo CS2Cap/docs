@@ -34,6 +34,30 @@ import type { ChildAPIKeyCreateResponse } from "@/lib/api/types";
 
 type ReissueResponse = Awaited<ReturnType<typeof webApi.reissueAPIKey>>;
 
+function isEmailRequiredError(message: string | null | undefined): boolean {
+  if (!message) return false;
+  const lower = message.toLowerCase();
+  return lower.includes("email") && (lower.includes("required") || lower.includes("verif"));
+}
+
+function EmailRequiredHint({ message }: { message: string }) {
+  return (
+    <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm">
+      <p className="text-destructive font-medium">{message}</p>
+      <p className="mt-1 text-muted-foreground">
+        Add and verify your email address in{" "}
+        <Link
+          href="/account/settings"
+          className="text-primary underline underline-offset-2 hover:text-primary/80"
+        >
+          Account Settings
+        </Link>
+        , then come back here to issue your key.
+      </p>
+    </div>
+  );
+}
+
 export default function AccountApiKeysPage() {
   const queryClient = useQueryClient();
   const { data: sessionData, isLoading, refetch: refetchSession } = useSession();
