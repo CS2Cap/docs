@@ -1,29 +1,60 @@
 import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { Search } from "lucide-react";
 import { FooterSection } from "@/components/FooterSection";
-import { getSearchPageData } from "@/lib/api/compositions";
+import { getSearchPageData, type SearchFilterValues } from "@/lib/api/compositions";
 
 type SearchPageProps = {
   searchParams: Promise<{
     q?: string;
-    category?: string;
+    item_type?: string;
+    item_subtype?: string;
+    weapon_type?: string;
+    wear_name?: string;
+    rarity_name?: string;
+    collection?: string;
     page?: string;
   }>;
 };
 
-const SEARCH_CATEGORIES = ["All", "Rifles", "Pistols", "Knives", "Gloves", "SMGs", "Heavy"];
+const FILTER_FIELDS: Array<{
+  key: keyof SearchFilterValues;
+  label: string;
+  metadataKey:
+    | "item_type"
+    | "item_subtype"
+    | "weapon_type"
+    | "wear_name"
+    | "rarity_name"
+    | "collection";
+}> = [
+  { key: "item_type", label: "Type", metadataKey: "item_type" },
+  { key: "item_subtype", label: "Category", metadataKey: "item_subtype" },
+  { key: "weapon_type", label: "Weapon", metadataKey: "weapon_type" },
+  { key: "wear_name", label: "Wear", metadataKey: "wear_name" },
+  { key: "rarity_name", label: "Rarity", metadataKey: "rarity_name" },
+  { key: "collection", label: "Collection", metadataKey: "collection" },
+];
 
-function buildSearchHref(query: string, category: string, page = 1) {
+function buildSearchHref(
+  query: string,
+  filters: SearchFilterValues,
+  page = 1,
+  overrides: Partial<SearchFilterValues> = {},
+) {
   const params = new URLSearchParams();
+  const merged: SearchFilterValues = { ...filters, ...overrides };
 
   if (query) {
     params.set("q", query);
   }
 
-  if (category && category !== "All") {
-    params.set("category", category);
+  for (const { key } of FILTER_FIELDS) {
+    const value = merged[key];
+    if (value) {
+      params.set(key, value);
+    }
   }
 
   if (page > 1) {
@@ -121,17 +152,6 @@ function SearchResultsFallback({ currentPage }: { currentPage: number }) {
               <div className="mt-3 hidden h-4 w-12 animate-pulse justify-self-end rounded-sm bg-secondary/70 md:block md:mt-0" />
               <div className="mt-3 hidden h-4 w-14 animate-pulse justify-self-end rounded-sm bg-secondary/70 md:block md:mt-0" />
             </div>
-
-            <div className="mt-3 grid grid-cols-2 gap-4 md:hidden">
-              <div>
-                <div className="h-3 w-10 animate-pulse rounded-sm bg-secondary/70" />
-                <div className="mt-2 h-4 w-14 animate-pulse rounded-sm bg-secondary/70" />
-              </div>
-              <div className="text-right">
-                <div className="ml-auto h-3 w-12 animate-pulse rounded-sm bg-secondary/70" />
-                <div className="mt-2 ml-auto h-4 w-16 animate-pulse rounded-sm bg-secondary/70" />
-              </div>
-            </div>
           </div>
         ))}
       </div>
@@ -149,16 +169,16 @@ function SearchResultsFallback({ currentPage }: { currentPage: number }) {
 
 async function SearchResultsSection({
   query,
-  category,
+  filters,
   currentPage,
 }: {
   query: string;
-  category: string;
+  filters: SearchFilterValues;
   currentPage: number;
 }) {
   const data = await getSearchPageData({
     q: query,
-    category,
+    filters,
     page: currentPage,
   });
 
@@ -189,7 +209,7 @@ async function SearchResultsSection({
       {data.results.length === 0 ? (
         <div className="py-20 text-center">
           <div className="font-mono text-sm text-muted-foreground">
-            No skins found for that search. Try a different name or category.
+            No skins found for that search. Try a different name or relax your filters.
           </div>
         </div>
       ) : (
@@ -269,7 +289,7 @@ async function SearchResultsSection({
 
       <div className="mt-8 flex items-center justify-between">
         <Link
-          href={hasPrev ? buildSearchHref(query, category, currentPage - 1) : "#"}
+          href={hasPrev ? buildSearchHref(query, filters, currentPage - 1) : "#"}
           prefetch={hasPrev}
           className={`border-brutal px-4 py-2 font-mono text-xs tracking-wider ${
             hasPrev
@@ -283,7 +303,7 @@ async function SearchResultsSection({
           PAGE {currentPage} / {totalPages}
         </div>
         <Link
-          href={hasNext ? buildSearchHref(query, category, currentPage + 1) : "#"}
+          href={hasNext ? buildSearchHref(query, filters, currentPage + 1) : "#"}
           prefetch={hasNext}
           className={`border-brutal px-4 py-2 font-mono text-xs tracking-wider ${
             hasNext
@@ -298,12 +318,129 @@ async function SearchResultsSection({
   );
 }
 
+async function FilterControls({
+  query,
+  filters,
+}: {
+  query: string;
+  filters: SearchFilterValues;
+}) {
+  // Fetch metadata for option lists. This is cached via getSearchPageData too,
+  // but rendering the form needs the option arrays directly.
+  const data = await getSearchPageData({ q: query, filters, page: 1 });
+  const meta = data.metadata?.filters;
+
+  const activeCount = FILTER_FIELDS.reduce(
+    (count, field) => (filters[field.key] ? count + 1 : count),
+    0,
+  );
+
+  return (
+    <form action="/search" className="space-y-4">
+      {/* Preserve query in form submission */}
+      <div className="grid gap-2 md:grid-cols-[1fr_auto]">
+        <div className="flex items-center gap-3 border-brutal bg-card px-4">
+          <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+          <input
+            type="text"
+            name="q"
+            placeholder="Search skins, knives, gloves..."
+            defaultValue={query}
+            className="w-full bg-transparent py-3 font-mono text-sm text-foreground outline-none placeholder:text-muted-foreground"
+          />
+        </div>
+        <button
+          type="submit"
+          className="border-2 border-primary bg-primary px-6 py-3 font-mono text-sm font-bold tracking-wider text-primary-foreground brutalist-hover"
+        >
+          SEARCH
+        </button>
+      </div>
+
+      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        {FILTER_FIELDS.map((field) => {
+          const options = meta?.[field.metadataKey] ?? [];
+          const currentValue = filters[field.key] ?? "";
+
+          return (
+            <label
+              key={field.key}
+              className="flex flex-col gap-1 font-mono text-[10px] tracking-widest text-muted-foreground"
+            >
+              <span>{field.label.toUpperCase()}</span>
+              <select
+                name={field.key}
+                defaultValue={currentValue}
+                className="border-brutal bg-card px-3 py-2 font-mono text-sm text-foreground outline-none"
+              >
+                <option value="">All</option>
+                {options.map((value) => (
+                  <option key={value} value={value}>
+                    {value}
+                  </option>
+                ))}
+              </select>
+            </label>
+          );
+        })}
+      </div>
+
+      {activeCount > 0 ? (
+        <div className="flex items-center gap-3">
+          <span className="font-mono text-[10px] tracking-widest text-primary">
+            {activeCount} ACTIVE FILTER{activeCount === 1 ? "" : "S"}
+          </span>
+          <Link
+            href={buildSearchHref(query, {})}
+            className="border-brutal px-3 py-1 font-mono text-[10px] tracking-widest text-muted-foreground hover:border-primary hover:text-foreground"
+          >
+            CLEAR
+          </Link>
+        </div>
+      ) : null}
+    </form>
+  );
+}
+
+function FilterControlsFallback() {
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-2 md:grid-cols-[1fr_auto]">
+        <div className="h-12 w-full animate-pulse rounded-sm bg-secondary/70" />
+        <div className="h-12 w-full animate-pulse rounded-sm bg-secondary/70 md:w-32" />
+      </div>
+      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        {Array.from({ length: 6 }).map((_, index) => (
+          <div key={index} className="h-14 w-full animate-pulse rounded-sm bg-secondary/70" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   const resolved = await searchParams;
   const query = resolved.q?.trim() ?? "";
-  const category = resolved.category?.trim() || "All";
+  const filters: SearchFilterValues = {
+    item_type: resolved.item_type?.trim() || undefined,
+    item_subtype: resolved.item_subtype?.trim() || undefined,
+    weapon_type: resolved.weapon_type?.trim() || undefined,
+    wear_name: resolved.wear_name?.trim() || undefined,
+    rarity_name: resolved.rarity_name?.trim() || undefined,
+    collection: resolved.collection?.trim() || undefined,
+  };
   const page = Number.parseInt(resolved.page ?? "1", 10);
   const currentPage = Number.isFinite(page) && page > 0 ? page : 1;
+
+  const filterKey = [
+    query,
+    filters.item_type ?? "",
+    filters.item_subtype ?? "",
+    filters.weapon_type ?? "",
+    filters.wear_name ?? "",
+    filters.rarity_name ?? "",
+    filters.collection ?? "",
+  ].join("|");
 
   return (
     <>
@@ -314,64 +451,18 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             FIND <span className="text-gradient-brand">ANY SKIN</span>
           </h1>
           <p className="mb-6 max-w-2xl font-mono text-sm text-muted-foreground">
-            Search every skin in the catalog and see the best current price across all connected markets.
+            Search every skin in the catalog and filter by type, weapon, wear, rarity and more.
           </p>
 
-          <form action="/search" className="mb-6 grid gap-2 md:grid-cols-[1fr_220px_auto]">
-            <div className="flex items-center gap-3 border-brutal bg-card px-4">
-              <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
-              <input
-                type="text"
-                name="q"
-                placeholder="Search skins, knives, gloves..."
-                defaultValue={query}
-                className="w-full bg-transparent py-3 font-mono text-sm text-foreground outline-none placeholder:text-muted-foreground"
-              />
-            </div>
-            <div className="flex items-center gap-3 border-brutal bg-card px-4">
-              <SlidersHorizontal className="h-4 w-4 shrink-0 text-muted-foreground" />
-              <select
-                name="category"
-                defaultValue={category}
-                className="w-full bg-transparent py-3 font-mono text-sm text-foreground outline-none"
-              >
-                {SEARCH_CATEGORIES.map((value) => (
-                  <option key={value} value={value}>
-                    {value}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <button
-              type="submit"
-              className="border-2 border-primary bg-primary px-6 py-3 font-mono text-sm font-bold tracking-wider text-primary-foreground brutalist-hover"
-            >
-              SEARCH
-            </button>
-          </form>
-
-          <div className="flex flex-wrap gap-px bg-border">
-            {SEARCH_CATEGORIES.map((value) => (
-              <Link
-                key={value}
-                href={buildSearchHref(query, value)}
-                prefetch
-                className={`px-4 py-2 font-mono text-[10px] tracking-wider transition-colors ${
-                  category === value
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-card text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {value.toUpperCase()}
-              </Link>
-            ))}
-          </div>
+          <Suspense key={`controls:${filterKey}`} fallback={<FilterControlsFallback />}>
+            <FilterControls query={query} filters={filters} />
+          </Suspense>
         </div>
       </section>
 
       <section className="py-8">
-        <Suspense key={`${query}:${category}:${currentPage}`} fallback={<SearchResultsFallback currentPage={currentPage} />}>
-          <SearchResultsSection query={query} category={category} currentPage={currentPage} />
+        <Suspense key={`results:${filterKey}:${currentPage}`} fallback={<SearchResultsFallback currentPage={currentPage} />}>
+          <SearchResultsSection query={query} filters={filters} currentPage={currentPage} />
         </Suspense>
       </section>
 
