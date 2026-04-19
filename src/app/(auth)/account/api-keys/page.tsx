@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,6 +33,30 @@ import { queryKeys } from "@/lib/api/hooks";
 import type { ChildAPIKeyCreateResponse } from "@/lib/api/types";
 
 type ReissueResponse = Awaited<ReturnType<typeof webApi.reissueAPIKey>>;
+
+function isEmailRequiredError(message: string | null | undefined): boolean {
+  if (!message) return false;
+  const lower = message.toLowerCase();
+  return lower.includes("email") && (lower.includes("required") || lower.includes("verif"));
+}
+
+function EmailRequiredHint({ message }: { message: string }) {
+  return (
+    <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm">
+      <p className="text-destructive font-medium">{message}</p>
+      <p className="mt-1 text-muted-foreground">
+        Add and verify your email address in{" "}
+        <Link
+          href="/account/settings"
+          className="text-primary underline underline-offset-2 hover:text-primary/80"
+        >
+          Account Settings
+        </Link>
+        , then come back here to issue your key.
+      </p>
+    </div>
+  );
+}
 
 export default function AccountApiKeysPage() {
   const queryClient = useQueryClient();
@@ -212,6 +237,7 @@ export default function AccountApiKeysPage() {
   if (!sessionData) return null;
 
   const { active_key_summary, tier_info } = sessionData;
+  const needsEmail = !sessionData.email || !sessionData.email_verified_at;
   const activeKey = active_key_summary.key;
   const maskedPrefix = activeKey ? `${activeKey.key_prefix}${"•".repeat(24)}` : null;
   const canManageSubKeys =
@@ -228,10 +254,19 @@ export default function AccountApiKeysPage() {
           <h1 className="text-3xl font-black tracking-tighter">MANAGE KEYS</h1>
         </div>
         {!active_key_summary.has_active_key && (
-          <Button onClick={() => setReissueDialogOpen(true)}>
-            <Key className="mr-2 h-4 w-4" />
-            Create Key
-          </Button>
+          needsEmail ? (
+            <Button asChild variant="outline">
+              <Link href="/account/settings">
+                <Key className="mr-2 h-4 w-4" />
+                Add email in Settings
+              </Link>
+            </Button>
+          ) : (
+            <Button onClick={() => setReissueDialogOpen(true)}>
+              <Key className="mr-2 h-4 w-4" />
+              Create Key
+            </Button>
+          )
         )}
       </div>
 
@@ -318,7 +353,11 @@ export default function AccountApiKeysPage() {
                       </div>
                     ) : (
                       <>
-                        {reissueError && <p className="text-sm text-destructive">{reissueError}</p>}
+                        {reissueError && (
+                          isEmailRequiredError(reissueError)
+                            ? <EmailRequiredHint message={reissueError} />
+                            : <p className="text-sm text-destructive">{reissueError}</p>
+                        )}
                         <DialogFooter>
                           <Button variant="outline" onClick={() => setReissueDialogOpen(false)}>
                             Cancel
@@ -373,15 +412,24 @@ export default function AccountApiKeysPage() {
             <div className="text-center">
               <p className="font-medium text-foreground">No API key yet</p>
               <p className="text-sm text-muted-foreground mt-1">
-                {tier_info.code === "free"
-                  ? "Verify your email to create your first API key."
+                {needsEmail
+                  ? "You need a verified email address before you can issue an API key."
                   : "Create an API key to start using the API."}
               </p>
             </div>
-            <Button onClick={() => setReissueDialogOpen(true)}>
-              <Key className="mr-2 h-4 w-4" />
-              Create Key
-            </Button>
+            {needsEmail ? (
+              <Button asChild>
+                <Link href="/account/settings">
+                  <Key className="mr-2 h-4 w-4" />
+                  Add email in Settings
+                </Link>
+              </Button>
+            ) : (
+              <Button onClick={() => setReissueDialogOpen(true)}>
+                <Key className="mr-2 h-4 w-4" />
+                Create Key
+              </Button>
+            )}
             <Dialog open={reissueDialogOpen} onOpenChange={(open) => {
               setReissueDialogOpen(open);
               if (!open) setNewKey(null);
@@ -407,7 +455,11 @@ export default function AccountApiKeysPage() {
                   </div>
                 ) : (
                   <>
-                    {reissueError && <p className="text-sm text-destructive">{reissueError}</p>}
+                    {reissueError && (
+                      isEmailRequiredError(reissueError)
+                        ? <EmailRequiredHint message={reissueError} />
+                        : <p className="text-sm text-destructive">{reissueError}</p>
+                    )}
                     <DialogFooter>
                       <Button variant="outline" onClick={() => setReissueDialogOpen(false)}>
                         Cancel
@@ -517,7 +569,11 @@ export default function AccountApiKeysPage() {
                             className="bg-secondary/50"
                           />
                         </div>
-                        {createError && <p className="text-sm text-destructive">{createError}</p>}
+                        {createError && (
+                          isEmailRequiredError(createError)
+                            ? <EmailRequiredHint message={createError} />
+                            : <p className="text-sm text-destructive">{createError}</p>
+                        )}
                       </div>
                       <DialogFooter>
                         <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
