@@ -6,6 +6,7 @@ import { Bell, ChevronRight, ExternalLink } from "lucide-react";
 import { FooterSection } from "@/components/FooterSection";
 import { ProviderIdentity } from "@/components/ProviderIdentity";
 import { WatchItemButton } from "@/components/WatchItemButton";
+import { CollapsibleAsksList } from "@/components/item/CollapsibleAsksList";
 import {
   formatPriceMinor,
   getProvider,
@@ -304,53 +305,7 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                   <div />
                 </div>
 
-                {askRows.length === 0 ? (
-                  <div className="px-4 py-8 font-mono text-sm text-muted-foreground">
-                    No listings right now. Check back or set a price alert.
-                  </div>
-                ) : (
-                  askRows.map((row) => {
-                    const link = row.link || row.url;
-
-                    return (
-                      <div
-                        key={`${row.provider}-${row.lowest_ask}`}
-                        className="grid gap-3 border-b border-border px-4 py-3 last:border-0 md:grid-cols-[minmax(0,1.2fr)_100px_120px_120px] md:items-center"
-                      >
-                        <div>
-                          <ProviderIdentity
-                            provider={getProvider(row.provider, data.providers)}
-                            fallback={providerLabel(row.provider, data.providers)}
-                            logoSize={18}
-                            textClassName="font-mono text-xs font-bold text-foreground"
-                          />
-                        </div>
-                        <div className="font-mono text-xs text-muted-foreground md:text-right">
-                          {formatNumber(row.quantity)}
-                        </div>
-                        <div className="font-mono text-xs font-bold text-foreground md:text-right">
-                          {formatPriceMinor(row.lowest_ask)}
-                        </div>
-                        <div className="flex justify-start md:justify-end">
-                          {link ? (
-                            <a
-                              href={link}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="flex items-center gap-1 border-brutal px-3 py-1 font-mono text-[9px] tracking-wider brutalist-hover hover:border-primary"
-                            >
-                              VIEW <ExternalLink className="h-2.5 w-2.5" />
-                            </a>
-                          ) : (
-                            <span className="font-mono text-[10px] text-muted-foreground">
-                              Internal only
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
+                <CollapsibleAsksList rows={askRows} providers={data.providers} />
               </div>
 
               <div className="border-brutal bg-card">
