@@ -1,40 +1,49 @@
 
 
-## Problem
-The hero PNG has a dark navy fill across the whole canvas. Even though it's close to the page bg, the rectangle edges are visible as a hard vertical seam (see image 2: a clear value step between the image's bg and the page bg).
+## Goal
+Collapse different wear variants of the same skin into a single row in `/search`, while keeping StatTrak, Souvenir, and Doppler/Gamma phases as separate rows. The item page itself already handles wear selection via `ItemConditionVariants`, so no changes there.
 
-The user circled the actual subject (the floating market card + AWP). Everything outside that ellipse should be fully transparent so only the card/weapon shows on top of the real page background.
+## Grouping rule
+Group key = `base_name | skin_name | is_stattrak | is_souvenir | phase`.
+Items missing `base_name`/`skin_name` (rare — agents, stickers, cases) keep their own row keyed by `market_hash_name`.
 
-## Approach
-Replace the full-rectangle PNG with one that has a **transparent background**, where only the floating card UI + the AWP + their natural glow are visible. No painted backdrop at all.
+When the user explicitly filters by `wear_name`, grouping is bypassed — they asked for a specific wear, so show flat results.
 
-Two viable ways to produce that asset:
+## Approach (server-side, in `getSearchPageData`)
 
-**Option A — Re-isolate the existing image (recommended)**
-Use Python + Pillow on `public/assets/hero-market-card.png` to:
-1. Build an alpha mask from luminance (dark navy → transparent, bright cyan/orange/white card pixels → opaque).
-2. Apply a soft radial falloff centered on the card so the card's own ambient cyan glow fades smoothly to 0 alpha (no hard ellipse edge).
-3. Crop tight bounding box around non-transparent pixels to remove wasted space.
-4. Save back to `public/assets/hero-market-card.png` (PNG with alpha).
+1. **Over-fetch**: API returns at most 24 items per request. After grouping, a "page" could contain far fewer rows. Fetch with a larger `limit` (e.g. 200) starting from offset 0, then group, then slice 24 at the requested page offset client-side. Cap total scanned at e.g. 1000 items (5 paged fetches) to keep latency bounded — sufficient for typical search results, and for very broad queries we can show the partial total with a "showing first N" note.
+   
+   *Trade-off:* The API's `total` count becomes inaccurate post-grouping. We'll display "X skins" (grouped count from what we scanned) and disable NEXT once we've consumed all scanned items. For the common case (queries returning <1000 items) this is exact; for broader browsing (e.g. "All Rifles") it shows "1000+ skins".
 
-This keeps the exact visual the user already approved, just removes the backdrop.
+2. **Group**: Reduce flat items into groups. For each group:
+   - Pick a **representative item** = the one with `wear_name` closest to FN that has a known price (fallback: any item, fallback: first).
+   - Aggregate variants list (used for variant count + tooltip).
+   - Collect snapshot metrics (best ask, 24h vol, price change) across all variants from the existing `marketSnapshot`. Lowest ask wins for price; sum of volumes; weighted-avg or representative's % change.
 
-**Option B — Regenerate from scratch** with a prompt that demands a pure black/transparent background. Less reliable (models often paint in subtle gradients) and slower. Use only as fallback if A's mask looks dirty.
+3. **Link**: Row links to the representative item's `/item/[itemId]`. The item page's existing wear selector lets the user jump to any wear from there.
 
-Plan: do A first, QA by compositing the result onto the actual page bg color (`hsl(220 20% 4%)`) and inspecting. If edges still show, iterate on the luminance threshold + feather radius. Only fall back to B if A can't produce a clean result.
+## UI changes (`src/app/(public)/search/page.tsx`)
 
-## Steps
-
-1. **Isolate subject** — Python script reads current PNG, builds luminance-based alpha with smooth threshold (e.g. linear ramp from L=0.04 → L=0.12), multiplies by a soft radial mask centered on the card, crops to content bbox.
-2. **QA** — composite onto a flat `hsl(220 20% 4%)` canvas and view; check the seam area from image 2 to confirm no rectangle edge is visible. Iterate thresholds if needed.
-3. **No component changes needed** — `HeroSection.tsx` already renders the PNG without a frame; the new transparent PNG will simply float on the page bg. Width/height props will be updated to the new cropped dimensions.
-4. **Verify** — `tsc --noEmit`, then visual check at 1541×859.
+- Display name: strip the wear suffix from `market_hash_name` (e.g. "AK-47 | Redline (Field-Tested)" → "AK-47 | Redline"). Keep the StatTrak™/Souvenir prefix.
+- Subtitle row: replace the wear bullet with a compact variant indicator: `5 wears • Mil-Spec • The Phoenix Collection`.
+- Price column: lowest ask across variants (per user's choice).
+- 24H column: change of the representative variant (typically FN/cheapest).
+- Volume column: sum across variants (more honest for "popularity").
+- Header label: "MATCHES" → "SKINS" when grouping is active.
+- When the user picks a `wear_name` filter, fall back to the existing flat rendering (no UI change for that path).
 
 ## Files touched
-- `public/assets/hero-market-card.png` — replaced with transparent-bg, cropped version
-- `src/components/HeroSection.tsx` — only updates `width`/`height` to match new dimensions
+
+- `src/lib/api/compositions.ts` — extend `getSearchPageData`:
+  - new internal `groupSearchResults(items, snapshotMap)` helper
+  - over-fetch + slice logic
+  - return shape gains `grouped: boolean` and `results[i]` gains `variantCount`, `wearsAvailable`, `displayName`
+- `src/app/(public)/search/page.tsx` — render grouped rows with new display name and variant indicator; keep existing flat path when `wear_name` filter is set.
+
+No DB or component-level breakage. `getSiblingVariants` and the item detail page are untouched.
 
 ## Out of scope
-- Changing the artwork itself (skin, layout, stats).
-- Changing hero copy or layout grid.
+- Item detail page changes (already handles variants).
+- Grouping in any other surface (homepage ticker, related items).
+- New API endpoints.
 
