@@ -254,10 +254,19 @@ export default function AccountApiKeysPage() {
           <h1 className="text-3xl font-black tracking-tighter">MANAGE KEYS</h1>
         </div>
         {!active_key_summary.has_active_key && (
-          <Button onClick={() => setReissueDialogOpen(true)}>
-            <Key className="mr-2 h-4 w-4" />
-            Create Key
-          </Button>
+          needsEmail ? (
+            <Button asChild variant="outline">
+              <Link href="/account/settings">
+                <Key className="mr-2 h-4 w-4" />
+                Add email in Settings
+              </Link>
+            </Button>
+          ) : (
+            <Button onClick={() => setReissueDialogOpen(true)}>
+              <Key className="mr-2 h-4 w-4" />
+              Create Key
+            </Button>
+          )
         )}
       </div>
 
@@ -344,7 +353,11 @@ export default function AccountApiKeysPage() {
                       </div>
                     ) : (
                       <>
-                        {reissueError && <p className="text-sm text-destructive">{reissueError}</p>}
+                        {reissueError && (
+                          isEmailRequiredError(reissueError)
+                            ? <EmailRequiredHint message={reissueError} />
+                            : <p className="text-sm text-destructive">{reissueError}</p>
+                        )}
                         <DialogFooter>
                           <Button variant="outline" onClick={() => setReissueDialogOpen(false)}>
                             Cancel
@@ -442,7 +455,11 @@ export default function AccountApiKeysPage() {
                   </div>
                 ) : (
                   <>
-                    {reissueError && <p className="text-sm text-destructive">{reissueError}</p>}
+                    {reissueError && (
+                      isEmailRequiredError(reissueError)
+                        ? <EmailRequiredHint message={reissueError} />
+                        : <p className="text-sm text-destructive">{reissueError}</p>
+                    )}
                     <DialogFooter>
                       <Button variant="outline" onClick={() => setReissueDialogOpen(false)}>
                         Cancel
@@ -552,7 +569,11 @@ export default function AccountApiKeysPage() {
                             className="bg-secondary/50"
                           />
                         </div>
-                        {createError && <p className="text-sm text-destructive">{createError}</p>}
+                        {createError && (
+                          isEmailRequiredError(createError)
+                            ? <EmailRequiredHint message={createError} />
+                            : <p className="text-sm text-destructive">{createError}</p>
+                        )}
                       </div>
                       <DialogFooter>
                         <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
