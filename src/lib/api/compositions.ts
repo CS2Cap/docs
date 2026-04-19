@@ -293,27 +293,39 @@ export async function getLandingPageData() {
   };
 }
 
+export type SearchFilterValues = {
+  item_type?: string;
+  item_subtype?: string;
+  weapon_type?: string;
+  wear_name?: string;
+  rarity_name?: string;
+  collection?: string;
+};
+
 export async function getSearchPageData(input: {
   q?: string;
-  category?: string;
   page?: number;
+  filters?: SearchFilterValues;
 }) {
-  const { q = "", category = "All", page = 1 } = input;
+  const { q = "", page = 1, filters = {} } = input;
   const limit = SEARCH_PAGE_SIZE;
   const offset = Math.max(page - 1, 0) * limit;
-  const itemSubtype = SEARCH_CATEGORY_MAP[category];
+
+  const queryParams = {
+    q: q || undefined,
+    item_type: filters.item_type || undefined,
+    item_subtype: filters.item_subtype || undefined,
+    weapon_type: filters.weapon_type || undefined,
+    wear_name: filters.wear_name || undefined,
+    rarity_name: filters.rarity_name || undefined,
+    collection: filters.collection || undefined,
+    limit,
+    offset,
+  };
 
   const [metadata, initialItemsResponse, marketSnapshot] = await Promise.all([
     serverApi.getItemsMetadata(300),
-    serverApi.getItems(
-      buildQuery({
-        q: q || undefined,
-        item_subtype: itemSubtype,
-        limit,
-        offset,
-      }),
-      60,
-    ),
+    serverApi.getItems(buildQuery(queryParams), 60),
     serverApi.getMarketItemsSnapshot({ timeframe: "24h" }, 30),
   ]);
 
@@ -322,7 +334,7 @@ export async function getSearchPageData(input: {
       ? initialItemsResponse
       : await getForgivingSearchItems({
           q,
-          itemSubtype,
+          itemSubtype: filters.item_subtype,
           limit,
           offset,
         });
@@ -331,10 +343,6 @@ export async function getSearchPageData(input: {
     (marketSnapshot?.data.items ?? []).map((snapshotItem) => [snapshotItem.item_id, snapshotItem]),
   );
   const snapshotGeneratedAt = marketSnapshot?.meta.generated_at ?? null;
-
-  const categories = ["All", ...(metadata?.filters.item_subtype ?? [])].filter((value) =>
-    ["All", "Rifles", "Pistols", "Knives", "Gloves", "SMGs", "Heavy"].includes(value),
-  );
 
   const results = (itemsResponse?.items ?? []).map((item) => {
     const snapshotItem = item.item_id ? snapshotItemsById.get(item.item_id) : undefined;
@@ -351,8 +359,7 @@ export async function getSearchPageData(input: {
 
   return {
     metadata,
-    categories,
-    category,
+    filters,
     query: q,
     pagination: itemsResponse?.pagination ?? null,
     results,
