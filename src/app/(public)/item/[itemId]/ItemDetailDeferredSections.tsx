@@ -169,28 +169,67 @@ export async function ItemConditionVariants({
     return null;
   }
 
+  // Group by variant kind so StatTrak / Souvenir / Phases are visually separated.
+  const groupedByKind = new Map<string, typeof siblingVariants>();
+  for (const variant of siblingVariants) {
+    const label = getVariantKindLabel(variant.item);
+    const bucket = groupedByKind.get(label) ?? [];
+    bucket.push(variant);
+    groupedByKind.set(label, bucket);
+  }
+
+  // Within each kind, also group by phase when present.
+  const renderGroups: Array<{ heading: string; rows: typeof siblingVariants }> = [];
+  for (const [kindLabel, variants] of groupedByKind) {
+    const byPhase = new Map<string, typeof siblingVariants>();
+    for (const variant of variants) {
+      const phase = variant.item.phase ?? "";
+      const list = byPhase.get(phase) ?? [];
+      list.push(variant);
+      byPhase.set(phase, list);
+    }
+
+    if (byPhase.size === 1 && byPhase.has("")) {
+      renderGroups.push({ heading: kindLabel, rows: variants });
+    } else {
+      for (const [phase, rows] of byPhase) {
+        renderGroups.push({
+          heading: phase ? `${kindLabel} · ${phase}` : kindLabel,
+          rows,
+        });
+      }
+    }
+  }
+
   return (
     <div className="border-brutal bg-card p-4">
       <div className="mb-3 font-mono text-[10px] tracking-widest text-primary">
         CONDITION VARIANTS
       </div>
-      <div className="space-y-1">
-        {siblingVariants.map((variant) =>
-          variant.item.item_id ? (
-            <Link
-              key={variant.item.item_id}
-              href={`/item/${variant.item.item_id}`}
-              className={`flex items-center justify-between px-2 py-2 font-mono text-xs transition-colors ${
-                variant.item.item_id === currentItemId
-                  ? "bg-primary/10 text-foreground"
-                  : "text-muted-foreground hover:bg-secondary/30"
-              }`}
-            >
-              <span>{variant.item.wear_name ?? variant.item.market_hash_name}</span>
-              <span className="font-bold">{formatPriceMinor(variant.bestAsk)}</span>
-            </Link>
-          ) : null,
-        )}
+      <div className="space-y-4">
+        {renderGroups.map((group) => (
+          <div key={group.heading} className="space-y-1">
+            <div className="mb-1 border-b border-border/60 pb-1 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+              {group.heading}
+            </div>
+            {group.rows.map((variant) =>
+              variant.item.item_id ? (
+                <Link
+                  key={variant.item.item_id}
+                  href={`/item/${variant.item.item_id}`}
+                  className={`flex items-center justify-between px-2 py-2 font-mono text-xs transition-colors ${
+                    variant.item.item_id === currentItemId
+                      ? "bg-primary/10 text-foreground"
+                      : "text-muted-foreground hover:bg-secondary/30"
+                  }`}
+                >
+                  <span>{getVariantWearLabel(variant.item)}</span>
+                  <span className="font-bold">{formatPriceMinor(variant.bestAsk)}</span>
+                </Link>
+              ) : null,
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );
