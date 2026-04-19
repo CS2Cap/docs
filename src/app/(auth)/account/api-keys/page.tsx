@@ -399,15 +399,24 @@ export default function AccountApiKeysPage() {
             <div className="text-center">
               <p className="font-medium text-foreground">No API key yet</p>
               <p className="text-sm text-muted-foreground mt-1">
-                {tier_info.code === "free"
-                  ? "Verify your email to create your first API key."
+                {needsEmail
+                  ? "You need a verified email address before you can issue an API key."
                   : "Create an API key to start using the API."}
               </p>
             </div>
-            <Button onClick={() => setReissueDialogOpen(true)}>
-              <Key className="mr-2 h-4 w-4" />
-              Create Key
-            </Button>
+            {needsEmail ? (
+              <Button asChild>
+                <Link href="/account/settings">
+                  <Key className="mr-2 h-4 w-4" />
+                  Add email in Settings
+                </Link>
+              </Button>
+            ) : (
+              <Button onClick={() => setReissueDialogOpen(true)}>
+                <Key className="mr-2 h-4 w-4" />
+                Create Key
+              </Button>
+            )}
             <Dialog open={reissueDialogOpen} onOpenChange={(open) => {
               setReissueDialogOpen(open);
               if (!open) setNewKey(null);
