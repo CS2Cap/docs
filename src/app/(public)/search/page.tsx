@@ -183,25 +183,32 @@ async function SearchResultsSection({
   });
 
   const totalPages = data.pagination ? Math.max(Math.ceil(data.pagination.total / 24), 1) : 1;
-  const hasPrev = currentPage > 1;
-  const hasNext = currentPage < totalPages;
+  const hasPrev = data.pagination?.has_prev ?? currentPage > 1;
+  const hasNext = data.pagination?.has_next ?? currentPage < totalPages;
+  const isGrouped = data.grouped;
+  const totalLabel = isGrouped ? "SKINS" : "MATCHES";
+  const totalDisplay =
+    data.pagination?.total != null
+      ? `${data.pagination.total.toLocaleString()}${data.scanCapped ? "+" : ""}`
+      : "0";
 
   return (
     <div className="container">
       <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
         <div>
           <div className="font-mono text-[10px] tracking-widest text-primary">
-            {data.pagination?.total.toLocaleString() ?? 0} MATCHES
+            {totalDisplay} {totalLabel}
           </div>
           <div className="font-mono text-xs text-muted-foreground">
             Showing page {currentPage} of {totalPages}
+            {isGrouped ? " • wears collapsed" : null}
           </div>
         </div>
       </div>
 
       <div className="hidden grid-cols-[minmax(0,1.5fr)_140px_110px_120px] gap-4 border-b-2 border-border px-4 py-2 font-mono text-[10px] tracking-widest text-muted-foreground md:grid">
         <div>ITEM</div>
-        <div className="text-right">PRICE</div>
+        <div className="text-right">{isGrouped ? "FROM" : "PRICE"}</div>
         <div className="text-right">24H</div>
         <div className="text-right">VOLUME</div>
       </div>
@@ -213,78 +220,104 @@ async function SearchResultsSection({
           </div>
         </div>
       ) : (
-        data.results.map(({ item, priceUsd, priceChange24hPct, volume24h }) => (
-          <Link
-            key={item.item_id ?? item.market_hash_name}
-            href={item.item_id ? `/item/${item.item_id}` : "/search"}
-            className="block border-b border-border px-4 py-4 transition-colors hover:bg-card/40"
-          >
-            <div className="md:grid md:grid-cols-[minmax(0,1.5fr)_140px_110px_120px] md:items-center md:gap-4">
-              <div className="flex min-w-0 items-center gap-3">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden border-brutal bg-secondary/50">
-                  {item.image_url ? (
-                    <Image
-                      src={item.image_url}
-                      alt={item.market_hash_name}
-                      width={48}
-                      height={48}
-                      className="h-full w-full object-contain p-1"
-                    />
-                  ) : (
-                    <div className="h-4 w-4 bg-primary/30" />
-                  )}
-                </div>
-                <div className="min-w-0">
-                  <div className="truncate font-mono text-sm font-bold text-foreground md:hover:text-primary">
-                    {item.market_hash_name}
-                  </div>
-                  <div className="font-mono text-[10px] text-muted-foreground">
-                    {[item.wear_name, item.rarity_name, item.collection].filter(Boolean).join(" • ") ||
-                      "Catalog item"}
-                  </div>
-                </div>
-                <div className="ml-auto font-mono text-sm font-bold text-foreground md:hidden">
-                  {formatUsdMajor(priceUsd)}
-                </div>
-              </div>
+        data.results.map(
+          ({
+            item,
+            priceUsd,
+            priceChange24hPct,
+            volume24h,
+            displayName,
+            variantCount,
+            wearsAvailable,
+          }) => {
+            const subtitleParts: string[] = [];
+            if (isGrouped && variantCount > 1) {
+              const wearLabel =
+                wearsAvailable.length > 0
+                  ? `${wearsAvailable.length} wear${wearsAvailable.length === 1 ? "" : "s"}`
+                  : `${variantCount} variants`;
+              subtitleParts.push(wearLabel);
+            } else if (!isGrouped && item.wear_name) {
+              subtitleParts.push(item.wear_name);
+            }
+            if (item.rarity_name) subtitleParts.push(item.rarity_name);
+            if (item.collection) subtitleParts.push(item.collection);
+            const subtitle = subtitleParts.join(" • ") || "Catalog item";
 
-              <div className="hidden font-mono text-sm font-bold text-foreground md:block md:text-right">
-                {formatUsdMajor(priceUsd)}
-              </div>
-
-              <div
-                className={`hidden font-mono text-sm font-bold md:block md:text-right ${priceChangeClass(
-                  priceChange24hPct,
-                )}`}
+            return (
+              <Link
+                key={item.item_id ?? item.market_hash_name}
+                href={item.item_id ? `/item/${item.item_id}` : "/search"}
+                className="block border-b border-border px-4 py-4 transition-colors hover:bg-card/40"
               >
-                {formatSignedPercent(priceChange24hPct)}
-              </div>
+                <div className="md:grid md:grid-cols-[minmax(0,1.5fr)_140px_110px_120px] md:items-center md:gap-4">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden border-brutal bg-secondary/50">
+                      {item.image_url ? (
+                        <Image
+                          src={item.image_url}
+                          alt={displayName}
+                          width={48}
+                          height={48}
+                          className="h-full w-full object-contain p-1"
+                        />
+                      ) : (
+                        <div className="h-4 w-4 bg-primary/30" />
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="truncate font-mono text-sm font-bold text-foreground md:hover:text-primary">
+                        {displayName}
+                      </div>
+                      <div className="font-mono text-[10px] text-muted-foreground">{subtitle}</div>
+                    </div>
+                    <div className="ml-auto font-mono text-sm font-bold text-foreground md:hidden">
+                      {formatUsdMajor(priceUsd)}
+                    </div>
+                  </div>
 
-              <div className="hidden font-mono text-sm text-muted-foreground md:block md:text-right">
-                {formatWholeNumber(volume24h)}
-              </div>
-            </div>
+                  <div className="hidden font-mono text-sm font-bold text-foreground md:block md:text-right">
+                    {isGrouped && variantCount > 1 ? (
+                      <span className="text-muted-foreground">from </span>
+                    ) : null}
+                    {formatUsdMajor(priceUsd)}
+                  </div>
 
-            <div className="mt-3 grid grid-cols-2 gap-4 md:hidden">
-              <div>
-                <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
-                  24H
+                  <div
+                    className={`hidden font-mono text-sm font-bold md:block md:text-right ${priceChangeClass(
+                      priceChange24hPct,
+                    )}`}
+                  >
+                    {formatSignedPercent(priceChange24hPct)}
+                  </div>
+
+                  <div className="hidden font-mono text-sm text-muted-foreground md:block md:text-right">
+                    {formatWholeNumber(volume24h)}
+                  </div>
                 </div>
-                <div className={`font-mono text-sm font-bold ${priceChangeClass(priceChange24hPct)}`}>
-                  {formatSignedPercent(priceChange24hPct)}
+
+                <div className="mt-3 grid grid-cols-2 gap-4 md:hidden">
+                  <div>
+                    <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
+                      24H
+                    </div>
+                    <div className={`font-mono text-sm font-bold ${priceChangeClass(priceChange24hPct)}`}>
+                      {formatSignedPercent(priceChange24hPct)}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
+                      VOLUME
+                    </div>
+                    <div className="font-mono text-sm text-muted-foreground">
+                      {formatWholeNumber(volume24h)}
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div className="text-right">
-                <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
-                  VOLUME
-                </div>
-                <div className="font-mono text-sm text-muted-foreground">
-                  {formatWholeNumber(volume24h)}
-                </div>
-              </div>
-            </div>
-          </Link>
-        ))
+              </Link>
+            );
+          },
+        )
       )}
 
       <div className="mt-8 flex items-center justify-between">
