@@ -7,6 +7,7 @@ import {
 import { buildQuery } from "./shared";
 import {
   getCachedMarketItemsSnapshot,
+  refreshMarketItemsSnapshotInBackground,
   setCachedMarketItemsSnapshot,
 } from "../upstash-cache";
 import type {
