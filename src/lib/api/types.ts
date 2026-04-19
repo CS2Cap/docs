@@ -685,6 +685,20 @@ export interface CheckoutResponse {
   checkout_url: string;
 }
 
+export interface CryptoCheckoutRequest {
+  tier_code: string;
+  billing_interval: "monthly" | "quarterly";
+  success_url: string;
+  cancel_url: string;
+}
+
+export interface CryptoCheckoutResponse {
+  checkout_url: string;
+  provider: string;
+  tier_code: string;
+  billing_interval: string;
+}
+
 export interface PortalResponse {
   portal_url: string;
 }
