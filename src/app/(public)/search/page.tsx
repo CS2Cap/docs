@@ -359,7 +359,15 @@ async function FilterControls({
 
       <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         {FILTER_FIELDS.map((field) => {
-          const options = meta?.[field.metadataKey] ?? [];
+          const rawOptions = meta?.[field.metadataKey] ?? [];
+          const sortedKeys: Array<keyof SearchFilterValues> = [
+            "item_type",
+            "item_subtype",
+            "weapon_type",
+          ];
+          const options = sortedKeys.includes(field.key)
+            ? [...rawOptions].sort((a, b) => a.localeCompare(b))
+            : rawOptions;
           const currentValue = filters[field.key] ?? "";
 
           return (
