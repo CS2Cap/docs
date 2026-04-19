@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import {
   Area,
   AreaChart,
+  Bar,
+  BarChart,
   CartesianGrid,
   ResponsiveContainer,
   Tooltip,
@@ -15,6 +17,8 @@ type HistoryPoint = {
   timestamp: number;
   isoTime: string;
   price: number;
+  volume?: number;
+  quotes?: number;
   tooltipLabel?: string;
 };
 
@@ -27,6 +31,12 @@ const RANGES = [
 ] as const;
 
 type RangeId = (typeof RANGES)[number]["id"];
+
+function formatCompact(value: number) {
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
+  if (value >= 1_000) return `${(value / 1_000).toFixed(1)}K`;
+  return value.toLocaleString();
+}
 
 export function ItemPriceHistoryChart({
   points,
@@ -54,7 +64,8 @@ export function ItemPriceHistoryChart({
     const low = filteredPoints.reduce((min, p) => Math.min(min, p.price), Infinity);
     const change = last - first;
     const changePct = first > 0 ? (change / first) * 100 : 0;
-    return { first, last, high, low, change, changePct };
+    const totalVolume = filteredPoints.reduce((sum, p) => sum + (p.volume ?? 0), 0);
+    return { first, last, high, low, change, changePct, totalVolume };
   }, [filteredPoints]);
 
   if (points.length === 0) {
@@ -71,6 +82,7 @@ export function ItemPriceHistoryChart({
       : 0;
   const dayMs = 24 * 60 * 60 * 1000;
   const isPositive = (stats?.change ?? 0) >= 0;
+  const hasVolume = filteredPoints.some((p) => (p.volume ?? 0) > 0);
 
   function formatAxisTick(value: number) {
     const date = new Date(value);
@@ -102,12 +114,13 @@ export function ItemPriceHistoryChart({
                 }`}
               >
                 {isPositive ? "+" : ""}
-                {formatPrice(stats.change).replace("$", "$")} (
+                {formatPrice(stats.change)} (
                 {isPositive ? "+" : ""}
                 {stats.changePct.toFixed(2)}%)
               </div>
               <div className="font-mono text-[10px] text-muted-foreground">
                 H {formatPrice(stats.high)} · L {formatPrice(stats.low)}
+                {hasVolume ? <> · VOL {formatCompact(stats.totalVolume)}</> : null}
               </div>
             </>
           ) : null}
@@ -182,7 +195,14 @@ export function ItemPriceHistoryChart({
                 fontFamily: "var(--font-mono, monospace)",
                 fontSize: 12,
               }}
-              formatter={(value: number) => [formatPrice(value), seriesLabel]}
+              formatter={(value: number, _name, item) => {
+                const payload = item?.payload as HistoryPoint | undefined;
+                const vol = payload?.volume ?? 0;
+                return [
+                  `${formatPrice(value)}${vol > 0 ? `  ·  Vol ${formatCompact(vol)}` : ""}`,
+                  seriesLabel,
+                ];
+              }}
               labelFormatter={(value, payload) =>
                 payload?.[0]?.payload?.tooltipLabel ??
                 new Date(Number(value)).toLocaleDateString("en-US", {
@@ -203,6 +223,56 @@ export function ItemPriceHistoryChart({
           </AreaChart>
         </ResponsiveContainer>
       </div>
+
+      {hasVolume ? (
+        <div className="space-y-1">
+          <div className="flex items-center justify-between font-mono text-[10px] tracking-widest text-muted-foreground">
+            <span>VOLUME</span>
+            <span>SALES PER PERIOD</span>
+          </div>
+          <div className="h-20 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={filteredPoints} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+                <XAxis
+                  dataKey="timestamp"
+                  type="number"
+                  scale="time"
+                  domain={["dataMin", "dataMax"]}
+                  hide
+                />
+                <YAxis
+                  tickFormatter={(value) => formatCompact(Number(value))}
+                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
+                  tickLine={false}
+                  axisLine={false}
+                  width={56}
+                  domain={[0, "auto"]}
+                />
+                <Tooltip
+                  cursor={{ fill: "hsl(var(--primary) / 0.08)" }}
+                  contentStyle={{
+                    background: "hsl(var(--card))",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: 0,
+                    fontFamily: "var(--font-mono, monospace)",
+                    fontSize: 12,
+                  }}
+                  formatter={(value: number) => [formatCompact(value), "Volume"]}
+                  labelFormatter={(value, payload) =>
+                    payload?.[0]?.payload?.tooltipLabel ??
+                    new Date(Number(value)).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })
+                  }
+                />
+                <Bar dataKey="volume" fill="hsl(var(--primary))" fillOpacity={0.6} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -40,6 +40,8 @@ function buildPriceCandleSeries(priceCandles: PriceCandlesPage | null) {
       timestamp: candle.t * 1000,
       isoTime: date.toISOString(),
       price: candle.c,
+      volume: candle.v ?? 0,
+      quotes: candle.q ?? 0,
       tooltipLabel: date.toLocaleDateString("en-US", {
         month: "short",
         day: "numeric",
