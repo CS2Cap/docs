@@ -7,13 +7,32 @@ const UPSTASH_REDIS_REST_URL = process.env.UPSTASH_REDIS_REST_URL;
 const UPSTASH_REDIS_REST_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
 
 const SNAPSHOT_CACHE_PREFIX = "market-snapshot:v1";
-const SNAPSHOT_CACHE_TTL_SECONDS = 60 * 60;
+// Keep entries in Redis for 24h so we can always serve a stale copy while we refresh in the background.
+const SNAPSHOT_CACHE_TTL_SECONDS = 60 * 60 * 24;
+// Consider the snapshot "fresh" for 5 minutes — beyond that we revalidate in the background (SWR).
+const SNAPSHOT_FRESH_SECONDS = 60 * 5;
 const SNAPSHOT_CHUNK_SIZE = 4_000_000;
+
+// In-memory L1 cache so hot requests on the same server instance skip the Upstash roundtrip entirely.
+const MEMORY_CACHE_TTL_MS = 60 * 1000;
+type MemoryCacheEntry = {
+  snapshot: MarketItemsSnapshotResponse;
+  cachedAt: number;
+  expiresAt: number;
+};
+const memoryCache = new Map<MarketTimeframe, MemoryCacheEntry>();
+const inflightRefreshes = new Map<MarketTimeframe, Promise<void>>();
 
 type SnapshotCacheMeta = {
   encoding: "gzip-base64";
   chunkCount: number;
   cachedAt: string;
+};
+
+export type CachedSnapshotResult = {
+  snapshot: MarketItemsSnapshotResponse;
+  cachedAt: number;
+  isStale: boolean;
 };
 
 function hasUpstashConfig() {
@@ -140,7 +159,21 @@ function splitIntoChunks(value: string, chunkSize: number) {
   return chunks;
 }
 
-export async function getCachedMarketItemsSnapshot(timeframe: MarketTimeframe) {
+export async function getCachedMarketItemsSnapshot(
+  timeframe: MarketTimeframe,
+): Promise<CachedSnapshotResult | null> {
+  // L1: in-memory
+  const memEntry = memoryCache.get(timeframe);
+  const now = Date.now();
+  if (memEntry && memEntry.expiresAt > now) {
+    return {
+      snapshot: memEntry.snapshot,
+      cachedAt: memEntry.cachedAt,
+      isStale: now - memEntry.cachedAt > SNAPSHOT_FRESH_SECONDS * 1000,
+    };
+  }
+
+  // L2: Upstash
   const rawMeta = await upstashGet(getSnapshotMetaKey(timeframe));
   if (!rawMeta) {
     return null;
@@ -164,7 +197,21 @@ export async function getCachedMarketItemsSnapshot(timeframe: MarketTimeframe) {
     const compressedPayload = Buffer.from(encodedPayload, "base64");
     const decompressedPayload = gunzipSync(compressedPayload).toString("utf8");
 
-    return JSON.parse(decompressedPayload) as MarketItemsSnapshotResponse;
+    const snapshot = JSON.parse(decompressedPayload) as MarketItemsSnapshotResponse;
+    const cachedAt = new Date(meta.cachedAt).getTime() || now;
+
+    // Promote to L1.
+    memoryCache.set(timeframe, {
+      snapshot,
+      cachedAt,
+      expiresAt: now + MEMORY_CACHE_TTL_MS,
+    });
+
+    return {
+      snapshot,
+      cachedAt,
+      isStale: now - cachedAt > SNAPSHOT_FRESH_SECONDS * 1000,
+    };
   } catch {
     return null;
   }
@@ -174,6 +221,13 @@ export async function setCachedMarketItemsSnapshot(
   timeframe: MarketTimeframe,
   snapshot: MarketItemsSnapshotResponse,
 ) {
+  const now = Date.now();
+  memoryCache.set(timeframe, {
+    snapshot,
+    cachedAt: now,
+    expiresAt: now + MEMORY_CACHE_TTL_MS,
+  });
+
   const rawPayload = JSON.stringify(snapshot);
   const encodedPayload = gzipSync(rawPayload).toString("base64");
   const chunks = splitIntoChunks(encodedPayload, SNAPSHOT_CHUNK_SIZE);
@@ -201,4 +255,24 @@ export async function setCachedMarketItemsSnapshot(
     JSON.stringify(meta),
     SNAPSHOT_CACHE_TTL_SECONDS,
   );
+}
+
+/**
+ * Coalesce concurrent background refreshes so we never hit the upstream more than once
+ * per timeframe at a time. The provided refresher is responsible for actually fetching
+ * the snapshot and persisting it via setCachedMarketItemsSnapshot.
+ */
+export function refreshMarketItemsSnapshotInBackground(
+  timeframe: MarketTimeframe,
+  refresher: () => Promise<void>,
+) {
+  if (inflightRefreshes.has(timeframe)) {
+    return;
+  }
+
+  const promise = refresher().finally(() => {
+    inflightRefreshes.delete(timeframe);
+  });
+
+  inflightRefreshes.set(timeframe, promise);
 }
