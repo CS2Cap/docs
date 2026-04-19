@@ -298,7 +298,7 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                   </span>
                 </div>
 
-                <div className="hidden grid-cols-[40px_minmax(0,1.4fr)_110px_110px_130px_120px_120px] gap-3 border-b border-border px-4 py-2 font-mono text-[9px] tracking-widest text-muted-foreground md:grid">
+                <div className="hidden grid-cols-[44px_minmax(140px,1.7fr)_72px_88px_minmax(120px,1fr)_72px_88px] gap-3 border-b border-border px-4 py-2 font-mono text-[9px] tracking-widest text-muted-foreground md:grid">
                   <div>#</div>
                   <div>PROVIDER</div>
                   <div className="text-right">QTY</div>
