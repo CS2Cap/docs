@@ -6,6 +6,8 @@ import {
   formatPriceMinor,
   getProvider,
   getSiblingVariants,
+  getVariantKindLabel,
+  getVariantWearLabel,
   providerLabel,
 } from "@/lib/api";
 import { serverApi } from "@/lib/api/server";
