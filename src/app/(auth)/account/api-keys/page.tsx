@@ -134,13 +134,13 @@ export default function AccountApiKeysPage() {
     setResetIpMessage(null);
     try {
       await webApi.resetAPIKeyIP();
-      setResetIpMessage("IP restriction removed.");
+      setResetIpMessage("IP rebound. Your next request will set the new bound IP.");
       await refetchSession();
     } catch (error: unknown) {
       setResetIpMessage(
         error && typeof error === "object" && "message" in error
           ? String((error as { message: string }).message)
-          : "Failed to remove IP restriction.",
+          : "Failed to rebind IP.",
       );
     } finally {
       setResettingIp(false);
