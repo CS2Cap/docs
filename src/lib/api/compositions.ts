@@ -38,6 +38,16 @@ const SEARCH_CATEGORY_MAP: Record<string, string | undefined> = {
 };
 
 const SEARCH_PAGE_SIZE = 24;
+const SEARCH_GROUP_FETCH_LIMIT = 200;
+const SEARCH_GROUP_MAX_SCAN = 1000;
+const WEAR_ORDER: Record<string, number> = {
+  "Factory New": 0,
+  "Minimal Wear": 1,
+  "Field-Tested": 2,
+  "Well-Worn": 3,
+  "Battle-Scarred": 4,
+};
+const WEAR_SUFFIX_PATTERN = /\s*\((Factory New|Minimal Wear|Field-Tested|Well-Worn|Battle-Scarred)\)\s*$/;
 const LANDING_TICKER_ITEM_IDS = [
   9879,
   12199,
@@ -309,9 +319,10 @@ export async function getSearchPageData(input: {
 }) {
   const { q = "", page = 1, filters = {} } = input;
   const limit = SEARCH_PAGE_SIZE;
-  const offset = Math.max(page - 1, 0) * limit;
+  const currentPage = Math.max(page, 1);
+  const offset = (currentPage - 1) * limit;
 
-  const queryParams = {
+  const baseQueryParams = {
     q: q || undefined,
     item_type: filters.item_type || undefined,
     item_subtype: filters.item_subtype || undefined,
@@ -319,51 +330,221 @@ export async function getSearchPageData(input: {
     wear_name: filters.wear_name || undefined,
     rarity_name: filters.rarity_name || undefined,
     collection: filters.collection || undefined,
-    limit,
-    offset,
   };
 
-  const [metadata, initialItemsResponse, marketSnapshot] = await Promise.all([
+  // When the user explicitly filters by wear, skip grouping — they asked for a specific variant.
+  const shouldGroup = !filters.wear_name;
+
+  const [metadata, marketSnapshot] = await Promise.all([
     serverApi.getItemsMetadata(300),
-    serverApi.getItems(buildQuery(queryParams), 60),
     serverApi.getMarketItemsSnapshot({ timeframe: "24h" }, 30),
   ]);
-
-  const itemsResponse =
-    (initialItemsResponse?.items.length ?? 0) > 0 || !q
-      ? initialItemsResponse
-      : await getForgivingSearchItems({
-          q,
-          itemSubtype: filters.item_subtype,
-          limit,
-          offset,
-        });
 
   const snapshotItemsById = new Map(
     (marketSnapshot?.data.items ?? []).map((snapshotItem) => [snapshotItem.item_id, snapshotItem]),
   );
   const snapshotGeneratedAt = marketSnapshot?.meta.generated_at ?? null;
 
-  const results = (itemsResponse?.items ?? []).map((item) => {
-    const snapshotItem = item.item_id ? snapshotItemsById.get(item.item_id) : undefined;
-    const summary = snapshotItem?.summary;
+  if (!shouldGroup) {
+    // Flat path — preserve previous behaviour
+    const itemsResponseRaw = await serverApi.getItems(
+      buildQuery({ ...baseQueryParams, limit, offset }),
+      60,
+    );
+
+    const itemsResponse =
+      (itemsResponseRaw?.items.length ?? 0) > 0 || !q
+        ? itemsResponseRaw
+        : await getForgivingSearchItems({
+            q,
+            itemSubtype: filters.item_subtype,
+            limit,
+            offset,
+          });
+
+    const results = (itemsResponse?.items ?? []).map((item) => {
+      const snapshotItem = item.item_id ? snapshotItemsById.get(item.item_id) : undefined;
+      const summary = snapshotItem?.summary;
+
+      return {
+        item,
+        priceUsd: summary?.best_ask_usd ?? null,
+        priceChange24hPct: summary?.price_rate_24h ?? null,
+        volume24h: summary?.total_volume_24h ?? null,
+        metricsAsOf: summary?.liquidity_last_updated ?? snapshotGeneratedAt,
+        displayName: item.market_hash_name,
+        variantCount: 1,
+        wearsAvailable: item.wear_name ? [item.wear_name] : [],
+      };
+    });
 
     return {
-      item,
-      priceUsd: summary?.best_ask_usd ?? null,
-      priceChange24hPct: summary?.price_rate_24h ?? null,
-      volume24h: summary?.total_volume_24h ?? null,
-      metricsAsOf: summary?.liquidity_last_updated ?? snapshotGeneratedAt,
+      metadata,
+      filters,
+      query: q,
+      pagination: itemsResponse?.pagination ?? null,
+      results,
+      grouped: false as const,
+      scanCapped: false,
+    };
+  }
+
+  // Grouped path — over-fetch, group by skin family, then paginate the groups.
+  const scanned: ItemOut[] = [];
+  let scanOffset = 0;
+  let scanCapped = false;
+  let lastResponseHadNext = false;
+
+  while (scanned.length < SEARCH_GROUP_MAX_SCAN) {
+    const remaining = SEARCH_GROUP_MAX_SCAN - scanned.length;
+    const fetchLimit = Math.min(SEARCH_GROUP_FETCH_LIMIT, remaining);
+    const response = await serverApi.getItems(
+      buildQuery({ ...baseQueryParams, limit: fetchLimit, offset: scanOffset }),
+      60,
+    );
+
+    if (!response || response.items.length === 0) {
+      break;
+    }
+
+    scanned.push(...response.items);
+    scanOffset += response.items.length;
+    lastResponseHadNext = response.pagination?.has_next ?? false;
+
+    if (!lastResponseHadNext) {
+      break;
+    }
+
+    if (scanned.length >= SEARCH_GROUP_MAX_SCAN) {
+      scanCapped = true;
+      break;
+    }
+  }
+
+  // Forgiving-search fallback when nothing came back at all.
+  let usedFallback = false;
+  if (scanned.length === 0 && q) {
+    const fallback = await getForgivingSearchItems({
+      q,
+      itemSubtype: filters.item_subtype,
+      limit: SEARCH_GROUP_FETCH_LIMIT,
+      offset: 0,
+    });
+    if (fallback?.items.length) {
+      scanned.push(...fallback.items);
+      usedFallback = true;
+    }
+  }
+
+  const groups = groupSearchResults(scanned);
+  const totalGroups = groups.length;
+  const pagedGroups = groups.slice(offset, offset + limit);
+
+  const results = pagedGroups.map((group) => {
+    const variantSummaries = group.variants
+      .map((variant) =>
+        variant.item_id ? snapshotItemsById.get(variant.item_id)?.summary ?? null : null,
+      )
+      .filter((summary): summary is NonNullable<typeof summary> => summary != null);
+
+    const lowestAsk = variantSummaries
+      .map((summary) => (summary.best_ask_usd != null ? Number(summary.best_ask_usd) : null))
+      .filter((value): value is number => value != null && Number.isFinite(value))
+      .reduce<number | null>((min, value) => (min == null || value < min ? value : min), null);
+
+    const totalVolume = variantSummaries.reduce(
+      (sum, summary) => sum + (summary.total_volume_24h ?? 0),
+      0,
+    );
+
+    const representativeSummary = group.representative.item_id
+      ? snapshotItemsById.get(group.representative.item_id)?.summary
+      : undefined;
+
+    const wearsAvailable = group.variants
+      .map((variant) => variant.wear_name)
+      .filter((wear): wear is string => Boolean(wear));
+    const uniqueWears = [...new Set(wearsAvailable)].sort(
+      (a, b) => (WEAR_ORDER[a] ?? 99) - (WEAR_ORDER[b] ?? 99),
+    );
+
+    return {
+      item: group.representative,
+      priceUsd: lowestAsk != null ? lowestAsk.toFixed(2) : null,
+      priceChange24hPct: representativeSummary?.price_rate_24h ?? null,
+      volume24h: totalVolume > 0 ? totalVolume : null,
+      metricsAsOf: representativeSummary?.liquidity_last_updated ?? snapshotGeneratedAt,
+      displayName: stripWearSuffix(group.representative.market_hash_name),
+      variantCount: group.variants.length,
+      wearsAvailable: uniqueWears,
     };
   });
+
+  const pagination: PaginationMeta = {
+    limit,
+    offset,
+    total: totalGroups,
+    has_next:
+      !usedFallback && (offset + limit < totalGroups || (scanCapped && lastResponseHadNext)),
+    has_prev: offset > 0,
+  };
 
   return {
     metadata,
     filters,
     query: q,
-    pagination: itemsResponse?.pagination ?? null,
+    pagination,
     results,
+    grouped: true as const,
+    scanCapped,
   };
+}
+
+function stripWearSuffix(name: string): string {
+  return name.replace(WEAR_SUFFIX_PATTERN, "");
+}
+
+type SearchGroup = {
+  key: string;
+  representative: ItemOut;
+  variants: ItemOut[];
+};
+
+function groupSearchResults(items: ItemOut[]): SearchGroup[] {
+  const groupsByKey = new Map<string, SearchGroup>();
+  const orderedKeys: string[] = [];
+
+  for (const item of items) {
+    const hasFamily = Boolean(item.base_name && item.skin_name);
+    const key = hasFamily
+      ? [
+          item.base_name,
+          item.skin_name,
+          item.is_stattrak ? "st" : "",
+          item.is_souvenir ? "sv" : "",
+          item.phase ?? "",
+        ].join("|")
+      : `mhn:${item.market_hash_name}`;
+
+    let group = groupsByKey.get(key);
+    if (!group) {
+      group = { key, representative: item, variants: [item] };
+      groupsByKey.set(key, group);
+      orderedKeys.push(key);
+      continue;
+    }
+
+    group.variants.push(item);
+
+    // Pick the variant closest to FN as the representative.
+    const currentRank = WEAR_ORDER[group.representative.wear_name ?? ""] ?? 99;
+    const candidateRank = WEAR_ORDER[item.wear_name ?? ""] ?? 99;
+    if (candidateRank < currentRank) {
+      group.representative = item;
+    }
+  }
+
+  return orderedKeys.map((key) => groupsByKey.get(key)!);
 }
 
 function buildPriceHistorySeries(priceHistory: PriceSnapshotPage | null) {
