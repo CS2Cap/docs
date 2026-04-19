@@ -132,6 +132,39 @@ export function getCoverageSummary(
   };
 }
 
+type VariantKind = "normal" | "stattrak" | "souvenir";
+
+function getVariantKind(item: ItemOut): VariantKind {
+  if (item.is_stattrak) return "stattrak";
+  if (item.is_souvenir) return "souvenir";
+  return "normal";
+}
+
+const VARIANT_KIND_ORDER: Record<VariantKind, number> = {
+  normal: 0,
+  stattrak: 1,
+  souvenir: 2,
+};
+
+const VARIANT_KIND_LABEL: Record<VariantKind, string> = {
+  normal: "Normal",
+  stattrak: "StatTrak™",
+  souvenir: "Souvenir",
+};
+
+export function getVariantKindLabel(item: ItemOut): string {
+  return VARIANT_KIND_LABEL[getVariantKind(item)];
+}
+
+export function getVariantWearLabel(item: ItemOut): string {
+  const wear = item.wear_name ?? "";
+  const phase = item.phase ?? "";
+  if (!wear && !phase) {
+    return item.market_hash_name;
+  }
+  return phase ? `${wear || "Variant"} · ${phase}` : wear;
+}
+
 export function getSiblingVariants(
   allItems: ItemOut[],
   currentItem: ItemOut,
@@ -155,6 +188,18 @@ export function getSiblingVariants(
       return { item, bestAsk: bestQuote?.lowest_ask ?? null };
     })
     .sort((left, right) => {
+      // Group by variant kind first (Normal → StatTrak → Souvenir)
+      const kindDiff =
+        VARIANT_KIND_ORDER[getVariantKind(left.item)] -
+        VARIANT_KIND_ORDER[getVariantKind(right.item)];
+      if (kindDiff !== 0) return kindDiff;
+
+      // Then by phase (alphabetical; empty phase comes first)
+      const leftPhase = left.item.phase ?? "";
+      const rightPhase = right.item.phase ?? "";
+      if (leftPhase !== rightPhase) return leftPhase.localeCompare(rightPhase);
+
+      // Then by wear (FN → BS)
       const leftWearIndex = WEAR_ORDER.indexOf(left.item.wear_name ?? "");
       const rightWearIndex = WEAR_ORDER.indexOf(right.item.wear_name ?? "");
       return leftWearIndex - rightWearIndex;
