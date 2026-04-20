@@ -311,8 +311,8 @@ export async function ItemMarketInsightsSection({
         {
           label: "LIQUIDITY",
           value:
-            analyticsSummary?.liquidity_score != null
-              ? `${analyticsSummary.liquidity_score}/100`
+            analyticsSummary?.liquidity != null
+              ? `${analyticsSummary.liquidity}/100`
               : "N/A",
           detail: "How easy this item is to sell",
         },
