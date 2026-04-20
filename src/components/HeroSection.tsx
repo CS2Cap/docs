@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { ExternalLink } from "lucide-react";
 import { formatCompact } from "@/lib/api";
 
 export function HeroSection({
@@ -53,9 +54,10 @@ export function HeroSection({
                 href="https://docs.cs2cap.com/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="border-brutal text-foreground font-mono text-sm font-bold px-8 py-3 brutalist-hover tracking-wider hover:border-primary transition-colors inline-block"
+                className="border-brutal text-foreground font-mono text-sm font-bold px-8 py-3 brutalist-hover tracking-wider hover:border-primary transition-colors inline-flex items-center gap-2"
               >
                 VIEW DOCS
+                <ExternalLink className="h-3.5 w-3.5" strokeWidth={2} aria-label="Opens in new tab" />
               </a>
             </div>
 

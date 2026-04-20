@@ -239,9 +239,10 @@ export async function SeoLandingPage({ config }: { config: SeoPageConfig }) {
                     href={content.heroCtaUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="border-2 border-primary bg-primary px-8 py-3 font-mono text-sm font-bold tracking-wider text-primary-foreground brutalist-hover"
+                    className="border-2 border-primary bg-primary px-8 py-3 font-mono text-sm font-bold tracking-wider text-primary-foreground brutalist-hover inline-flex items-center gap-2"
                   >
-                    VIEW API REFERENCE ↗
+                    VIEW API REFERENCE
+                    <ExternalLink className="h-3.5 w-3.5" strokeWidth={2} aria-label="Opens in new tab" />
                   </a>
                 ) : (
                   <Link

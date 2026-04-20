@@ -262,6 +262,7 @@ export default function AccountBillingPage() {
                     rel="noopener noreferrer"
                   >
                     Compare Plans
+                    <ExternalLink className="ml-2 h-4 w-4" aria-label="Opens in new tab" />
                   </a>
                 </Button>
               )}
