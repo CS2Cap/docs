@@ -19,6 +19,7 @@ import {
   Boxes,
   Activity,
   Wallet,
+  ExternalLink,
   type LucideIcon,
 } from "lucide-react";
 import { FooterSection } from "@/components/FooterSection";
