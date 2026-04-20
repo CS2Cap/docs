@@ -256,7 +256,13 @@ export default function AccountBillingPage() {
                 </Button>
               ) : (
                 <Button variant="outline" asChild>
-                  <Link href="/api-info#pricing">Compare Plans</Link>
+                  <a
+                    href="https://docs.cs2cap.com/pricing/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Compare Plans
+                  </a>
                 </Button>
               )}
             </div>
