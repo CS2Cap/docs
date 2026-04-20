@@ -76,7 +76,9 @@ export function HeroSection({
           </div>
 
           {/* Hero visual */}
-          <div className="hidden lg:block lg:col-span-5 animate-fade-in-up" style={{ animationDelay: "0.25s" }}>
+          <div className="hidden lg:block lg:col-span-5 animate-fade-in-up relative" style={{ animationDelay: "0.25s" }}>
+            {/* ambient glow behind the image */}
+            <div className="absolute inset-0 -z-10 blur-3xl opacity-30 bg-primary rounded-full scale-75 translate-x-8" />
             <Image
               src="/assets/hero-market-card.png"
               alt="CS2 market analytics inspect panel showing AWP Asiimov with live prices, bids, and sparkline"
@@ -84,6 +86,13 @@ export function HeroSection({
               height={1025}
               priority
               className="h-auto w-full select-none pointer-events-none"
+              style={{
+                maskImage: "linear-gradient(to right, transparent 0%, black 25%), linear-gradient(to bottom, black 70%, transparent 100%)",
+                maskComposite: "intersect",
+                WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 25%), linear-gradient(to bottom, black 70%, transparent 100%)",
+                WebkitMaskComposite: "source-in",
+                filter: "drop-shadow(0 0 40px color-mix(in srgb, var(--color-primary, #3b82f6) 40%, transparent))",
+              }}
             />
           </div>
         </div>
