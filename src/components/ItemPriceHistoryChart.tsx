@@ -144,8 +144,8 @@ export function ItemPriceHistoryChart({
         </div>
       </div>
 
-      <div className="h-64 w-full">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="h-64 w-full min-w-0">
+        <ResponsiveContainer width="100%" height="100%" minWidth={0}>
           <AreaChart data={filteredPoints} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="priceFill" x1="0" y1="0" x2="0" y2="1">
@@ -230,8 +230,8 @@ export function ItemPriceHistoryChart({
             <span>VOLUME</span>
             <span>SALES PER PERIOD</span>
           </div>
-          <div className="h-20 w-full">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-20 w-full min-w-0">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
               <BarChart data={filteredPoints} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
                 <XAxis
                   dataKey="timestamp"
