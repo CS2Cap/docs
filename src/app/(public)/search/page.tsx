@@ -128,7 +128,7 @@ function SearchResultsFallback({ currentPage }: { currentPage: number }) {
         </div>
       </div>
 
-      <div className="hidden grid-cols-[minmax(0,1.5fr)_140px_110px_120px] gap-4 border-b-2 border-border px-4 py-2 md:grid">
+      <div className="hidden grid-cols-[minmax(0,1.5fr)_160px_130px_140px] gap-4 border-b-2 border-border px-6 py-3 md:grid">
         <div className="h-3 w-16 animate-pulse rounded-sm bg-secondary/70" />
         <div className="h-3 w-12 animate-pulse justify-self-end rounded-sm bg-secondary/70" />
         <div className="h-3 w-10 animate-pulse justify-self-end rounded-sm bg-secondary/70" />
@@ -137,20 +137,20 @@ function SearchResultsFallback({ currentPage }: { currentPage: number }) {
 
       <div>
         {Array.from({ length: 8 }).map((_, index) => (
-          <div key={index} className="border-b border-border px-4 py-4">
-            <div className="md:grid md:grid-cols-[minmax(0,1.5fr)_140px_110px_120px] md:items-center md:gap-4">
-              <div className="flex min-w-0 items-center gap-3">
-                <div className="h-12 w-12 animate-pulse rounded-sm bg-secondary/70" />
+          <div key={index} className="border-b border-border px-6 py-5">
+            <div className="md:grid md:grid-cols-[minmax(0,1.5fr)_160px_130px_140px] md:items-center md:gap-4">
+              <div className="flex min-w-0 items-center gap-4">
+                <div className="h-16 w-16 animate-pulse rounded-sm bg-secondary/70" />
                 <div className="min-w-0 flex-1">
-                  <div className="h-4 w-full max-w-md animate-pulse rounded-sm bg-secondary/70" />
+                  <div className="h-5 w-full max-w-md animate-pulse rounded-sm bg-secondary/70" />
                   <div className="mt-2 h-3 w-40 animate-pulse rounded-sm bg-secondary/70" />
                 </div>
-                <div className="h-4 w-16 animate-pulse rounded-sm bg-secondary/70 md:hidden" />
+                <div className="h-5 w-16 animate-pulse rounded-sm bg-secondary/70 md:hidden" />
               </div>
 
-              <div className="mt-3 hidden h-4 w-16 animate-pulse justify-self-end rounded-sm bg-secondary/70 md:block md:mt-0" />
-              <div className="mt-3 hidden h-4 w-12 animate-pulse justify-self-end rounded-sm bg-secondary/70 md:block md:mt-0" />
-              <div className="mt-3 hidden h-4 w-14 animate-pulse justify-self-end rounded-sm bg-secondary/70 md:block md:mt-0" />
+              <div className="mt-3 hidden h-5 w-16 animate-pulse justify-self-end rounded-sm bg-secondary/70 md:block md:mt-0" />
+              <div className="mt-3 hidden h-5 w-12 animate-pulse justify-self-end rounded-sm bg-secondary/70 md:block md:mt-0" />
+              <div className="mt-3 hidden h-5 w-14 animate-pulse justify-self-end rounded-sm bg-secondary/70 md:block md:mt-0" />
             </div>
           </div>
         ))}
@@ -206,7 +206,7 @@ async function SearchResultsSection({
         </div>
       </div>
 
-      <div className="hidden grid-cols-[minmax(0,1.5fr)_140px_110px_120px] gap-4 border-b-2 border-border px-4 py-2 font-mono text-[10px] tracking-widest text-muted-foreground md:grid">
+      <div className="hidden grid-cols-[minmax(0,1.5fr)_160px_130px_140px] gap-4 border-b-2 border-border px-6 py-3 font-mono text-[10px] tracking-widest text-muted-foreground md:grid">
         <div>ITEM</div>
         <div className="text-right">{isGrouped ? "FROM" : "PRICE"}</div>
         <div className="text-right">24H</div>
@@ -248,17 +248,17 @@ async function SearchResultsSection({
               <Link
                 key={item.item_id ?? item.market_hash_name}
                 href={item.item_id ? `/item/${item.item_id}` : "/search"}
-                className="block border-b border-border px-4 py-4 transition-colors hover:bg-card/40"
+                className="block border-b border-border px-6 py-5 transition-colors hover:bg-card/40"
               >
-                <div className="md:grid md:grid-cols-[minmax(0,1.5fr)_140px_110px_120px] md:items-center md:gap-4">
-                  <div className="flex min-w-0 items-center gap-3">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden border-brutal bg-secondary/50">
+                <div className="md:grid md:grid-cols-[minmax(0,1.5fr)_160px_130px_140px] md:items-center md:gap-4">
+                  <div className="flex min-w-0 items-center gap-4">
+                    <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden border-brutal bg-secondary/50">
                       {item.image_url ? (
                         <Image
                           src={item.image_url}
                           alt={displayName}
-                          width={48}
-                          height={48}
+                          width={64}
+                          height={64}
                           className="h-full w-full object-contain p-1"
                         />
                       ) : (
@@ -266,17 +266,17 @@ async function SearchResultsSection({
                       )}
                     </div>
                     <div className="min-w-0">
-                      <div className="truncate font-mono text-sm font-bold text-foreground md:hover:text-primary">
+                      <div className="truncate font-mono text-base font-bold text-foreground md:hover:text-primary">
                         {displayName}
                       </div>
-                      <div className="font-mono text-[10px] text-muted-foreground">{subtitle}</div>
+                      <div className="font-mono text-xs text-muted-foreground">{subtitle}</div>
                     </div>
-                    <div className="ml-auto font-mono text-sm font-bold text-foreground md:hidden">
+                    <div className="ml-auto font-mono text-base font-bold text-foreground md:hidden">
                       {formatUsdMajor(priceUsd)}
                     </div>
                   </div>
 
-                  <div className="hidden font-mono text-sm font-bold text-foreground md:block md:text-right">
+                  <div className="hidden font-mono text-base font-bold text-foreground md:block md:text-right">
                     {isGrouped && variantCount > 1 ? (
                       <span className="text-muted-foreground">from </span>
                     ) : null}
@@ -284,14 +284,14 @@ async function SearchResultsSection({
                   </div>
 
                   <div
-                    className={`hidden font-mono text-sm font-bold md:block md:text-right ${priceChangeClass(
+                    className={`hidden font-mono text-base font-bold md:block md:text-right ${priceChangeClass(
                       priceChange24hPct,
                     )}`}
                   >
                     {formatSignedPercent(priceChange24hPct)}
                   </div>
 
-                  <div className="hidden font-mono text-sm text-muted-foreground md:block md:text-right">
+                  <div className="hidden font-mono text-base text-muted-foreground md:block md:text-right">
                     {formatWholeNumber(volume24h)}
                   </div>
                 </div>
@@ -301,7 +301,7 @@ async function SearchResultsSection({
                     <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
                       24H
                     </div>
-                    <div className={`font-mono text-sm font-bold ${priceChangeClass(priceChange24hPct)}`}>
+                    <div className={`font-mono text-base font-bold ${priceChangeClass(priceChange24hPct)}`}>
                       {formatSignedPercent(priceChange24hPct)}
                     </div>
                   </div>
@@ -309,7 +309,7 @@ async function SearchResultsSection({
                     <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
                       VOLUME
                     </div>
-                    <div className="font-mono text-sm text-muted-foreground">
+                    <div className="font-mono text-base text-muted-foreground">
                       {formatWholeNumber(volume24h)}
                     </div>
                   </div>
