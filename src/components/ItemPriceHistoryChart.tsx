@@ -195,13 +195,8 @@ export function ItemPriceHistoryChart({
                 fontFamily: "var(--font-mono, monospace)",
                 fontSize: 12,
               }}
-              formatter={(value: number, _name, item) => {
-                const payload = item?.payload as HistoryPoint | undefined;
-                const vol = payload?.volume ?? 0;
-                return [
-                  `${formatPrice(value)}${vol > 0 ? `  ·  Vol ${formatCompact(vol)}` : ""}`,
-                  seriesLabel,
-                ];
+              formatter={(value: number) => {
+                return [formatPrice(value), seriesLabel];
               }}
               labelFormatter={(value, payload) =>
                 payload?.[0]?.payload?.tooltipLabel ??
