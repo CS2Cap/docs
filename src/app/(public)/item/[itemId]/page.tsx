@@ -312,40 +312,48 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
               </div>
 
               <div className="border-brutal bg-card">
-                <div className="border-b-2 border-border px-4 py-3">
-                  <span className="font-mono text-xs tracking-widest text-primary">
+                <div className="flex items-center justify-between border-b-2 border-border px-6 py-4">
+                  <span className="font-mono text-sm tracking-widest text-primary">
                     BUY ORDERS
+                  </span>
+                  <span className="font-mono text-xs text-muted-foreground">
+                    {bidRows.length} markets
                   </span>
                 </div>
 
-                <div className="hidden grid-cols-[minmax(0,1.2fr)_100px_120px] gap-4 border-b border-border px-4 py-2 font-mono text-[9px] tracking-widest text-muted-foreground md:grid">
+                <div className="hidden grid-cols-[52px_minmax(180px,1.7fr)_108px_108px] gap-4 border-b border-border px-6 py-3 font-mono text-[10px] tracking-widest text-muted-foreground md:grid">
+                  <div>#</div>
                   <div>PROVIDER</div>
                   <div className="text-right">BIDS</div>
-                  <div className="text-right">PRICE</div>
+                  <div className="text-right">HIGHEST BID</div>
                 </div>
 
                 {bidRows.length === 0 ? (
-                  <div className="px-4 py-8 font-mono text-sm text-muted-foreground">
+                  <div className="px-6 py-8 font-mono text-sm text-muted-foreground">
                     No buy orders found across tracked markets.
                   </div>
                 ) : (
-                  bidRows.map((row) => (
+                  bidRows.map((row, index) => (
                     <div
                       key={`${row.provider}-${row.highest_bid}`}
-                      className="grid gap-3 border-b border-border px-4 py-3 last:border-0 md:grid-cols-[minmax(0,1.2fr)_100px_120px] md:items-center"
+                      className="grid gap-4 border-b border-border px-6 py-4 last:border-0 md:grid-cols-[52px_minmax(180px,1.7fr)_108px_108px] md:items-center"
                     >
+                      <div className="hidden font-mono text-xs text-muted-foreground md:block">
+                        #{index + 1}
+                      </div>
                       <div>
                         <ProviderIdentity
                           provider={getProvider(row.provider, data.providers)}
                           fallback={providerLabel(row.provider, data.providers)}
-                          logoSize={18}
-                          textClassName="font-mono text-xs font-bold text-foreground"
+                          logoSize={26}
+                          textClassName="font-mono text-sm font-bold text-foreground"
+                          className="flex min-w-0 flex-1 items-center gap-3"
                         />
                       </div>
-                      <div className="font-mono text-xs text-muted-foreground md:text-right">
+                      <div className="font-mono text-sm text-muted-foreground md:text-right">
                         {formatNumber(row.num_bids)}
                       </div>
-                      <div className="font-mono text-xs font-bold text-success md:text-right">
+                      <div className="font-mono text-sm font-bold text-success md:text-right">
                         {formatPriceMinor(row.highest_bid)}
                       </div>
                     </div>
