@@ -66,27 +66,27 @@ export function CollapsibleAsksList({
         return (
           <div
             key={`${row.provider}-${row.lowest_ask}-${index}`}
-            className="grid gap-3 border-b border-border px-4 py-3 last:border-0 md:grid-cols-[44px_minmax(140px,1.7fr)_72px_88px_minmax(120px,1fr)_72px_88px] md:items-center"
+            className="grid gap-4 border-b border-border px-6 py-4 last:border-0 md:grid-cols-[52px_minmax(180px,1.7fr)_88px_108px_minmax(140px,1fr)_88px_108px] md:items-center"
           >
-            <div className="hidden font-mono text-[10px] text-muted-foreground md:block">
+            <div className="hidden font-mono text-xs text-muted-foreground md:block">
               #{index + 1}
             </div>
             <div className="flex min-w-0 items-center">
               <ProviderIdentity
                 provider={getProvider(row.provider, providers)}
                 fallback={providerLabel(row.provider, providers)}
-                logoSize={20}
-                textClassName="font-mono text-xs font-bold text-foreground"
-                className="flex min-w-0 flex-1 items-center gap-2"
+                logoSize={26}
+                textClassName="font-mono text-sm font-bold text-foreground"
+                className="flex min-w-0 flex-1 items-center gap-3"
               />
             </div>
-            <div className="font-mono text-xs text-muted-foreground md:text-right">
+            <div className="font-mono text-sm text-muted-foreground md:text-right">
               {formatNumber(row.quantity)}
             </div>
-            <div className="font-mono text-xs font-bold text-foreground md:text-right">
+            <div className="font-mono text-sm font-bold text-foreground md:text-right">
               {formatPriceMinor(row.lowest_ask)}
             </div>
-            <div className="font-mono text-[11px] md:text-right">
+            <div className="font-mono text-xs md:text-right">
               {isBest ? (
                 <span className="text-success">— best price</span>
               ) : (
@@ -98,7 +98,7 @@ export function CollapsibleAsksList({
                 </span>
               )}
             </div>
-            <div className="font-mono text-[10px] text-muted-foreground md:text-right">
+            <div className="font-mono text-xs text-muted-foreground md:text-right">
               {updated ?? "—"}
             </div>
             <div className="flex justify-start md:justify-end">
@@ -107,12 +107,12 @@ export function CollapsibleAsksList({
                   href={link}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex items-center gap-1 border-brutal px-2.5 py-1 font-mono text-[8px] tracking-wider brutalist-hover hover:border-primary"
+                  className="flex items-center gap-1.5 border-brutal px-3 py-1.5 font-mono text-[10px] tracking-wider brutalist-hover hover:border-primary"
                 >
-                  VIEW <ExternalLink className="h-2.5 w-2.5" />
+                  VIEW <ExternalLink className="h-3 w-3" />
                 </a>
               ) : (
-                <span className="font-mono text-[10px] text-muted-foreground">
+                <span className="font-mono text-xs text-muted-foreground">
                   Internal only
                 </span>
               )}

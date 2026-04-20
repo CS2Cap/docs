@@ -289,16 +289,16 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
 
             <div className="space-y-6 lg:col-span-8 xl:col-span-9">
               <div className="border-brutal bg-card">
-                <div className="flex items-center justify-between border-b-2 border-border px-4 py-3">
-                  <span className="font-mono text-xs tracking-widest text-primary">
+                <div className="flex items-center justify-between border-b-2 border-border px-6 py-4">
+                  <span className="font-mono text-sm tracking-widest text-primary">
                     WHERE TO BUY
                   </span>
-                  <span className="font-mono text-[10px] text-muted-foreground">
+                  <span className="font-mono text-xs text-muted-foreground">
                     {askRows.length} live listings
                   </span>
                 </div>
 
-                <div className="hidden grid-cols-[44px_minmax(140px,1.7fr)_72px_88px_minmax(120px,1fr)_72px_88px] gap-3 border-b border-border px-4 py-2 font-mono text-[9px] tracking-widest text-muted-foreground md:grid">
+                <div className="hidden grid-cols-[52px_minmax(180px,1.7fr)_88px_108px_minmax(140px,1fr)_88px_108px] gap-4 border-b border-border px-6 py-3 font-mono text-[10px] tracking-widest text-muted-foreground md:grid">
                   <div>#</div>
                   <div>PROVIDER</div>
                   <div className="text-right">QTY</div>
