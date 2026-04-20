@@ -271,4 +271,14 @@
     opacity: 0;
     animation: slide-in-right 0.7s ease-out forwards;
   }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    33%       { transform: translateY(-10px) rotate(0.4deg); }
+    66%       { transform: translateY(-5px) rotate(-0.3deg); }
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
 }

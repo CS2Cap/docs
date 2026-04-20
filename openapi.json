@@ -3990,152 +3990,6 @@
         }
       }
     },
-    "/v1/account/recover": {
-      "post": {
-        "tags": [
-          "Account"
-        ],
-        "summary": "Recover Account",
-        "description": "Start account recovery flow (always returns 200).",
-        "operationId": "recoverAccount",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RecoverRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GenericOkResponse"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "Rate limit exceeded.",
-            "headers": {
-              "Retry-After": {
-                "description": "Seconds to wait before retrying when present.",
-                "schema": {
-                  "type": "integer",
-                  "minimum": 1
-                }
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "code": "RATE_LIMIT_EXCEEDED",
-                  "detail": "Too Many Requests"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Request validation failed. The detail list contains field-specific validation errors.",
-            "headers": {
-              "X-RateLimit-Tier": {
-                "description": "Authenticated caller tier code when available.",
-                "schema": {
-                  "type": "string"
-                }
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ValidationErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/v1/account/recover/confirm": {
-      "post": {
-        "tags": [
-          "Account"
-        ],
-        "summary": "Recover Account Confirm",
-        "description": "Consume a recovery token and issue a replacement API key.",
-        "operationId": "recoverAccountConfirm",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RecoverConfirmRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RecoverConfirmResponse"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "Rate limit exceeded.",
-            "headers": {
-              "Retry-After": {
-                "description": "Seconds to wait before retrying when present.",
-                "schema": {
-                  "type": "integer",
-                  "minimum": 1
-                }
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "code": "RATE_LIMIT_EXCEEDED",
-                  "detail": "Too Many Requests"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Request validation failed. The detail list contains field-specific validation errors.",
-            "headers": {
-              "X-RateLimit-Tier": {
-                "description": "Authenticated caller tier code when available.",
-                "schema": {
-                  "type": "string"
-                }
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ValidationErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/v1/account": {
       "get": {
         "summary": "Get Account",
@@ -28794,20 +28648,6 @@
         "title": "FXRatesResponse",
         "description": "FX rates response - returns USD to X conversion rates."
       },
-      "GenericOkResponse": {
-        "properties": {
-          "ok": {
-            "type": "boolean",
-            "title": "Ok",
-            "description": "Boolean success indicator for this operation."
-          }
-        },
-        "type": "object",
-        "required": [
-          "ok"
-        ],
-        "title": "GenericOkResponse"
-      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -32888,66 +32728,10 @@
           "csgo500",
           "csgoempire",
           "dmarket",
-          "skinbaron",
           "youpin"
         ],
         "title": "RecentSalesProvider",
         "description": "Provider keys that support Recent Sales."
-      },
-      "RecoverConfirmRequest": {
-        "properties": {
-          "token": {
-            "type": "string",
-            "title": "Token",
-            "description": "One-time verification or recovery token."
-          }
-        },
-        "type": "object",
-        "required": [
-          "token"
-        ],
-        "title": "RecoverConfirmRequest"
-      },
-      "RecoverConfirmResponse": {
-        "properties": {
-          "key": {
-            "type": "string",
-            "title": "Key",
-            "description": "API key value. This is typically shown only once."
-          },
-          "key_id": {
-            "type": "string",
-            "title": "Key Id",
-            "description": "Unique identifier for the API key."
-          },
-          "user_id": {
-            "type": "string",
-            "title": "User Id",
-            "description": "User ID associated with this resource."
-          }
-        },
-        "type": "object",
-        "required": [
-          "key",
-          "key_id",
-          "user_id"
-        ],
-        "title": "RecoverConfirmResponse"
-      },
-      "RecoverRequest": {
-        "properties": {
-          "email": {
-            "type": "string",
-            "format": "email",
-            "title": "Email",
-            "description": "Email address for the account when available."
-          }
-        },
-        "type": "object",
-        "required": [
-          "email"
-        ],
-        "title": "RecoverRequest"
       },
       "ReplayResponse": {
         "properties": {
@@ -33211,7 +32995,7 @@
                 "bitskins": "unavailable",
                 "buff163": "miss",
                 "csfloat": "hit",
-                "skinbaron": "error"
+                "csgoempire": "error"
               }
             ]
           }
@@ -35235,7 +35019,7 @@
           "token": {
             "type": "string",
             "title": "Token",
-            "description": "One-time verification or recovery token."
+            "description": "One-time verification token."
           }
         },
         "type": "object",

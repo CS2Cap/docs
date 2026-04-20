@@ -410,10 +410,10 @@ export default function AccountApiKeysPage() {
                     </TooltipTrigger>
                     <TooltipContent side="bottom" className="max-w-xs">
                       <p>
-                        Clears the bound IP so the next request from your key sets a new one.
+                        Clears the bound IP so the next request from your key sets a new one. Limit: 1 / day
                       </p>
                       <p className="mt-1 text-muted-foreground">
-                        IP binding only applies on the Free tier — paid tiers can use the key from any IP.
+                        IP binding only applies on the Free tier — paid tiers can send requests regardless of IP.
                       </p>
                     </TooltipContent>
                   </Tooltip>
