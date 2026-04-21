@@ -52,7 +52,7 @@ export function FooterSection({ showApiLink = true }: { showApiLink?: boolean })
                 className="text-muted-foreground hover:text-primary transition-colors"
                 aria-label="Follow us on X (Twitter)"
               >
-                <XIcon className="h-4 w-4" />
+                <XIcon className="h-8 w-8" />
               </a>
               <a 
                 href="https://discord.gg/MGxFtyV8xM" 
@@ -61,7 +61,7 @@ export function FooterSection({ showApiLink = true }: { showApiLink?: boolean })
                 className="text-muted-foreground hover:text-primary transition-colors"
                 aria-label="Join our Discord"
               >
-                <DiscordIcon className="h-4 w-4" />
+                <DiscordIcon className="h-8 w-8" />
               </a>
               <a 
                 href="https://www.youtube.com/@Dadscap" 
@@ -70,7 +70,7 @@ export function FooterSection({ showApiLink = true }: { showApiLink?: boolean })
                 className="text-muted-foreground hover:text-primary transition-colors"
                 aria-label="Subscribe on YouTube"
               >
-                <YouTubeIcon className="h-4 w-4" />
+                <YouTubeIcon className="h-8 w-8" />
               </a>
             </div>
           </div>
