@@ -44,6 +44,35 @@ export function FooterSection({ showApiLink = true }: { showApiLink?: boolean })
               Professional-grade analytics for CS2 skin traders. 
               Real-time prices, candlestick charts, arbitrage detection, and technical indicators across every major marketplace.
             </p>
+            <div className="flex items-center gap-3 mt-4">
+              <a 
+                href="https://x.com/dadscap" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-primary transition-colors"
+                aria-label="Follow us on X (Twitter)"
+              >
+                <XIcon className="h-4 w-4" />
+              </a>
+              <a 
+                href="https://discord.gg/MGxFtyV8xM" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-primary transition-colors"
+                aria-label="Join our Discord"
+              >
+                <DiscordIcon className="h-4 w-4" />
+              </a>
+              <a 
+                href="https://www.youtube.com/@Dadscap" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-primary transition-colors"
+                aria-label="Subscribe on YouTube"
+              >
+                <YouTubeIcon className="h-4 w-4" />
+              </a>
+            </div>
           </div>
 
           <div>
