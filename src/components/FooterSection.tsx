@@ -41,8 +41,7 @@ export function FooterSection({ showApiLink = true }: { showApiLink?: boolean })
               </span>
             </div>
             <p className="font-mono text-xs text-muted-foreground leading-relaxed max-w-sm">
-              Professional-grade analytics for CS2 skin traders. 
-              Real-time prices, candlestick charts, arbitrage detection, and technical indicators across every major marketplace.
+              Built for CS2 traders and developers.
             </p>
             <div className="flex items-center gap-3 mt-4">
               <a 
