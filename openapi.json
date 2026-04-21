@@ -916,7 +916,7 @@
           "Prices"
         ],
         "summary": "Price Candles",
-        "description": "Return composite OHLCV candle data for a single item across all providers.\n\nParameters:\n- Item filter: `item_id` or `market_hash_name` (one is required).\n- Optional filter: `phase`.\n- Time window: `start`/`end` (ISO 8601) or `lookback` (for example `7d`, `30d`).\n- `interval`: `5m`, `1h`, or `1d`.\n- `fill`: Include empty buckets with carry-forward prices when `true`.\n- `currency`: Quote currency (default `USD`).\n- `limit`, `cursor`: Cursor-based pagination controls.\n\nNotes:\n- If both `start` and `lookback` are sent, `lookback` takes precedence.\n- Maximum lookback depends on `interval`:\n  `5m` up to 7 days, `1h` up to 30 days, `1d` up to 365 days.\n\nResponse:\n- `meta`: Item, provider scope, interval, phase, currency, start/end timestamps.\n- `data`: Candle buckets in oldest-to-newest order\n  (`t`, `o`, `h`, `l`, `c`, `v`, `q`, `providers`).\n  `o`/`c` are unweighted averages across provider snapshots, `l` is the minimum provider\n  low, `h` is capped at `median(provider_highs) * 1.5`, `v` is the non-negative depletion\n  flow between buckets, and `q` is the summed close-side inventory at bucket end when\n  available. `providers.l` and `providers.h` identify the provider keys contributing the\n  returned low/high values. For `1d` requests starting more than 30 days back, `v` falls\n  back to legacy depletion-derived `volume_qty` and `q` is `null`.\n- `pagination`: Standardized pagination footer with cursor state.\n\nRequirements:\n- Valid API key with access to `/v1/prices/candles`.\n- `item_id` or `market_hash_name` is required.\n- `start`/`end` must be valid ISO 8601 timestamps.\n- `limit` is capped by your tier.",
+        "description": "Return composite OHLCV candle data for a single item across all providers.\n\nParameters:\n- Item filter: `item_id` or `market_hash_name` (one is required).\n- Optional filter: `phase`.\n- Time window: `start`/`end` (ISO 8601) or `lookback` (for example `7d` or `7`).\n- `interval`: `5m`, `1h`, or `1d`.\n- `fill`: Include empty buckets with carry-forward prices when `true`.\n- `currency`: Quote currency (default `USD`).\n- `limit`, `cursor`: Cursor-based pagination controls.\n\nNotes:\n- If both `start` and `lookback` are sent, `lookback` takes precedence.\n- Maximum lookback depends on `interval`:\n  `5m` up to 7 days, `1h` up to 30 days, `1d` up to 365 days.\n\nResponse:\n- `meta`: Item, provider scope, interval, phase, currency, start/end timestamps.\n- `data`: Candle buckets in oldest-to-newest order\n  (`t`, `o`, `h`, `l`, `c`, `v`, `q`, `providers`).\n  `o`/`c` are unweighted averages across provider snapshots, `l` is the minimum provider\n  low, `h` is capped at `median(provider_highs) * 1.5`, `v` is the non-negative depletion\n  flow between buckets, and `q` is the summed close-side inventory at bucket end when\n  available. `providers.l` and `providers.h` identify the provider keys contributing the\n  returned low/high values. For `1d` requests starting more than 30 days back, `v` falls\n  back to legacy depletion-derived `volume_qty` and `q` is `null`.\n- `pagination`: Standardized pagination footer with cursor state.\n\nRequirements:\n- Valid API key with access to `/v1/prices/candles`.\n- `item_id` or `market_hash_name` is required.\n- `start`/`end` must be valid ISO 8601 timestamps.\n- `limit` is capped by your tier.",
         "operationId": "priceCandles",
         "security": [
           {
@@ -1029,10 +1029,20 @@
                   "type": "null"
                 }
               ],
-              "description": "Convenience alias: '7d', '30d', etc. Sets start=now-lookback",
+              "description": "Lookback window in days. Use `7d` or plain `7`; both mean 7 days and set start=now-lookback.",
               "title": "Lookback"
             },
-            "description": "Convenience alias: '7d', '30d', etc. Sets start=now-lookback"
+            "description": "Lookback window in days. Use `7d` or plain `7`; both mean 7 days and set start=now-lookback.",
+            "examples": {
+              "stringDays": {
+                "summary": "String shorthand",
+                "value": "7d"
+              },
+              "integerDays": {
+                "summary": "Plain day count",
+                "value": 7
+              }
+            }
           },
           {
             "name": "interval",
@@ -16579,7 +16589,7 @@
           "Prices"
         ],
         "summary": "Web Price Candles V1 Web Prices Candles",
-        "description": "Return composite OHLCV candle data for a single item across all providers.\n\nParameters:\n- Item filter: `item_id` or `market_hash_name` (one is required).\n- Optional filter: `phase`.\n- Time window: `start`/`end` (ISO 8601) or `lookback` (for example `7d`, `30d`).\n- `interval`: `5m`, `1h`, or `1d`.\n- `fill`: Include empty buckets with carry-forward prices when `true`.\n- `currency`: Quote currency (default `USD`).\n- `limit`, `cursor`: Cursor-based pagination controls.\n\nNotes:\n- If both `start` and `lookback` are sent, `lookback` takes precedence.\n- Maximum lookback depends on `interval`:\n  `5m` up to 7 days, `1h` up to 30 days, `1d` up to 365 days.\n\nResponse:\n- `meta`: Item, provider scope, interval, phase, currency, start/end timestamps.\n- `data`: Candle buckets in oldest-to-newest order\n  (`t`, `o`, `h`, `l`, `c`, `v`, `q`, `providers`).\n  `o`/`c` are unweighted averages across provider snapshots, `l` is the minimum provider\n  low, `h` is capped at `median(provider_highs) * 1.5`, `v` is the non-negative depletion\n  flow between buckets, and `q` is the summed close-side inventory at bucket end when\n  available. `providers.l` and `providers.h` identify the provider keys contributing the\n  returned low/high values. For `1d` requests starting more than 30 days back, `v` falls\n  back to legacy depletion-derived `volume_qty` and `q` is `null`.\n- `pagination`: Standardized pagination footer with cursor state.\n\nRequirements:\n- Valid API key with access to `/v1/prices/candles`.\n- `item_id` or `market_hash_name` is required.\n- `start`/`end` must be valid ISO 8601 timestamps.\n- `limit` is capped by your tier.",
+        "description": "Return composite OHLCV candle data for a single item across all providers.\n\nParameters:\n- Item filter: `item_id` or `market_hash_name` (one is required).\n- Optional filter: `phase`.\n- Time window: `start`/`end` (ISO 8601) or `lookback` (for example `7d` or `7`).\n- `interval`: `5m`, `1h`, or `1d`.\n- `fill`: Include empty buckets with carry-forward prices when `true`.\n- `currency`: Quote currency (default `USD`).\n- `limit`, `cursor`: Cursor-based pagination controls.\n\nNotes:\n- If both `start` and `lookback` are sent, `lookback` takes precedence.\n- Maximum lookback depends on `interval`:\n  `5m` up to 7 days, `1h` up to 30 days, `1d` up to 365 days.\n\nResponse:\n- `meta`: Item, provider scope, interval, phase, currency, start/end timestamps.\n- `data`: Candle buckets in oldest-to-newest order\n  (`t`, `o`, `h`, `l`, `c`, `v`, `q`, `providers`).\n  `o`/`c` are unweighted averages across provider snapshots, `l` is the minimum provider\n  low, `h` is capped at `median(provider_highs) * 1.5`, `v` is the non-negative depletion\n  flow between buckets, and `q` is the summed close-side inventory at bucket end when\n  available. `providers.l` and `providers.h` identify the provider keys contributing the\n  returned low/high values. For `1d` requests starting more than 30 days back, `v` falls\n  back to legacy depletion-derived `volume_qty` and `q` is `null`.\n- `pagination`: Standardized pagination footer with cursor state.\n\nRequirements:\n- Valid API key with access to `/v1/prices/candles`.\n- `item_id` or `market_hash_name` is required.\n- `start`/`end` must be valid ISO 8601 timestamps.\n- `limit` is capped by your tier.",
         "operationId": "webPriceCandles",
         "security": [],
         "parameters": [
@@ -16688,10 +16698,20 @@
                   "type": "null"
                 }
               ],
-              "description": "Convenience alias: '7d', '30d', etc. Sets start=now-lookback",
+              "description": "Lookback window in days. Use `7d` or plain `7`; both mean 7 days and set start=now-lookback.",
               "title": "Lookback"
             },
-            "description": "Convenience alias: '7d', '30d', etc. Sets start=now-lookback"
+            "description": "Lookback window in days. Use `7d` or plain `7`; both mean 7 days and set start=now-lookback.",
+            "examples": {
+              "stringDays": {
+                "summary": "String shorthand",
+                "value": "7d"
+              },
+              "integerDays": {
+                "summary": "Plain day count",
+                "value": 7
+              }
+            }
           },
           {
             "name": "interval",
@@ -32722,7 +32742,6 @@
         "enum": [
           "bitskins",
           "buff163",
-          "buffmarket",
           "c5",
           "csfloat",
           "csgo500",
