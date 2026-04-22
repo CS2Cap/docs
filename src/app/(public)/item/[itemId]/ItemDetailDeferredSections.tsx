@@ -60,12 +60,15 @@ async function getLongRangePriceCandles(itemId: number) {
   let pagesFetched = 0;
 
   do {
+    // 365d @ 1d interval = ~365 candles; fetch them in one hop instead of
+    // paginating 4× serially. Backend caps this endpoint at 1000; the loop
+    // below still handles lower tier caps if present.
     const params = new URLSearchParams({
       item_id: String(itemId),
       lookback: "365d",
       interval: "1d",
       fill: "true",
-      limit: "100",
+      limit: "400",
     });
 
     if (cursor) {
@@ -82,7 +85,7 @@ async function getLongRangePriceCandles(itemId: number) {
     rows.push(...page.data);
     cursor = page.pagination.has_next ? page.pagination.next_cursor ?? null : null;
     pagesFetched += 1;
-  } while (cursor && pagesFetched < 10 && rows.length < 370);
+  } while (cursor && pagesFetched < 4 && rows.length < 370);
 
   if (!meta) {
     return null;

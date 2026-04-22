@@ -100,7 +100,7 @@ export function PricingPlans({ plans }: { plans: PlanInfo[] }) {
               </ul>
 
               <Link
-                href="/login"
+                href="/account/billing"
                 className={`text-center font-mono text-xs font-bold tracking-wider brutalist-hover ${
                   hasPrice
                     ? "border-2 border-primary bg-primary px-6 py-3 text-primary-foreground"
