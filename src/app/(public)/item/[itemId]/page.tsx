@@ -230,23 +230,24 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                   <span>{data.item.max_float?.toFixed(2) ?? "N/A"}</span>
                 </div>
                 <div className="mt-3 grid grid-cols-5 gap-px bg-border">
-                  {["Factory New", "Minimal Wear", "Field-Tested", "Well-Worn", "Battle-Scarred"].map(
-                    (wear) => (
-                      <div
-                        key={wear}
-                        className={`px-2 py-1 text-center font-mono text-[9px] ${
-                          data.item.wear_name === wear
-                            ? "bg-primary/15 text-primary"
-                            : "bg-secondary text-muted-foreground"
-                        }`}
-                      >
-                        {wear
-                          .split("-")
-                          .map((part) => part[0])
-                          .join("")}
-                      </div>
-                    ),
-                  )}
+                  {[
+                    { name: "Factory New", abbr: "FN" },
+                    { name: "Minimal Wear", abbr: "MW" },
+                    { name: "Field-Tested", abbr: "FT" },
+                    { name: "Well-Worn", abbr: "WW" },
+                    { name: "Battle-Scarred", abbr: "BS" },
+                  ].map(({ name, abbr }) => (
+                    <div
+                      key={name}
+                      className={`px-2 py-1.5 text-center font-mono text-xs font-bold tracking-wider ${
+                        data.item.wear_name === name
+                          ? "bg-primary/15 text-primary"
+                          : "bg-secondary text-foreground"
+                      }`}
+                    >
+                      {abbr}
+                    </div>
+                  ))}
                 </div>
               </div>
 
