@@ -38,7 +38,11 @@ const SEARCH_CATEGORY_MAP: Record<string, string | undefined> = {
 };
 
 const SEARCH_PAGE_SIZE = 24;
-const SEARCH_GROUP_FETCH_LIMIT = 200;
+// Matches SEARCH_GROUP_MAX_SCAN + the backend's endpoint_max, so a broad
+// filter (e.g. item_type=knife) gets the whole scan in one hop instead of
+// 5 serial paginated roundtrips. The loop below still handles tier caps
+// if a lower-tier caller can't receive the full page.
+const SEARCH_GROUP_FETCH_LIMIT = 1000;
 const SEARCH_GROUP_MAX_SCAN = 1000;
 const WEAR_ORDER: Record<string, number> = {
   "Factory New": 0,
