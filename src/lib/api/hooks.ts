@@ -36,7 +36,7 @@ export function useSession() {
     queryKey: queryKeys.session,
     queryFn: () => webApi.getSession(),
     retry: false,
-    staleTime: 5_000,
+    staleTime: 60_000,
   });
 }
 
@@ -45,7 +45,7 @@ export function useAccount() {
     queryKey: queryKeys.account,
     queryFn: () => webApi.getAccount(),
     retry: false,
-    staleTime: 10_000,
+    staleTime: 60_000,
   });
 }
 
@@ -54,7 +54,7 @@ export function useAccountPreferences() {
     queryKey: queryKeys.preferences,
     queryFn: () => webApi.getAccountPreferences(),
     retry: false,
-    staleTime: 10_000,
+    staleTime: 60_000,
   });
 }
 
@@ -63,7 +63,7 @@ export function useAPIKey() {
     queryKey: queryKeys.apiKey,
     queryFn: () => webApi.getAPIKey(),
     retry: false,
-    staleTime: 10_000,
+    staleTime: 60_000,
   });
 }
 
@@ -72,7 +72,7 @@ export function useSubKeys(params: { limit?: number; offset?: number } = {}) {
     queryKey: queryKeys.subKeys(params),
     queryFn: () => webApi.listSubKeys(params),
     retry: false,
-    staleTime: 10_000,
+    staleTime: 60_000,
   });
 }
 
@@ -81,7 +81,7 @@ export function useWatchlist(params: { limit?: number; offset?: number; search?:
     queryKey: queryKeys.watchlist(params),
     queryFn: () => webApi.getWatchlist(params),
     retry: false,
-    staleTime: 5_000,
+    staleTime: 30_000,
   });
 }
 
@@ -90,7 +90,7 @@ export function useAlerts(params: { limit?: number; offset?: number; search?: st
     queryKey: queryKeys.alerts(params),
     queryFn: () => webApi.getAlerts(params),
     retry: false,
-    staleTime: 5_000,
+    staleTime: 30_000,
   });
 }
 
@@ -99,7 +99,9 @@ export function useAlertEvents(params: { limit?: number; offset?: number } = {})
     queryKey: queryKeys.alertEvents(params),
     queryFn: () => webApi.getAlertEvents(params),
     retry: false,
-    staleTime: 5_000,
+    // Kept shorter than the rest: alert fires arrive passively, so lingering
+    // stale data here can hide a just-triggered alert the user is waiting on.
+    staleTime: 15_000,
   });
 }
 
@@ -108,7 +110,7 @@ export function useBillingPlans() {
     queryKey: queryKeys.billingPlans,
     queryFn: () => webApi.getBillingPlans(),
     retry: false,
-    staleTime: 60_000,
+    staleTime: 300_000,
   });
 }
 
@@ -117,7 +119,7 @@ export function useBillingOverview() {
     queryKey: queryKeys.billingOverview,
     queryFn: () => webApi.getBillingOverview(),
     retry: false,
-    staleTime: 10_000,
+    staleTime: 60_000,
   });
 }
 
@@ -126,7 +128,7 @@ export function useAccountUsageStats() {
     queryKey: queryKeys.usage,
     queryFn: () => webApi.getAccountUsageStats(),
     retry: false,
-    staleTime: 10_000,
+    staleTime: 30_000,
   });
 }
 
