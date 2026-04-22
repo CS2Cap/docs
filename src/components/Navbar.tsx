@@ -160,10 +160,10 @@ export function Navbar() {
                     icon: React.ElementType;
                   };
                   return (
-                    <DropdownMenuItem key={href} asChild className="rounded-none focus:bg-secondary">
+                    <DropdownMenuItem key={href} asChild className="rounded-none focus:bg-secondary focus:text-primary">
                       <Link
                         href={href}
-                        className="flex w-full cursor-pointer items-center gap-3 px-3 py-2 font-mono text-xs tracking-wider"
+                        className="flex w-full cursor-pointer items-center gap-3 px-3 py-2 font-mono text-xs tracking-wider hover:text-primary focus:text-primary"
                       >
                         <Icon className="h-3.5 w-3.5 shrink-0" strokeWidth={1.5} />
                         {label}
@@ -174,7 +174,7 @@ export function Navbar() {
                 <DropdownMenuSeparator className="my-0 bg-border" />
                 <DropdownMenuItem
                   onSelect={() => void handleLogout()}
-                  className="cursor-pointer rounded-none px-3 py-2 font-mono text-xs tracking-wider text-primary focus:bg-secondary focus:text-primary"
+                  className="cursor-pointer rounded-none px-3 py-2 font-mono text-xs tracking-wider text-destructive focus:bg-secondary focus:text-destructive hover:text-destructive"
                 >
                   <LogOut className="mr-3 h-3.5 w-3.5 shrink-0" strokeWidth={1.5} />
                   LOG OUT
