@@ -27,7 +27,6 @@ const RANGES = [
   { id: "30d", label: "30D", days: 30 },
   { id: "90d", label: "90D", days: 90 },
   { id: "1y", label: "1Y", days: 365 },
-  { id: "all", label: "ALL", days: Infinity },
 ] as const;
 
 type RangeId = (typeof RANGES)[number]["id"];
