@@ -180,7 +180,7 @@ export default async function ApiPage() {
                 {
                   icon: Shield,
                   value: "99.9%",
-                  label: "UPTIME SLA",
+                  label: "TARGET UPTIME",
                   sub: "Enterprise-grade reliability",
                 },
                 {
