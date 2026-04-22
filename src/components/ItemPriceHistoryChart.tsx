@@ -108,9 +108,8 @@ export function ItemPriceHistoryChart({
                 {formatPrice(stats.last)}
               </div>
               <div
-                className={`font-mono text-xs font-bold ${
-                  isPositive ? "text-success" : "text-destructive"
-                }`}
+                className={`font-mono text-xs font-bold ${isPositive ? "text-success" : "text-destructive"
+                  }`}
               >
                 {isPositive ? "+" : ""}
                 {formatPrice(stats.change)} (
@@ -131,11 +130,10 @@ export function ItemPriceHistoryChart({
               key={r.id}
               type="button"
               onClick={() => setRange(r.id)}
-              className={`px-3 py-1 font-mono text-[10px] tracking-widest transition-colors ${
-                range === r.id
+              className={`px-3 py-1 font-mono text-[10px] tracking-widest transition-colors ${range === r.id
                   ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:bg-secondary/40"
-              }`}
+                }`}
             >
               {r.label}
             </button>
