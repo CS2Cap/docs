@@ -16,6 +16,7 @@ export const maxDuration = 300;
 export async function GET(request: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
+    console.error("[export-prices-snapshot] CRON_SECRET not configured");
     return NextResponse.json(
       { code: "CRON_SECRET_MISSING" },
       { status: 500 },
@@ -24,11 +25,13 @@ export async function GET(request: NextRequest) {
 
   const authHeader = request.headers.get("authorization");
   if (authHeader !== `Bearer ${cronSecret}`) {
+    console.warn("[export-prices-snapshot] rejected unauthorized call");
     return NextResponse.json({ code: "UNAUTHORIZED" }, { status: 401 });
   }
 
   const exportApiKey = process.env.CS2C_EXPORT_API_KEY;
   if (!exportApiKey) {
+    console.error("[export-prices-snapshot] CS2C_EXPORT_API_KEY not configured");
     return NextResponse.json(
       { code: "EXPORT_API_KEY_MISSING" },
       { status: 500 },
@@ -47,17 +50,20 @@ export async function GET(request: NextRequest) {
       signal: AbortSignal.timeout(240_000),
     });
   } catch (error) {
+    const detail = error instanceof Error ? error.message : "unknown error";
+    console.error("[export-prices-snapshot] upstream fetch failed:", detail);
     return NextResponse.json(
-      {
-        code: "UPSTREAM_FETCH_FAILED",
-        detail: error instanceof Error ? error.message : "unknown error",
-      },
+      { code: "UPSTREAM_FETCH_FAILED", detail },
       { status: 502 },
     );
   }
 
   if (!upstreamResponse.ok) {
     const body = await upstreamResponse.text().catch(() => "");
+    console.error(
+      `[export-prices-snapshot] upstream returned ${upstreamResponse.status}:`,
+      body.slice(0, 500),
+    );
     return NextResponse.json(
       {
         code: "UPSTREAM_ERROR",
@@ -100,11 +106,10 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
+    const detail = error instanceof Error ? error.message : "unknown error";
+    console.error("[export-prices-snapshot] blob write failed:", detail);
     return NextResponse.json(
-      {
-        code: "BLOB_WRITE_FAILED",
-        detail: error instanceof Error ? error.message : "unknown error",
-      },
+      { code: "BLOB_WRITE_FAILED", detail },
       { status: 500 },
     );
   }
