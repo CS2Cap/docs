@@ -105,9 +105,8 @@ export function Navbar() {
               <Link
                 key={item.label}
                 href={item.href}
-                className={`px-3 py-1.5 font-mono text-sm font-semibold tracking-wider transition-colors ${
-                  isActive(item.href) ? "text-primary" : "text-foreground/90 hover:text-primary"
-                }`}
+                className={`px-3 py-1.5 font-mono text-sm font-semibold tracking-wider transition-colors ${isActive(item.href) ? "text-primary" : "text-foreground/90 hover:text-primary"
+                  }`}
               >
                 {item.label}
               </Link>
@@ -230,9 +229,8 @@ export function Navbar() {
                   key={item.label}
                   href={item.href}
                   onClick={() => setMobileOpen(false)}
-                  className={`px-3 py-2 font-mono text-xs tracking-wider ${
-                    isActive(item.href) ? "text-primary" : "text-muted-foreground"
-                  }`}
+                  className={`px-3 py-2 font-mono text-xs tracking-wider ${isActive(item.href) ? "text-primary" : "text-muted-foreground"
+                    }`}
                 >
                   {item.label}
                 </Link>

@@ -85,10 +85,10 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
   const rarityHex = normalizeHexColor(data.item.rarity_color);
   const rarityBadgeStyle = rarityHex
     ? {
-        color: rarityHex,
-        borderColor: `${rarityHex}33`,
-        backgroundColor: `${rarityHex}1a`,
-      }
+      color: rarityHex,
+      borderColor: `${rarityHex}33`,
+      backgroundColor: `${rarityHex}1a`,
+    }
     : undefined;
 
   const itemFacts = [
@@ -239,11 +239,10 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                   ].map(({ name, abbr }) => (
                     <div
                       key={name}
-                      className={`px-2 py-1.5 text-center font-mono text-xs font-bold tracking-wider ${
-                        data.item.wear_name === name
+                      className={`px-2 py-1.5 text-center font-mono text-xs font-bold tracking-wider ${data.item.wear_name === name
                           ? "bg-primary/15 text-primary"
                           : "bg-secondary text-foreground"
-                      }`}
+                        }`}
                     >
                       {abbr}
                     </div>
