@@ -4,6 +4,10 @@
     {
       "path": "/api/cron/prewarm-market-snapshot",
       "schedule": "0 */4 * * *"
+    },
+    {
+      "path": "/api/cron/export-prices-snapshot",
+      "schedule": "0 * * * *"
     }
   ]
 }
