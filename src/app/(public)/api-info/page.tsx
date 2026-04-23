@@ -19,6 +19,8 @@ import {
   AlertTriangle,
   Gauge,
   BookOpen,
+  Github,
+  FileCode2,
 } from "lucide-react";
 import { FooterSection } from "@/components/FooterSection";
 import { PricingPlans } from "@/components/PricingPlans";
@@ -240,6 +242,78 @@ export default async function ApiPage() {
                 <p className="font-mono text-[11px] leading-relaxed text-muted-foreground">{item.desc}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="sdks" className="border-t-2 border-border py-16">
+        <div className="container">
+          <div className="mb-2 font-mono text-xs tracking-widest text-primary">// OFFICIAL SDKs</div>
+          <h2 className="mb-3 text-3xl font-black tracking-tighter md:text-4xl">
+            SHIP FASTER WITH OUR <span className="text-primary">LIBRARIES</span>
+          </h2>
+          <p className="mb-10 max-w-xl font-mono text-xs leading-relaxed text-muted-foreground">
+            Skip the boilerplate. Type-safe clients for Python and TypeScript, both maintained in our open-source{" "}
+            <a
+              href="https://github.com/CS2Cap/SDKs"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              CS2Cap/SDKs
+            </a>{" "}
+            monorepo.
+          </p>
+
+          <div className="grid grid-cols-1 gap-px bg-border md:grid-cols-2">
+            {[
+              {
+                icon: FileCode2,
+                title: "PYTHON SDK",
+                desc: "Type-safe client for Python 3.9+. Sync and async support, full coverage of every endpoint.",
+                install: "pip install cs2cap",
+                href: "https://github.com/CS2Cap/SDKs/tree/main/python",
+              },
+              {
+                icon: Braces,
+                title: "TYPESCRIPT SDK",
+                desc: "Fully typed client for Node.js and the browser. Tree-shakeable, zero-config, ESM-first.",
+                install: "npm i @cs2cap/sdk",
+                href: "https://github.com/CS2Cap/SDKs/tree/main/typescript",
+              },
+            ].map((sdk) => (
+              <div key={sdk.title} className="bg-card p-8 transition-colors hover:bg-secondary/30">
+                <sdk.icon className="mb-4 h-5 w-5 text-primary" strokeWidth={1.5} />
+                <h3 className="mb-2 font-mono text-xs font-bold tracking-wider text-foreground">{sdk.title}</h3>
+                <p className="mb-5 font-mono text-[11px] leading-relaxed text-muted-foreground">{sdk.desc}</p>
+
+                <div className="mb-5 border border-border bg-secondary/50 px-3 py-2 font-mono text-xs text-foreground">
+                  <span className="text-muted-foreground">$</span> {sdk.install}
+                </div>
+
+                <a
+                  href={sdk.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 border-2 border-primary bg-primary px-5 py-2.5 font-mono text-[11px] font-bold tracking-wider text-primary-foreground brutalist-hover"
+                >
+                  <Github className="h-3.5 w-3.5" strokeWidth={2} />
+                  VIEW ON GITHUB →
+                </a>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-8 text-center">
+            <a
+              href="https://github.com/CS2Cap/SDKs"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 font-mono text-xs tracking-wider text-muted-foreground transition-colors hover:text-primary"
+            >
+              <Github className="h-3.5 w-3.5" strokeWidth={2} />
+              VIEW THE FULL CS2CAP/SDKS REPO ON GITHUB →
+            </a>
           </div>
         </div>
       </section>
