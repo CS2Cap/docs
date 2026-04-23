@@ -11116,6 +11116,199 @@
         }
       }
     },
+    "/v1/market/indices": {
+      "get": {
+        "tags": [
+          "Market Intelligence"
+        ],
+        "summary": "Get Market Cap Indices",
+        "description": "Aggregate the cached 24h market snapshot into category-level indices.\n\nSupports grouping by `item_type` or `weapon_type`.\nItems are excluded from market cap totals when bid/ask/marketcap data is incomplete or spread exceeds the internal spread threshold.\n\nResponse:\n- no pagination\n- groups sorted by `marketcap_usd desc`\n- totals computed from the same filtered item set\n\nTier: Quant-only.",
+        "operationId": "getMarketCapIndices",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "group_by",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "item_type",
+                "weapon_type"
+              ],
+              "type": "string",
+              "description": "Catalog dimension used to group snapshot items.",
+              "default": "item_type",
+              "title": "Group By"
+            },
+            "description": "Catalog dimension used to group snapshot items."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketIndicesResponse"
+                },
+                "example": {
+                  "meta": {
+                    "generated_at": "2026-01-20T12:06:10Z",
+                    "data_source": "cache",
+                    "freshness_sec": 18,
+                    "window": {
+                      "timeframe": "24h"
+                    },
+                    "group_by": "item_type"
+                  },
+                  "data": {
+                    "total_marketcap_usd": "576594.00",
+                    "groups": [
+                      {
+                        "group": "weapon",
+                        "marketcap_usd": "576594.00",
+                        "item_count": 2,
+                        "included_count": 2,
+                        "excluded_count": 0
+                      },
+                      {
+                        "group": "wearable",
+                        "marketcap_usd": "0.00",
+                        "item_count": 1,
+                        "included_count": 0,
+                        "excluded_count": 1
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "detail": "Missing Authorization header"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Analytics tier required to access this endpoint.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "FORBIDDEN",
+                  "detail": "Analytics access requires indie tier or higher"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (burst or monthly quota).",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "burstRateLimit": {
+                    "summary": "Per-window rate limit exceeded",
+                    "value": {
+                      "code": "RATE_LIMIT_EXCEEDED",
+                      "detail": "Too Many Requests"
+                    }
+                  },
+                  "monthlyQuotaExceeded": {
+                    "summary": "Monthly quota exhausted",
+                    "value": {
+                      "code": "RATE_LIMIT_MONTHLY_QUOTA_EXCEEDED",
+                      "detail": "Monthly quota exceeded (500000/500000 requests)."
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying when present.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "X-RateLimit-Tier": {
+                "description": "Authenticated caller tier code.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Monthly request quota for this key (returned on quota 429).",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Remaining monthly requests (returned on quota 429).",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed. The detail list contains field-specific validation errors.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Tier": {
+                "description": "Authenticated caller tier code when available.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Snapshot cache unavailable and initial build failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/market/indicators": {
       "get": {
         "tags": [
@@ -18405,6 +18598,195 @@
           }
         },
         "security": []
+      }
+    },
+    "/v1/web/market/indices": {
+      "get": {
+        "tags": [
+          "Market Intelligence"
+        ],
+        "summary": "Get Market Cap Indices",
+        "description": "Aggregate the cached 24h market snapshot into category-level indices.\n\nSupports grouping by `item_type` or `weapon_type`.\nItems are excluded from market cap totals when bid/ask/marketcap data is incomplete or spread exceeds the internal spread threshold.\n\nResponse:\n- no pagination\n- groups sorted by `marketcap_usd desc`\n- totals computed from the same filtered item set\n\nTier: Quant-only.",
+        "operationId": "webGetMarketCapIndices",
+        "security": [],
+        "parameters": [
+          {
+            "name": "group_by",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "item_type",
+                "weapon_type"
+              ],
+              "type": "string",
+              "description": "Catalog dimension used to group snapshot items.",
+              "default": "item_type",
+              "title": "Group By"
+            },
+            "description": "Catalog dimension used to group snapshot items."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketIndicesResponse"
+                },
+                "example": {
+                  "meta": {
+                    "generated_at": "2026-01-20T12:06:10Z",
+                    "data_source": "cache",
+                    "freshness_sec": 18,
+                    "window": {
+                      "timeframe": "24h"
+                    },
+                    "group_by": "item_type"
+                  },
+                  "data": {
+                    "total_marketcap_usd": "576594.00",
+                    "groups": [
+                      {
+                        "group": "weapon",
+                        "marketcap_usd": "576594.00",
+                        "item_count": 2,
+                        "included_count": 2,
+                        "excluded_count": 0
+                      },
+                      {
+                        "group": "wearable",
+                        "marketcap_usd": "0.00",
+                        "item_count": 1,
+                        "included_count": 0,
+                        "excluded_count": 1
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "detail": "Missing Authorization header"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted to access this resource.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "FORBIDDEN",
+                  "detail": "Account is disabled"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (burst or monthly quota).",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "burstRateLimit": {
+                    "summary": "Per-window rate limit exceeded",
+                    "value": {
+                      "code": "RATE_LIMIT_EXCEEDED",
+                      "detail": "Too Many Requests"
+                    }
+                  },
+                  "monthlyQuotaExceeded": {
+                    "summary": "Monthly quota exhausted",
+                    "value": {
+                      "code": "RATE_LIMIT_MONTHLY_QUOTA_EXCEEDED",
+                      "detail": "Monthly quota exceeded (500000/500000 requests)."
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying when present.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "X-RateLimit-Tier": {
+                "description": "Authenticated caller tier code.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Monthly request quota for this key (returned on quota 429).",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Remaining monthly requests (returned on quota 429).",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed. The detail list contains field-specific validation errors.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Tier": {
+                "description": "Authenticated caller tier code when available.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Snapshot cache unavailable and initial build failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/v1/web/market/items/{item_id}": {
@@ -27010,13 +27392,34 @@
       "BatchBidsRequest": {
         "properties": {
           "item_ids": {
-            "items": {
-              "type": "integer"
-            },
-            "type": "array",
-            "minItems": 1,
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Item Ids",
             "description": "Normalized catalog item IDs to look up."
+          },
+          "market_hash_names": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Market Hash Names",
+            "description": "Market hash names to look up. Names resolve to the phaseless catalog entry; for phased Dopplers/Gammas (Phase 1-4, Ruby, Sapphire, Emerald, Black Pearl) use `item_ids` instead to target a specific phase."
           },
           "providers": {
             "anyOf": [
@@ -27042,9 +27445,6 @@
         },
         "additionalProperties": false,
         "type": "object",
-        "required": [
-          "item_ids"
-        ],
         "title": "BatchBidsRequest",
         "description": "Request body for POST /v1/bids/batch."
       },
@@ -27069,6 +27469,14 @@
             "type": "array",
             "title": "Items Not Found",
             "description": "Item IDs with no bid data available."
+          },
+          "names_not_found": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Names Not Found",
+            "description": "Market hash names that could not be resolved to a catalog item."
           }
         },
         "type": "object",
@@ -27221,13 +27629,34 @@
       "BatchPricesRequest": {
         "properties": {
           "item_ids": {
-            "items": {
-              "type": "integer"
-            },
-            "type": "array",
-            "minItems": 1,
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Item Ids",
             "description": "Normalized catalog item IDs to look up."
+          },
+          "market_hash_names": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Market Hash Names",
+            "description": "Market hash names to look up. Names resolve to the phaseless catalog entry; for phased Dopplers/Gammas (Phase 1-4, Ruby, Sapphire, Emerald, Black Pearl) use `item_ids` instead to target a specific phase."
           },
           "providers": {
             "anyOf": [
@@ -27253,9 +27682,6 @@
         },
         "additionalProperties": false,
         "type": "object",
-        "required": [
-          "item_ids"
-        ],
         "title": "BatchPricesRequest",
         "description": "Request body for POST /v1/prices/batch."
       },
@@ -27280,6 +27706,14 @@
             "type": "array",
             "title": "Items Not Found",
             "description": "Item IDs with no price data available."
+          },
+          "names_not_found": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Names Not Found",
+            "description": "Market hash names that could not be resolved to a catalog item."
           }
         },
         "type": "object",
@@ -29856,6 +30290,46 @@
         "title": "MarketArbitrageResponse",
         "description": "Response envelope for /v1/market/arbitrage."
       },
+      "MarketIndexGroup": {
+        "properties": {
+          "group": {
+            "type": "string",
+            "title": "Group",
+            "description": "Catalog category label for this group."
+          },
+          "marketcap_usd": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Marketcap Usd",
+            "description": "Money amount as a decimal string in USD major units (for example \"25.82\")."
+          },
+          "item_count": {
+            "type": "integer",
+            "title": "Item Count",
+            "description": "Snapshot items in this category with a group label."
+          },
+          "included_count": {
+            "type": "integer",
+            "title": "Included Count",
+            "description": "Items included in market cap aggregation after validation filters."
+          },
+          "excluded_count": {
+            "type": "integer",
+            "title": "Excluded Count",
+            "description": "Items excluded because price/bid/marketcap data was incomplete or spread was too high."
+          }
+        },
+        "type": "object",
+        "required": [
+          "group",
+          "marketcap_usd",
+          "item_count",
+          "included_count",
+          "excluded_count"
+        ],
+        "title": "MarketIndexGroup",
+        "description": "Single group row for /v1/market/indices."
+      },
       "MarketIndicatorsItemData": {
         "properties": {
           "item_id": {
@@ -30014,6 +30488,105 @@
         ],
         "title": "MarketIndicatorsMeta",
         "description": "Metadata for indicators endpoint."
+      },
+      "MarketIndicesData": {
+        "properties": {
+          "total_marketcap_usd": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Total Marketcap Usd",
+            "description": "Money amount as a decimal string in USD major units (for example \"25.82\")."
+          },
+          "groups": {
+            "items": {
+              "$ref": "#/components/schemas/MarketIndexGroup"
+            },
+            "type": "array",
+            "title": "Groups",
+            "description": "Category groups sorted by market cap descending."
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_marketcap_usd",
+          "groups"
+        ],
+        "title": "MarketIndicesData",
+        "description": "Payload for /v1/market/indices."
+      },
+      "MarketIndicesMeta": {
+        "properties": {
+          "generated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Generated At",
+            "description": "ISO 8601 UTC timestamp when this response was generated."
+          },
+          "data_source": {
+            "type": "string",
+            "enum": [
+              "cache",
+              "live",
+              "mixed"
+            ],
+            "title": "Data Source",
+            "description": "Primary data source used to build this response."
+          },
+          "freshness_sec": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Freshness Sec",
+            "description": "Estimated freshness of source data in seconds."
+          },
+          "window": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MarketTimeWindowMeta"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Effective analytics time window metadata."
+          },
+          "group_by": {
+            "type": "string",
+            "enum": [
+              "item_type",
+              "weapon_type"
+            ],
+            "title": "Group By",
+            "description": "Catalog dimension used to group market items."
+          }
+        },
+        "type": "object",
+        "required": [
+          "generated_at",
+          "data_source",
+          "freshness_sec",
+          "group_by"
+        ],
+        "title": "MarketIndicesMeta",
+        "description": "Metadata for /v1/market/indices."
+      },
+      "MarketIndicesResponse": {
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/MarketIndicesMeta",
+            "description": "Response metadata for this payload."
+          },
+          "data": {
+            "$ref": "#/components/schemas/MarketIndicesData",
+            "description": "Primary data payload for this response."
+          }
+        },
+        "type": "object",
+        "required": [
+          "meta",
+          "data"
+        ],
+        "title": "MarketIndicesResponse",
+        "description": "Response envelope for /v1/market/indices."
       },
       "MarketItem": {
         "properties": {
