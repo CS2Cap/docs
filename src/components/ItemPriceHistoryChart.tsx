@@ -220,7 +220,7 @@ export function ItemPriceHistoryChart({
         <div className="space-y-1">
           <div className="flex items-center justify-between font-mono text-[10px] tracking-widest text-muted-foreground">
             <span>VOLUME</span>
-            <span>SALES PER PERIOD</span>
+            <span>QUANTITY FOR SALE</span>
           </div>
           <div className="h-20 w-full min-w-0">
             <ResponsiveContainer width="100%" height="100%" minWidth={0}>
