@@ -19,7 +19,7 @@ import {
   AlertTriangle,
   Gauge,
   BookOpen,
-  Github,
+  Github as GithubIcon,
   FileCode2,
 } from "lucide-react";
 import { FooterSection } from "@/components/FooterSection";
