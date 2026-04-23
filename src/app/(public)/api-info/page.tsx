@@ -177,8 +177,8 @@ export default async function ApiPage() {
                 {
                   icon: Zap,
                   value: "<50ms",
-                  label: "ENDPOINTS",
-                  sub: "In the spec",
+                  label: "AVG LATENCY",
+                  sub: "Global edge network",
                 },
                 {
                   icon: Database,
