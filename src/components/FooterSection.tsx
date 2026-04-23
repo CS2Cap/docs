@@ -117,7 +117,7 @@ export function FooterSection({ showApiLink = true }: { showApiLink?: boolean })
               {showApiLink && (
                 <Link href="/api-info" className="font-mono text-xs text-foreground hover:text-primary transition-colors">API</Link>
               )}
-              <Link href="/api-info#pricing" className="font-mono text-xs text-foreground hover:text-primary transition-colors">Pricing</Link>
+              <a href="https://github.com/CS2Cap" target="_blank" rel="noopener noreferrer" className="font-mono text-xs text-foreground hover:text-primary transition-colors">GitHub</a>
               <a href="https://docs.cs2cap.com/" target="_blank" rel="noopener noreferrer" className="font-mono text-xs text-foreground hover:text-primary transition-colors">Docs</a>
               <a href="https://status.cs2c.app/" target="_blank" rel="noopener noreferrer" className="font-mono text-xs text-foreground hover:text-primary transition-colors">Uptime</a>
             </div>
