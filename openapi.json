@@ -1,8 +1,8 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "CS2C-API",
-    "description": "CS2C-API aggregates and analyzes Counter-Strike 2 marketplace data across multiple providers via a unified REST API.",
+    "title": "CS2Cap",
+    "description": "CS2Cap aggregates and analyzes Counter-Strike 2 marketplace data across multiple providers via a unified REST API.",
     "version": "1.0.0"
   },
   "servers": [
