@@ -70,6 +70,7 @@ export default function AccountSettingsPage() {
   const [timezone, setTimezone] = useState("UTC");
   const [alertEmailsEnabled, setAlertEmailsEnabled] = useState(true);
   const [productUpdateEmailsEnabled, setProductUpdateEmailsEnabled] = useState(false);
+  const [billingReminderEmailsEnabled, setBillingReminderEmailsEnabled] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -106,6 +107,7 @@ export default function AccountSettingsPage() {
     setTimezone(preferences.timezone);
     setAlertEmailsEnabled(preferences.alert_emails_enabled);
     setProductUpdateEmailsEnabled(preferences.product_update_emails_enabled);
+    setBillingReminderEmailsEnabled(preferences.billing_reminder_emails_enabled);
   }, [preferences]);
 
   if (sessionLoading) {
@@ -129,7 +131,8 @@ export default function AccountSettingsPage() {
     ? preferredCurrency !== preferences.preferred_currency ||
       timezone !== preferences.timezone ||
       alertEmailsEnabled !== preferences.alert_emails_enabled ||
-      productUpdateEmailsEnabled !== preferences.product_update_emails_enabled
+      productUpdateEmailsEnabled !== preferences.product_update_emails_enabled ||
+      billingReminderEmailsEnabled !== preferences.billing_reminder_emails_enabled
     : false;
 
   async function handleSavePreferences() {
@@ -142,6 +145,7 @@ export default function AccountSettingsPage() {
         timezone,
         alert_emails_enabled: alertEmailsEnabled,
         product_update_emails_enabled: productUpdateEmailsEnabled,
+        billing_reminder_emails_enabled: billingReminderEmailsEnabled,
       });
       await refetchPreferences();
       prefInitialized.current = false;
@@ -530,6 +534,19 @@ export default function AccountSettingsPage() {
                     <Switch
                       checked={productUpdateEmailsEnabled}
                       onCheckedChange={setProductUpdateEmailsEnabled}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <p className="font-medium text-foreground">Billing reminders</p>
+                      <p className="text-sm text-muted-foreground">
+                        72h and 24h pre-expiration reminder emails
+                      </p>
+                    </div>
+                    <Switch
+                      checked={billingReminderEmailsEnabled}
+                      onCheckedChange={setBillingReminderEmailsEnabled}
                     />
                   </div>
                 </div>

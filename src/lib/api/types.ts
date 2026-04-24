@@ -536,6 +536,7 @@ export interface AccountPreferences {
   timezone: string;
   alert_emails_enabled: boolean;
   product_update_emails_enabled: boolean;
+  billing_reminder_emails_enabled: boolean;
 }
 
 export interface APIKeyGetResponse {
