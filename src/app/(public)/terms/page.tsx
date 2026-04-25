@@ -46,7 +46,7 @@ const sections = [
   {
     title: "6. Plan Restrictions",
     body: [
-      "Certain plans may include technical restrictions, including rate limits, quotas, IP binding, concurrency controls, and feature gating.",
+      "Certain plans may include technical restrictions, including rate limits, quotas, concurrency controls, and feature gating.",
       "You agree not to bypass or attempt to bypass those restrictions.",
     ],
   },

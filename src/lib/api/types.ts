@@ -464,8 +464,6 @@ export interface APIKeyInfo {
   created_at: string;
   last_used_at?: string;
   expires_at?: string;
-  bound_ip?: string;
-  bound_ip_set_at?: string;
   quota_requests_per_month_override?: number;
   rate_requests_per_minute_override?: number;
   effective_quota_requests_per_month?: number;
