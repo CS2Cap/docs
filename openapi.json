@@ -916,7 +916,7 @@
           "Prices"
         ],
         "summary": "Price Candles",
-        "description": "Return composite OHLCV candle data for a single item across all providers.\n\nParameters:\n- Item filter: `item_id` or `market_hash_name` (one is required).\n- Optional filter: `phase`.\n- Time window: `start`/`end` (ISO 8601) or `lookback` (for example `7d` or `7`).\n- `interval`: `5m`, `1h`, or `1d`.\n- `fill`: Include empty buckets with carry-forward prices when `true`.\n- `currency`: Quote currency (default `USD`).\n- `limit`, `cursor`: Cursor-based pagination controls.\n\nNotes:\n- If both `start` and `lookback` are sent, `lookback` takes precedence.\n- Maximum lookback depends on `interval`:\n  `5m` up to 7 days, `1h` up to 30 days, `1d` up to 365 days.\n\nResponse:\n- `meta`: Item, provider scope, interval, phase, currency, start/end timestamps.\n- `data`: Candle buckets in oldest-to-newest order\n  (`t`, `o`, `h`, `l`, `c`, `v`, `q`, `providers`).\n  `o`/`c` are the lowest effective provider prices, `l` is the minimum provider\n  low, `h` is capped at `median(provider_highs) * 1.5`, `v` is the non-negative depletion\n  flow between buckets, and `q` is the summed close-side inventory at bucket end when\n  available. `providers.l` and `providers.h` identify the provider keys contributing the\n  returned low/high values. For `1d` requests starting more than 30 days back, `v` falls\n  back to legacy depletion-derived `volume_qty` and `q` is `null`.\n- `pagination`: Standardized pagination footer with cursor state.\n\nRequirements:\n- Valid API key with access to `/v1/prices/candles`.\n- `item_id` or `market_hash_name` is required.\n- `start`/`end` must be valid ISO 8601 timestamps.\n- `limit` is capped by your tier.",
+        "description": "Return composite OHLCV candle data for a single item across all providers.\n\nParameters:\n- Item filter: `item_id` or `market_hash_name` (one is required).\n- Optional filter: `phase`.\n- Time window: `start`/`end` (ISO 8601) or `lookback` (for example `7d` or `7`).\n- `interval`: `5m`, `1h`, or `1d`.\n- `fill`: Include empty buckets with carry-forward prices when `true`.\n- `currency`: Quote currency (default `USD`).\n\nNotes:\n- If both `start` and `lookback` are sent, `lookback` takes precedence.\n- Maximum lookback depends on `interval`:\n  `5m` up to 7 days, `1h` up to 30 days, `1d` up to 365 days.\n\nResponse:\n- `meta`: Item, provider scope, interval, phase, currency, start/end timestamps.\n- `data`: Candle buckets in oldest-to-newest order\n  (`t`, `o`, `h`, `l`, `c`, `v`, `q`, `providers`).\n  `o`/`c` are the lowest effective provider prices, `l` is the minimum provider\n  low, `h` is capped at `median(provider_highs) * 1.5`, `v` is the non-negative depletion\n  flow between buckets, and `q` is the summed close-side inventory at bucket end when\n  available. `providers.l` and `providers.h` identify the provider keys contributing the\n  returned low/high values. For `1d` requests starting more than 30 days back, `v` falls\n  back to legacy depletion-derived `volume_qty` and `q` is `null`.\n\nRequirements:\n- Valid API key with access to `/v1/prices/candles`.\n- `item_id` or `market_hash_name` is required.\n- `start`/`end` must be valid ISO 8601 timestamps.",
         "operationId": "priceCandles",
         "security": [
           {
@@ -1084,43 +1084,6 @@
               "title": "Currency"
             },
             "description": "Target currency. Any ISO 4217 code supported by `/v1/fx` (see `/v1/fx` for the full list). Invalid codes return a 422 validation error."
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "integer",
-                  "minimum": 1
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Maximum number of candles to return. Defaults to the effective tier cap.",
-              "title": "Limit"
-            },
-            "description": "Maximum number of candles to return. Defaults to the effective tier cap."
-          },
-          {
-            "name": "cursor",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Opaque pagination cursor from previous response",
-              "title": "Cursor"
-            },
-            "description": "Opaque pagination cursor from previous response"
           }
         ],
         "responses": {
@@ -1168,12 +1131,7 @@
                         "l": "steam"
                       }
                     }
-                  ],
-                  "pagination": {
-                    "limit": 100,
-                    "has_next": false,
-                    "has_prev": false
-                  }
+                  ]
                 }
               }
             }
@@ -1333,10 +1291,16 @@
                       "detail": "end must be after start"
                     }
                   },
-                  "invalidCursor": {
-                    "summary": "Invalid cursor",
+                  "removedCursor": {
+                    "summary": "Removed cursor parameter",
                     "value": {
-                      "detail": "invalid cursor format"
+                      "detail": "cursor parameter has been removed; /v1/prices/candles no longer supports pagination"
+                    }
+                  },
+                  "removedLimit": {
+                    "summary": "Removed limit parameter",
+                    "value": {
+                      "detail": "limit parameter has been removed; /v1/prices/candles no longer supports pagination"
                     }
                   },
                   "legacyProvider": {
@@ -16647,7 +16611,7 @@
           "Prices"
         ],
         "summary": "Web Price Candles V1 Web Prices Candles",
-        "description": "Return composite OHLCV candle data for a single item across all providers.\n\nParameters:\n- Item filter: `item_id` or `market_hash_name` (one is required).\n- Optional filter: `phase`.\n- Time window: `start`/`end` (ISO 8601) or `lookback` (for example `7d` or `7`).\n- `interval`: `5m`, `1h`, or `1d`.\n- `fill`: Include empty buckets with carry-forward prices when `true`.\n- `currency`: Quote currency (default `USD`).\n- `limit`, `cursor`: Cursor-based pagination controls.\n\nNotes:\n- If both `start` and `lookback` are sent, `lookback` takes precedence.\n- Maximum lookback depends on `interval`:\n  `5m` up to 7 days, `1h` up to 30 days, `1d` up to 365 days.\n\nResponse:\n- `meta`: Item, provider scope, interval, phase, currency, start/end timestamps.\n- `data`: Candle buckets in oldest-to-newest order\n  (`t`, `o`, `h`, `l`, `c`, `v`, `q`, `providers`).\n  `o`/`c` are the lowest effective provider prices, `l` is the minimum provider\n  low, `h` is capped at `median(provider_highs) * 1.5`, `v` is the non-negative depletion\n  flow between buckets, and `q` is the summed close-side inventory at bucket end when\n  available. `providers.l` and `providers.h` identify the provider keys contributing the\n  returned low/high values. For `1d` requests starting more than 30 days back, `v` falls\n  back to legacy depletion-derived `volume_qty` and `q` is `null`.\n- `pagination`: Standardized pagination footer with cursor state.\n\nRequirements:\n- Valid API key with access to `/v1/prices/candles`.\n- `item_id` or `market_hash_name` is required.\n- `start`/`end` must be valid ISO 8601 timestamps.\n- `limit` is capped by your tier.",
+        "description": "Return composite OHLCV candle data for a single item across all providers.\n\nParameters:\n- Item filter: `item_id` or `market_hash_name` (one is required).\n- Optional filter: `phase`.\n- Time window: `start`/`end` (ISO 8601) or `lookback` (for example `7d` or `7`).\n- `interval`: `5m`, `1h`, or `1d`.\n- `fill`: Include empty buckets with carry-forward prices when `true`.\n- `currency`: Quote currency (default `USD`).\n\nNotes:\n- If both `start` and `lookback` are sent, `lookback` takes precedence.\n- Maximum lookback depends on `interval`:\n  `5m` up to 7 days, `1h` up to 30 days, `1d` up to 365 days.\n\nResponse:\n- `meta`: Item, provider scope, interval, phase, currency, start/end timestamps.\n- `data`: Candle buckets in oldest-to-newest order\n  (`t`, `o`, `h`, `l`, `c`, `v`, `q`, `providers`).\n  `o`/`c` are the lowest effective provider prices, `l` is the minimum provider\n  low, `h` is capped at `median(provider_highs) * 1.5`, `v` is the non-negative depletion\n  flow between buckets, and `q` is the summed close-side inventory at bucket end when\n  available. `providers.l` and `providers.h` identify the provider keys contributing the\n  returned low/high values. For `1d` requests starting more than 30 days back, `v` falls\n  back to legacy depletion-derived `volume_qty` and `q` is `null`.\n\nRequirements:\n- Valid API key with access to `/v1/prices/candles`.\n- `item_id` or `market_hash_name` is required.\n- `start`/`end` must be valid ISO 8601 timestamps.",
         "operationId": "webPriceCandles",
         "security": [],
         "parameters": [
@@ -16811,43 +16775,6 @@
               "title": "Currency"
             },
             "description": "Target currency. Any ISO 4217 code supported by `/v1/fx` (see `/v1/fx` for the full list). Invalid codes return a 422 validation error."
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "integer",
-                  "minimum": 1
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Maximum number of candles to return. Defaults to the effective tier cap.",
-              "title": "Limit"
-            },
-            "description": "Maximum number of candles to return. Defaults to the effective tier cap."
-          },
-          {
-            "name": "cursor",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Opaque pagination cursor from previous response",
-              "title": "Cursor"
-            },
-            "description": "Opaque pagination cursor from previous response"
           }
         ],
         "responses": {
@@ -16895,14 +16822,7 @@
                         "l": "steam"
                       }
                     }
-                  ],
-                  "pagination": {
-                    "limit": 100,
-                    "offset": 0,
-                    "total": -1,
-                    "has_next": false,
-                    "has_prev": false
-                  }
+                  ]
                 }
               }
             }
@@ -17062,10 +16982,16 @@
                       "detail": "end must be after start"
                     }
                   },
-                  "invalidCursor": {
-                    "summary": "Invalid cursor",
+                  "removedCursor": {
+                    "summary": "Removed cursor parameter",
                     "value": {
-                      "detail": "invalid cursor format"
+                      "detail": "cursor parameter has been removed; /v1/prices/candles no longer supports pagination"
+                    }
+                  },
+                  "removedLimit": {
+                    "summary": "Removed limit parameter",
+                    "value": {
+                      "detail": "limit parameter has been removed; /v1/prices/candles no longer supports pagination"
                     }
                   },
                   "legacyProvider": {
@@ -32359,24 +32285,15 @@
             "type": "array",
             "title": "Data",
             "description": "Primary data payload for this response."
-          },
-          "pagination": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/CursorPaginationMeta"
-              }
-            ],
-            "description": "Pagination metadata for this response."
           }
         },
         "type": "object",
         "required": [
           "meta",
-          "data",
-          "pagination"
+          "data"
         ],
         "title": "PriceCandlesPage",
-        "description": "Paginated candle response with cursor-based pagination."
+        "description": "Candle response for a requested time window."
       },
       "PriceHistoryFiltersMeta": {
         "properties": {
