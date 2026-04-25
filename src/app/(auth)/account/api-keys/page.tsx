@@ -74,8 +74,6 @@ export default function AccountApiKeysPage() {
   const [newKey, setNewKey] = useState<ReissueResponse | null>(null);
   const [reissuing, setReissuing] = useState(false);
   const [reissueError, setReissueError] = useState<string | null>(null);
-  const [resettingIp, setResettingIp] = useState(false);
-  const [resetIpMessage, setResetIpMessage] = useState<string | null>(null);
 
   // Sub-key create
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
