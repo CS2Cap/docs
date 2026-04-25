@@ -10950,9 +10950,9 @@
         "tags": [
           "Market Intelligence"
         ],
-        "summary": "Get Market Cap Indices",
-        "description": "Aggregate the cached 24h market snapshot into category-level indices.\n\nSupports grouping by `item_type` or `weapon_type`.\nItems are excluded from market cap totals when bid/ask/marketcap data is incomplete or spread exceeds the internal spread threshold.\n\nResponse:\n- no pagination\n- groups sorted by `marketcap_usd desc`\n- totals computed from the same filtered item set\n\nTier: Quant-only.",
-        "operationId": "getMarketCapIndices",
+        "summary": "Get Market Cap Indexes",
+        "description": "Aggregate the cached 24h market snapshot into category-level indexes.\n\nSupports grouping by `item_type` or `weapon_type`.\nItems are excluded from market cap totals when bid/ask/marketcap data is incomplete or spread exceeds the internal spread threshold.\n\nResponse:\n- no pagination\n- groups sorted by `marketcap_usd desc`\n- totals computed from the same filtered item set\n\nTier: Quant-only.",
+        "operationId": "getMarketCapIndexes",
         "security": [
           {
             "BearerAuth": []
@@ -10982,7 +10982,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MarketIndicesResponse"
+                  "$ref": "#/components/schemas/MarketIndexesResponse"
                 },
                 "example": {
                   "meta": {
@@ -18396,9 +18396,9 @@
         "tags": [
           "Market Intelligence"
         ],
-        "summary": "Get Market Cap Indices",
-        "description": "Aggregate the cached 24h market snapshot into category-level indices.\n\nSupports grouping by `item_type` or `weapon_type`.\nItems are excluded from market cap totals when bid/ask/marketcap data is incomplete or spread exceeds the internal spread threshold.\n\nResponse:\n- no pagination\n- groups sorted by `marketcap_usd desc`\n- totals computed from the same filtered item set\n\nTier: Quant-only.",
-        "operationId": "webGetMarketCapIndices",
+        "summary": "Get Market Cap Indexes",
+        "description": "Aggregate the cached 24h market snapshot into category-level indexes.\n\nSupports grouping by `item_type` or `weapon_type`.\nItems are excluded from market cap totals when bid/ask/marketcap data is incomplete or spread exceeds the internal spread threshold.\n\nResponse:\n- no pagination\n- groups sorted by `marketcap_usd desc`\n- totals computed from the same filtered item set\n\nTier: Quant-only.",
+        "operationId": "webGetMarketCapIndexes",
         "security": [],
         "parameters": [
           {
@@ -18424,7 +18424,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MarketIndicesResponse"
+                  "$ref": "#/components/schemas/MarketIndexesResponse"
                 },
                 "example": {
                   "meta": {
@@ -29939,7 +29939,106 @@
           "excluded_count"
         ],
         "title": "MarketIndexGroup",
-        "description": "Single group row for /v1/market/indices."
+        "description": "Single group row for /v1/market/indexes."
+      },
+      "MarketIndexesData": {
+        "properties": {
+          "total_marketcap_usd": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Total Marketcap Usd",
+            "description": "Money amount as a decimal string in USD major units (for example \"25.82\")."
+          },
+          "groups": {
+            "items": {
+              "$ref": "#/components/schemas/MarketIndexGroup"
+            },
+            "type": "array",
+            "title": "Groups",
+            "description": "Category groups sorted by market cap descending."
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_marketcap_usd",
+          "groups"
+        ],
+        "title": "MarketIndexesData",
+        "description": "Payload for /v1/market/indexes."
+      },
+      "MarketIndexesMeta": {
+        "properties": {
+          "generated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Generated At",
+            "description": "ISO 8601 UTC timestamp when this response was generated."
+          },
+          "data_source": {
+            "type": "string",
+            "enum": [
+              "cache",
+              "live",
+              "mixed"
+            ],
+            "title": "Data Source",
+            "description": "Primary data source used to build this response."
+          },
+          "freshness_sec": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Freshness Sec",
+            "description": "Estimated freshness of source data in seconds."
+          },
+          "window": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MarketTimeWindowMeta"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Effective analytics time window metadata."
+          },
+          "group_by": {
+            "type": "string",
+            "enum": [
+              "item_type",
+              "weapon_type"
+            ],
+            "title": "Group By",
+            "description": "Catalog dimension used to group market items."
+          }
+        },
+        "type": "object",
+        "required": [
+          "generated_at",
+          "data_source",
+          "freshness_sec",
+          "group_by"
+        ],
+        "title": "MarketIndexesMeta",
+        "description": "Metadata for /v1/market/indexes."
+      },
+      "MarketIndexesResponse": {
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/MarketIndexesMeta",
+            "description": "Response metadata for this payload."
+          },
+          "data": {
+            "$ref": "#/components/schemas/MarketIndexesData",
+            "description": "Primary data payload for this response."
+          }
+        },
+        "type": "object",
+        "required": [
+          "meta",
+          "data"
+        ],
+        "title": "MarketIndexesResponse",
+        "description": "Response envelope for /v1/market/indexes."
       },
       "MarketIndicatorsItemData": {
         "properties": {
@@ -30099,105 +30198,6 @@
         ],
         "title": "MarketIndicatorsMeta",
         "description": "Metadata for indicators endpoint."
-      },
-      "MarketIndicesData": {
-        "properties": {
-          "total_marketcap_usd": {
-            "type": "string",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-            "title": "Total Marketcap Usd",
-            "description": "Money amount as a decimal string in USD major units (for example \"25.82\")."
-          },
-          "groups": {
-            "items": {
-              "$ref": "#/components/schemas/MarketIndexGroup"
-            },
-            "type": "array",
-            "title": "Groups",
-            "description": "Category groups sorted by market cap descending."
-          }
-        },
-        "type": "object",
-        "required": [
-          "total_marketcap_usd",
-          "groups"
-        ],
-        "title": "MarketIndicesData",
-        "description": "Payload for /v1/market/indices."
-      },
-      "MarketIndicesMeta": {
-        "properties": {
-          "generated_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Generated At",
-            "description": "ISO 8601 UTC timestamp when this response was generated."
-          },
-          "data_source": {
-            "type": "string",
-            "enum": [
-              "cache",
-              "live",
-              "mixed"
-            ],
-            "title": "Data Source",
-            "description": "Primary data source used to build this response."
-          },
-          "freshness_sec": {
-            "type": "integer",
-            "minimum": 0.0,
-            "title": "Freshness Sec",
-            "description": "Estimated freshness of source data in seconds."
-          },
-          "window": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/MarketTimeWindowMeta"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Effective analytics time window metadata."
-          },
-          "group_by": {
-            "type": "string",
-            "enum": [
-              "item_type",
-              "weapon_type"
-            ],
-            "title": "Group By",
-            "description": "Catalog dimension used to group market items."
-          }
-        },
-        "type": "object",
-        "required": [
-          "generated_at",
-          "data_source",
-          "freshness_sec",
-          "group_by"
-        ],
-        "title": "MarketIndicesMeta",
-        "description": "Metadata for /v1/market/indices."
-      },
-      "MarketIndicesResponse": {
-        "properties": {
-          "meta": {
-            "$ref": "#/components/schemas/MarketIndicesMeta",
-            "description": "Response metadata for this payload."
-          },
-          "data": {
-            "$ref": "#/components/schemas/MarketIndicesData",
-            "description": "Primary data payload for this response."
-          }
-        },
-        "type": "object",
-        "required": [
-          "meta",
-          "data"
-        ],
-        "title": "MarketIndicesResponse",
-        "description": "Response envelope for /v1/market/indices."
       },
       "MarketItem": {
         "properties": {
