@@ -10576,9 +10576,9 @@
                           "sales_30d": 2096,
                           "steam_sales_7d": 34,
                           "steam_sales_30d": 587,
-                          "listing_score": 25,
-                          "gap_score": 25,
-                          "volume_score": 28,
+                          "listing_score": 12,
+                          "gap_score": 7,
+                          "volume_score": 24,
                           "liquidity_last_updated": "2026-01-20T12:06:10Z"
                         }
                       },
@@ -10606,9 +10606,9 @@
                           "sales_30d": 301,
                           "steam_sales_7d": 16,
                           "steam_sales_30d": 73,
-                          "listing_score": 18,
-                          "gap_score": 20,
-                          "volume_score": 26,
+                          "listing_score": 9,
+                          "gap_score": 5,
+                          "volume_score": 18,
                           "liquidity_last_updated": "2026-01-20T12:06:02Z"
                         }
                       }
@@ -10811,9 +10811,9 @@
                       "sales_30d": 2096,
                       "steam_sales_7d": 34,
                       "steam_sales_30d": 587,
-                      "listing_score": 25,
-                      "gap_score": 25,
-                      "volume_score": 28,
+                      "listing_score": 12,
+                      "gap_score": 7,
+                      "volume_score": 24,
                       "liquidity_last_updated": "2026-01-20T12:06:10Z"
                     },
                     "providers": [
@@ -18301,9 +18301,9 @@
                           "sales_30d": 2096,
                           "steam_sales_7d": 34,
                           "steam_sales_30d": 587,
-                          "listing_score": 25,
-                          "gap_score": 25,
-                          "volume_score": 28,
+                          "listing_score": 12,
+                          "gap_score": 7,
+                          "volume_score": 24,
                           "liquidity_last_updated": "2026-01-20T12:06:10Z"
                         }
                       },
@@ -18331,9 +18331,9 @@
                           "sales_30d": 301,
                           "steam_sales_7d": 16,
                           "steam_sales_30d": 73,
-                          "listing_score": 18,
-                          "gap_score": 20,
-                          "volume_score": 26,
+                          "listing_score": 9,
+                          "gap_score": 5,
+                          "volume_score": 18,
                           "liquidity_last_updated": "2026-01-20T12:06:02Z"
                         }
                       }
@@ -18717,9 +18717,9 @@
                       "sales_30d": 2096,
                       "steam_sales_7d": 34,
                       "steam_sales_30d": 587,
-                      "listing_score": 25,
-                      "gap_score": 25,
-                      "volume_score": 28,
+                      "listing_score": 12,
+                      "gap_score": 7,
+                      "volume_score": 24,
                       "liquidity_last_updated": "2026-01-20T12:06:10Z"
                     },
                     "providers": [
