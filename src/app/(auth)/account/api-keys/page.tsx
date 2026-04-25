@@ -132,23 +132,7 @@ export default function AccountApiKeysPage() {
     }
   }
 
-  async function handleResetIp() {
-    setResettingIp(true);
-    setResetIpMessage(null);
-    try {
-      await webApi.resetAPIKeyIP();
-      setResetIpMessage("IP rebound. Your next request will set the new bound IP.");
-      await refetchSession();
-    } catch (error: unknown) {
-      setResetIpMessage(
-        error && typeof error === "object" && "message" in error
-          ? String((error as { message: string }).message)
-          : "Failed to rebind IP.",
-      );
-    } finally {
-      setResettingIp(false);
-    }
-  }
+
 
   async function handleCreateSubKey() {
     setCreating(true);
