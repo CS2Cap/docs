@@ -248,7 +248,6 @@ export interface PriceCandlesPage {
     end: string;
   };
   data: PriceCandleItem[];
-  pagination: PaginationMeta;
 }
 
 export interface BuyOrderItem {
