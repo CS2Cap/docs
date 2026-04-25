@@ -14,7 +14,6 @@ import {
   AlertCircle,
   RefreshCw,
   CheckCircle,
-  Globe,
   Plus,
   Trash2,
   Pencil,
