@@ -254,10 +254,6 @@ export const webApi = {
     return request("/v1/web/account/key/reissue", { method: "POST" });
   },
 
-  resetAPIKeyIP(): Promise<unknown> {
-    return request("/v1/web/account/key/reset-ip", { method: "POST" });
-  },
-
   getWatchlist(params: { limit?: number; offset?: number; search?: string } = {}): Promise<WatchlistResponse> {
     return request(`/v1/web/account/watchlist${buildQuery(params)}`);
   },
