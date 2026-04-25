@@ -15,7 +15,6 @@ import { buildQuery } from "@/lib/api/shared";
 import type {
   BatchPriceItem,
   ItemOut,
-  PriceCandlesPage,
   ProviderInfo,
 } from "@/lib/api/types";
 
