@@ -359,7 +359,7 @@ export default function AccountApiKeysPage() {
                 </Dialog>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-3">
+              <div className="grid gap-4 md:grid-cols-2">
                 <div className="rounded-lg border border-border/50 bg-secondary/20 p-4">
                   <div className="text-sm text-muted-foreground">Monthly Limit</div>
                   <div className="mt-1 text-lg font-semibold text-foreground">
@@ -372,34 +372,6 @@ export default function AccountApiKeysPage() {
                     {(activeKey.effective_rate_requests_per_minute ?? tier_info.rate_requests_per_minute).toLocaleString()}
                   </div>
                 </div>
-                <div className="rounded-lg border border-border/50 bg-secondary/20 p-4">
-                  <div className="text-sm text-muted-foreground">Bound IP</div>
-                  <div className="mt-1 text-lg font-semibold text-foreground">
-                    {activeKey.bound_ip ?? "None"}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-3">
-                <TooltipProvider delayDuration={150}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="outline" onClick={handleResetIp} disabled={resettingIp}>
-                        <Globe className="mr-2 h-4 w-4" />
-                        {resettingIp ? "Rebinding…" : "Rebind to current IP"}
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" className="max-w-xs">
-                      <p>
-                        Clears the bound IP so the next request from your key sets a new one. Limit: 1 / day
-                      </p>
-                      <p className="mt-1 text-muted-foreground">
-                        IP binding only applies on the Free tier — paid tiers can send requests regardless of IP.
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-                {resetIpMessage && <p className="text-sm text-muted-foreground">{resetIpMessage}</p>}
               </div>
             </div>
           </CardContent>
