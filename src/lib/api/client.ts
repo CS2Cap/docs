@@ -201,8 +201,6 @@ export const webApi = {
     interval?: "5m" | "1h" | "1d";
     fill?: boolean;
     currency?: string;
-    limit?: number;
-    cursor?: string;
   }): Promise<PriceCandlesPage> {
     return request(`/v1/web/prices/candles${buildQuery(params)}`);
   },
