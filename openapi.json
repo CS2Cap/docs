@@ -916,7 +916,7 @@
           "Prices"
         ],
         "summary": "Price Candles",
-        "description": "Return composite OHLCV candle data for a single item across all providers.\n\nParameters:\n- Item filter: `item_id` or `market_hash_name` (one is required).\n- Optional filter: `phase`.\n- Time window: `start`/`end` (ISO 8601) or `lookback` (for example `7d` or `7`).\n- `interval`: `5m`, `1h`, or `1d`.\n- `fill`: Include empty buckets with carry-forward prices when `true`.\n- `currency`: Quote currency (default `USD`).\n\nNotes:\n- If both `start` and `lookback` are sent, `lookback` takes precedence.\n- Maximum lookback depends on `interval`:\n  `5m` up to 7 days, `1h` up to 30 days, `1d` up to 365 days.\n\nResponse:\n- `meta`: Item, provider scope, interval, phase, currency, start/end timestamps.\n- `data`: Candle buckets in oldest-to-newest order\n  (`t`, `o`, `h`, `l`, `c`, `v`, `q`, `providers`).\n  `o`/`c` are the lowest effective provider prices, `l` is the minimum provider\n  low, `h` is capped at `median(provider_highs) * 1.5`, `v` is the non-negative depletion\n  flow between buckets, and `q` is the summed close-side inventory at bucket end when\n  available. `providers.l` and `providers.h` identify the provider keys contributing the\n  returned low/high values. For `1d` requests starting more than 30 days back, `v` falls\n  back to legacy depletion-derived `volume_qty` and `q` is `null`.\n\nRequirements:\n- Valid API key with access to `/v1/prices/candles`.\n- `item_id` or `market_hash_name` is required.\n- `start`/`end` must be valid ISO 8601 timestamps.",
+        "description": "Return composite OHLCV candle data for a single item across all providers.\n\nParameters:\n- Item filter: `item_id` or `market_hash_name` (one is required).\n- Optional filter: `phase`.\n- Time window: `start`/`end` (ISO 8601) or `lookback` (for example `7d` or `7`).\n- `interval`: `5m`, `1h`, or `1d`.\n- `fill`: Include empty buckets with carry-forward prices when `true`.\n- `currency`: Quote currency (default `USD`).\n\nNotes:\n- If both `start` and `lookback` are sent, `lookback` takes precedence.\n- Maximum lookback depends on `interval`:\n  `5m` up to 7 days, `1h` up to 30 days, `1d` up to 365 days.\n- Free tiers are additionally capped by their tier restrictions and default\n  to the maximum allowed window when no explicit lookback is supplied.\n\nResponse:\n- `meta`: Item, provider scope, interval, phase, currency, start/end timestamps.\n- `data`: Candle buckets in oldest-to-newest order\n  (`t`, `o`, `h`, `l`, `c`, `v`, `q`, `providers`).\n  `o`/`c` are the lowest effective provider prices, `l` is the minimum provider\n  low, `h` is capped at `median(provider_highs) * 1.5`, `v` is the non-negative depletion\n  flow between buckets, and `q` is the summed close-side inventory at bucket end when\n  available. `providers.l` and `providers.h` identify the provider keys contributing the\n  returned low/high values. For `1d` requests starting more than 30 days back, `v` falls\n  back to legacy depletion-derived `volume_qty` and `q` is `null`.\n\nRequirements:\n- Valid API key with access to `/v1/prices/candles`.\n- `item_id` or `market_hash_name` is required.\n- `start`/`end` must be valid ISO 8601 timestamps.",
         "operationId": "priceCandles",
         "security": [
           {
@@ -1029,10 +1029,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Lookback window in days. Use `7d` or plain `7`; both mean 7 days and set start=now-lookback.",
+              "description": "Lookback window in days. Use `7d` or plain `7`; both mean 7 days and set start=now-lookback. Free tiers cap this at 30 days.",
               "title": "Lookback"
             },
-            "description": "Lookback window in days. Use `7d` or plain `7`; both mean 7 days and set start=now-lookback.",
+            "description": "Lookback window in days. Use `7d` or plain `7`; both mean 7 days and set start=now-lookback. Free tiers cap this at 30 days.",
             "examples": {
               "stringDays": {
                 "summary": "String shorthand",
@@ -1050,16 +1050,16 @@
             "required": false,
             "schema": {
               "type": "string",
-              "description": "Time bucket interval",
+              "description": "Time bucket interval (default: `1d`)",
               "enum": [
                 "1d",
                 "1h",
                 "5m"
               ],
-              "default": "1h",
+              "default": "1d",
               "title": "Interval"
             },
-            "description": "Time bucket interval"
+            "description": "Time bucket interval (default: `1d`)"
           },
           {
             "name": "fill",
@@ -1100,7 +1100,7 @@
                     "market_hash_name": "AK-47 | Redline (Field-Tested)",
                     "provider": "All Providers",
                     "currency": "USD",
-                    "interval": "1h",
+                    "interval": "1d",
                     "start": "2026-01-20T00:00:00Z",
                     "end": "2026-01-21T00:00:00Z"
                   },
@@ -16611,7 +16611,7 @@
           "Prices"
         ],
         "summary": "Web Price Candles V1 Web Prices Candles",
-        "description": "Return composite OHLCV candle data for a single item across all providers.\n\nParameters:\n- Item filter: `item_id` or `market_hash_name` (one is required).\n- Optional filter: `phase`.\n- Time window: `start`/`end` (ISO 8601) or `lookback` (for example `7d` or `7`).\n- `interval`: `5m`, `1h`, or `1d`.\n- `fill`: Include empty buckets with carry-forward prices when `true`.\n- `currency`: Quote currency (default `USD`).\n\nNotes:\n- If both `start` and `lookback` are sent, `lookback` takes precedence.\n- Maximum lookback depends on `interval`:\n  `5m` up to 7 days, `1h` up to 30 days, `1d` up to 365 days.\n\nResponse:\n- `meta`: Item, provider scope, interval, phase, currency, start/end timestamps.\n- `data`: Candle buckets in oldest-to-newest order\n  (`t`, `o`, `h`, `l`, `c`, `v`, `q`, `providers`).\n  `o`/`c` are the lowest effective provider prices, `l` is the minimum provider\n  low, `h` is capped at `median(provider_highs) * 1.5`, `v` is the non-negative depletion\n  flow between buckets, and `q` is the summed close-side inventory at bucket end when\n  available. `providers.l` and `providers.h` identify the provider keys contributing the\n  returned low/high values. For `1d` requests starting more than 30 days back, `v` falls\n  back to legacy depletion-derived `volume_qty` and `q` is `null`.\n\nRequirements:\n- Valid API key with access to `/v1/prices/candles`.\n- `item_id` or `market_hash_name` is required.\n- `start`/`end` must be valid ISO 8601 timestamps.",
+        "description": "Return composite OHLCV candle data for a single item across all providers.\n\nParameters:\n- Item filter: `item_id` or `market_hash_name` (one is required).\n- Optional filter: `phase`.\n- Time window: `start`/`end` (ISO 8601) or `lookback` (for example `7d` or `7`).\n- `interval`: `5m`, `1h`, or `1d`.\n- `fill`: Include empty buckets with carry-forward prices when `true`.\n- `currency`: Quote currency (default `USD`).\n\nNotes:\n- If both `start` and `lookback` are sent, `lookback` takes precedence.\n- Maximum lookback depends on `interval`:\n  `5m` up to 7 days, `1h` up to 30 days, `1d` up to 365 days.\n- Free tiers are additionally capped by their tier restrictions and default\n  to the maximum allowed window when no explicit lookback is supplied.\n\nResponse:\n- `meta`: Item, provider scope, interval, phase, currency, start/end timestamps.\n- `data`: Candle buckets in oldest-to-newest order\n  (`t`, `o`, `h`, `l`, `c`, `v`, `q`, `providers`).\n  `o`/`c` are the lowest effective provider prices, `l` is the minimum provider\n  low, `h` is capped at `median(provider_highs) * 1.5`, `v` is the non-negative depletion\n  flow between buckets, and `q` is the summed close-side inventory at bucket end when\n  available. `providers.l` and `providers.h` identify the provider keys contributing the\n  returned low/high values. For `1d` requests starting more than 30 days back, `v` falls\n  back to legacy depletion-derived `volume_qty` and `q` is `null`.\n\nRequirements:\n- Valid API key with access to `/v1/prices/candles`.\n- `item_id` or `market_hash_name` is required.\n- `start`/`end` must be valid ISO 8601 timestamps.",
         "operationId": "webPriceCandles",
         "security": [],
         "parameters": [
@@ -16720,10 +16720,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Lookback window in days. Use `7d` or plain `7`; both mean 7 days and set start=now-lookback.",
+              "description": "Lookback window in days. Use `7d` or plain `7`; both mean 7 days and set start=now-lookback. Free tiers cap this at 30 days.",
               "title": "Lookback"
             },
-            "description": "Lookback window in days. Use `7d` or plain `7`; both mean 7 days and set start=now-lookback.",
+            "description": "Lookback window in days. Use `7d` or plain `7`; both mean 7 days and set start=now-lookback. Free tiers cap this at 30 days.",
             "examples": {
               "stringDays": {
                 "summary": "String shorthand",
@@ -16741,16 +16741,16 @@
             "required": false,
             "schema": {
               "type": "string",
-              "description": "Time bucket interval",
+              "description": "Time bucket interval (default: `1d`)",
               "enum": [
                 "1d",
                 "1h",
                 "5m"
               ],
-              "default": "1h",
+              "default": "1d",
               "title": "Interval"
             },
-            "description": "Time bucket interval"
+            "description": "Time bucket interval (default: `1d`)"
           },
           {
             "name": "fill",
@@ -16791,7 +16791,7 @@
                     "market_hash_name": "AK-47 | Redline (Field-Tested)",
                     "provider": "All Providers",
                     "currency": "USD",
-                    "interval": "1h",
+                    "interval": "1d",
                     "start": "2026-01-20T00:00:00Z",
                     "end": "2026-01-21T00:00:00Z"
                   },
