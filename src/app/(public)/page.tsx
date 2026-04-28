@@ -59,7 +59,7 @@ export default async function HomePage() {
           <div className="grid items-center gap-12 lg:grid-cols-2">
             <div>
               <div className="mb-4 font-mono text-xs tracking-widest text-primary">// HOW IT WORKS</div>
-              <h2 className="display-heading mb-4 text-4xl font-black tracking-tighter md:text-5xl">
+              <h2 className="ml-2 font-mono text-[10px] text-muted-foreground text-zinc-50">
                 ONE API,
                 <br />
                 <span className="text-gradient-brand">EVERY MARKETPLACE</span>
