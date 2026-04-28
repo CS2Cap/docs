@@ -27,15 +27,6 @@ type OpenApiOperation = {
   security?: Array<Record<string, unknown>>;
 };
 
-const SEARCH_CATEGORY_MAP: Record<string, string | undefined> = {
-  All: undefined,
-  Rifles: "Rifles",
-  Pistols: "Pistols",
-  Knives: "Knives",
-  Gloves: "Gloves",
-  SMGs: "SMGs",
-  Heavy: "Heavy",
-};
 
 const SEARCH_PAGE_SIZE = 24;
 // Matches SEARCH_GROUP_MAX_SCAN + the backend's endpoint_max, so a broad
