@@ -530,7 +530,6 @@ export interface AccountInfo {
 
 export interface AccountPreferences {
   preferred_currency: string;
-  timezone: string;
   alert_emails_enabled: boolean;
   product_update_emails_enabled: boolean;
   billing_reminder_emails_enabled: boolean;

@@ -8,11 +8,11 @@ import { ProviderIdentity } from "@/components/ProviderIdentity";
 import { WatchItemButton } from "@/components/WatchItemButton";
 import { CollapsibleAsksList } from "@/components/item/CollapsibleAsksList";
 import {
-  formatPriceMinor,
   getProvider,
   providerLabel,
   rarityColor,
 } from "@/lib/api";
+import { Price } from "@/components/Price";
 import { getItemDetailPageCoreData } from "@/lib/api/compositions";
 import {
   ItemConditionVariants,
@@ -166,7 +166,7 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                         LOWEST ASK
                       </div>
                       <div className="font-mono text-sm font-bold text-success">
-                        {formatPriceMinor(data.bestAsk?.lowest_ask)}
+                        <Price cents={data.bestAsk?.lowest_ask} />
                       </div>
                     </div>
                     <div>
@@ -174,7 +174,7 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                         HIGHEST BID
                       </div>
                       <div className="font-mono text-sm font-bold text-foreground">
-                        {formatPriceMinor(data.bestBid?.highest_bid)}
+                        <Price cents={data.bestBid?.highest_bid} />
                       </div>
                     </div>
                   </div>
@@ -354,7 +354,7 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                         {formatNumber(row.num_bids)}
                       </div>
                       <div className="font-mono text-sm font-bold text-success md:text-right">
-                        {formatPriceMinor(row.highest_bid)}
+                        <Price cents={row.highest_bid} />
                       </div>
                     </div>
                   ))

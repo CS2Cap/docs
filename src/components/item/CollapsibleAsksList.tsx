@@ -3,7 +3,8 @@
 import { useMemo, useState } from "react";
 import { ChevronDown, ExternalLink } from "lucide-react";
 import { ProviderIdentity } from "@/components/ProviderIdentity";
-import { formatPriceMinor, getProvider, providerLabel } from "@/lib/api";
+import { getProvider, providerLabel } from "@/lib/api";
+import { useCurrency } from "@/lib/CurrencyContext";
 import type { MarketItem, ProviderInfo } from "@/lib/api/types";
 
 const INITIAL_VISIBLE = 10;
@@ -37,6 +38,7 @@ export function CollapsibleAsksList({
   providers: ProviderInfo[];
 }) {
   const [expanded, setExpanded] = useState(false);
+  const { formatPrice } = useCurrency();
 
   const bestAsk = useMemo(
     () => (rows.length ? Math.min(...rows.map((r) => r.lowest_ask)) : 0),
@@ -84,7 +86,7 @@ export function CollapsibleAsksList({
               {formatNumber(row.quantity)}
             </div>
             <div className="font-mono text-sm font-bold text-foreground md:text-right">
-              {formatPriceMinor(row.lowest_ask)}
+              {formatPrice(row.lowest_ask)}
             </div>
             <div className="font-mono text-xs md:text-right">
               {isBest ? (
@@ -93,7 +95,7 @@ export function CollapsibleAsksList({
                 <span className="text-muted-foreground">
                   +{spreadPct.toFixed(2)}%{" "}
                   <span className="text-muted-foreground/60">
-                    ({formatPriceMinor(row.lowest_ask - bestAsk)})
+                    ({formatPrice(row.lowest_ask - bestAsk)})
                   </span>
                 </span>
               )}

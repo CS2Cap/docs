@@ -3,13 +3,13 @@ import { ItemPriceHistoryChart } from "@/components/ItemPriceHistoryChart";
 import { ProviderIdentity } from "@/components/ProviderIdentity";
 import {
   formatCompact,
-  formatPriceMinor,
   getProvider,
   getSiblingVariants,
   getVariantKindLabel,
   getVariantWearLabel,
   providerLabel,
 } from "@/lib/api";
+import { Price } from "@/components/Price";
 import { serverApi } from "@/lib/api/server";
 import { buildQuery } from "@/lib/api/shared";
 import type {
@@ -189,7 +189,7 @@ export async function ItemConditionVariants({
                   }`}
                 >
                   <span>{getVariantWearLabel(variant.item)}</span>
-                  <span className="font-bold">{formatPriceMinor(variant.bestAsk)}</span>
+                  <span className="font-bold"><Price cents={variant.bestAsk} /></span>
                 </Link>
               ) : null,
             )}
@@ -357,7 +357,7 @@ export async function ItemRecentSalesSection({
               />
             </div>
             <div className="font-mono text-xs font-bold text-foreground md:text-right">
-              {formatPriceMinor(sale.price)}
+              <Price cents={sale.price} />
             </div>
             <div className="font-mono text-xs text-muted-foreground md:text-right">
               {sale.float != null ? `Float ${sale.float.toFixed(4)}` : "No float"}
@@ -464,7 +464,7 @@ export async function ItemRelatedItemsSection({ item }: { item: ItemOut }) {
               <div className="mt-3 flex items-center justify-between">
                 <span className="font-mono text-[10px] tracking-widest text-primary">BEST ASK</span>
                 <span className="font-mono text-xs font-bold text-foreground">
-                  {formatPriceMinor(related.bestAsk)}
+                  <Price cents={related.bestAsk} />
                 </span>
               </div>
             </Link>
