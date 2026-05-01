@@ -32,7 +32,7 @@ Returns the current lowest ask across marketplaces. You can filter by item, phas
 </ParamField>
 
 <ParamField query="currency" type="string" default="USD">
-  Target currency. Accepts 160+ ISO 4217 codes. See [`GET /fx`](/api-reference/catalog#get-fx--fx-rates) for the full list.
+  Target currency. Accepts 160+ ISO 4217 codes. See [`GET /fx`](/api-reference/catalog#get-%2Ffx-—-fx-rates) for the full list.
 </ParamField>
 
 <ParamField query="limit" type="integer">
@@ -113,20 +113,16 @@ Returns the current lowest ask across marketplaces. You can filter by item, phas
 </ResponseField>
 
 <ResponseField name="timestamp" type="string">
-  ISO 8601 timestamp of when the price was observed.
+  ISO 8601 timestamp for the last price/quantity change. **Protip: Updates on CHANGE.**
 </ResponseField>
 
 <ResponseField name="last_updated" type="string">
-  ISO 8601 timestamp of when this record was last refreshed in the index.
+  ISO 8601 timestamp for the last check made for this item/provider. **Protip: Updates on CHECK.**
 </ResponseField>
 
 <Note>
   If the item exists in the catalog but none of the selected providers currently has a listing, the endpoint returns `200` with `items: []`.
 </Note>
-
-<Warning>
-  This endpoint reads from the live price index only — there is no database fallback. If the index is unavailable or fails integrity checks, you will receive a `503 PRICES_INDEX_UNAVAILABLE` error.
-</Warning>
 
 ---
 
@@ -152,10 +148,6 @@ Streams the complete live prices catalog as NDJSON, with one JSON object per lin
 {"provider":"c5","item_id":2,"market_hash_name":"'Blueberries' Buckshot | NSWC SEAL","phase":null,"lowest_ask":3156,"quantity":57,"link":"https://cs2c.app/r/c5/2","url":"https://www.c5game.com/csgo/808836530722177024/item/sell","timestamp":"2026-03-22T01:27:20.020270Z","last_updated":"2026-03-22T01:42:46.706601Z"}
 ```
 
-<Note>
-  This endpoint requires a real `sk_*` API key. Session JWTs are not accepted. Output is always in USD — there is no alternate currency support and no request body or pagination.
-</Note>
-
 ---
 
 ## POST /prices/batch — Batch prices lookup
@@ -179,14 +171,12 @@ Returns current lowest asks for up to 100 items in a single request, grouped by 
 </ParamField>
 
 <ParamField body="currency" type="string" default="USD">
-  Target currency. Use [`GET /fx`](/api-reference/catalog#get-fx--fx-rates) for supported ISO 4217 codes.
+  Target currency. Use [`GET /fx`](/api-reference/catalog#get-%2Ffx-—-fx-rates) for supported ISO 4217 codes.
 </ParamField>
 
 <Warning>
   **Phased items (Dopplers / Gammas):** `market_hash_name` resolves to the phaseless catalog entry and returns the cheapest variant regardless of phase. To target a specific phase (`Phase 1`, `Phase 2`, `Phase 3`, `Phase 4`, `Sapphire`, `Ruby`, `Emerald`, or `Black Pearl`), pass the corresponding `item_id` instead.
 </Warning>
-
-The combined length of `item_ids` and `market_hash_names` must be between 1 and 100. You cannot pass 100 IDs and 100 names to get 200 results — the combined cap is hard.
 
 ### Request example
 

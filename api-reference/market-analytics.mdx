@@ -427,8 +427,28 @@ This endpoint takes no query parameters.
   Composite liquidity score (0–100) scored against the 24h horizon.
 </ResponseField>
 
+<ResponseField name="data.items[].summary.listing_score" type="integer | null">
+  Listing-depth component score (0–15). `null` when liquidity data is unavailable.
+</ResponseField>
+
+<ResponseField name="data.items[].summary.gap_score" type="integer | null">
+  Bid/ask gap component score (0–10). `null` when liquidity data is unavailable.
+</ResponseField>
+
+<ResponseField name="data.items[].summary.volume_score" type="integer | null">
+  24h churn component score (0–35). `null` when liquidity data is unavailable.
+</ResponseField>
+
+<ResponseField name="data.items[].summary.stability_score" type="integer | null">
+  Price stability component score (0–20): observation density and inverse coefficient of variation of hourly close. `null` when insufficient history.
+</ResponseField>
+
+<ResponseField name="data.items[].summary.external_score" type="integer | null">
+  External confirmation component score (0–20): Steam 24h volume and Buff163 depth/gap signals. `null` when external data is unavailable.
+</ResponseField>
+
 <Note>
-  `best_ask_usd` and all `price_*` values are decimal strings in USD — not minor units. Rows are sorted by rank, then by item ID. If the cached snapshot is stale, the API attempts to rebuild it and falls back to the last good snapshot if the refresh fails.
+  `best_ask_usd` and all `price_*` values are decimal strings in USD — not minor units. Rows are sorted by rank, then by item ID.
 </Note>
 
 ---

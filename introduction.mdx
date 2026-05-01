@@ -22,11 +22,11 @@ CS2Cap is a REST API that aggregates and normalizes market data from 39 CS2 mark
 
 CS2Cap offers three tiers. All tiers use the same endpoints and authentication model — tier determines your rate limits, monthly quota, and which endpoints are accessible.
 
-| Tier | Requests/min | Requests/month | Max `limit` | Notes |
-| --- | --- | --- | --- | --- |
-| **Free** | 20 | 1,000 | 100 | Prices endpoint only |
-| **Pro** | 100 | 500,000 | 1,000 | Prices, bids, sales, portfolio |
-| **Quant** | 300 | 1,000,000 | 1,000 | All endpoints including analytics |
+| Tier | Requests/min | Requests/month | Notes |
+| --- | --- | --- | --- |
+| **Free** | 20 | 1,000 | Prices endpoint only |
+| **Pro** | 100 | 500,000 | Prices, bids, sales, portfolio |
+| **Quant** | 300 | 1,000,000 | All endpoints including analytics |
 
 <Note>
   Buy orders, sales history, and market analytics endpoints require a Pro or Quant key. Free keys are limited to the `/v1/prices` endpoint.

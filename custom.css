@@ -1,0 +1,6 @@
+.dark [data-page-type] {
+  background-image:
+    linear-gradient(rgba(29, 110, 243, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(29, 110, 243, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+}

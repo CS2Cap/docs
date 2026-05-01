@@ -14762,6 +14762,30 @@
             "title": "Volume Score",
             "description": "Volume component score."
           },
+          "stability_score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stability Score",
+            "description": "Price stability component score (0-20): observation density and inverse coefficient of variation of hourly close."
+          },
+          "external_score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "External Score",
+            "description": "External confirmation component score (0-20): Steam volume + Buff163 depth."
+          },
           "liquidity_last_updated": {
             "anyOf": [
               {
