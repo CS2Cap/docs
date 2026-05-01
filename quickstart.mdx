@@ -1,0 +1,211 @@
+---
+title: "Quickstart: Make Your First CS2Cap API Call"
+description: "Learn how to make your first CS2Cap API request using cURL, Python, or JavaScript. Goes from zero to a live price response in 5 steps."
+---
+
+This guide walks you through everything you need to make a live CS2 item price request against the CS2Cap API. You'll set up your credentials, send a request, read the response, and know how to handle the most common errors — all before you write a single line of production code.
+
+<Steps>
+
+  <Step title="Set up environment variables">
+
+    Store your base URL and API key as environment variables so you never hardcode credentials into your code.
+
+    ```bash
+    export CS2C_API_BASE="https://api.cs2c.app/v1"
+    export CS2C_API_KEY="your_api_key_here"
+    ```
+
+    <Tip>
+      Generate your API key from the Account page at [cs2cap.com](https://cs2cap.com) after verifying your email address.
+    </Tip>
+
+  </Step>
+
+  <Step title="Make your first request">
+
+    Query the `/prices` endpoint for an AK-47 | Redline (Field-Tested) across the Steam marketplace. This is the fastest way to confirm your key is working and to see what a real response looks like.
+
+    <CodeGroup>
+
+    ```bash cURL
+    curl -sS \
+      -H "Authorization: Bearer $CS2C_API_KEY" \
+      "$CS2C_API_BASE/prices?market_hash_name=AK-47%20%7C%20Redline%20(Field-Tested)&providers=steam&currency=USD&limit=5"
+    ```
+
+    ```python Python
+    import os
+    import requests
+
+    base = os.environ["CS2C_API_BASE"]
+    key = os.environ["CS2C_API_KEY"]
+
+    response = requests.get(
+        f"{base}/prices",
+        headers={"Authorization": f"Bearer {key}"},
+        params={
+            "market_hash_name": "AK-47 | Redline (Field-Tested)",
+            "providers": "steam",
+            "currency": "USD",
+            "limit": 5,
+        },
+        timeout=20,
+    )
+    response.raise_for_status()
+    print(response.json())
+    ```
+
+    ```javascript JavaScript
+    const base = process.env.CS2C_API_BASE;
+    const key = process.env.CS2C_API_KEY;
+
+    const url = new URL(`${base}/prices`);
+    url.searchParams.set('market_hash_name', 'AK-47 | Redline (Field-Tested)');
+    url.searchParams.set('providers', 'steam');
+    url.searchParams.set('currency', 'USD');
+    url.searchParams.set('limit', '5');
+
+    const response = await fetch(url, {
+      headers: { Authorization: `Bearer ${key}` },
+    });
+
+    if (!response.ok) {
+      throw new Error(`${response.status} ${await response.text()}`);
+    }
+
+    console.log(await response.json());
+    ```
+
+    </CodeGroup>
+
+  </Step>
+
+  <Step title="Understand the response">
+
+    Every list endpoint returns three top-level fields:
+
+    - `items` — the records you asked for, one object per provider result
+    - `meta` — response context: the currency you requested, your filter parameters, and which providers actually returned data
+    - `pagination` — total record count and paging state (`limit`, `offset`, `has_next`, `has_prev`)
+
+    ```json
+    {
+      "meta": {
+        "currency": "USD",
+        "filters": {
+          "market_hash_name": "★ Falchion Knife | Doppler (Minimal Wear)",
+          "phase": "Phase 1",
+          "requested_providers": [
+            "gamerpay",
+            "marketcsgo"
+          ]
+        },
+        "returned_providers": [
+          "marketcsgo"
+        ]
+      },
+      "items": [
+        {
+          "provider": "marketcsgo",
+          "item_id": 3739,
+          "market_hash_name": "★ Falchion Knife | Doppler (Minimal Wear)",
+          "phase": "Phase 1",
+          "lowest_ask": 58915,
+          "quantity": 1,
+          "link": "https://cs2c.app/r/marketcsgo/3739",
+          "url": "https://market.csgo.com/...",
+          "timestamp": "2026-03-18T16:14:41.493719Z",
+          "last_updated": "2026-03-18T16:54:58.782196Z"
+        }
+      ],
+      "pagination": {
+        "limit": 658,
+        "offset": 0,
+        "total": 1,
+        "has_next": false,
+        "has_prev": false
+      }
+    }
+    ```
+
+    <Note>
+      All price fields use **minor units** (integer cents). A `lowest_ask` of `2550` with `currency: USD` means **$25.50**. Divide by 100 to convert to the major unit for any two-decimal currency.
+    </Note>
+
+  </Step>
+
+  <Step title="Common next requests">
+
+    Once you have a working `/prices` call, these four requests cover the most frequent follow-up queries. The `item_id` lookup is a good second step — it gives you the stable numeric ID you can reuse across endpoints without URL-encoding the full item name each time.
+
+    <CodeGroup>
+
+    ```bash Get item_id
+    # Resolve a market_hash_name to its stable item_id
+    curl -sS -H "Authorization: Bearer $CS2C_API_KEY" \
+      "$CS2C_API_BASE/items?market_hash_name=AK-47%20%7C%20Redline%20(Field-Tested)&limit=1"
+    ```
+
+    ```bash Get current buy orders
+    # Highest buy orders across buy-order-enabled providers (Pro/Quant)
+    curl -sS -H "Authorization: Bearer $CS2C_API_KEY" \
+      "$CS2C_API_BASE/bids?market_hash_name=AK-47%20%7C%20Redline%20(Field-Tested)&providers=steam&limit=5"
+    ```
+
+    ```bash Get recent sales
+    # Completed sale transactions from a specific provider (Pro/Quant)
+    curl -sS -H "Authorization: Bearer $CS2C_API_KEY" \
+      "$CS2C_API_BASE/sales?market_hash_name=AK-47%20%7C%20Redline%20(Field-Tested)&providers=csfloat&limit=10"
+    ```
+
+    ```bash Get price history
+    # Historical price snapshots for trend analysis (Pro/Quant)
+    curl -sS -H "Authorization: Bearer $CS2C_API_KEY" \
+      "$CS2C_API_BASE/prices/history?market_hash_name=AK-47%20%7C%20Redline%20(Field-Tested)&provider=steam&limit=50"
+    ```
+
+    </CodeGroup>
+
+    <Note>
+      Endpoints marked **Pro/Quant** require a paid plan. If you're on the Free tier, these requests return a `403` until you upgrade. See [Pricing & Plans](/guides/pricing-plans) for a full endpoint-by-tier breakdown.
+    </Note>
+
+  </Step>
+
+  <Step title="Handle common failures">
+
+    The table below covers the errors you're most likely to encounter while integrating. Treat these as your first-line debugging checklist before opening a support ticket.
+
+    | Status | Code | What it means |
+    |--------|------|---------------|
+    | `401` | `AUTH_INVALID_API_KEY` | Your `Authorization: Bearer` header is missing, malformed, or the key has been revoked. Check the header format and regenerate your key if needed. |
+    | `429` | `RATE_LIMIT_EXCEEDED` | You're sending requests faster than your plan allows. Back off and respect the `Retry-After` response header before retrying. |
+    | `429` | `RATE_LIMIT_MONTHLY_QUOTA_EXCEEDED` | You've exhausted your plan's monthly request quota. Upgrade your plan or wait for the quota to reset. |
+    | `503` | `PRICES_INDEX_UNAVAILABLE` or `BIDS_INDEX_UNAVAILABLE` | A data index is temporarily unavailable due to a refresh cycle or upstream issue. Retry with exponential backoff — this resolves quickly. |
+    | `422` | `VALIDATION_ERROR` | One or more query parameters are missing, have the wrong type, or contain an invalid value. Check the response body for a `details` field that identifies the offending parameter. |
+
+    <Warning>
+      Do not retry `401` or `422` errors without first fixing the underlying issue — they will not self-resolve. Only `503` and `429` errors are safe to retry automatically.
+    </Warning>
+
+  </Step>
+
+</Steps>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Authentication" icon="key" href="/authentication">
+    Learn how API keys work, how to rotate them, and how to use sub-keys to scope access per application.
+  </Card>
+  <Card title="Core concepts" icon="book-open" href="/core-concepts">
+    Understand providers, minor units, pagination, and the data model before you build.
+  </Card>
+  <Card title="API reference" icon="code" href="/api-reference/overview">
+    Browse every endpoint: prices, bids, sales, analytics, portfolio, and account management.
+  </Card>
+  <Card title="Pricing & plans" icon="credit-card" href="/guides/pricing-plans">
+    Compare Free, Pro, and Quant tiers by endpoint access, rate limits, and monthly quotas.
+  </Card>
+</CardGroup>

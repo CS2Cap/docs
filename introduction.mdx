@@ -1,0 +1,50 @@
+---
+title: "CS2Cap API: Build on Normalized CS2 Market Data"
+description: "CS2Cap aggregates normalized prices, buy orders, sales, analytics, and portfolio data from 39 CS2 marketplaces into one unified REST API."
+---
+
+CS2Cap is a REST API that aggregates and normalizes market data from 39 CS2 marketplaces — including BUFF163, CSFloat, Skinport, Steam, and more. Whether you're building a trading bot, pricing dashboard, arbitrage scanner, or portfolio tracker, CS2Cap eliminates the work of integrating each marketplace individually and delivers consistent, structured data through a single base URL: `https://api.cs2c.app/v1`.
+
+## Key capabilities
+
+| Capability | Endpoints | Description |
+| --- | --- | --- |
+| **Price data** | `/v1/prices`, `/v1/prices/history` | Current lowest asks and historical candles across providers |
+| **Buy orders** | `/v1/bids` | Highest buy order snapshots from bid-enabled marketplaces |
+| **Sales** | `/v1/sales` | Completed transaction records with price and timestamp |
+| **Candle data** | `/v1/prices/candles` | OHLCV candles aggregated across providers |
+| **Analytics** | `/v1/market/indicators`, `/v1/market/arbitrage` | Technical indicators, arbitrage edges, and liquidity scores |
+| **Portfolio** | `/v1/portfolio` | Track holdings, import from Steam, and value in real time |
+| **FX conversion** | `/v1/fx`, `?currency=` param | On-the-fly currency conversion on all price fields |
+| **Item catalog** | `/v1/items`, `/v1/providers` | Item identity, metadata, phase, wear, and provider details |
+
+## Tiers
+
+CS2Cap offers three tiers. All tiers use the same endpoints and authentication model — tier determines your rate limits, monthly quota, and which endpoints are accessible.
+
+| Tier | Requests/min | Requests/month | Max `limit` | Notes |
+| --- | --- | --- | --- | --- |
+| **Free** | 20 | 1,000 | 100 | Prices endpoint only |
+| **Pro** | 100 | 500,000 | 1,000 | Prices, bids, sales, portfolio |
+| **Quant** | 300 | 1,000,000 | 1,000 | All endpoints including analytics |
+
+<Note>
+  Buy orders, sales history, and market analytics endpoints require a Pro or Quant key. Free keys are limited to the `/v1/prices` endpoint.
+</Note>
+
+## Where to go next
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="bolt" href="/quickstart">
+    Make your first API call in under 5 minutes with cURL, Python, or JavaScript.
+  </Card>
+  <Card title="Authentication" icon="key" href="/authentication">
+    Get your API key and learn how to authenticate every request.
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/overview">
+    Explore all endpoints: prices, bids, sales, analytics, and more.
+  </Card>
+  <Card title="Pricing & Plans" icon="credit-card" href="/guides/pricing-plans">
+    Compare Free, Pro, and Quant tiers by endpoint access and quotas.
+  </Card>
+</CardGroup>

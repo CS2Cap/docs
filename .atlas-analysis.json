@@ -1,0 +1,158 @@
+{
+  "projectType": "api-service",
+  "projectName": "CS2Cap",
+  "projectDescription": "A normalized CS2 market data API that aggregates prices, buy orders, sales, and analytics across 39 marketplaces into a single integration surface.",
+  "theme": "luma",
+  "primaryColor": "#04b3e4",
+  "lightColor": "#f7fafa",
+  "darkColor": null,
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "authentication",
+              "core-concepts"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/pricing-plans",
+              "guides/rate-limits",
+              "guides/portfolio",
+              "guides/webhooks-alerts"
+            ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              "reference/field-reference",
+              "reference/error-codes",
+              "reference/providers",
+              "changelog"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "api-reference/overview"
+            ]
+          },
+          {
+            "group": "Market Data",
+            "pages": [
+              "api-reference/prices",
+              "api-reference/bids",
+              "api-reference/sales",
+              "api-reference/catalog"
+            ]
+          },
+          {
+            "group": "Analytics",
+            "pages": [
+              "api-reference/market-analytics",
+              "api-reference/inventory"
+            ]
+          },
+          {
+            "group": "Portfolio",
+            "pages": [
+              "api-reference/portfolio"
+            ]
+          },
+          {
+            "group": "Account",
+            "pages": [
+              "api-reference/account",
+              "api-reference/sub-keys",
+              "api-reference/alerts",
+              "api-reference/webhooks"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Normalized price data across 39 CS2 marketplaces including BUFF163, CSFloat, Skinport, Steam, and more",
+    "Real-time lowest asks and highest buy orders served from a Redis-first index with 5–10 minute freshness",
+    "Doppler phase differentiation for items like Sapphire, Ruby, and Black Pearl variants",
+    "OHLCV candle history up to 365 days with 5m, 1h, and 1d intervals",
+    "Cross-market arbitrage scanner ranking opportunities by estimated net profit after fees",
+    "Technical indicators (RSI, MACD, Bollinger Bands, ATR, VWAP, OBV) from composite candle data",
+    "Portfolio management with Steam inventory import, CSV import/export, and transaction ledger",
+    "Webhook delivery for price and spread alerts with signing secret verification",
+    "Child API keys (sub-keys) for Quant accounts to sub-lease access with quota and rate overrides",
+    "160+ ISO 4217 currency support with live FX conversion"
+  ],
+  "publicApiSurface": [
+    "GET /v1/prices",
+    "POST /v1/prices",
+    "POST /v1/prices/batch",
+    "GET /v1/prices/candles",
+    "GET /v1/prices/history",
+    "GET /v1/bids",
+    "POST /v1/bids",
+    "POST /v1/bids/batch",
+    "GET /v1/sales",
+    "GET /v1/items",
+    "GET /v1/items/metadata",
+    "GET /v1/providers",
+    "GET /v1/fx",
+    "GET /v1/inventory/steam",
+    "GET /v1/inventory/steam/lookup",
+    "GET /v1/market/items",
+    "GET /v1/market/items/{item_id}",
+    "GET /v1/market/arbitrage",
+    "GET /v1/market/indexes",
+    "GET /v1/market/indicators",
+    "GET /v1/portfolio",
+    "POST /v1/portfolio",
+    "DELETE /v1/portfolio/{portfolio_id}",
+    "POST /v1/portfolio/value",
+    "POST /v1/portfolio/{portfolio_id}/import",
+    "POST /v1/portfolio/{portfolio_id}/import/csv",
+    "GET /v1/portfolio/{portfolio_id}/export",
+    "GET /v1/portfolio/{portfolio_id}/items",
+    "POST /v1/portfolio/{portfolio_id}/items",
+    "DELETE /v1/portfolio/{portfolio_id}/items/{entry_id}",
+    "GET /v1/portfolio/{portfolio_id}/value",
+    "GET /v1/portfolio/{portfolio_id}/history",
+    "GET /v1/portfolio/{portfolio_id}/transactions",
+    "POST /v1/portfolio/{portfolio_id}/transactions",
+    "PATCH /v1/portfolio/{portfolio_id}/transactions/{transaction_id}",
+    "DELETE /v1/portfolio/{portfolio_id}/transactions/{transaction_id}",
+    "GET /v1/account/key",
+    "POST /v1/account/key/reissue",
+    "GET /v1/account/sub-keys",
+    "POST /v1/account/sub-keys",
+    "GET /v1/account/sub-keys/{key_id}",
+    "PATCH /v1/account/sub-keys/{key_id}",
+    "DELETE /v1/account/sub-keys/{key_id}",
+    "POST /v1/account/sub-keys/{key_id}/reissue",
+    "GET /v1/account/alerts",
+    "POST /v1/account/alerts",
+    "POST /v1/account/alerts/batch",
+    "PATCH /v1/account/alerts/{alert_id}",
+    "DELETE /v1/account/alerts/{alert_id}",
+    "GET /v1/account/alerts/events",
+    "GET /v1/account/webhooks",
+    "POST /v1/account/webhooks",
+    "GET /v1/account/webhooks/deliveries",
+    "GET /v1/account/webhooks/deliveries/{delivery_id}",
+    "PATCH /v1/account/webhooks/{webhook_id}",
+    "DELETE /v1/account/webhooks/{webhook_id}",
+    "POST /v1/account/webhooks/{webhook_id}/rotate-secret"
+  ]
+}

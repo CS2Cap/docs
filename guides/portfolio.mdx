@@ -1,0 +1,235 @@
+---
+title: "Track CS2 Holdings with Portfolio Management"
+description: "Create saved portfolios, import Steam inventories, record buy/sell transactions, and value your CS2 holdings in real time using the CS2Cap Portfolio API."
+---
+
+The CS2Cap Portfolio API supports two distinct use cases. For one-off calculations you can pass an item list directly in the request body and receive an instant valuation without storing anything — this is called stateless valuation. For ongoing tracking you can create saved portfolios under your account, import your Steam inventory, record buy and sell transactions in a ledger, and retrieve both live and historical valuations over time. Both modes are available on every tier.
+
+## Portfolio limits by tier
+
+| Limit | Free | Pro | Quant |
+|-------|-----:|----:|------:|
+| Max portfolios | 20 | 50 | 1,000 |
+| Max items per portfolio | 1,000 | 5,000 | 10,000 |
+
+The item limit applies regardless of how items were added — manually, via Steam import, or via CSV import.
+
+## Set up your first portfolio
+
+<Steps>
+  <Step title="Create a portfolio">
+    Send a `POST /portfolio` request with a name for your portfolio. The API returns the new portfolio object including its `id`, which you will use in subsequent requests.
+
+    ```json
+    {
+      "name": "Main Inventory"
+    }
+    ```
+
+    Example response:
+
+    ```json
+    {
+      "id": "a3f2c1d0-1234-5678-abcd-ef0123456789",
+      "name": "Main Inventory",
+      "created_at": "2026-04-01T10:00:00Z"
+    }
+    ```
+  </Step>
+
+  <Step title="Add items to the portfolio">
+    Use `POST /portfolio/{id}/items` to add items manually. Supply the catalog `item_id`, the quantity you hold, and an optional Doppler `phase` if relevant.
+
+    ```json
+    {
+      "item_id": 12632,
+      "quantity": 2,
+      "phase": null
+    }
+    ```
+
+    Alternatively, import directly from your linked Steam inventory (see [Importing from Steam](#importing-from-steam)) or upload a CSV (see [CSV import/export](#csv-importexport)).
+  </Step>
+
+  <Step title="Record a transaction">
+    Log every purchase or sale with `POST /portfolio/{id}/transactions`. Recording transactions enables historical valuation by rebuilding your holdings day by day from the ledger.
+
+    ```json
+    {
+      "item_id": 12632,
+      "type": "buy",
+      "quantity": 2,
+      "price": 2500,
+      "date": "2026-03-24",
+      "marketplace": "skinport",
+      "currency": "USD"
+    }
+    ```
+  </Step>
+
+  <Step title="Value your portfolio">
+    Call `GET /portfolio/{id}/value` to get a live valuation using current indexed prices. You can filter by `currency` and `providers` as query parameters.
+  </Step>
+</Steps>
+
+## Managing portfolios
+
+### Create a portfolio
+
+**Endpoint:** `POST /portfolio`
+
+```json
+{
+  "name": "Main Inventory"
+}
+```
+
+### List portfolios
+
+**Endpoint:** `GET /portfolio`
+
+Returns all saved portfolios for your account.
+
+### Delete a portfolio
+
+**Endpoint:** `DELETE /portfolio/{id}`
+
+Permanently deletes the portfolio and all of its saved items and transactions.
+
+## Adding items manually
+
+**Endpoint:** `POST /portfolio/{id}/items`
+
+Add one item at a time by `item_id` or `market_hash_name`. Use this route for items that did not come from a Steam import.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `item_id` | integer | Catalog item ID. Required if `market_hash_name` is not provided. |
+| `quantity` | integer | Number of units held. |
+| `phase` | string or null | Doppler phase, if applicable. |
+
+To list the items currently stored in a portfolio, call `GET /portfolio/{id}/items`. To remove an entry, call `DELETE /portfolio/{id}/items/{entry_id}` — note that `entry_id` is the portfolio entry UUID, not the catalog `item_id`.
+
+## Importing from Steam
+
+**Endpoint:** `POST /portfolio/{id}/import`
+
+Imports items from your linked Steam inventory. Omit `asset_ids` to import the full inventory, or provide a specific list to import only those assets.
+
+```json
+{
+  "asset_ids": ["1234567890", "1234567891"]
+}
+```
+
+- Items already saved under the same Steam asset ID are skipped automatically.
+- Items that cannot be matched to the CS2Cap catalog are returned in the `unresolved` field and are not stored.
+
+## CSV import/export
+
+### Import from CSV
+
+**Endpoint:** `POST /portfolio/{id}/import/csv`
+
+Upload a CSV file to bulk-import transactions or snapshot-style holdings. The format (ledger or snapshot) is detected automatically from the CSV headers. Buy transactions imported from CSV can create missing portfolio items automatically.
+
+### Export to CSV
+
+**Endpoint:** `GET /portfolio/{id}/export?type=transactions`
+
+Downloads portfolio data as a CSV file. Use the `type` query parameter to choose what to export:
+
+| Value | Description |
+|-------|-------------|
+| `transactions` | Full buy/sell ledger (default) |
+| `items` | Current item snapshot |
+
+## Recording transactions
+
+**Endpoint:** `POST /portfolio/{id}/transactions`
+
+Record a buy or sell event against an item in the portfolio. The transaction ledger powers historical valuation.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `item_id` | integer | Catalog item ID. Required if `market_hash_name` is not provided. |
+| `type` | string | `buy` or `sell`. |
+| `quantity` | integer | Number of units in the transaction. |
+| `price` | integer | Price in minor units (e.g., `2500` = $25.00). |
+| `date` | string | Transaction date in `YYYY-MM-DD` format. |
+| `marketplace` | string | Marketplace where the trade occurred (e.g., `skinport`). |
+| `currency` | string | ISO 4217 currency code (e.g., `USD`). |
+
+Buy transactions automatically create portfolio items for any item not already tracked. To view the full ledger, call `GET /portfolio/{id}/transactions`. To correct a recorded transaction, use `PATCH /portfolio/{id}/transactions/{transaction_id}` — patchable fields include `quantity`, `price`, `date`, `fee_amount`, `fee_percentage`, `marketplace`, `note`, and `currency`. To remove a transaction, call `DELETE /portfolio/{id}/transactions/{transaction_id}`.
+
+## Valuing portfolios
+
+### Stateless (ad-hoc) valuation
+
+**Endpoint:** `POST /portfolio/value`
+
+Value a list of items without creating a saved portfolio. Pass up to 100 items in the request body.
+
+```json
+{
+  "items": [
+    { "item_id": 1, "quantity": 3 }
+  ],
+  "providers": ["steam", "buff163"],
+  "currency": "USD"
+}
+```
+
+Example response:
+
+```json
+{
+  "meta": {
+    "currency": "USD",
+    "generated_at": "2026-03-24T12:00:00Z",
+    "providers_queried": ["steam", "buff163"]
+  },
+  "data": {
+    "line_items": [
+      {
+        "item_id": 1,
+        "market_hash_name": "AK-47 | Redline (Field-Tested)",
+        "phase": null,
+        "quantity": 3,
+        "best_ask": 2550,
+        "item_value": 7650,
+        "providers": []
+      }
+    ],
+    "total_value": 7650,
+    "items_valued": 1,
+    "items_not_found": []
+  }
+}
+```
+
+### Live valuation of a saved portfolio
+
+**Endpoint:** `GET /portfolio/{id}/value`
+
+Values all items in a saved portfolio using current indexed prices. Accepts optional `currency` and `providers` query parameters. This is a live snapshot — it does not replay historical prices.
+
+### Historical portfolio valuation
+
+**Endpoint:** `GET /portfolio/{id}/history`
+
+Rebuilds daily portfolio values by replaying the transaction ledger. Holdings are constructed from transactions, not from the portfolio's current saved item list, so the history accurately reflects what you held on each date.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `start_date` | string | Inclusive start date (`YYYY-MM-DD`). |
+| `end_date` | string | Inclusive end date. Defaults to today. |
+| `lookback` | string | Shorthand window such as `30d`. Overrides `start_date`. |
+| `currency` | string | Target currency (ISO 4217). Default: `USD`. |
+| `providers` | string[] | Optional provider filter. Repeat to pass multiple values. |
+| `limit` | integer | Maximum daily data points to return. |
+| `cursor` | string | Opaque cursor from the previous page. |
+
+<Note>
+Historical portfolio valuation is daily only — transactions are stored as calendar dates, not timestamps. The response uses cursor pagination, and `pagination.total = -1` is expected behavior on this endpoint.
+</Note>

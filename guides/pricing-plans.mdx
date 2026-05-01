@@ -1,0 +1,113 @@
+---
+title: "CS2Cap Pricing: Compare Free, Pro, and Quant Plans"
+description: "Compare CS2Cap's three API tiers — Free at $0, Pro at $79/month, and Quant at $179/month — by quota, endpoint access, and features."
+---
+
+CS2Cap offers three API tiers to fit every use case, from quick evaluation to production-scale analytics. Free gives you immediate access at no cost, Pro unlocks the full market-data surface for traders and bot builders, and Quant adds advanced analytics, webhooks, and child key management for teams and resellers. Every tier is backed by the same 39-marketplace data network with 5–10 minute freshness.
+
+## At a glance
+
+| | **Free** | **Pro** | **Quant** |
+|---|---|---|---|
+| Monthly price | **$0** | **$79** | **$179** |
+| Requests / month | 1,000 | 500,000 | 1,000,000 |
+| Requests / minute | 20 | 100 | 300 |
+| `limit` query param cap | 100 | 1,000 | 1,000 |
+| Support | — | Basic | Priority (24 h SLA) |
+| Best for | Evaluation & hobby use | Traders, bots, tooling | Analytics, B2B, resellers |
+
+## Endpoint access
+
+| Endpoint | Free | Pro | Quant |
+|---|:---:|:---:|:---:|
+| `GET /v1/prices` — current lowest asks | ✅ | ✅ | ✅ |
+| `POST /v1/prices` — full prices snapshot (NDJSON stream) | — | ✅ | ✅ |
+| `POST /v1/prices/batch` — multi-item price lookup | — | ✅ | ✅ |
+| `GET /v1/prices/candles` — OHLC candles | ⚠️ daily only | ✅ | ✅ |
+| `GET /v1/prices/history` — historical prices (up to 365 d) | — | ✅ | ✅ |
+| `GET /v1/bids` — highest buy orders | — | ✅ | ✅ |
+| `POST /v1/bids` — full bids snapshot (NDJSON stream) | — | ✅ | ✅ |
+| `POST /v1/bids/batch` — multi-item buy-order lookup | — | ✅ | ✅ |
+| `GET /v1/sales` — recent sales | — | ✅ | ✅ |
+| `GET /v1/items` — item catalog | ✅ | ✅ | ✅ |
+| `GET /v1/items/metadata` — catalog filter metadata | ✅ | ✅ | ✅ |
+| `GET /v1/providers` — marketplace catalog | ✅ | ✅ | ✅ |
+| `GET /v1/fx` — currency conversion | ✅ | ✅ | ✅ |
+| `GET /v1/portfolio` — portfolio management | ✅ | ✅ | ✅ |
+| `GET /v1/portfolio/value` — portfolio valuation | ✅ | ✅ | ✅ |
+| `GET /v1/inventory/steam` — Steam inventory import | ✅ | ✅ | ✅ |
+| `GET /v1/market/items` — enriched item metadata | — | ✅ | ✅ |
+| `GET /v1/market/arbitrage` — cross-market arbitrage | — | — | ✅ |
+| `GET /v1/market/indexes` — category market cap indexes | — | — | ✅ |
+| `GET /v1/market/indicators` — technical indicators | — | — | ✅ |
+
+<Note>
+**Free-tier candles restriction:** Free keys can only call `GET /v1/prices/candles` with `interval=1d` and a lookback window measured in whole days up to 30 days (for example `30d` or `30`). Pro and Quant have no such restriction and can request up to 365 days of candle history at any supported interval.
+</Note>
+
+## Features and add-ons
+
+| Feature | Free | Pro | Quant |
+|---|:---:|:---:|:---:|
+| Raw provider listing URLs in responses | — | ✅ | ✅ |
+| Bulk snapshot exports | — | ✅ | ✅ |
+| Cross-market arbitrage scanner | — | — | ✅ |
+| Technical indicators (RSI, MACD, EMA, …) | — | — | ✅ |
+| Customer webhooks | — | — | ✅ |
+| Child API keys for sub-leasing | — | — | ✅ up to **25** per account |
+| Per-child key quota & rate overrides | — | — | ✅ |
+
+## Portfolio limits
+
+| Limit | Free | Pro | Quant |
+|---|---:|---:|---:|
+| Max portfolios | 20 | 50 | 1,000 |
+| Max items per portfolio | 1,000 | 5,000 | 10,000 |
+
+## API key rules
+
+- **One active key per account** on all tiers. Reissuing a key immediately revokes the previous one.
+- **Quant supports child keys.** Quant accounts can create up to 25 child keys for sub-leasing. Each child key supports optional per-key quota and rate-limit caps.
+
+## Included on every tier
+
+Every plan — including Free — ships with the full breadth of CS2Cap's data network:
+
+- **39 supported marketplaces**, including BUFF163, Youpin898, C5, CSFloat, Skinport, Skinbid, DMarket, Waxpeer, Bitskins, Haloskins, Market.csgo, Tradeit, and more.
+- **Doppler phase differentiation** in prices, buy orders, and recent sales whenever the underlying marketplace exposes phase data.
+- **5–10 minute data freshness** across most providers. Prices and bids are served from a pre-built index for fast, consistent responses.
+- **Stable, machine-readable error codes** on every error response.
+- **Consistent minor-unit pricing** for all monetary values — for example, `2550` represents `$25.50`.
+
+## Billing
+
+Paid tiers are billed monthly through Stripe.
+
+- **Upgrades** take effect immediately and are prorated on the current invoice.
+- **Downgrades** take effect at the start of the next billing cycle. Until then, you retain your current tier's access.
+- **Payment failures** move the subscription to `past_due` and drop the account to the Free tier until Stripe resolves the retry. No data is lost.
+- **Cancellation** is self-service through the Stripe customer portal. A cancelled subscription stays active until the end of the current billing cycle, then reverts to Free.
+
+## FAQ
+
+<AccordionGroup>
+  <Accordion title="Can I upgrade or downgrade at any time?">
+    Yes. Upgrades are immediate and prorated against the current billing period. Downgrades take effect at the end of the current billing cycle and can be reversed before then.
+  </Accordion>
+
+  <Accordion title="What happens if I hit my monthly quota?">
+    Further requests return `429 RATE_LIMIT_MONTHLY_QUOTA_EXCEEDED` until the next billing period begins. Per-minute rate limit violations return `429 RATE_LIMIT_EXCEEDED` with a `Retry-After` header indicating how long to wait.
+  </Accordion>
+
+  <Accordion title="Is historical data really 365 days?">
+    Yes. Pro and Quant include up to one year of per-item OHLCV history through `GET /v1/prices/candles`. Per-provider history goes back up to 2 weeks through `GET /v1/prices/history`.
+  </Accordion>
+
+  <Accordion title="Do I get all 39 marketplaces on Free?">
+    You can browse the provider catalog on every tier, but live cross-market price, bid, and sales coverage requires Pro or Quant. Free is limited to current prices from `GET /v1/prices`.
+  </Accordion>
+
+  <Accordion title="How do I get an API key?">
+    Visit [cs2cap.com](https://cs2cap.com/), create an account, verify your email address, and generate an API key from your [Account API Keys](https://cs2cap.com/account/api-keys) page.
+  </Accordion>
+</AccordionGroup>

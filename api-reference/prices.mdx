@@ -1,0 +1,531 @@
+---
+title: "Prices API: Current Asks, History, and Candles"
+description: "Fetch current lowest asks, stream full price snapshots, batch-query up to 100 items, retrieve OHLCV candles, and page through raw price history."
+---
+
+The Prices API gives you access to the current lowest ask for every CS2 item across all tracked marketplaces. You can query a single item, batch up to 100 items in one request, stream the entire live catalog as NDJSON, retrieve OHLCV candles for charting, and page through raw historical price records. All price values are returned in minor units of the response currency.
+
+---
+
+## GET /prices — List prices
+
+Returns the current lowest ask across marketplaces. You can filter by item, phase, provider, and currency.
+
+**Tiers:** `free` · `pro` · `quant`
+
+### Parameters
+
+<ParamField query="item_id" type="integer">
+  Filter by item ID. Takes precedence over `market_hash_name` and `phase` when provided.
+</ParamField>
+
+<ParamField query="market_hash_name" type="string">
+  Exact item name as it appears in inventory. Ignored when `item_id` is provided.
+</ParamField>
+
+<ParamField query="phase" type="string">
+  Doppler or Gamma Doppler phase filter. Can be used without `market_hash_name`. One of: `Phase 1`, `Phase 2`, `Phase 3`, `Phase 4`, `Ruby`, `Sapphire`, `Black Pearl`, `Emerald`.
+</ParamField>
+
+<ParamField query="providers" type="string[]">
+  Provider keys to include. Repeat the parameter to pass more than one: `providers=steam&providers=buff163`. Valid keys: `avanmarket`, `bitskins`, `buff163`, `buffmarket`, `c5`, `csdeals`, `csfloat`, `csgo500`, `csgoempire`, `csmoney_m`, `csmoney_t`, `cstrade`, `dmarket`, `ecosteam`, `gamerpay`, `haloskins`, `itradegg`, `lisskins`, `lootfarm`, `mannco`, `marketcsgo`, `pirateswap`, `rapidskins`, `shadowpay`, `skinbaron`, `skinflow`, `skinout`, `skinplace`, `skinport`, `skinscom`, `skinsmonkey`, `skinswap`, `skinvault`, `steam`, `swapgg`, `tradeit`, `waxpeer`, `whitemarket`, `youpin`.
+</ParamField>
+
+<ParamField query="currency" type="string" default="USD">
+  Target currency. Accepts 160+ ISO 4217 codes. See [`GET /fx`](/api-reference/catalog#get-fx--fx-rates) for the full list.
+</ParamField>
+
+<ParamField query="limit" type="integer">
+  Results per page. Defaults to the caller's effective tier cap: `100` for Free, `1000` for Pro and Quant.
+</ParamField>
+
+<ParamField query="offset" type="integer" default="0">
+  Pagination offset.
+</ParamField>
+
+### Response example
+
+```json
+{
+  "meta": {...},
+  "items": [
+    {
+      "provider": "buff163",
+      "item_id": 4994,
+      "market_hash_name": "★ Karambit | Doppler (Factory New)",
+      "phase": "Sapphire",
+      "lowest_ask": 531143,
+      "quantity": 158,
+      "link": "https://cs2c.app/r/buff163/4994",
+      "url": "https://buff.163.com/goods/42998?from=market#tag_ids=446968",
+      "timestamp": "2026-03-20T13:09:25.771066Z",
+      "last_updated": "2026-03-21T05:02:44.450067Z"
+    },
+    {
+      "provider": "csfloat",
+      "item_id": 4994,
+      "market_hash_name": "★ Karambit | Doppler (Factory New)",
+      "phase": "Sapphire",
+      "lowest_ask": 531143,
+      "quantity": 29,
+      "link": "https://cs2c.app/r/csfloat/4994",
+      "url": "https://csfloat.com/search?def_index=507&paint_index=416",
+      "timestamp": "2026-03-21T05:03:40.179351Z",
+      "last_updated": "2026-03-21T05:03:40.837477Z"
+    }
+  ],
+  "pagination": {...}
+}
+```
+
+### Response fields
+
+<ResponseField name="provider" type="string">
+  Provider key for this listing.
+</ResponseField>
+
+<ResponseField name="item_id" type="integer">
+  Unique catalog item ID.
+</ResponseField>
+
+<ResponseField name="market_hash_name" type="string">
+  Full item name as it appears in the Steam economy.
+</ResponseField>
+
+<ResponseField name="phase" type="string">
+  Doppler phase, or `null` for non-phased items.
+</ResponseField>
+
+<ResponseField name="lowest_ask" type="integer">
+  Current best ask price in minor units of the response currency. For example, `531143` in USD = $5,311.43.
+</ResponseField>
+
+<ResponseField name="quantity" type="integer">
+  Number of listings at or near the lowest ask on this provider.
+</ResponseField>
+
+<ResponseField name="link" type="string">
+  CS2Cap tracked redirect URL. Available on all tiers.
+</ResponseField>
+
+<ResponseField name="url" type="string">
+  Direct marketplace URL. Returned on paid tiers only (`pro`, `quant`).
+</ResponseField>
+
+<ResponseField name="timestamp" type="string">
+  ISO 8601 timestamp of when the price was observed.
+</ResponseField>
+
+<ResponseField name="last_updated" type="string">
+  ISO 8601 timestamp of when this record was last refreshed in the index.
+</ResponseField>
+
+<Note>
+  If the item exists in the catalog but none of the selected providers currently has a listing, the endpoint returns `200` with `items: []`.
+</Note>
+
+<Warning>
+  This endpoint reads from the live price index only — there is no database fallback. If the index is unavailable or fails integrity checks, you will receive a `503 PRICES_INDEX_UNAVAILABLE` error.
+</Warning>
+
+---
+
+## POST /prices — Stream full prices snapshot
+
+Streams the complete live prices catalog as NDJSON, with one JSON object per line. The snapshot is captured once at request start and then streamed in full.
+
+**Tiers:** `pro` · `quant`  
+**Rate limit:** 1 request per 30 seconds per API key
+
+### Query parameters
+
+<ParamField query="providers" type="string[]">
+  Optional. Repeat to restrict the stream to specific providers. Uses the same provider keys as `GET /prices`. If omitted, all providers are included.
+</ParamField>
+
+### Response example
+
+```ndjson
+{"provider":"avanmarket","item_id":2,"market_hash_name":"'Blueberries' Buckshot | NSWC SEAL","phase":null,"lowest_ask":3460,"quantity":6,"link":"https://cs2c.app/r/avanmarket/2","url":"https://avan.market/en/market/cs/blueberries-buckshot-nswc-seal","timestamp":"2026-03-22T01:41:35.353783Z","last_updated":"2026-03-22T01:41:36.221322Z"}
+{"provider":"bitskins","item_id":2,"market_hash_name":"'Blueberries' Buckshot | NSWC SEAL","phase":null,"lowest_ask":3413,"quantity":1,"link":"https://cs2c.app/r/bitskins/2","url":"https://bitskins.com/market/cs2?search=...","timestamp":"2026-03-21T09:22:06.434433Z","last_updated":"2026-03-22T01:42:13.463310Z"}
+{"provider":"buff163","item_id":2,"market_hash_name":"'Blueberries' Buckshot | NSWC SEAL","phase":null,"lowest_ask":3187,"quantity":84,"link":"https://cs2c.app/r/buff163/2","url":"https://buff.163.com/goods/835687?from=market","timestamp":"2026-03-22T00:08:50.544878Z","last_updated":"2026-03-22T00:54:22.230624Z"}
+{"provider":"c5","item_id":2,"market_hash_name":"'Blueberries' Buckshot | NSWC SEAL","phase":null,"lowest_ask":3156,"quantity":57,"link":"https://cs2c.app/r/c5/2","url":"https://www.c5game.com/csgo/808836530722177024/item/sell","timestamp":"2026-03-22T01:27:20.020270Z","last_updated":"2026-03-22T01:42:46.706601Z"}
+```
+
+<Note>
+  This endpoint requires a real `sk_*` API key. Session JWTs are not accepted. Output is always in USD — there is no alternate currency support and no request body or pagination.
+</Note>
+
+---
+
+## POST /prices/batch — Batch prices lookup
+
+Returns current lowest asks for up to 100 items in a single request, grouped by item ID across the selected providers.
+
+**Tiers:** `pro` · `quant`
+
+### Request body
+
+<ParamField body="item_ids" type="integer[]">
+  Array of item IDs to fetch. Provide at least one of `item_ids` or `market_hash_names`.
+</ParamField>
+
+<ParamField body="market_hash_names" type="string[]">
+  Array of market hash names to fetch. Provide at least one of `item_ids` or `market_hash_names`.
+</ParamField>
+
+<ParamField body="providers" type="string[]">
+  Provider keys to include. If omitted, all providers are queried.
+</ParamField>
+
+<ParamField body="currency" type="string" default="USD">
+  Target currency. Use [`GET /fx`](/api-reference/catalog#get-fx--fx-rates) for supported ISO 4217 codes.
+</ParamField>
+
+<Warning>
+  **Phased items (Dopplers / Gammas):** `market_hash_name` resolves to the phaseless catalog entry and returns the cheapest variant regardless of phase. To target a specific phase (`Phase 1`, `Phase 2`, `Phase 3`, `Phase 4`, `Sapphire`, `Ruby`, `Emerald`, or `Black Pearl`), pass the corresponding `item_id` instead.
+</Warning>
+
+The combined length of `item_ids` and `market_hash_names` must be between 1 and 100. You cannot pass 100 IDs and 100 names to get 200 results — the combined cap is hard.
+
+### Request example
+
+```json
+{
+  "item_ids": [4994, 2],
+  "market_hash_names": ["AK-47 | Redline (Field-Tested)"],
+  "providers": ["buff163", "steam"],
+  "currency": "USD"
+}
+```
+
+### Response example
+
+```json
+{
+  "meta": {...},
+  "items": [
+    {
+      "item_id": 4994,
+      "market_hash_name": "★ Karambit | Doppler (Factory New)",
+      "phase": "Sapphire",
+      "quotes": [
+        {
+          "provider": "buff163",
+          "lowest_ask": 531143,
+          "quantity": 158,
+          "timestamp": "2026-03-20T13:09:25Z",
+          "last_updated": "2026-03-21T05:02:44Z"
+        }
+      ]
+    },
+    {
+      "item_id": 2,
+      "market_hash_name": "'Blueberries' Buckshot | NSWC SEAL",
+      "phase": null,
+      "quotes": [
+        {
+          "provider": "buff163",
+          "lowest_ask": 3187,
+          "quantity": 84,
+          "timestamp": "2026-03-22T00:08:50Z",
+          "last_updated": "2026-03-22T00:54:22Z"
+        },
+        {
+          "provider": "steam",
+          "lowest_ask": 3923,
+          "quantity": 57053,
+          "timestamp": "2026-03-21T05:00:30Z",
+          "last_updated": "2026-03-21T05:00:34Z"
+        }
+      ]
+    }
+  ],
+  "items_not_found": [],
+  "names_not_found": []
+}
+```
+
+<ResponseField name="items" type="object[]">
+  Array of results, one entry per resolved item.
+
+  <Expandable title="item properties">
+    <ResponseField name="item_id" type="integer">
+      Catalog item ID.
+    </ResponseField>
+    <ResponseField name="market_hash_name" type="string">
+      Full item name.
+    </ResponseField>
+    <ResponseField name="phase" type="string">
+      Doppler phase or `null`.
+    </ResponseField>
+    <ResponseField name="quotes" type="object[]">
+      Per-provider price quotes for this item.
+
+      <Expandable title="quote properties">
+        <ResponseField name="provider" type="string">
+          Provider key.
+        </ResponseField>
+        <ResponseField name="lowest_ask" type="integer">
+          Lowest ask in minor units of the response currency.
+        </ResponseField>
+        <ResponseField name="quantity" type="integer">
+          Listing count at or near the lowest ask.
+        </ResponseField>
+        <ResponseField name="timestamp" type="string">
+          When the price was observed.
+        </ResponseField>
+        <ResponseField name="last_updated" type="string">
+          When the record was last refreshed.
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="items_not_found" type="integer[]">
+  Item IDs (including those resolved from `market_hash_names`) that returned no quotes on any queried provider.
+</ResponseField>
+
+<ResponseField name="names_not_found" type="string[]">
+  `market_hash_names` that could not be resolved to any catalog item.
+</ResponseField>
+
+---
+
+## GET /prices/candles — Price candles (OHLCV)
+
+Returns composite OHLCV candles across all providers for the resolved item. Supports `5m`, `1h`, and `1d` intervals. Empty buckets can optionally be forward-filled.
+
+**Tiers:** `free` (1d only) · `pro` · `quant`
+
+### Parameters
+
+<ParamField query="item_id" type="integer">
+  Item ID to query. Required if `market_hash_name` is not provided.
+</ParamField>
+
+<ParamField query="market_hash_name" type="string">
+  Exact item name. Required if `item_id` is not provided.
+</ParamField>
+
+<ParamField query="phase" type="string">
+  Doppler or Gamma phase filter. One of: `Phase 1`, `Phase 2`, `Phase 3`, `Phase 4`, `Ruby`, `Sapphire`, `Black Pearl`, `Emerald`.
+</ParamField>
+
+<ParamField query="start" type="string">
+  Inclusive ISO 8601 start timestamp. Accepts `YYYY-MM-DD` or `YYYY-MM-DDThh:mm:ss`.
+</ParamField>
+
+<ParamField query="end" type="string">
+  Exclusive ISO 8601 end timestamp. Defaults to now when omitted.
+</ParamField>
+
+<ParamField query="lookback" type="string">
+  Duration shorthand such as `7d` or `30d`. Overrides `start` when provided.
+</ParamField>
+
+<ParamField query="interval" type="string" default="1h">
+  Candle interval. One of: `5m`, `1h`, `1d`.
+</ParamField>
+
+<ParamField query="fill" type="boolean" default="false">
+  Forward-fill empty buckets using the previous close.
+</ParamField>
+
+<ParamField query="currency" type="string" default="USD">
+  Target currency. Accepts 160+ ISO 4217 codes.
+</ParamField>
+
+### Response example
+
+```json
+{
+  "meta": {...},
+  "data": [
+    {
+      "t": 1773466200,
+      "o": 1783,
+      "h": 2529,
+      "l": 1529,
+      "c": 1782,
+      "v": 24,
+      "q": 54792,
+      "providers": {
+        "h": "steam",
+        "l": "csfloat"
+      }
+    },
+    {
+      "t": 1773776700,
+      "o": 1748,
+      "h": 2517,
+      "l": 1434,
+      "c": 1747,
+      "v": 18,
+      "q": 91342
+    }
+  ]
+}
+```
+
+### Response fields
+
+<ResponseField name="t" type="integer">
+  Unix timestamp in seconds for the start of the candle bucket.
+</ResponseField>
+
+<ResponseField name="o" type="integer">
+  Open price — the lowest effective provider price at the start of the bucket, in minor units.
+</ResponseField>
+
+<ResponseField name="h" type="integer">
+  High price in minor units. Capped at `median(highs) × 1.5` to suppress outliers.
+</ResponseField>
+
+<ResponseField name="l" type="integer">
+  Low price in minor units. The minimum low observed across providers in this bucket.
+</ResponseField>
+
+<ResponseField name="c" type="integer">
+  Close price — the lowest effective provider price at the end of the bucket, in minor units.
+</ResponseField>
+
+<ResponseField name="v" type="integer">
+  Non-negative depletion flow (volume) across providers for the bucket.
+</ResponseField>
+
+<ResponseField name="q" type="integer">
+  Summed close-side listing count at the end of the bucket. May be `null` for older `1d` windows.
+</ResponseField>
+
+<ResponseField name="providers" type="object">
+  Optional. When present, identifies which provider contributed the high (`h`) and low (`l`) values for this candle.
+</ResponseField>
+
+### Data retention
+
+| Interval | Retention |
+| --- | --- |
+| `5m` | 7 days |
+| `1h` | 30 days |
+| `1d` | 365 days |
+
+<Note>
+  Free-tier accounts may only use `interval=1d`. The `fill`, `start`, and `end` parameters are not available on the free tier — use `lookback` instead.
+</Note>
+
+---
+
+## GET /prices/history — Price history
+
+Returns historical price records for one item, optionally filtered to a single provider. Results are ordered newest-first and use cursor pagination.
+
+**Tiers:** `pro` · `quant`
+
+### Parameters
+
+<ParamField query="item_id" type="integer">
+  Filter by item ID. Takes precedence over `market_hash_name` and `phase` when provided.
+</ParamField>
+
+<ParamField query="market_hash_name" type="string">
+  Exact item name as it appears in inventory.
+</ParamField>
+
+<ParamField query="phase" type="string">
+  Doppler or Gamma phase filter. One of: `Phase 1`, `Phase 2`, `Phase 3`, `Phase 4`, `Ruby`, `Sapphire`, `Black Pearl`, `Emerald`.
+</ParamField>
+
+<ParamField query="provider" type="string">
+  A single provider key, for example `provider=steam`. Returns records from that provider only.
+</ParamField>
+
+<ParamField query="start" type="string">
+  Inclusive ISO 8601 timestamp. Accepts `YYYY-MM-DD` or `YYYY-MM-DDThh:mm:ss`. Defaults to the last 14 days when omitted.
+</ParamField>
+
+<ParamField query="end" type="string">
+  Exclusive ISO 8601 timestamp.
+</ParamField>
+
+<ParamField query="currency" type="string" default="USD">
+  Target currency. Accepts 160+ ISO 4217 codes.
+</ParamField>
+
+<ParamField query="limit" type="integer">
+  Results per page. Range: 1–1000.
+</ParamField>
+
+<ParamField query="cursor" type="string">
+  Cursor for keyset pagination. Pass the `next_cursor` value from the previous response.
+</ParamField>
+
+### Response example
+
+```json
+{
+  "meta": {...},
+  "items": [
+    {
+      "item_id": 16828,
+      "market_hash_name": "★ Karambit | Doppler (Factory New)",
+      "phase": "Phase 4",
+      "provider": "CSFloat",
+      "time": "2026-03-19T23:55:00Z",
+      "price": 147150,
+      "currency": "USD",
+      "quantity": 169
+    },
+    {
+      "item_id": 16828,
+      "market_hash_name": "★ Karambit | Doppler (Factory New)",
+      "phase": "Phase 4",
+      "provider": "Youpin898",
+      "time": "2026-03-19T23:50:00Z",
+      "price": 143200,
+      "currency": "USD",
+      "quantity": 668
+    }
+  ],
+  "pagination": {...}
+}
+```
+
+### Response fields
+
+<ResponseField name="item_id" type="integer">
+  Catalog item ID.
+</ResponseField>
+
+<ResponseField name="market_hash_name" type="string">
+  Full item name.
+</ResponseField>
+
+<ResponseField name="phase" type="string">
+  Doppler phase or `null`.
+</ResponseField>
+
+<ResponseField name="provider" type="string">
+  Provider name for this record.
+</ResponseField>
+
+<ResponseField name="time" type="string">
+  ISO 8601 timestamp of the price observation.
+</ResponseField>
+
+<ResponseField name="price" type="integer">
+  Price in minor units of the response currency.
+</ResponseField>
+
+<ResponseField name="currency" type="string">
+  ISO 4217 currency code for the returned price.
+</ResponseField>
+
+<ResponseField name="quantity" type="integer">
+  Listing count observed at this timestamp.
+</ResponseField>
+
+<Note>
+  `pagination.total` is intentionally `-1` on this cursor-paginated endpoint. Counting rows is skipped for performance. Paginate using the `next_cursor` field in the `pagination` object.
+</Note>

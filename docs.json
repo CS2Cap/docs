@@ -1,0 +1,94 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "name": "CS2Cap",
+  "theme": "luma",
+  "favicon": "https://media.brand.dev/f5abf171-5c6c-4acd-8375-9152474fa39e.svg",
+  "colors": {
+    "primary": "#04b3e4",
+    "light": "#f7fafa"
+  },
+  "navbar": {
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/CS2Cap/API-Docs"
+    }
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "authentication",
+              "core-concepts"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/pricing-plans",
+              "guides/rate-limits",
+              "guides/portfolio",
+              "guides/webhooks-alerts"
+            ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              "reference/field-reference",
+              "reference/error-codes",
+              "reference/providers",
+              "changelog"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "api-reference/overview"
+            ]
+          },
+          {
+            "group": "Market Data",
+            "pages": [
+              "api-reference/prices",
+              "api-reference/bids",
+              "api-reference/sales",
+              "api-reference/catalog"
+            ]
+          },
+          {
+            "group": "Analytics",
+            "pages": [
+              "api-reference/market-analytics",
+              "api-reference/inventory"
+            ]
+          },
+          {
+            "group": "Portfolio",
+            "pages": [
+              "api-reference/portfolio"
+            ]
+          },
+          {
+            "group": "Account",
+            "pages": [
+              "api-reference/account",
+              "api-reference/sub-keys",
+              "api-reference/alerts",
+              "api-reference/webhooks"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

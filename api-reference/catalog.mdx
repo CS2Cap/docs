@@ -1,0 +1,449 @@
+---
+title: "Catalog API: Items, Providers, and FX Rates"
+description: "Search the CS2 item catalog, load provider metadata and health status, and fetch live FX rates for currency conversion across 160+ ISO 4217 codes."
+---
+
+The Catalog API gives you everything you need to build search interfaces, validate item identifiers, understand provider capabilities, and handle currency conversion. All four endpoints are available on every tier — including free — and do not consume significant quota relative to market-data endpoints.
+
+---
+
+## GET /items — List items
+
+Searches the CS2 item catalog and returns full metadata for every match. You can filter by name, type, wear, phase, rarity, and many other attributes. Omit `limit` to return all matching items in a single response.
+
+**Tiers:** `free` · `pro` · `quant`
+
+### Parameters
+
+<ParamField query="q" type="string">
+  Case-insensitive substring search by name.
+</ParamField>
+
+<ParamField query="item_id" type="integer">
+  Exact item ID match.
+</ParamField>
+
+<ParamField query="market_hash_name" type="string">
+  Exact market hash name match, case-insensitive.
+</ParamField>
+
+<ParamField query="item_type" type="string">
+  Filter by item type. One of: `Weapon`, `Sticker`, `Sticker Slab`, `Graffiti`, `Charm`, `Crate`, `Music Kit`, `Patch`, `Collectible`, `Agent`, `Key`, `Tool`.
+</ParamField>
+
+<ParamField query="item_subtype" type="string">
+  Filter by item subtype. One of: `Autograph`, `Autograph Capsule`, `Capsule Key`, `Case Key`, `Collection Package`, `Counter-Terrorist`, `Equipment`, `Event`, `Gift`, `Gloves`, `Graffiti Box`, `Heavy`, `Highlight Reel`, `Knives`, `Music Kit Box`, `Normal`, `Operation Pass`, `Other`, `Patch Capsule`, `Pin`, `Pins Capsule`, `Pistols`, `Rifles`, `SMGs`, `Souvenir Highlight`, `Souvenir Package`, `StatTrak`, `Sticker Capsule`, `Team`, `Terrorist`, `Tournament Pass`, `Weapon Case`.
+</ParamField>
+
+<ParamField query="weapon_type" type="string">
+  Filter by weapon type. One of: `Wearable`, `Assault Rifle`, `Knife`, `Sniper Rifle`, `SMG`, `Pistol`, `Machinegun`, `Shotgun`.
+</ParamField>
+
+<ParamField query="base_name" type="string">
+  Exact base name match, case-insensitive (e.g. `AK-47`).
+</ParamField>
+
+<ParamField query="skin_name" type="string">
+  Exact skin name match, case-insensitive (e.g. `Redline`).
+</ParamField>
+
+<ParamField query="wear_name" type="string">
+  Filter by wear condition. One of: `Factory New`, `Minimal Wear`, `Field-Tested`, `Well-Worn`, `Battle-Scarred`.
+</ParamField>
+
+<ParamField query="phase" type="string">
+  Doppler or Gamma Doppler phase filter. One of: `Phase 1`, `Phase 2`, `Phase 3`, `Phase 4`, `Ruby`, `Sapphire`, `Black Pearl`, `Emerald`.
+</ParamField>
+
+<ParamField query="collection" type="string">
+  Exact collection name match, case-insensitive.
+</ParamField>
+
+<ParamField query="crates" type="string">
+  Filter by crate name. Repeat to pass multiple values.
+</ParamField>
+
+<ParamField query="rarity_name" type="string">
+  Filter by rarity name. One of: `Base Grade`, `Consumer Grade`, `Industrial Grade`, `Mil-Spec Grade`, `High Grade`, `Distinguished`, `Restricted`, `Remarkable`, `Exceptional`, `Classified`, `Exotic`, `Superior`, `Covert`, `Extraordinary`, `Master`, `Contraband`.
+</ParamField>
+
+<ParamField query="rarity_color" type="string">
+  Filter by rarity color hex. One of: `b0c3d9` (white), `5e98d9` (light blue), `4b69ff` (blue), `8847ff` (purple), `d32ce6` (pink), `eb4b4b` (red), `e4ae39` (orange).
+</ParamField>
+
+<ParamField query="style_name" type="string">
+  Filter by finish style. One of: `None`, `Gunsmith`, `Patina`, `Custom Paint Job`, `Hydrographic`, `Spray-Paint`, `Anodized Multicolored`, `Anodized Airbrushed`, `Solid Color`, `Anodized`, `Case Hardening`.
+</ParamField>
+
+<ParamField query="is_stattrak" type="boolean">
+  Filter to StatTrak items only (`true`) or exclude them (`false`).
+</ParamField>
+
+<ParamField query="is_souvenir" type="boolean">
+  Filter to Souvenir items only (`true`) or exclude them (`false`).
+</ParamField>
+
+<ParamField query="limit" type="integer">
+  Maximum items to return. Range: 1–1000. Omit to return all matches in a single response.
+</ParamField>
+
+### Response example
+
+```json
+{
+  "items": [
+    {
+      "item_id": 9062,
+      "market_hash_name": "★ Specialist Gloves | Crimson Kimono (Factory New)",
+      "phase": null,
+      "item_type": "Weapon",
+      "item_subtype": "Gloves",
+      "weapon_type": "Wearable",
+      "base_name": "Specialist Gloves",
+      "skin_name": "Crimson Kimono",
+      "wear_name": "Factory New",
+      "def_index": "5034",
+      "paint_index": 10033,
+      "collection": null,
+      "crates": ["Glove Case", "Operation Hydra Case"],
+      "rarity_name": "Extraordinary",
+      "rarity_color": "eb4b4b",
+      "style_name": "None",
+      "is_stattrak": false,
+      "is_souvenir": false,
+      "min_float": 0.06,
+      "max_float": 0.8,
+      "image_url": "https://cdn.cs2c.app/images/econ/default_generated/specialist_gloves_specialist_kimono_diamonds_red_light_png.png",
+      "supply": 48
+    }
+  ]
+}
+```
+
+### Response fields
+
+<ResponseField name="item_id" type="integer">
+  Unique catalog item ID. Use this value in market-data endpoint parameters that accept `item_id`.
+</ResponseField>
+
+<ResponseField name="market_hash_name" type="string">
+  Full item name as it appears in the Steam economy.
+</ResponseField>
+
+<ResponseField name="phase" type="string">
+  Doppler or Gamma Doppler phase, or `null` for non-phased items.
+</ResponseField>
+
+<ResponseField name="item_type" type="string">
+  High-level item type.
+</ResponseField>
+
+<ResponseField name="item_subtype" type="string">
+  Item subtype within the type.
+</ResponseField>
+
+<ResponseField name="weapon_type" type="string">
+  Weapon or wearable category.
+</ResponseField>
+
+<ResponseField name="base_name" type="string">
+  Base item name without skin or wear (e.g. `Specialist Gloves`).
+</ResponseField>
+
+<ResponseField name="skin_name" type="string">
+  Skin name without the base item or wear (e.g. `Crimson Kimono`).
+</ResponseField>
+
+<ResponseField name="wear_name" type="string">
+  Wear condition.
+</ResponseField>
+
+<ResponseField name="def_index" type="string">
+  Steam economy definition index for this item.
+</ResponseField>
+
+<ResponseField name="paint_index" type="integer">
+  Paint index identifying the skin pattern.
+</ResponseField>
+
+<ResponseField name="collection" type="string">
+  Collection the item belongs to, or `null`.
+</ResponseField>
+
+<ResponseField name="crates" type="string[]">
+  Names of cases or crates the item can be unboxed from.
+</ResponseField>
+
+<ResponseField name="rarity_name" type="string">
+  Rarity tier name.
+</ResponseField>
+
+<ResponseField name="rarity_color" type="string">
+  Rarity color as a hex string.
+</ResponseField>
+
+<ResponseField name="style_name" type="string">
+  Finish style name.
+</ResponseField>
+
+<ResponseField name="is_stattrak" type="boolean">
+  Whether the item is StatTrak.
+</ResponseField>
+
+<ResponseField name="is_souvenir" type="boolean">
+  Whether the item is a Souvenir variant.
+</ResponseField>
+
+<ResponseField name="min_float" type="number">
+  Minimum possible float value for this skin.
+</ResponseField>
+
+<ResponseField name="max_float" type="number">
+  Maximum possible float value for this skin.
+</ResponseField>
+
+<ResponseField name="image_url" type="string">
+  URL to the item's image on the CS2Cap CDN.
+</ResponseField>
+
+<ResponseField name="supply" type="integer">
+  Approximate circulating supply. Present only when the value is available.
+</ResponseField>
+
+<Tip>
+  Omit `limit` to return all matching items in a single response. This is useful when you want to download the full catalog or build a local search index.
+</Tip>
+
+---
+
+## GET /items/metadata — Catalog metadata
+
+Returns catalog summary counts and the valid filter option values for every enumerated field. Use this endpoint to pre-populate search dropdowns or validate filter inputs before calling `GET /items`.
+
+**Tiers:** `free` · `pro` · `quant`
+
+### Parameters
+
+This endpoint takes no parameters.
+
+### Response example
+
+```json
+{
+  "catalog": {
+    "total_items": 39007
+  },
+  "filters": {
+    "item_type": ["Weapon", "Sticker", "Charm"],
+    "item_subtype": ["Rifles", "Pistols", "Knives"],
+    "weapon_type": ["Assault Rifle", "Pistol", "Knife"],
+    "wear_name": ["Factory New", "Minimal Wear", "Field-Tested", "Well-Worn", "Battle-Scarred"],
+    "phase": ["Phase 1", "Phase 2", "Phase 3", "Phase 4", "Ruby", "Sapphire", "Black Pearl", "Emerald"],
+    "collection": ["The Arms Deal Collection", "The Dust Collection"],
+    "rarity_name": ["Restricted", "Classified", "Covert"],
+    "rarity_color": ["4b69ff", "8847ff", "d32ce6", "eb4b4b"],
+    "style_name": ["Gunsmith", "Patina", "Custom Paint Job"]
+  }
+}
+```
+
+### Response fields
+
+<ResponseField name="catalog.total_items" type="integer">
+  Total number of items in the CS2Cap catalog.
+</ResponseField>
+
+<ResponseField name="filters" type="object">
+  Valid values for each enumerated filter parameter accepted by `GET /items`. Arrays contain only values that exist for at least one item in the current catalog.
+</ResponseField>
+
+---
+
+## GET /providers — List providers
+
+Returns metadata, fee information, and live health data for all enabled CS2 marketplaces. You can optionally filter to a single provider by key.
+
+**Tiers:** `free` · `pro` · `quant`
+
+### Parameters
+
+<ParamField query="provider" type="string">
+  Optional provider key. Omit to return all providers. One of: `avanmarket`, `bitskins`, `buff163`, `buffmarket`, `c5`, `csdeals`, `csfloat`, `csgo500`, `csgoempire`, `csmoney_m`, `csmoney_t`, `cstrade`, `dmarket`, `ecosteam`, `gamerpay`, `haloskins`, `itradegg`, `lisskins`, `lootfarm`, `mannco`, `marketcsgo`, `pirateswap`, `rapidskins`, `shadowpay`, `skinbaron`, `skinflow`, `skinout`, `skinplace`, `skinport`, `skinscom`, `skinsmonkey`, `skinswap`, `skinvault`, `steam`, `swapgg`, `tradeit`, `waxpeer`, `whitemarket`, `youpin`.
+</ParamField>
+
+### Response example
+
+```json
+{
+  "Avan Market": {
+    "key": "avanmarket",
+    "code": "AVAN",
+    "market_type": "STORE",
+    "default_currency": "USD",
+    "fees": {
+      "sell_fee": null,
+      "insta_sell_fee": 0.14,
+      "trading_spread_fee": null
+    },
+    "features": {
+      "has_buy_orders": false,
+      "has_recent_sales": false
+    },
+    "health": {
+      "status": "up",
+      "last_checked_at": "2026-03-21T05:47:49.308777+00:00",
+      "total_offers": 221316,
+      "unique_items": 14792,
+      "market_coverage": 37.93,
+      "total_value": 696770885,
+      "total_value_usd": 696770885
+    }
+  },
+  "BUFF163": {
+    "key": "buff163",
+    "code": "B163",
+    "market_type": "P2P",
+    "default_currency": "CNY",
+    "fees": {
+      "sell_fee": 0.025,
+      "insta_sell_fee": null,
+      "trading_spread_fee": null
+    },
+    "features": {
+      "has_buy_orders": true,
+      "has_recent_sales": true
+    },
+    "health": {
+      "status": "up",
+      "last_checked_at": "2026-03-21T05:45:55.403317+00:00",
+      "total_offers": 4239178,
+      "unique_items": 32235,
+      "market_coverage": 82.66,
+      "total_value": 101161038598,
+      "total_value_usd": 14661379184
+    }
+  }
+}
+```
+
+### Response fields
+
+The response is a map keyed by the provider's display name. Each value is an object with the following fields:
+
+<ResponseField name="key" type="string">
+  Machine-readable provider key. Use this value in `providers` parameters across market-data endpoints.
+</ResponseField>
+
+<ResponseField name="code" type="string">
+  Short provider code.
+</ResponseField>
+
+<ResponseField name="market_type" type="string">
+  Market structure. `STORE` (fixed-price listings) or `P2P` (peer-to-peer marketplace).
+</ResponseField>
+
+<ResponseField name="default_currency" type="string">
+  The provider's native currency as an ISO 4217 code.
+</ResponseField>
+
+<ResponseField name="fees" type="object">
+  Fee information for this provider. All values are decimal fractions — for example, `0.025` = 2.5%. `null` means that fee type does not apply.
+
+  <Expandable title="fee properties">
+    <ResponseField name="sell_fee" type="number">
+      Standard sell-side fee fraction, or `null`.
+    </ResponseField>
+    <ResponseField name="insta_sell_fee" type="number">
+      Instant-sell fee fraction, or `null`.
+    </ResponseField>
+    <ResponseField name="trading_spread_fee" type="number">
+      Trading spread fee fraction, or `null`.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="features" type="object">
+  Flags indicating which CS2Cap API features this provider supports.
+
+  <Expandable title="feature properties">
+    <ResponseField name="has_buy_orders" type="boolean">
+      Whether this provider exposes buy orders (usable via the Bids API).
+    </ResponseField>
+    <ResponseField name="has_recent_sales" type="boolean">
+      Whether this provider exposes recent sale history (usable via the Sales API).
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="health" type="object">
+  Live health and coverage data for this provider.
+
+  <Expandable title="health properties">
+    <ResponseField name="status" type="string">
+      Current operational status. One of: `up`, `degraded`, `down`.
+    </ResponseField>
+    <ResponseField name="last_checked_at" type="string">
+      ISO 8601 timestamp of the most recent health check.
+    </ResponseField>
+    <ResponseField name="total_offers" type="integer">
+      Total number of active listings currently indexed from this provider.
+    </ResponseField>
+    <ResponseField name="unique_items" type="integer">
+      Number of unique CS2 items with at least one active listing.
+    </ResponseField>
+    <ResponseField name="market_coverage" type="number">
+      Percentage of the CS2Cap catalog covered by this provider.
+    </ResponseField>
+    <ResponseField name="total_value" type="integer">
+      Total market value of all indexed listings in the provider's native `default_currency` (minor units).
+    </ResponseField>
+    <ResponseField name="total_value_usd" type="integer">
+      `total_value` converted to USD (minor units).
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+## GET /fx — FX rates
+
+Returns the current FX table with USD as the base currency. These rates power the automatic currency conversion that applies when you pass a `currency` parameter to any market-data endpoint.
+
+**Tiers:** `free` · `pro` · `quant`
+
+### Parameters
+
+This endpoint takes no parameters.
+
+### Response example
+
+```json
+{
+  "timestamp": "2026-03-20T22:00:48.904741+00:00",
+  "rates": {
+    "USD": 1,
+    "BRL": 5.257551,
+    "CAD": 1.372665,
+    "CHF": 0.790629,
+    "CNY": 6.899831,
+    "EUR": 0.866447,
+    "GBP": 0.747866,
+    "PLN": 3.70293,
+    "SGD": 1.279595
+  }
+}
+```
+
+### Response fields
+
+<ResponseField name="timestamp" type="string">
+  ISO 8601 timestamp of when the FX rates were last updated.
+</ResponseField>
+
+<ResponseField name="rates" type="object">
+  Map of ISO 4217 currency codes to their exchange rate relative to USD. `USD` is always `1`. Over 160 currency codes are included in the full response — the example above is abbreviated.
+</ResponseField>
+
+<Tip>
+  Instead of fetching FX rates and converting manually, pass the `currency` query parameter to any market-data endpoint and receive values already converted into your target currency.
+</Tip>

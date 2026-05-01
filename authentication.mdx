@@ -1,0 +1,135 @@
+---
+title: "CS2Cap Authentication: API Keys and Bearer Tokens"
+description: "CS2Cap uses API key authentication via the Authorization header. Learn how to get your key, use it in requests, and handle auth errors."
+---
+
+Every request to a CS2Cap market-data endpoint must include an API key in the `Authorization` header. There are no cookies, sessions, or OAuth flows for API access — your key is the only credential the API requires. Keep it secret and never commit it to source control.
+
+## Get your API key
+
+<Steps>
+  <Step title="Create an account">
+    Sign up at [cs2cap.com](https://cs2cap.com) using OAuth. No password is required.
+  </Step>
+  <Step title="Verify your email address">
+    Add and verify an email address on your account. Email verification is required before any API key can be issued or reissued.
+  </Step>
+  <Step title="Generate your key">
+    Go to [cs2cap.com/account/api-keys](https://cs2cap.com/account/api-keys) and generate your initial API key. Copy it immediately — it is only shown once.
+  </Step>
+  <Step title="Add the key to your requests">
+    Include the key in the `Authorization` header of every API request using the `Bearer` scheme (see examples below).
+  </Step>
+</Steps>
+
+<Warning>
+  You can only have **one active API key per account**. Generating a new key revokes your current key and all child keys issued from it.
+</Warning>
+
+## Send the Authorization header
+
+Pass your API key as a Bearer token in the `Authorization` header on every request.
+
+```http
+Authorization: Bearer <your_api_key_here>
+```
+
+### Code examples
+
+<CodeGroup>
+
+```bash cURL
+curl -sS \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  "https://api.cs2c.app/v1/prices?market_hash_name=AK-47%20%7C%20Redline%20(Field-Tested)&providers=steam&currency=USD&limit=5"
+```
+
+```python Python
+import os
+import requests
+
+key = os.environ["CS2C_API_KEY"]
+
+response = requests.get(
+    "https://api.cs2c.app/v1/prices",
+    headers={"Authorization": f"Bearer {key}"},
+    params={
+        "market_hash_name": "AK-47 | Redline (Field-Tested)",
+        "providers": "steam",
+        "currency": "USD",
+        "limit": 5,
+    },
+    timeout=20,
+)
+response.raise_for_status()
+print(response.json())
+```
+
+```javascript JavaScript
+const key = process.env.CS2C_API_KEY;
+
+const url = new URL("https://api.cs2c.app/v1/prices");
+url.searchParams.set("market_hash_name", "AK-47 | Redline (Field-Tested)");
+url.searchParams.set("providers", "steam");
+url.searchParams.set("currency", "USD");
+url.searchParams.set("limit", "5");
+
+const response = await fetch(url, {
+  headers: { Authorization: `Bearer ${key}` },
+});
+
+if (!response.ok) {
+  throw new Error(`${response.status} ${await response.text()}`);
+}
+
+console.log(await response.json());
+```
+
+</CodeGroup>
+
+<Tip>
+  Store your key in an environment variable (e.g., `CS2C_API_KEY`) rather than hard-coding it in your source files.
+</Tip>
+
+## API key rules
+
+- **One active key per account.** You cannot have multiple active keys on a single account unless you use sub-keys (available on Quant).
+- **Email verification is required.** You must have a verified email address on your account before the API will issue or reissue a key.
+- **Keys are sensitive.** Treat your API key like a password. Do not share it publicly or include it in client-side code.
+
+## Reissuing your key
+
+If your key is compromised or you want to rotate it, call `POST /account/key/reissue`. This endpoint:
+
+- Immediately **revokes your current key**
+- Revokes **all child keys** issued from your account
+- Returns a new key
+
+```bash
+curl -sS -X POST \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  "https://api.cs2c.app/v1/account/key/reissue"
+```
+
+<Warning>
+  Reissuing your key is irreversible. Any integrations using the old key will stop working immediately. Update all consumers before or immediately after reissuing.
+</Warning>
+
+## Authentication error codes
+
+When a request fails due to an authentication problem, the API returns a `401` or `403` response with a machine-readable `code` field.
+
+| Code | Status | Meaning |
+| --- | --- | --- |
+| `AUTH_INVALID_API_KEY` | `401` | The key is missing, malformed, or does not exist. |
+| `AUTH_API_KEY_REVOKED` | `401` | The key was revoked — either manually or by a reissue. |
+| `AUTH_ACCOUNT_DISABLED` | `403` | The account associated with this key has been disabled. |
+
+All error responses follow the same shape:
+
+```json
+{
+  "code": "AUTH_INVALID_API_KEY",
+  "detail": "Invalid API key"
+}
+```
