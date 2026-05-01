@@ -839,3 +839,139 @@ export interface PendingChangeCancelResponse {
 export interface DeleteAccountResponse {
   ok: boolean;
 }
+
+// ============================================================================
+// Steam inventory + stateless portfolio valuation (public Inventory Value tool)
+// ============================================================================
+
+// Loose shapes — we do not strictly use individual fields on these.
+export interface InventorySticker {
+  name?: string;
+  slot?: number;
+  wear?: number | null;
+  image_url?: string | null;
+}
+
+export interface InventoryCharm {
+  name?: string;
+  pattern?: number | null;
+  image_url?: string | null;
+}
+
+export interface SteamInventoryItem {
+  assetid: string;
+  market_hash_name: string;
+  phase: string | null;
+  name: string;
+  icon_url: string;
+  tradable: boolean;
+  marketable: boolean;
+  quantity: number;
+  float_value: number | null;
+  paint_seed: number | null;
+  inspect_link: string | null;
+  name_tag: string | null;
+  stickers: InventorySticker[] | null;
+  charms: InventoryCharm[] | null;
+}
+
+export interface SteamInventoryLookupResponse {
+  data: SteamInventoryItem[];
+  total_count: number;
+}
+
+// POST /v1/portfolio/value upstream shapes.
+export interface PortfolioValueRequest {
+  items: Array<{ item_id: number; quantity: number }>;
+  providers?: AllProviders[];
+  currency?: string;
+}
+
+export interface PortfolioValueProviderBreakdown {
+  provider: string;
+  ask?: number | null;
+  bid?: number | null;
+}
+
+export interface PortfolioValueLineItem {
+  item_id: number;
+  market_hash_name: string;
+  phase: string | null;
+  quantity: number;
+  best_ask: number | null;
+  best_bid?: number | null;
+  item_value: number;
+  providers: PortfolioValueProviderBreakdown[];
+}
+
+export interface PortfolioValueResponse {
+  meta: {
+    currency: string;
+    generated_at: string;
+    providers_queried: string[];
+  };
+  data: {
+    line_items: PortfolioValueLineItem[];
+    total_value: number;
+    items_valued: number;
+    items_not_found: number[];
+  };
+}
+
+// App-route request/response (what the browser actually talks to).
+export interface InventoryValueRequest {
+  steam_id: string;
+}
+
+export type InventoryValueUnmatchedReason =
+  | "no_catalog_match"
+  | "phase_mismatch"
+  | "valuation_missing";
+
+export interface InventoryValueResolvedItem {
+  item_id: number;
+  market_hash_name: string;
+  phase: string | null;
+  icon_url: string;
+  tradable: boolean;
+  marketable: boolean;
+  quantity: number;
+  // Money fields are integer minor units (e.g. cents for USD).
+  best_ask: number | null;
+  best_bid: number | null;
+  item_value: number;
+  providers: PortfolioValueProviderBreakdown[];
+}
+
+export interface InventoryValueUnmatchedItem {
+  assetid: string;
+  market_hash_name: string;
+  phase: string | null;
+  icon_url: string;
+  quantity: number;
+  reason: InventoryValueUnmatchedReason;
+}
+
+export interface InventoryValueStats {
+  total_value: number; // minor units
+  currency: string;
+  items_priced: number; // distinct catalog items with a non-null best_ask
+  items_unpriced: number; // resolved-but-no-price + unmatched
+  units_total: number;
+  providers_queried_count: number;
+}
+
+export interface InventoryValueMeta {
+  generated_at: string;
+  steam_inventory_total: number;
+  resolved_distinct_item_count: number;
+  cache_hit: boolean;
+}
+
+export interface InventoryValueToolResponse {
+  meta: InventoryValueMeta;
+  stats: InventoryValueStats;
+  items: InventoryValueResolvedItem[];
+  unmatched_items: InventoryValueUnmatchedItem[];
+}
+
