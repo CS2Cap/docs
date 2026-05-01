@@ -1,55 +1,69 @@
-# Mintlify Starter Kit
+# CS2Cap API Docs
 
-Use the starter kit to get your docs deployed and ready to customize.
+This directory contains the public documentation source for CS2Cap's market-data API. It is a Mintlify docs project that covers onboarding, authentication, pricing, rate limits, endpoint references, provider coverage, error codes, and field semantics for the API served by this repository.
 
-Click the green **Use this template** button at the top of this repo to copy the Mintlify starter kit. The starter kit contains examples with
+The docs are written for API consumers: developers building pricing tools, trading workflows, portfolio trackers, alerting systems, and analytics products on top of CS2Cap.
 
-- Guide pages
-- Navigation
-- Customizations
-- API reference pages
-- Use of popular components
+## Contents
 
-**[Follow the full quickstart guide](https://starter.mintlify.com/quickstart)**
+| Path | Purpose |
+| --- | --- |
+| `docs.json` | Mintlify site configuration, theme, navigation, and page order. |
+| `index.mdx` | Landing page for the docs site. |
+| `introduction.mdx` | Product and API overview: base URL, capabilities, tiers, and next steps. |
+| `quickstart.mdx` | First-request walkthrough with example calls. |
+| `authentication.mdx` | API key authentication, account setup, and key handling. |
+| `core-concepts.mdx` | Core API concepts such as providers, items, prices, bids, sales, and currencies. |
+| `api-reference/` | Endpoint-level reference pages for prices, bids, sales, catalog, analytics, portfolio, account, sub-keys, alerts, and webhooks. |
+| `guides/` | Task-oriented guides for pricing plans, rate limits, portfolio workflows, and webhook/alert integrations. |
+| `reference/` | Cross-cutting reference material for fields, error codes, and provider keys. |
+| `openapi/openapi.json` | Filtered public OpenAPI spec generated from the backend contract. |
+| `changelog.mdx` | Public documentation changelog. |
 
-## AI-assisted writing
+## Navigation Model
 
-Set up your AI coding tool to work with Mintlify:
+The site is split into two primary tabs in `docs.json`:
+
+- `Documentation`: conceptual pages and task guides.
+- `API Reference`: endpoint-specific request and response documentation.
+
+When adding a page, create the `.mdx` file in the relevant folder and add it to the correct navigation group in `docs.json`. Mintlify only exposes pages that are included in the navigation config.
+
+## API Surface Covered
+
+The reference pages currently document the main public surfaces of the CS2Cap API:
+
+- Market data: `/v1/prices`, `/v1/bids`, `/v1/sales`, `/v1/items`, and provider catalog routes.
+- Analytics: market indicators, arbitrage, inventory analytics, and related Quant-tier capabilities.
+- Portfolio: holdings, transactions, Steam imports, and portfolio valuation workflows.
+- Account workflows: API keys, sub-keys, alerts, webhooks, usage, and account-level operations.
+
+Keep these pages aligned with the FastAPI implementation and generated OpenAPI artifacts in the repository. If endpoint behavior changes, update the affected docs alongside the code and tests.
+
+The public docs repository is synced from this `docs/` directory. Do not add public docs content under the legacy `docs/public-docs/` path.
+
+## Local Preview
+
+Install the Mintlify CLI if needed:
 
 ```bash
-npx skills add https://mintlify.com/docs
-```
-
-This command installs Mintlify's documentation skill for your configured AI tools like Claude Code, Cursor, Windsurf, and others. The skill includes component reference, writing standards, and workflow guidance.
-
-See the [AI tools guides](/ai-tools) for tool-specific setup.
-
-## Development
-
-Install the [Mintlify CLI](https://www.npmjs.com/package/mint) to preview your documentation changes locally. To install, use the following command:
-
-```
 npm i -g mint
 ```
 
-Run the following command at the root of your documentation, where your `docs.json` is located:
+Run the docs preview from this directory:
 
-```
+```bash
+cd docs
 mint dev
 ```
 
-View your local preview at `http://localhost:3000`.
+The local preview runs at `http://localhost:3000`.
 
-## Publishing changes
+## Maintenance Notes
 
-Install our GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app) to propagate changes from your repo to your deployment. Changes are deployed to production automatically after pushing to the default branch.
-
-## Need help?
-
-### Troubleshooting
-
-- If your dev environment isn't running: Run `mint update` to ensure you have the most recent version of the CLI.
-- If a page loads as a 404: Make sure you are running in a folder with a valid `docs.json`.
-
-### Resources
-- [Mintlify documentation](https://mintlify.com/docs)
+- Use exact provider keys, endpoint names, request parameters, and response field names from the backend contract.
+- Prices are documented in minor units unless a page explicitly says otherwise.
+- Keep tier-gated behavior consistent across `guides/pricing-plans.mdx`, `guides/rate-limits.mdx`, and endpoint reference pages.
+- Update `reference/error-codes.mdx` when adding or changing machine-readable API error codes.
+- Update `reference/providers.mdx` when provider availability or capabilities change.
+- Avoid broad copy rewrites when only a contract detail changed; preserve examples and wording that are still accurate.

@@ -1,6 +1,6 @@
 ---
 title: "CS2Cap Supported Marketplaces and Providers"
-description: "Complete list of all 39 CS2Cap provider keys with market types, fee data, health fields, and usage examples for the providers request parameter."
+description: "Complete list of all 38 CS2Cap provider keys with market types, fee data, health fields, and usage examples for the providers request parameter."
 ---
 
 A provider is a CS2 marketplace that CS2Cap indexes for pricing, bid, and sales data. Each provider has a short string key — such as `steam`, `buff163`, or `csfloat` — that you use in request parameters. Always use the provider key, not the marketplace's display name or brand name.
@@ -13,27 +13,23 @@ GET /prices?market_hash_name=AK-47+%7C+Redline+(Field-Tested)&providers=steam&pr
 
 ## Full provider catalog
 
-All 39 supported provider keys:
+All 38 supported provider keys:
 
 | Provider key | Provider key | Provider key |
 | --- | --- | --- |
-| `avanmarket` | `lisskins` | `skinout` |
-| `bitskins` | `lootfarm` | `skinplace` |
-| `buff163` | `mannco` | `skinport` |
-| `buffmarket` | `marketcsgo` | `skinscom` |
-| `c5` | `pirateswap` | `skinsmonkey` |
-| `csdeals` | `rapidskins` | `skinswap` |
-| `csfloat` | `shadowpay` | `skinvault` |
-| `csgo500` | `skinbaron` | `steam` |
-| `csgoempire` | `skinflow` | `swapgg` |
-| `csmoney_m` | — | `tradeit` |
-| `csmoney_t` | — | `waxpeer` |
-| `cstrade` | — | `whitemarket` |
-| `dmarket` | — | `youpin` |
-| `ecosteam` | — | — |
-| `gamerpay` | — | — |
-| `haloskins` | — | — |
-| `itradegg` | — | — |
+| `avanmarket` | `ecosteam` | `skinplace` |
+| `bitskins` | `haloskins` | `skinport` |
+| `buff163` | `itradegg` | `skinscom` |
+| `buffmarket` | `lisskins` | `skinsmonkey` |
+| `c5` | `lootfarm` | `skinswap` |
+| `csdeals` | `mannco` | `skinvault` |
+| `csfloat` | `marketcsgo` | `steam` |
+| `csgo500` | `pirateswap` | `swapgg` |
+| `csgoempire` | `rapidskins` | `tradeit` |
+| `csmoney_m` | `shadowpay` | `waxpeer` |
+| `csmoney_t` | `skinbaron` | `whitemarket` |
+| `cstrade` | `skinflow` | `youpin` |
+| `dmarket` | `skinout` | — |
 
 <Note>
   Pass provider keys as the `provider` parameter (single value) or the `providers` parameter (repeatable) depending on the endpoint. The API never accepts display names — only the keys listed above.
