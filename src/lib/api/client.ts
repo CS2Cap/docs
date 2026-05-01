@@ -30,6 +30,8 @@ import type {
   DeleteAccountResponse,
   EmailChangeRequest,
   EmailSetRequest,
+  InventoryValueRequest,
+  InventoryValueToolResponse,
   ItemOut,
   ItemsMetadataResponse,
   ItemsResponse,
