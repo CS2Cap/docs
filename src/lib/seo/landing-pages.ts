@@ -55,7 +55,6 @@ const PROVIDER_DISPLAY_NAMES: Record<string, string> = {
   cstrade: "CS.Trade",
   dmarket: "DMarket",
   ecosteam: "Eco Steam",
-  gamerpay: "GamerPay",
   haloskins: "HaloSkins",
   itradegg: "iTrade.gg",
   lisskins: "LisSkins",
