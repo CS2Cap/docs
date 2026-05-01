@@ -22912,6 +22912,20 @@
               "title": "User Id"
             },
             "description": "User ID."
+          },
+          {
+            "name": "window_days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 365,
+              "minimum": 1,
+              "description": "Number of days of history to return.",
+              "default": 30,
+              "title": "Window Days"
+            },
+            "description": "Number of days of history to return."
           }
         ],
         "responses": {
@@ -26859,7 +26873,6 @@
           "cstrade",
           "dmarket",
           "ecosteam",
-          "gamerpay",
           "haloskins",
           "itradegg",
           "lisskins",
