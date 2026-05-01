@@ -1,0 +1,80 @@
+---
+title: "CS2Cap Rate Limits: Per-Minute and Monthly Quotas"
+description: "Understand CS2Cap's per-minute and monthly request limits, how to read rate-limit headers, and best practices for staying within your quota."
+---
+
+CS2Cap enforces two independent rate limits on every API key: a per-minute burst limit and a monthly quota. Exceeding either returns a `429` response with machine-readable headers that tell you exactly when you can retry. Understanding how these limits work — and which endpoints count against them — lets you design efficient integrations that never get blocked unexpectedly.
+
+## Limits by tier
+
+| Tier | Requests / minute | Requests / month | Max `limit` param |
+|------|:-----------------:|:----------------:|:-----------------:|
+| Free | 20 | 1,000 | 100 |
+| Pro | 100 | 500,000 | 1,000 |
+| Quant | 300 | 1,000,000 | 1,000 |
+
+### Special limits for bulk snapshot endpoints
+
+`POST /v1/prices` and `POST /v1/bids` stream a full snapshot of all indexed items as NDJSON. In addition to the standard per-minute limit, each of these endpoints enforces a **1 request per 30 seconds** cooldown per API key. Build this cooldown into any scheduler that calls these endpoints in a loop.
+
+## Which endpoints consume monthly quota
+
+Monthly quota applies to **public core market-data endpoints** — prices, bids, candles, history, sales, items, providers, FX, and market analytics. These are the endpoints that drive the most data volume.
+
+The following route categories are **exempt from monthly quota** (they still have burst protection, but they do not count against your 1,000 / 500,000 / 1,000,000 monthly total):
+
+- Account and billing management routes
+- Email verification and account recovery routes
+- Alert creation, listing, and management routes
+- Webhook configuration routes
+
+## Rate limit response headers
+
+When you are approaching or have exceeded a limit, the API includes the following headers on the response:
+
+| Header | Description |
+|--------|-------------|
+| `Retry-After` | Seconds to wait before the next request will succeed. Present on `429` responses. |
+| `X-RateLimit-Limit` | Your tier's monthly quota. |
+| `X-RateLimit-Remaining` | Monthly quota requests remaining in the current billing period. |
+| `X-RateLimit-Reset` | Unix timestamp (seconds) when the monthly quota resets. |
+| `X-RateLimit-Tier` | Your current tier identifier (`free`, `pro`, or `quant`). |
+
+### Example 429 response headers
+
+```http
+HTTP/1.1 429 Too Many Requests
+Retry-After: 12345
+X-RateLimit-Limit: 500000
+X-RateLimit-Remaining: 0
+X-RateLimit-Reset: 12345
+X-RateLimit-Tier: pro
+```
+
+## Error codes
+
+Both rate limit conditions return HTTP `429` with a machine-readable `code` field in the response body.
+
+| Code | HTTP status | Meaning |
+|------|:-----------:|---------|
+| `RATE_LIMIT_EXCEEDED` | 429 | Per-minute burst limit hit. Wait for the number of seconds in `Retry-After`. |
+| `RATE_LIMIT_MONTHLY_QUOTA_EXCEEDED` | 429 | Monthly quota exhausted. Requests will resume at the start of the next billing period. |
+
+```json
+{
+  "code": "RATE_LIMIT_EXCEEDED",
+  "detail": "Rate limit exceeded. Retry after 12 seconds."
+}
+```
+
+## Best practices
+
+<Tip>
+Always read the `Retry-After` header on a `429` response and wait the indicated number of seconds before retrying. Retrying immediately wastes quota and continues to return `429`.
+</Tip>
+
+- **Check `X-RateLimit-Remaining` proactively.** If your remaining monthly quota is low, throttle your request rate rather than waiting for a hard block.
+- **Batch requests wherever possible.** Use `POST /v1/prices/batch` and `POST /v1/bids/batch` (Pro and Quant) to fetch prices for multiple items in a single request instead of making one request per item.
+- **Use `POST /v1/prices` for bulk data.** When you need a full market snapshot, one call to `POST /v1/prices` costs a single request against your quota, regardless of how many items it returns. Schedule it no more than once every 30 seconds.
+- **Treat monthly quota as a budget.** Allocate quota across your use cases. On Free (1,000 requests/month), favor cached or batched lookups over per-item polling loops.
+- **Handle `429` with exponential backoff** when `Retry-After` is not present, adding jitter to avoid synchronized retry storms across multiple keys.

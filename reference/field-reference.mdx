@@ -1,0 +1,156 @@
+---
+title: "CS2Cap Field Reference: All Response Fields"
+description: "Complete definitions for every field returned by the CS2Cap API, including price fields, pagination, the response envelope, and item catalog metadata."
+---
+
+Every CS2Cap endpoint returns a predictable set of fields. This reference covers what each field means, its type, which endpoints return it, and any important formatting rules you need to follow when reading values — especially the minor-units convention for all price data.
+
+<Note>
+  All price fields (`lowest_ask`, `highest_bid`, `price`, `best_ask`, `item_value`, `total_value`) are returned in **minor units** of the response currency. Divide by 100 to get the display value. For example, `lowest_ask = 2550` with `currency = USD` means **$25.50**.
+</Note>
+
+## Field availability
+
+Fields marked **Yes** are included in that endpoint's response. Fields marked **–** are not.
+
+| Field | /prices | /bids | /sales | /items | /portfolio/items | /portfolio/transactions |
+| --- | --- | --- | --- | --- | --- | --- |
+| `item_id` | Yes | Yes | Yes | Yes | Yes | Yes |
+| `market_hash_name` | Yes | Yes | Yes | Yes | Yes | Yes |
+| `phase` | Yes | Yes | Yes | Yes | Yes | Yes |
+| `provider` | Yes | Yes | Yes | – | – | – |
+| `marketplace` | – | – | – | – | – | Yes |
+| `lowest_ask` | Yes | – | – | – | – | – |
+| `highest_bid` | – | Yes | – | – | – | – |
+| `price` | – | – | Yes | – | – | Yes |
+| `quantity` | Yes | – | – | – | Yes | Yes |
+| `num_bids` | – | Yes | – | – | – | – |
+| `type` | – | – | – | – | – | Yes |
+| `source` | – | – | – | – | Yes | – |
+| `steam_assetid` | – | – | – | – | Yes | – |
+| `link` | Yes | – | – | – | – | – |
+| `url` | Yes (paid) | – | – | – | – | – |
+| `timestamp` | Yes | Yes | – | – | – | – |
+| `last_updated` | Yes | Yes | – | – | – | – |
+| `date` | – | – | Yes | – | – | Yes |
+| `created_at` | – | – | – | – | Yes | Yes |
+
+## Portfolio and transaction fields
+
+These fields are specific to the portfolio system and appear on `/portfolio/items` and `/portfolio/transactions`.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `portfolio_id` | uuid | Unique ID for the portfolio. |
+| `source` | string | Where the portfolio entry came from. One of: `manual`, `steam`, `csv`. |
+| `steam_assetid` | string | Original Steam asset ID for items imported from a Steam inventory. |
+| `type` | string | Transaction type: `buy` or `sell`. |
+| `marketplace` | string | Provider or marketplace key where the transaction happened, for example `skinport`. |
+| `price` | integer | Transaction unit price in minor units. |
+| `fee_amount` | integer | Total fee paid for the transaction, in minor units. |
+| `fee_percentage` | float | Fee percentage in decimal form, for example `0.05` for 5%. |
+| `date` | date | ISO 8601 date in `YYYY-MM-DD` format. |
+| `note` | string | Optional note added by the user. |
+
+## Item identity
+
+These fields identify an item and appear in most responses across the API.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `item_id` | integer | Internal catalog ID assigned by CS2Cap. It stays stable across providers. Prefer this over `market_hash_name` once you have resolved it. |
+| `market_hash_name` | string | Canonical Steam market hash name, for example `★ Gut Knife \| Fade (Factory New)`. Use this when you do not have an `item_id` yet. |
+| `phase` | string | Doppler or Gamma Doppler variant label, for example `Phase 1` or `Emerald`. Returns `null` when phase is not relevant to the item. |
+| `provider` | string | Provider key used by this API, for example `steam`, `buff163`, or `csfloat`. Use provider keys in request parameters, not brand names. |
+
+## Price fields
+
+All price fields are returned in minor units of the response currency. See the note at the top of this page.
+
+| Field | Type | Endpoint | Description |
+| --- | --- | --- | --- |
+| `lowest_ask` | integer | `/prices` | Current best ask price across listed offers. |
+| `highest_bid` | integer | `/bids` | Current best buy order price. |
+| `price` | integer | `/sales` | Completed sale price. |
+| `best_ask` | integer | `/portfolio/value` | Lowest ask across all queried providers for the item. |
+| `item_value` | integer | `/portfolio/value` | `best_ask × quantity`. |
+| `total_value` | integer | `/portfolio/value` | Sum of all `item_value` amounts in the response. |
+
+## Sale fields
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `quantity` | integer | Number of units in the listing. Returned by `/prices`. |
+| `num_bids` | integer | Number of active buy orders at the reported `highest_bid` price level. |
+| `date` | datetime | ISO 8601 UTC timestamp for when the sale happened on the provider marketplace. Returned by `/sales`. |
+| `currency` | string | ISO 4217 currency code used by the values in the record, for example `USD`. |
+
+## Timestamp fields
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `timestamp` | datetime | Time when the current price and quantity combination was observed for a provider. |
+| `last_updated` | datetime | ISO 8601 UTC timestamp for when CS2Cap last ingested or processed the record. This differs from `timestamp`, which reflects the provider-side observation time. |
+| `date` | datetime | ISO 8601 UTC timestamp for the sale event time reported by the provider. Returned by `/sales`. |
+
+## Link fields
+
+| Field | Type | Tier | Description |
+| --- | --- | --- | --- |
+| `link` | string | All tiers | Tracked redirect URL through the CS2Cap domain (`/r/:provider/:item_id`). It resolves to the marketplace listing and may include affiliate or referral tracking. |
+| `url` | string | `pro`, `quant` | Direct marketplace URL with no API-domain redirect. |
+
+## Pagination
+
+List endpoints return a `pagination` object alongside `items`.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `limit` | integer | Number of items returned per page. |
+| `offset` | integer | Zero-based starting position for offset-based endpoints. |
+| `total` | integer | Total number of matching items. Returns `-1` on cursor-based endpoints where counting is skipped for performance. |
+| `has_next` | boolean | Whether more items exist after the current page. |
+| `has_prev` | boolean | Whether items exist before the current page. |
+| `next_cursor` | string | Cursor string for cursor-based endpoints. Pass it back as the `cursor` parameter to get the next page. `null` means there are no more pages. |
+
+<Note>
+  On cursor-based endpoints, `pagination.total` is always `-1`. The API skips the full count query for performance. Use `has_next` and `next_cursor` to paginate instead.
+</Note>
+
+## Response envelope
+
+Most list endpoints return these top-level fields:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `items` | array | Main data payload. |
+| `pagination` | object | Pagination metadata. See [Pagination](#pagination) above. |
+| `meta` | object | Response context such as currency, filters, and returned providers. |
+| `meta.currency` | string | ISO 4217 currency code that all price values in the response use. |
+| `meta.returned_providers` | array[string] | Provider keys that returned data in this response. This can be a subset of what you requested. |
+| `meta.filters` | object | Echo of the effective filters applied to the request, including `market_hash_name`, `phase`, and `requested_providers`. |
+
+## Item catalog fields
+
+These fields are returned by `/items`. All are nullable — a `null` value means the field is either not applicable to that item or not yet known.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `item_type` | string | Top-level item class, for example `weapon`, `gloves`, or `sticker`. |
+| `item_subtype` | string | More specific classification within `item_type`. |
+| `weapon_type` | string | Weapon-specific classification when applicable. |
+| `base_name` | string | Base item name without finish or wear details. |
+| `skin_name` | string | Finish or paint name. |
+| `wear_name` | string | Exterior bucket, for example `Factory New` or `Field-Tested`. |
+| `rarity_name` | string | Human-readable rarity tier, for example `Classified` or `Covert`. |
+| `rarity_color` | string | Normalized hex alias for the rarity color. |
+| `collection` | string | Collection name, when available. |
+| `crates` | array[string] | Cases or crates the item can come from. |
+| `is_stattrak` | boolean | Whether the item is a StatTrak variant. |
+| `is_souvenir` | boolean | Whether the item is a Souvenir variant. |
+| `min_float` | float | Lowest possible float value for the item variant. |
+| `max_float` | float | Highest possible float value for the item variant. |
+| `def_index` | string | CS2 definition index for the base item type. |
+| `paint_index` | integer | CS2 paint index for the skin variant. |
+| `image_url` | string | Item artwork served through the CS2Cap CDN. |
+| `supply` | integer | Approximate circulating supply, when available. |

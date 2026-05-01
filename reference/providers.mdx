@@ -1,0 +1,156 @@
+---
+title: "CS2Cap Supported Marketplaces and Providers"
+description: "Complete list of all 38 CS2Cap provider keys with market types, fee data, health fields, and usage examples for the providers request parameter."
+---
+
+A provider is a CS2 marketplace that CS2Cap indexes for pricing, bid, and sales data. Each provider has a short string key — such as `steam`, `buff163`, or `csfloat` — that you use in request parameters. Always use the provider key, not the marketplace's display name or brand name.
+
+You can filter most market-data endpoints to one or more providers using the repeatable `providers` query parameter:
+
+```bash
+GET /prices?market_hash_name=AK-47+%7C+Redline+(Field-Tested)&providers=steam&providers=buff163
+```
+
+## Full provider catalog
+
+All 38 supported provider keys:
+
+| Provider key | Provider key | Provider key |
+| --- | --- | --- |
+| `avanmarket` | `ecosteam` | `skinplace` |
+| `bitskins` | `haloskins` | `skinport` |
+| `buff163` | `itradegg` | `skinscom` |
+| `buffmarket` | `lisskins` | `skinsmonkey` |
+| `c5` | `lootfarm` | `skinswap` |
+| `csdeals` | `mannco` | `skinvault` |
+| `csfloat` | `marketcsgo` | `steam` |
+| `csgo500` | `pirateswap` | `swapgg` |
+| `csgoempire` | `rapidskins` | `tradeit` |
+| `csmoney_m` | `shadowpay` | `waxpeer` |
+| `csmoney_t` | `skinbaron` | `whitemarket` |
+| `cstrade` | `skinflow` | `youpin` |
+| `dmarket` | `skinout` | — |
+
+<Note>
+  Pass provider keys as the `provider` parameter (single value) or the `providers` parameter (repeatable) depending on the endpoint. The API never accepts display names — only the keys listed above.
+</Note>
+
+## Buy-order enabled providers
+
+The following providers support buy orders. Use these with `/bids` endpoints or any endpoint that accepts a `providers_buy` parameter:
+
+`buff163` · `buffmarket` · `c5` · `csfloat` · `dmarket` · `ecosteam` · `marketcsgo` · `steam` · `waxpeer` · `whitemarket` · `youpin`
+
+## Recent-sales enabled providers
+
+The following providers support recent sales data. Use these with `/sales` endpoints or any endpoint that accepts a `providers_sell` parameter:
+
+`bitskins` · `buff163` · `c5` · `csfloat` · `csgo500` · `csgoempire` · `dmarket` · `youpin`
+
+## GET /providers endpoint
+
+You can retrieve live metadata, fee information, and health data for all providers in a single request:
+
+```bash
+GET https://api.cs2c.app/v1/providers
+```
+
+To fetch data for a single provider, pass the `provider` parameter:
+
+```bash
+GET https://api.cs2c.app/v1/providers?provider=buff163
+```
+
+This endpoint is available to all tiers (`free`, `pro`, `quant`) at the standard rate limit for your tier.
+
+### Provider response fields
+
+The response is a JSON object keyed by the provider's display name. Each entry contains the following fields:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `key` | string | The provider key you use in request parameters. |
+| `code` | string | Short abbreviated code for the provider (e.g., `AVAN`, `B163`). |
+| `market_type` | string | Either `STORE` (fixed-price) or `P2P` (peer-to-peer). |
+| `default_currency` | string | ISO 4217 currency code that the provider natively uses. |
+| `fees.sell_fee` | float \| null | Decimal fee charged on seller proceeds, for example `0.025` = 2.5%. `null` if not applicable. |
+| `fees.insta_sell_fee` | float \| null | Decimal fee for instant-sell transactions. `null` if not applicable. |
+| `fees.trading_spread_fee` | float \| null | Decimal spread fee for trading. `null` if not applicable. |
+| `features.has_buy_orders` | boolean | Whether the provider supports buy orders. |
+| `features.has_recent_sales` | boolean | Whether the provider exposes recent sales data. |
+| `health.status` | string | Current health status of the provider index (`up` or `down`). |
+| `health.last_checked_at` | datetime | ISO 8601 UTC timestamp of the most recent health check. |
+| `health.total_offers` | integer | Total number of active listings indexed from this provider. |
+| `health.unique_items` | integer | Number of distinct items currently listed. |
+| `health.market_coverage` | float | Percentage of the CS2Cap item catalog covered by this provider's current listings. |
+| `health.total_value` | integer | Total market value of all indexed listings in the provider's `default_currency`, in minor units. |
+| `health.total_value_usd` | integer | Same total value converted to USD, in minor units. |
+
+### Example response
+
+```json
+{
+  "Avan Market": {
+    "key": "avanmarket",
+    "code": "AVAN",
+    "market_type": "STORE",
+    "default_currency": "USD",
+    "fees": {
+      "sell_fee": null,
+      "insta_sell_fee": 0.14,
+      "trading_spread_fee": null
+    },
+    "features": {
+      "has_buy_orders": false,
+      "has_recent_sales": false
+    },
+    "health": {
+      "status": "up",
+      "last_checked_at": "2026-03-21T05:47:49.308777+00:00",
+      "total_offers": 221316,
+      "unique_items": 14792,
+      "market_coverage": 37.93,
+      "total_value": 696770885,
+      "total_value_usd": 696770885
+    }
+  },
+  "BUFF163": {
+    "key": "buff163",
+    "code": "B163",
+    "market_type": "P2P",
+    "default_currency": "CNY",
+    "fees": {
+      "sell_fee": 0.025,
+      "insta_sell_fee": null,
+      "trading_spread_fee": null
+    },
+    "features": {
+      "has_buy_orders": true,
+      "has_recent_sales": true
+    },
+    "health": {
+      "status": "up",
+      "last_checked_at": "2026-03-21T05:45:55.403317+00:00",
+      "total_offers": 4239178,
+      "unique_items": 32235,
+      "market_coverage": 82.66,
+      "total_value": 101161038598,
+      "total_value_usd": 14661379184
+    }
+  }
+}
+```
+
+<Note>
+  `health.total_value` is denominated in the provider's native `default_currency` in minor units. `health.total_value_usd` converts that same value to USD. Both fields use minor units — divide by 100 for display.
+</Note>
+
+## Using the providers parameter
+
+The `providers` parameter is repeatable. Pass it multiple times to query several providers in one request:
+
+```bash
+GET /prices?market_hash_name=AK-47+%7C+Redline+(Field-Tested)&providers=steam&providers=buff163&providers=csfloat
+```
+
+The `meta.returned_providers` field in the response tells you which providers actually returned data for that query — it may be a subset of what you requested if a provider is down or has no listings for the item.

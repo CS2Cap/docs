@@ -1,0 +1,581 @@
+---
+title: "Market Analytics API: Arbitrage and Indicators"
+description: "Query cross-market arbitrage opportunities, category indexes, technical indicators, and per-item market analytics snapshots across all CS2 providers."
+---
+
+The Market Analytics API gives you programmatic access to CS2 market intelligence: scan for arbitrage across 40+ buy and sell providers, view category-level market cap indexes, compute technical indicators from composite OHLCV candles, and retrieve per-item analytics snapshots with full provider depth data.
+
+## GET /market/arbitrage
+
+Scans buy-side and sell-side providers for cross-market arbitrage opportunities and ranks results by estimated net profit after fees.
+
+**Tier:** Quant only · **Rate limit:** 300 req/min
+
+<ParamField query="min_spread_pct" type="number" default="1.0">
+  Minimum gross spread percentage to include. Results below this threshold are excluded.
+</ParamField>
+
+<ParamField query="providers_buy" type="string[]">
+  Buy-side provider keys. Repeat the parameter to pass more than one. Valid values: `avanmarket`, `bitskins`, `buff163`, `buffmarket`, `c5`, `csdeals`, `csfloat`, `csgo500`, `csgoempire`, `csmoney_m`, `csmoney_t`, `cstrade`, `dmarket`, `ecosteam`, `haloskins`, `itradegg`, `lisskins`, `lootfarm`, `mannco`, `marketcsgo`, `pirateswap`, `rapidskins`, `shadowpay`, `skinbaron`, `skinflow`, `skinout`, `skinplace`, `skinport`, `skinscom`, `skinsmonkey`, `skinswap`, `skinvault`, `steam`, `swapgg`, `tradeit`, `waxpeer`, `whitemarket`, `youpin`.
+</ParamField>
+
+<ParamField query="providers_sell" type="string[]">
+  Sell-side provider keys. Repeat the parameter to pass more than one. Only providers that support buy orders are valid here: `buff163`, `buffmarket`, `c5`, `csfloat`, `dmarket`, `ecosteam`, `marketcsgo`, `steam`, `waxpeer`, `whitemarket`, `youpin`.
+</ParamField>
+
+<ParamField query="limit" type="integer">
+  Number of results per page.
+</ParamField>
+
+<ParamField query="offset" type="integer" default="0">
+  Zero-based pagination offset.
+</ParamField>
+
+```json Response example
+{
+  "meta": { "..." : "..." },
+  "data": {
+    "items": [
+      {
+        "item_id": 10108,
+        "market_hash_name": "★ M9 Bayonet | Fade (Factory New)",
+        "phase": null,
+        "buy_provider": "skinscom",
+        "sell_provider": "steam",
+        "buy_price_usd": "1119.70",
+        "sell_price_usd": "1427.03",
+        "gross_spread_pct": 27.45,
+        "estimated_fees_usd": "185.51",
+        "net_profit_usd": "121.82",
+        "last_updated": "2026-03-21T06:30:32.692372Z"
+      },
+      {
+        "item_id": 9505,
+        "market_hash_name": "★ StatTrak™ Flip Knife | Bright Water (Well-Worn)",
+        "phase": null,
+        "buy_provider": "csfloat",
+        "sell_provider": "buff163",
+        "buy_price_usd": "150.19",
+        "sell_price_usd": "217.30",
+        "gross_spread_pct": 44.68,
+        "estimated_fees_usd": "5.43",
+        "net_profit_usd": "61.68",
+        "last_updated": "2026-03-21T06:30:32.692372Z"
+      }
+    ]
+  },
+  "pagination": { "..." : "..." }
+}
+```
+
+<ResponseField name="data.items[].item_id" type="integer">
+  Catalog item ID.
+</ResponseField>
+
+<ResponseField name="data.items[].market_hash_name" type="string">
+  Full item name as it appears in the Steam catalog.
+</ResponseField>
+
+<ResponseField name="data.items[].phase" type="string | null">
+  Doppler/Gamma phase, or `null` for non-phase items.
+</ResponseField>
+
+<ResponseField name="data.items[].buy_provider" type="string">
+  Provider key where you purchase the item.
+</ResponseField>
+
+<ResponseField name="data.items[].sell_provider" type="string">
+  Provider key where you sell the item.
+</ResponseField>
+
+<ResponseField name="data.items[].buy_price_usd" type="string">
+  Decimal string purchase price in USD.
+</ResponseField>
+
+<ResponseField name="data.items[].sell_price_usd" type="string">
+  Decimal string sell price in USD.
+</ResponseField>
+
+<ResponseField name="data.items[].gross_spread_pct" type="number">
+  Gross spread as a percentage before fees.
+</ResponseField>
+
+<ResponseField name="data.items[].estimated_fees_usd" type="string">
+  Decimal string estimated transaction fees in USD.
+</ResponseField>
+
+<ResponseField name="data.items[].net_profit_usd" type="string">
+  Decimal string net profit after fees in USD.
+</ResponseField>
+
+<ResponseField name="data.items[].last_updated" type="string">
+  ISO 8601 timestamp of the most recent price data used.
+</ResponseField>
+
+<Note>
+  `buy_price_usd`, `sell_price_usd`, `estimated_fees_usd`, and `net_profit_usd` are decimal strings in USD — not minor units (cents).
+</Note>
+
+<Note>
+  `pagination.total` is always `-1` because the ranking is computed live without a separate count pass. This endpoint supports offset pagination only — passing a `cursor` returns HTTP 400.
+</Note>
+
+---
+
+## GET /market/indexes
+
+Aggregates the cached 24-hour market snapshot into category-level market cap indexes grouped by `item_type` or `weapon_type`.
+
+**Tier:** Quant only · **Rate limit:** 300 req/min
+
+<ParamField query="group_by" type="string" default="item_type">
+  Catalog dimension to group by. One of: `item_type`, `weapon_type`.
+</ParamField>
+
+```json Response example
+{
+  "meta": {
+    "generated_at": "2026-01-20T12:06:10Z",
+    "data_source": "cache",
+    "freshness_sec": 18,
+    "window": {
+      "timeframe": "24h"
+    },
+    "group_by": "item_type"
+  },
+  "data": {
+    "total_marketcap_usd": "576594.00",
+    "groups": [
+      {
+        "group": "weapon",
+        "marketcap_usd": "576594.00",
+        "item_count": 2,
+        "included_count": 2,
+        "excluded_count": 0
+      },
+      {
+        "group": "wearable",
+        "marketcap_usd": "0.00",
+        "item_count": 1,
+        "included_count": 0,
+        "excluded_count": 1
+      }
+    ]
+  }
+}
+```
+
+<ResponseField name="data.total_marketcap_usd" type="string">
+  Decimal string total market cap across all included items, in USD.
+</ResponseField>
+
+<ResponseField name="data.groups" type="array">
+  Category breakdown sorted by `marketcap_usd` descending.
+  <Expandable title="group properties">
+    <ResponseField name="group" type="string">
+      Category label (e.g., `weapon`, `wearable`).
+    </ResponseField>
+    <ResponseField name="marketcap_usd" type="string">
+      Total market cap for items in this category, in USD.
+    </ResponseField>
+    <ResponseField name="item_count" type="integer">
+      Total number of catalog items in this category.
+    </ResponseField>
+    <ResponseField name="included_count" type="integer">
+      Items that met the internal spread threshold and were included in the total.
+    </ResponseField>
+    <ResponseField name="excluded_count" type="integer">
+      Items excluded because they did not meet the spread threshold.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<Note>
+  `meta.window.timeframe` is always `24h`. Groups remain in the response even when every item in that group was excluded from the total. Items missing the requested grouping field are omitted from all groups rather than bucketed as `unknown`.
+</Note>
+
+---
+
+## GET /market/indicators
+
+Computes technical indicators — including RSI, MACD, Bollinger Bands, ATR, VWAP, and OBV — from composite OHLCV candles across all providers for a single item.
+
+**Tier:** Quant only · **Rate limit:** 300 req/min
+
+<ParamField query="item_id" type="integer">
+  Catalog item ID. Takes precedence over `market_hash_name` when both are provided.
+</ParamField>
+
+<ParamField query="market_hash_name" type="string">
+  Exact item name as it appears in the Steam catalog. Use `item_id` instead when you have it.
+</ParamField>
+
+<ParamField query="phase" type="string">
+  Doppler/Gamma phase filter. One of: `Phase 1`, `Phase 2`, `Phase 3`, `Phase 4`, `Ruby`, `Sapphire`, `Black Pearl`, `Emerald`.
+</ParamField>
+
+<ParamField query="interval" type="string" default="1d">
+  Candle interval for indicator computation. One of: `1h`, `1d`.
+</ParamField>
+
+<ParamField query="currency" type="string" default="USD">
+  Output currency for price-level indicators (ISO 4217).
+</ParamField>
+
+```json Response example
+{
+  "meta": { "..." : "..." },
+  "data": {
+    "item_id": 156,
+    "market_hash_name": "AK-47 | Redline (Field-Tested)",
+    "phase": null,
+    "provider": "All Providers",
+    "interval": "1d",
+    "close_price_usd": "25.50",
+    "momentum": {
+      "rsi_14": 62.5,
+      "macd_line": 0.45,
+      "macd_signal": 0.32,
+      "macd_histogram": 0.13,
+      "sma_20": 25.30,
+      "sma_50": 24.80,
+      "sma_200": 23.50,
+      "ema_12": 25.45,
+      "ema_26": 25.00,
+      "bb_upper": 27.10,
+      "bb_middle": 25.30,
+      "bb_lower": 23.50
+    },
+    "volatility": {
+      "atr_14": 1.25,
+      "historical_volatility_20": 0.35,
+      "kc_upper": 27.95,
+      "kc_middle": 25.45,
+      "kc_lower": 22.95
+    },
+    "volume": {
+      "vwap": 25.15,
+      "obv": 12500,
+      "volume_sma_20": 520
+    },
+    "signals": {
+      "rsi": "neutral",
+      "macd": "bullish",
+      "trend": "bullish",
+      "bollinger": "neutral",
+      "volatility": "normal",
+      "composite_score": 0.55
+    },
+    "coverage": {
+      "candle_count": 250,
+      "first_bucket": "2025-06-26T00:00:00Z",
+      "last_bucket": "2026-02-20T00:00:00Z",
+      "sufficient_for": ["rsi_14", "macd", "sma_20", "sma_50", "sma_200"],
+      "insufficient_for": []
+    }
+  }
+}
+```
+
+<ResponseField name="data.momentum" type="object">
+  Momentum indicators.
+  <Expandable title="momentum properties">
+    <ResponseField name="rsi_14" type="number">14-period RSI.</ResponseField>
+    <ResponseField name="macd_line" type="number">MACD line value.</ResponseField>
+    <ResponseField name="macd_signal" type="number">MACD signal line.</ResponseField>
+    <ResponseField name="macd_histogram" type="number">MACD histogram (line minus signal).</ResponseField>
+    <ResponseField name="sma_20" type="number">20-period simple moving average. Returned in the requested `currency`.</ResponseField>
+    <ResponseField name="sma_50" type="number">50-period simple moving average.</ResponseField>
+    <ResponseField name="sma_200" type="number">200-period simple moving average.</ResponseField>
+    <ResponseField name="ema_12" type="number">12-period exponential moving average.</ResponseField>
+    <ResponseField name="ema_26" type="number">26-period exponential moving average.</ResponseField>
+    <ResponseField name="bb_upper" type="number">Bollinger Band upper band.</ResponseField>
+    <ResponseField name="bb_middle" type="number">Bollinger Band middle band (SMA-20).</ResponseField>
+    <ResponseField name="bb_lower" type="number">Bollinger Band lower band.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="data.volatility" type="object">
+  Volatility indicators.
+  <Expandable title="volatility properties">
+    <ResponseField name="atr_14" type="number">14-period Average True Range.</ResponseField>
+    <ResponseField name="historical_volatility_20" type="number">20-period historical volatility.</ResponseField>
+    <ResponseField name="kc_upper" type="number">Keltner Channel upper band.</ResponseField>
+    <ResponseField name="kc_middle" type="number">Keltner Channel middle line (EMA-20).</ResponseField>
+    <ResponseField name="kc_lower" type="number">Keltner Channel lower band.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="data.volume" type="object">
+  Volume indicators.
+  <Expandable title="volume properties">
+    <ResponseField name="vwap" type="number">Volume-weighted average price.</ResponseField>
+    <ResponseField name="obv" type="number">On-balance volume.</ResponseField>
+    <ResponseField name="volume_sma_20" type="number">20-period volume simple moving average.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="data.signals" type="object">
+  Human-readable signal summaries derived from the indicators above.
+  <Expandable title="signal properties">
+    <ResponseField name="rsi" type="string">RSI signal: `overbought`, `neutral`, or `oversold`.</ResponseField>
+    <ResponseField name="macd" type="string">MACD signal: `bullish`, `neutral`, or `bearish`.</ResponseField>
+    <ResponseField name="trend" type="string">Trend signal: `bullish`, `neutral`, or `bearish`.</ResponseField>
+    <ResponseField name="bollinger" type="string">Bollinger Band signal: `overbought`, `neutral`, or `oversold`.</ResponseField>
+    <ResponseField name="volatility" type="string">Volatility regime: `high`, `normal`, or `low`.</ResponseField>
+    <ResponseField name="composite_score" type="number">Blended score from -1.0 (fully bearish) to 1.0 (fully bullish).</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="data.coverage" type="object">
+  Candle history metadata for the item.
+  <Expandable title="coverage properties">
+    <ResponseField name="candle_count" type="integer">Total number of candles available.</ResponseField>
+    <ResponseField name="first_bucket" type="string">ISO 8601 timestamp of the earliest candle.</ResponseField>
+    <ResponseField name="last_bucket" type="string">ISO 8601 timestamp of the most recent candle.</ResponseField>
+    <ResponseField name="sufficient_for" type="string[]">Indicators that had enough history to compute.</ResponseField>
+    <ResponseField name="insufficient_for" type="string[]">Indicators that could not be computed due to insufficient candle history.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<Note>
+  Indicators are computed from composite candles merged across all providers. This endpoint does not accept a `provider` filter. `close_price_usd` is always in USD for compatibility, even when you request a different `currency`. Price-level indicators such as SMA, EMA, and Bollinger Bands are returned in the requested `currency`.
+</Note>
+
+---
+
+## GET /market/items
+
+Returns a cached market-wide summary snapshot with one row per catalog item. Liquidity is always scored against the 24-hour horizon.
+
+**Tier:** Pro, Quant · **Rate limit:** Pro 100 req/min · Quant 300 req/min
+
+This endpoint takes no query parameters.
+
+```json Response example
+{
+  "meta": { "..." : "..." },
+  "data": {
+    "items": [
+      {
+        "item_id": 156,
+        "market_hash_name": "AK-47 | Redline (Field-Tested)",
+        "phase": null,
+        "summary": {
+          "provider_count": 2,
+          "best_ask_usd": "24.90",
+          "best_bid_usd": "24.90",
+          "avg_spread_pct": 2.78,
+          "liquidity": 78,
+          "supply": 9060,
+          "rank": 1292,
+          "marketcap": "225594.00",
+          "price_rate_24h": 3.75,
+          "price_diff_24h": "0.90",
+          "price_rate_7d": 8.26,
+          "price_diff_7d": "1.90",
+          "price_rate_30d": -2.73,
+          "price_diff_30d": "-0.70",
+          "sales_1d": 107,
+          "total_volume_24h": 107,
+          "sales_7d": 687,
+          "sales_30d": 2096,
+          "steam_sales_7d": 34,
+          "steam_sales_30d": 587,
+          "listing_score": 12,
+          "gap_score": 7,
+          "volume_score": 24,
+          "stability_score": 15,
+          "external_score": 14,
+          "liquidity_last_updated": "2026-03-21T06:48:43.193895Z"
+        }
+      }
+    ]
+  }
+}
+```
+
+<ResponseField name="data.items[].summary.best_ask_usd" type="string">
+  Decimal string best ask price in USD across providers with active listings.
+</ResponseField>
+
+<ResponseField name="data.items[].summary.best_bid_usd" type="string">
+  Decimal string highest bid in USD across all providers, including providers without a current ask.
+</ResponseField>
+
+<ResponseField name="data.items[].summary.marketcap" type="string">
+  `best_ask_usd × supply`, expressed in USD major units.
+</ResponseField>
+
+<ResponseField name="data.items[].summary.supply" type="integer">
+  Uses the extended catalog supply figure when available, otherwise falls back to the current summed listing count across marketplaces.
+</ResponseField>
+
+<ResponseField name="data.items[].summary.price_diff_24h" type="string">
+  USD delta versus the provider-scoped historical close at or before the 24h cutoff.
+</ResponseField>
+
+<ResponseField name="data.items[].summary.price_rate_24h" type="number">
+  Same 24h price change expressed as a percentage.
+</ResponseField>
+
+<ResponseField name="data.items[].summary.sales_1d" type="integer">
+  Depletion-based trade proxy for the last 24 hours. A useful estimate, not a guaranteed exact sale count.
+</ResponseField>
+
+<ResponseField name="data.items[].summary.liquidity" type="integer">
+  Composite liquidity score (0–100) scored against the 24h horizon.
+</ResponseField>
+
+<Note>
+  `best_ask_usd` and all `price_*` values are decimal strings in USD — not minor units. Rows are sorted by rank, then by item ID. If the cached snapshot is stale, the API attempts to rebuild it and falls back to the last good snapshot if the refresh fails.
+</Note>
+
+---
+
+## GET /market/items/{item_id}
+
+Returns per-item market analytics including a summary and per-provider depth, spread, and volume data.
+
+**Tier:** Pro, Quant · **Rate limit:** Pro 100 req/min · Quant 300 req/min
+
+<ParamField path="item_id" type="integer" required>
+  Catalog item ID to analyze. Use `GET /items` to look up IDs.
+</ParamField>
+
+```json Response example
+{
+  "meta": { "..." : "..." },
+  "data": {
+    "item_id": 15652,
+    "market_hash_name": "StatTrak™ SCAR-20 | Cardiac (Factory New)",
+    "phase": null,
+    "summary": {
+      "provider_count": 5,
+      "best_ask_usd": "58.41",
+      "best_bid_usd": "61.74",
+      "avg_spread_pct": 41.59,
+      "liquidity": 46,
+      "supply": 9060,
+      "rank": 1292,
+      "marketcap": "529194.60",
+      "price_rate_24h": -4.48,
+      "price_diff_24h": "-2.74",
+      "price_rate_7d": 6.11,
+      "price_diff_7d": "3.36",
+      "price_rate_30d": 12.37,
+      "price_diff_30d": "6.43",
+      "sales_1d": 3,
+      "total_volume_24h": 3,
+      "sales_7d": 18,
+      "sales_30d": 71,
+      "steam_sales_7d": 34,
+      "steam_sales_30d": 587,
+      "listing_score": 9,
+      "gap_score": 5,
+      "volume_score": 18,
+      "stability_score": 7,
+      "external_score": 7,
+      "liquidity_last_updated": "2026-03-21T06:48:43.193895Z"
+    },
+    "providers": [
+      {
+        "provider": "buff163",
+        "ask_usd": "66.67",
+        "bid_usd": "41.60",
+        "spread_usd": "25.07",
+        "spread_pct": 37.61,
+        "ask_depth": 16,
+        "bid_depth": 9,
+        "volume_24h": 2,
+        "volume_7d": 8,
+        "total_value_24h_usd": "133.34",
+        "price_rate_24h": -1.96,
+        "price_diff_24h": "-1.33",
+        "price_rate_7d": 4.17,
+        "price_diff_7d": "2.67",
+        "price_rate_30d": null,
+        "price_diff_30d": null,
+        "bid_anomaly": false
+      },
+      {
+        "provider": "steam",
+        "ask_usd": "92.41",
+        "bid_usd": "61.32",
+        "spread_usd": "31.09",
+        "spread_pct": 33.64,
+        "ask_depth": 1,
+        "bid_depth": 150,
+        "volume_24h": 1,
+        "volume_7d": 0,
+        "total_value_24h_usd": "92.41",
+        "price_rate_24h": null,
+        "price_diff_24h": null,
+        "price_rate_7d": 2.13,
+        "price_diff_7d": "1.93",
+        "price_rate_30d": 9.16,
+        "price_diff_30d": "7.76",
+        "bid_anomaly": false
+      },
+      {
+        "provider": "skinport",
+        "ask_usd": "58.41",
+        "bid_usd": null,
+        "spread_usd": null,
+        "spread_pct": null,
+        "ask_depth": 3,
+        "bid_depth": null,
+        "volume_24h": null,
+        "volume_7d": null,
+        "total_value_24h_usd": null,
+        "price_rate_24h": -4.48,
+        "price_diff_24h": "-2.74",
+        "price_rate_7d": null,
+        "price_diff_7d": null,
+        "price_rate_30d": null,
+        "price_diff_30d": null,
+        "bid_anomaly": null
+      }
+    ],
+    "coverage": {
+      "provider_count": 5,
+      "providers_with_volume": 3,
+      "providers_with_bid_side": 2
+    }
+  }
+}
+```
+
+<ResponseField name="data.providers" type="array">
+  Per-provider depth and spread data. Ask-driven: providers with a live ask but no current bid still appear with `bid_usd`, `spread_usd`, `spread_pct`, and `bid_depth` set to `null`.
+  <Expandable title="provider properties">
+    <ResponseField name="provider" type="string">Provider key.</ResponseField>
+    <ResponseField name="ask_usd" type="string">Best ask price as a decimal string in USD.</ResponseField>
+    <ResponseField name="bid_usd" type="string | null">Best bid price as a decimal string in USD, or `null` if no bid side.</ResponseField>
+    <ResponseField name="spread_usd" type="string | null">Ask minus bid as a decimal string in USD.</ResponseField>
+    <ResponseField name="spread_pct" type="number | null">Spread as a percentage of ask.</ResponseField>
+    <ResponseField name="ask_depth" type="integer">Number of active ask listings.</ResponseField>
+    <ResponseField name="bid_depth" type="integer | null">Number of active buy orders, or `null` if the provider does not support buy orders.</ResponseField>
+    <ResponseField name="volume_24h" type="integer | null">Estimated number of trades in the last 24 hours, or `null` if the provider does not report sale history.</ResponseField>
+    <ResponseField name="volume_7d" type="integer | null">Estimated 7-day trade volume.</ResponseField>
+    <ResponseField name="total_value_24h_usd" type="string | null">Decimal string total traded value in the last 24 hours, in USD.</ResponseField>
+    <ResponseField name="bid_anomaly" type="boolean | null">`true` when the best bid is higher than the best ask (negative spread). `null` when no bid side exists.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="data.coverage" type="object">
+  Provider coverage summary for this item.
+  <Expandable title="coverage properties">
+    <ResponseField name="provider_count" type="integer">Providers with at least one active listing.</ResponseField>
+    <ResponseField name="providers_with_volume" type="integer">Providers that reported sale history.</ResponseField>
+    <ResponseField name="providers_with_bid_side" type="integer">Providers that support buy orders for this item.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<Note>
+  `ask_usd`, `bid_usd`, `spread_usd`, and `total_value_24h_usd` are decimal strings in USD — not minor units. `summary.best_bid_usd` is the highest bid across all providers, including providers that do not appear in `data.providers[]`.
+</Note>
+
+<Warning>
+  `bid_anomaly: true` indicates the best bid exceeds the best ask on that provider, which produces a negative `spread_pct`. This is a data anomaly, not a tradeable state.
+</Warning>

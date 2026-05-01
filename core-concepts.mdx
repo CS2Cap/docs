@@ -1,0 +1,100 @@
+---
+title: "CS2Cap Core Concepts: Data Model and Terminology"
+description: "Understand the CS2Cap data model: quotes, providers, minor units, item identity, indexed-only paths, and common integration pitfalls to avoid."
+---
+
+Before you start building with CS2Cap, it helps to understand a few core concepts that apply across every endpoint. This page explains the data model, clarifies terminology you'll encounter in API responses, and highlights the mistakes that most commonly trip up new integrations.
+
+## Terminology
+
+| Term | Meaning | Common fields | Primary endpoints |
+| --- | --- | --- | --- |
+| **Quote** | A current listing snapshot for one item on one provider. | `provider`, `item_id`, `lowest_ask`, `quantity`, `timestamp` | `/v1/prices` |
+| **BuyOrderRecord** | A current highest-bid snapshot for one item on one provider. | `provider`, `item_id`, `highest_bid`, `num_bids`, `timestamp` | `/v1/bids` |
+| **SaleRecord** | A completed transaction record. | `provider`, `item_id`, `price`, `date` | `/v1/sales` |
+| **Provider** | A marketplace source such as `steam`, `skinport`, or `buff163`. | provider key, fee data, health metadata | `/v1/providers` |
+| **Phase** | A Doppler or Gamma Doppler variant label (e.g., "Phase 1", "Ruby"). | `phase` | `/v1/items`, `/v1/prices`, `/v1/bids`, `/v1/sales`, `/v1/market/*` |
+| **Wear** | The item's condition bucket, from Factory New to Battle-Scarred. | item naming, float context | `/v1/items`, `/v1/sales` |
+| **Liquidity Score** | A 0–100 score reflecting how tradable an item is. Combines listing depth, bid/ask gap ratio, 24h consumption churn, price stability, and external volume signals. Items with fewer than 2 active hours of history use only the first three components, rescaled to 100. | liquidity metrics | `/v1/market/items/{item_id}` |
+| **Arbitrage** | A cross-provider price edge calculated after marketplace fees. | buy provider, sell provider, edge metrics | `/v1/market/arbitrage` |
+| **Technical Indicators** | Trading signals derived from composite candle data across providers. Includes RSI, MACD, SMA/EMA, Bollinger Bands, ATR, VWAP, and OBV. | indicator values | `/v1/market/indicators` |
+| **FX Conversion** | On-the-fly currency conversion applied to returned price values via the `currency` query parameter. | `currency` | Most market-data endpoints, `/v1/fx` |
+
+## Data semantics
+
+### Prices use minor units
+
+All price fields are returned as integers in the **smallest unit** of the requested currency — not decimal amounts.
+
+- For `USD`: the unit is cents. A value of `2550` means **$25.50**.
+- For `EUR`: the unit is euro cents.
+
+This applies consistently to `lowest_ask`, `highest_bid`, `price`, and any other monetary field in the API.
+
+<Warning>
+  Do not treat price integers as full currency amounts. Divide by 100 to convert to the standard decimal representation (e.g., `2550 / 100 = 25.50`).
+</Warning>
+
+### Prices and bids come from indexed data only
+
+`/v1/prices` and `/v1/bids` are served from a pre-built index, not from live per-request marketplace queries. This means:
+
+- Responses are fast and consistent.
+- If the index is temporarily unavailable or fails an integrity check, the API returns `503` with `PRICES_INDEX_UNAVAILABLE` or `BIDS_INDEX_UNAVAILABLE`.
+- There is **no slower non-indexed fallback path**. A `503` on these endpoints means the index is down — retry after a short delay.
+
+<Note>
+  Treat `PRICES_INDEX_UNAVAILABLE` and `BIDS_INDEX_UNAVAILABLE` as transient errors and implement exponential backoff with retry logic.
+</Note>
+
+### Provider keys, not display names
+
+When a request parameter expects a provider, use the **provider key** — the lowercase machine identifier.
+
+| Provider key | Marketplace |
+| --- | --- |
+| `steam` | Steam Community Market |
+| `skinport` | Skinport |
+| `csfloat` | CSFloat |
+| `buff163` | BUFF163 |
+
+Do not use display names or human-readable labels in API parameters. You can retrieve the full list of provider keys from `GET /v1/providers`.
+
+### Item identity
+
+Most item lookup endpoints accept two ways to identify an item:
+
+- **`item_id`** — a stable numeric identifier assigned by CS2Cap. Use this for production integrations.
+- **`market_hash_name`** — the human-readable Steam item name (e.g., `AK-47 | Redline (Field-Tested)`). Use this for initial lookups or debugging.
+
+Once your application has resolved an `item_id` for an item, prefer using it in subsequent requests. `market_hash_name` lookups are convenient but slightly less precise for items that have phase or wear variants.
+
+### Optional item attributes
+
+Some metadata fields only apply to certain items. The following fields may be `null` when they are not relevant to a particular item:
+
+- `phase` — only present on Doppler and Gamma Doppler knives
+- `wear_name` — only present on items with float-based wear conditions
+- `min_float` / `max_float` — only present on floatable items
+
+A `null` value means the field does not apply to that item — it is not an error.
+
+## Common pitfalls
+
+<AccordionGroup>
+  <Accordion title="Treating price integers as full currency amounts">
+    Price fields like `lowest_ask` and `highest_bid` are in minor units (e.g., cents for USD). A value of `5000` means $50.00, not $5000. Always divide by 100 before displaying prices to users.
+  </Accordion>
+  <Accordion title="Using provider display names instead of provider keys">
+    The `providers` parameter expects machine-readable keys like `steam` or `csfloat`, not display names like "Steam" or "CS.Float". Passing a display name will result in no data being returned for that provider, or a validation error.
+  </Accordion>
+  <Accordion title="Assuming every item supports phase metadata">
+    The `phase` field is only populated for Doppler and Gamma Doppler knives. For all other items it is `null`. Do not use `null` to infer that an item is a knife — check the `item_id` or category metadata instead.
+  </Accordion>
+  <Accordion title="Confusing tracked redirect links with direct marketplace URLs">
+    API responses include both a `link` field (a tracked `cs2c.app/r/...` redirect) and a `url` field (the direct marketplace URL). Use `link` if you want to support click attribution; use `url` if you need the canonical marketplace page.
+  </Accordion>
+  <Accordion title="Assuming prices and bids fall back to a live non-indexed path">
+    `/v1/prices` and `/v1/bids` have no live fallback. A `503` response means the index is temporarily unavailable — not that the item doesn't exist or that you should query a different endpoint. Implement retry logic and surface the outage to your users if it persists.
+  </Accordion>
+</AccordionGroup>
