@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ArrowDown, ArrowUp, ArrowUpDown, ExternalLink } from "lucide-react";
 import type { InventoryValueResolvedItem } from "@/lib/api/types";
+import { steamIconUrl } from "@/lib/utils";
 
 type SortKey = "value" | "ask" | "qty" | "name";
 type SortDir = "asc" | "desc";
@@ -154,20 +155,24 @@ export function InventoryItemsTable({
               className="grid grid-cols-[56px_minmax(0,1fr)_auto] md:grid-cols-[64px_minmax(0,1fr)_80px_120px_140px_120px_40px] items-center gap-3 px-4 py-3 transition-colors hover:bg-secondary/40"
             >
               <Link href={href} className="block">
-                {item.icon_url ? (
-                  // Steam CDN; plain <img> avoids next.config remotePatterns changes.
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={item.icon_url}
-                    alt=""
-                    width={48}
-                    height={48}
-                    loading="lazy"
-                    className="h-12 w-12 border border-border bg-secondary object-contain"
-                  />
-                ) : (
-                  <div className="h-12 w-12 border border-border bg-secondary" />
-                )}
+                {(() => {
+                  const src = steamIconUrl(item.icon_url);
+                  if (!src) {
+                    return <div className="h-12 w-12 border border-border bg-secondary" />;
+                  }
+                  return (
+                    // Steam CDN; plain <img> avoids next.config remotePatterns changes.
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={src}
+                      alt=""
+                      width={48}
+                      height={48}
+                      loading="lazy"
+                      className="h-12 w-12 border border-border bg-secondary object-contain"
+                    />
+                  );
+                })()}
               </Link>
 
               <div className="min-w-0">

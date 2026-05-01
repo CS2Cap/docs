@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/collapsible";
 import { webApi } from "@/lib/api";
 import { APIError } from "@/lib/api/shared";
+import { steamIconUrl } from "@/lib/utils";
 import type { InventoryValueToolResponse } from "@/lib/api/types";
 import { InventoryStatsStrip } from "@/components/inventory/InventoryStatsStrip";
 import { InventoryItemsTable } from "@/components/inventory/InventoryItemsTable";
@@ -231,19 +232,23 @@ export function InventoryValueTool() {
                           key={`${u.assetid}-${i}`}
                           className="flex items-center gap-3 px-4 py-3"
                         >
-                          {u.icon_url ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={u.icon_url}
-                              alt=""
-                              width={36}
-                              height={36}
-                              loading="lazy"
-                              className="h-9 w-9 border border-border bg-secondary object-contain"
-                            />
-                          ) : (
-                            <div className="h-9 w-9 border border-border bg-secondary" />
-                          )}
+                          {(() => {
+                            const src = steamIconUrl(u.icon_url);
+                            if (!src) {
+                              return <div className="h-9 w-9 border border-border bg-secondary" />;
+                            }
+                            return (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={src}
+                                alt=""
+                                width={36}
+                                height={36}
+                                loading="lazy"
+                                className="h-9 w-9 border border-border bg-secondary object-contain"
+                              />
+                            );
+                          })()}
                           <div className="min-w-0 flex-1">
                             <div className="truncate font-mono text-xs text-foreground">
                               {u.market_hash_name}
