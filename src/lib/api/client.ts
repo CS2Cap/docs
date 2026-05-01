@@ -120,6 +120,22 @@ export const webApi = {
     return request(`/v1/web/auth/providers/${provider}`, { method: "DELETE" });
   },
 
+  // Public Inventory Value tool — talks to the app-owned route, NOT to /api/cs2c.
+  // The route injects CS2CAP_PUBLIC_TOOL_API_KEY server-side so the upstream
+  // endpoints (/v1/inventory/steam/lookup and /v1/portfolio/value) are never
+  // exposed to the browser.
+  async valueSteamInventory(
+    body: InventoryValueRequest,
+  ): Promise<InventoryValueToolResponse> {
+    const response = await fetch("/api/inventory-value", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    return parseApiResponse<InventoryValueToolResponse>(response);
+  },
+
   getItems(
     params: {
       q?: string;
