@@ -7,7 +7,8 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { APIError, webApi } from "@/lib/api";
+import { webApi } from "@/lib/api";
+import { APIError } from "@/lib/api/shared";
 import type { InventoryValueToolResponse } from "@/lib/api/types";
 import { InventoryStatsStrip } from "@/components/inventory/InventoryStatsStrip";
 import { InventoryItemsTable } from "@/components/inventory/InventoryItemsTable";
