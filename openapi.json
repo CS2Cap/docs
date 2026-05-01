@@ -3433,6 +3433,150 @@
             }
           }
         }
+      },
+      "post": {
+        "tags": [
+          "Items"
+        ],
+        "summary": "Resolve Item IDs By Market Hash Name",
+        "description": "Internal catalog lookup for resolving up to 1,000 Steam market hash names to canonical `item_id` values from the cached catalog.",
+        "operationId": "resolveItemIdsByMarketHashName",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ItemIdLookupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemIdLookupResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "detail": "Missing Authorization header"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted to access this resource.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "FORBIDDEN",
+                  "detail": "Account is disabled"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (burst or monthly quota).",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "burstRateLimit": {
+                    "summary": "Per-window rate limit exceeded",
+                    "value": {
+                      "code": "RATE_LIMIT_EXCEEDED",
+                      "detail": "Too Many Requests"
+                    }
+                  },
+                  "monthlyQuotaExceeded": {
+                    "summary": "Monthly quota exhausted",
+                    "value": {
+                      "code": "RATE_LIMIT_MONTHLY_QUOTA_EXCEEDED",
+                      "detail": "Monthly quota exceeded (500000/500000 requests)."
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying when present.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "X-RateLimit-Tier": {
+                "description": "Authenticated caller tier code.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Request limit for the rate-limit window that was exceeded.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Seconds until the rate-limit window resets.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed. The detail list contains field-specific validation errors.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Tier": {
+                "description": "Authenticated caller tier code when available.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "x-internal": true
       }
     },
     "/v1/items/metadata": {
@@ -29206,6 +29350,82 @@
         "title": "InspectInfo",
         "description": "In-game inspect link and screenshot URLs."
       },
+      "ItemIdLookupRequest": {
+        "properties": {
+          "market_hash_names": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 1000,
+            "minItems": 1,
+            "title": "Market Hash Names",
+            "description": "Steam market hash names to resolve, up to 1,000 per request."
+          }
+        },
+        "type": "object",
+        "required": [
+          "market_hash_names"
+        ],
+        "title": "ItemIdLookupRequest"
+      },
+      "ItemIdLookupResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ItemIdLookupResult"
+            },
+            "type": "array",
+            "title": "Items",
+            "description": "Lookup results in the same order as the requested market hash names."
+          },
+          "found_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Found Count",
+            "description": "Number of requested names resolved."
+          },
+          "missing_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Missing Count",
+            "description": "Number of requested names not resolved."
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "found_count",
+          "missing_count"
+        ],
+        "title": "ItemIdLookupResponse"
+      },
+      "ItemIdLookupResult": {
+        "properties": {
+          "market_hash_name": {
+            "type": "string",
+            "title": "Market Hash Name",
+            "description": "Requested Steam market hash name."
+          },
+          "item_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Item Id",
+            "description": "Canonical catalog item ID, or null when the name is not in the catalog."
+          }
+        },
+        "type": "object",
+        "required": [
+          "market_hash_name"
+        ],
+        "title": "ItemIdLookupResult"
+      },
       "ItemOut": {
         "properties": {
           "item_id": {
@@ -30867,6 +31087,30 @@
             ],
             "title": "Volume Score",
             "description": "Volume component score."
+          },
+          "stability_score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stability Score",
+            "description": "Price stability component score (0-20): observation density and inverse coefficient of variation of hourly close."
+          },
+          "external_score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "External Score",
+            "description": "External confirmation component score (0-20): Steam volume + Buff163 depth."
           },
           "liquidity_last_updated": {
             "anyOf": [
