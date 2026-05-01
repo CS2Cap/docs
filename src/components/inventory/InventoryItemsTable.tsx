@@ -18,11 +18,17 @@ function formatUsd(minor: number | null | undefined): string {
 
 function topProviderLabel(item: InventoryValueResolvedItem): string {
   if (!item.providers || item.providers.length === 0) return "—";
-  // Pick the provider that matches best_ask if we can; otherwise first.
-  const target = item.providers.find(
-    (p) => typeof p.ask === "number" && p.ask !== null && p.ask === item.best_ask,
+  // Pick the provider whose ask matches the best ask (the "winning" quote).
+  // Falls back to the cheapest provider if no exact match (e.g. rounding).
+  if (item.best_ask !== null) {
+    const exact = item.providers.find((p) => p.lowest_ask === item.best_ask);
+    if (exact) return exact.provider;
+  }
+  const cheapest = item.providers.reduce(
+    (min, p) => (min === null || p.lowest_ask < min.lowest_ask ? p : min),
+    null as InventoryValueResolvedItem["providers"][number] | null,
   );
-  return (target ?? item.providers[0]).provider;
+  return (cheapest ?? item.providers[0]).provider;
 }
 
 function SortHeader({

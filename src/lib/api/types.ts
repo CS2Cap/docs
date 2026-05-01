@@ -134,6 +134,21 @@ export interface ItemsResponse {
   pagination: PaginationMeta;
 }
 
+export interface ItemIdLookupRequest {
+  market_hash_names: string[];
+}
+
+export interface ItemIdLookupResult {
+  market_hash_name: string;
+  item_id: number | null;
+}
+
+export interface ItemIdLookupResponse {
+  items: ItemIdLookupResult[];
+  found_count: number;
+  missing_count: number;
+}
+
 export interface MarketItem {
   provider: string;
   item_id: number;
@@ -889,8 +904,10 @@ export interface PortfolioValueRequest {
 
 export interface PortfolioValueProviderBreakdown {
   provider: string;
-  ask?: number | null;
-  bid?: number | null;
+  lowest_ask: number;
+  quantity: number;
+  timestamp?: string;
+  last_updated?: string;
 }
 
 export interface PortfolioValueLineItem {
@@ -925,7 +942,6 @@ export interface InventoryValueRequest {
 
 export type InventoryValueUnmatchedReason =
   | "no_catalog_match"
-  | "phase_mismatch"
   | "valuation_missing";
 
 export interface InventoryValueResolvedItem {

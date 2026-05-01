@@ -273,8 +273,6 @@ export function InventoryValueTool() {
 
 function unmatchedReasonLabel(reason: string): string {
   switch (reason) {
-    case "phase_mismatch":
-      return "Phase variant not in catalog";
     case "valuation_missing":
       return "No live price returned";
     case "no_catalog_match":

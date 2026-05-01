@@ -7,13 +7,14 @@ import {
   readCachedValuation,
   writeCachedValuation,
 } from "@/lib/inventory-value-cache";
+import {
+  resolveCatalogIds,
+  type CatalogResolution,
+} from "@/lib/catalog-index";
 import type {
   InventoryValueResolvedItem,
   InventoryValueToolResponse,
   InventoryValueUnmatchedItem,
-  InventoryValueUnmatchedReason,
-  ItemOut,
-  ItemsResponse,
   PortfolioValueResponse,
   SteamInventoryItem,
   SteamInventoryLookupResponse,
@@ -21,6 +22,7 @@ import type {
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 const SERVICE_KEY = process.env.CS2CAP_PUBLIC_TOOL_API_KEY;
 
@@ -28,6 +30,7 @@ const STEAM_ID_64_REGEX = /^7656119\d{10}$/;
 const VANITY_REGEX = /^[A-Za-z0-9_-]{2,32}$/;
 const MAX_INPUT_LENGTH = 256;
 const VALUATION_CHUNK_SIZE = 100;
+const VALUATION_CONCURRENCY = 4;
 const VALUATION_CURRENCY = "USD";
 
 // Rate limits: best-effort fixed window.
@@ -174,61 +177,6 @@ function detectPrivateInventory(status: number, errorBody: unknown): boolean {
   return false;
 }
 
-interface CatalogIndex {
-  // Map keyed by `${market_hash_name}::${phase ?? ""}`.
-  byKey: Map<string, ItemOut>;
-}
-
-function buildCatalogKey(name: string, phase: string | null): string {
-  return `${name}::${phase ?? ""}`;
-}
-
-/**
- * Resolve catalog item_ids for every distinct (market_hash_name, phase) pair
- * in the inventory. We hit /v1/web/items?market_hash_name=... once per unique
- * name and pull all returned variants (typically a phaseless row plus one row
- * per Doppler phase). Phased inventory items must match a phased catalog row;
- * phaseless inventory items must match a phaseless catalog row. No fallbacks.
- */
-async function resolveCatalog(
-  inventory: SteamInventoryItem[],
-): Promise<CatalogIndex> {
-  const index: CatalogIndex = { byKey: new Map() };
-  const uniqueNames = new Set(inventory.map((item) => item.market_hash_name));
-
-  // Fire requests with bounded concurrency so we don't hammer upstream.
-  const names = Array.from(uniqueNames);
-  const concurrency = 8;
-  let cursor = 0;
-
-  async function worker() {
-    while (cursor < names.length) {
-      const idx = cursor++;
-      const name = names[idx];
-      const params = new URLSearchParams({
-        market_hash_name: name,
-        limit: "50",
-      });
-      const result = await upstreamRequest<ItemsResponse>(
-        `/v1/web/items?${params.toString()}`,
-        { timeoutMs: 8000 },
-      );
-      if (!result.ok || !result.data) continue;
-      for (const item of result.data.items) {
-        if (item.item_id === undefined) continue;
-        const phase = item.phase ?? null;
-        index.byKey.set(buildCatalogKey(item.market_hash_name, phase), item);
-      }
-    }
-  }
-
-  await Promise.all(
-    Array.from({ length: Math.min(concurrency, names.length) }, () => worker()),
-  );
-
-  return index;
-}
-
 interface GroupedResolved {
   item_id: number;
   market_hash_name: string;
@@ -246,35 +194,27 @@ interface ResolutionOutput {
 
 function resolveInventory(
   inventory: SteamInventoryItem[],
-  catalog: CatalogIndex,
+  catalog: CatalogResolution,
 ): ResolutionOutput {
   const grouped = new Map<number, GroupedResolved>();
   const unmatched: InventoryValueUnmatchedItem[] = [];
 
   for (const asset of inventory) {
     const phase = asset.phase ?? null;
-    const exactKey = buildCatalogKey(asset.market_hash_name, phase);
-    const catalogItem = catalog.byKey.get(exactKey);
+    const itemId = catalog.get(asset.market_hash_name);
 
-    if (!catalogItem || catalogItem.item_id === undefined) {
-      // Distinguish "no catalog match at all" from "phase variant doesn't exist".
-      const phaselessKey = buildCatalogKey(asset.market_hash_name, null);
-      const hasPhaseless = catalog.byKey.has(phaselessKey);
-      const reason: InventoryValueUnmatchedReason =
-        phase && hasPhaseless ? "phase_mismatch" : "no_catalog_match";
-
+    if (itemId === undefined) {
       unmatched.push({
         assetid: asset.assetid,
         market_hash_name: asset.market_hash_name,
         phase,
         icon_url: asset.icon_url,
         quantity: asset.quantity,
-        reason,
+        reason: "no_catalog_match",
       });
       continue;
     }
 
-    const itemId = catalogItem.item_id;
     const existing = grouped.get(itemId);
     if (existing) {
       existing.quantity += asset.quantity;
@@ -284,7 +224,7 @@ function resolveInventory(
     } else {
       grouped.set(itemId, {
         item_id: itemId,
-        market_hash_name: catalogItem.market_hash_name,
+        market_hash_name: asset.market_hash_name,
         phase,
         icon_url: asset.icon_url,
         tradable: asset.tradable,
@@ -318,35 +258,51 @@ async function valueResolvedItems(
   let failed = false;
 
   const entries = Array.from(grouped.values());
+  const chunks: GroupedResolved[][] = [];
   for (let i = 0; i < entries.length; i += VALUATION_CHUNK_SIZE) {
-    const chunk = entries.slice(i, i + VALUATION_CHUNK_SIZE);
-    const result = await upstreamRequest<PortfolioValueResponse>("/v1/portfolio/value", {
-      method: "POST",
-      body: {
-        items: chunk.map(({ item_id, quantity }) => ({ item_id, quantity })),
-        currency: VALUATION_CURRENCY,
-      },
-      timeoutMs: 15000,
-    });
+    chunks.push(entries.slice(i, i + VALUATION_CHUNK_SIZE));
+  }
 
-    if (!result.ok || !result.data) {
-      failed = true;
-      continue;
-    }
+  let cursor = 0;
+  async function worker() {
+    while (cursor < chunks.length) {
+      const idx = cursor++;
+      const chunk = chunks[idx];
+      const result = await upstreamRequest<PortfolioValueResponse>("/v1/portfolio/value", {
+        method: "POST",
+        body: {
+          items: chunk.map(({ item_id, quantity }) => ({ item_id, quantity })),
+          currency: VALUATION_CURRENCY,
+        },
+        timeoutMs: 15000,
+      });
 
-    const { data, meta } = result.data;
-    totalValue += data.total_value ?? 0;
-    itemsValued += data.items_valued ?? 0;
-    for (const id of data.items_not_found ?? []) {
-      itemsNotFound.add(id);
-    }
-    for (const provider of meta?.providers_queried ?? []) {
-      providersQueried.add(provider);
-    }
-    for (const line of data.line_items ?? []) {
-      lineItemsById.set(line.item_id, line);
+      if (!result.ok || !result.data) {
+        failed = true;
+        continue;
+      }
+
+      const { data, meta } = result.data;
+      totalValue += data.total_value ?? 0;
+      itemsValued += data.items_valued ?? 0;
+      for (const id of data.items_not_found ?? []) {
+        itemsNotFound.add(id);
+      }
+      for (const provider of meta?.providers_queried ?? []) {
+        providersQueried.add(provider);
+      }
+      for (const line of data.line_items ?? []) {
+        lineItemsById.set(line.item_id, line);
+      }
     }
   }
+
+  await Promise.all(
+    Array.from(
+      { length: Math.min(VALUATION_CONCURRENCY, chunks.length) },
+      () => worker(),
+    ),
+  );
 
   return {
     lineItemsById,
@@ -508,8 +464,23 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(empty);
   }
 
-  // 7. Catalog resolution.
-  const catalog = await resolveCatalog(inventory);
+  // 7. Catalog resolution via bulk POST /v1/items.
+  let catalog: CatalogResolution;
+  try {
+    catalog = await resolveCatalogIds(
+      SERVICE_KEY,
+      inventory.map((item) => item.market_hash_name),
+    );
+  } catch (err) {
+    logEvent("catalog_lookup_failed", {
+      error: err instanceof Error ? err.message : "unknown",
+    });
+    return jsonError(
+      503,
+      "SERVICE_UNAVAILABLE",
+      "This tool is temporarily unavailable. Try again soon.",
+    );
+  }
   const { grouped, unmatched } = resolveInventory(inventory, catalog);
 
   // 8. Valuation in chunks of 100.
