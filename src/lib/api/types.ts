@@ -23,7 +23,6 @@ export type AllProviders =
   | "cstrade"
   | "dmarket"
   | "ecosteam"
-  | "gamerpay"
   | "haloskins"
   | "itradegg"
   | "lisskins"
