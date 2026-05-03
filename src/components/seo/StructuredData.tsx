@@ -80,3 +80,47 @@ export function buildFAQPage(faqs: { q: string; a: string }[]) {
     })),
   };
 }
+
+export function buildProduct(input: {
+  name: string;
+  url: string;
+  description: string;
+  image?: string;
+  category?: string;
+  lowestAskCents?: number | null;
+  highestAskCents?: number | null;
+  offerCount?: number;
+  currency?: string;
+}) {
+  const product: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: input.name,
+    url: input.url,
+    description: input.description,
+    brand: { "@type": "Brand", name: "Counter-Strike 2" },
+  };
+
+  if (input.image) {
+    product.image = input.image;
+  }
+  if (input.category) {
+    product.category = input.category;
+  }
+
+  if (input.lowestAskCents != null && (input.offerCount ?? 0) > 0) {
+    const lowDollars = input.lowestAskCents / 100;
+    const highCents = input.highestAskCents ?? input.lowestAskCents;
+    const highDollars = highCents / 100;
+    product.offers = {
+      "@type": "AggregateOffer",
+      priceCurrency: input.currency ?? "USD",
+      lowPrice: lowDollars.toFixed(2),
+      highPrice: highDollars.toFixed(2),
+      offerCount: input.offerCount,
+      availability: "https://schema.org/InStock",
+    };
+  }
+
+  return product;
+}

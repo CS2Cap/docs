@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 export type SeoPageType = "general" | "feature" | "market";
 
 export interface SeoFaqItem {
@@ -260,6 +262,116 @@ function buildProviderContent(key: string, displayName: string): SeoPageContent 
   };
 }
 
+const FREE_CS2_API_CONTENT: SeoPageContent = {
+  intro:
+    "Get started with the CS2 API for free. CS2Cap offers a free tier with no credit card required, giving you real-time CS2 skin prices, buy orders, sales history, and market analytics across 39+ marketplaces.",
+  purposeHeading: "FREE CS2 API ACCESS",
+  purposeText:
+    "The CS2Cap free tier gives developers, traders, and tinkerers immediate access to live CS2 skin market data through a unified REST API. Sign up with an email, generate an API key, and start making requests — no card required up front.",
+  dataPoints: [
+    { icon: "DollarSign", label: "ZERO COST TO START", description: "Sign up and start querying CS2 skin prices, buy orders, and analytics on the free tier without entering payment details." },
+    { icon: "Globe", label: "39+ MARKETPLACES", description: "Free tier requests return aggregated data from BUFF163, CSFloat, Skinport, Steam, DMarket, YouPin, and 30+ more marketplaces." },
+    { icon: "FileJson", label: "FULL JSON API", description: "Same JSON shape as paid tiers — endpoints, schemas, and authentication are identical, so you can scale up without rewriting code." },
+    { icon: "Clock", label: "REAL-TIME DATA", description: "Live lowest-ask pricing and recent sales — the same fresh data that powers paid plans, capped only by request volume." },
+  ],
+  useCases: [
+    { icon: "Terminal", title: "PROTOTYPING", desc: "Build a CS2 trading bot, valuation tool, or dashboard against the free tier and upgrade only when you ship." },
+    { icon: "Globe", title: "PRICE COMPARISON", desc: "Power a free price-comparison site or browser extension using the free CS2 API tier." },
+    { icon: "BarChart3", title: "PERSONAL ANALYTICS", desc: "Track your own CS2 inventory value or watchlist without paying for an enterprise data feed." },
+    { icon: "Layers", title: "RESEARCH & STUDIES", desc: "Pull historical CS2 skin pricing data for academic research, blog posts, or market reports." },
+  ],
+  faqs: [
+    { q: "Is the CS2 API really free?", a: "Yes. The free tier gives you access to live CS2 skin prices, buy orders, and analytics with no credit card required. Sign up to see the current free-tier rate limits." },
+    { q: "What's the catch?", a: "Free-tier requests are rate limited. Paid plans raise the limits and unlock high-throughput batch endpoints, but the data and endpoint surface are otherwise identical." },
+    { q: "Do I need to pay later?", a: "Only if your usage exceeds the free tier. You can stay on the free tier as long as you want." },
+    { q: "How do I get a free API key?", a: "Sign in with your email, generate an API key from the account dashboard, and include it as a Bearer token in your Authorization header." },
+  ],
+  relatedFeatures: ["cs2-price-api", "cs2-buy-order-api", "cs2-price-history-api", "cs2-item-catalog-api"],
+};
+
+const CS2_DATA_API_CONTENT: SeoPageContent = {
+  intro:
+    "A single CS2 data API that exposes live pricing, buy orders, sales records, historical snapshots, candlestick charts, and market analytics across 39+ CS2 skin marketplaces. Built for trading bots, dashboards, and research workflows.",
+  purposeHeading: "ONE FEED FOR EVERY DATA TYPE",
+  purposeText:
+    "CS2Cap normalizes CS2 skin market data from every supported marketplace into a single, consistent JSON schema. Whether you need live ticker data, intraday candlesticks, or month-long historical price feeds, you query one API instead of integrating dozens of marketplaces individually.",
+  dataPoints: [
+    { icon: "DollarSign", label: "PRICING DATA", description: "Lowest ask, listing quantity, and live cross-market price feeds for every CS2 skin in the catalog." },
+    { icon: "TrendingUp", label: "BUY ORDER DATA", description: "Highest bid and bid count from marketplaces that support buy orders, normalized to the same schema as pricing data." },
+    { icon: "Clock", label: "HISTORICAL DATA", description: "Time-series price snapshots and OHLCV candles with intervals from 5 minutes for backtesting and trend analysis." },
+    { icon: "BarChart3", label: "ANALYTICS DATA", description: "Cross-market spreads, liquidity scores, volume metrics, and arbitrage signals in machine-readable form." },
+    { icon: "Receipt", label: "SALES DATA", description: "Recent sale records with price, float value, and paint seed where available from supported providers." },
+    { icon: "FileJson", label: "CATALOG DATA", description: "Full CS2 item metadata feed: rarity, collection, wear range, image, and family relationships for every skin." },
+  ],
+  useCases: [
+    { icon: "Terminal", title: "TRADING BOTS", desc: "Feed normalized CS2 data into automated trading systems without writing per-marketplace adapters." },
+    { icon: "BarChart3", title: "DATA SCIENCE", desc: "Pull historical CS2 pricing data into pandas, R, or your warehouse of choice for modeling and reporting." },
+    { icon: "Layers", title: "PIPELINES", desc: "Stream CS2 market data into your ETL pipeline via REST and webhook callbacks." },
+    { icon: "Globe", title: "DASHBOARDS", desc: "Power live dashboards that show prices, spreads, volume, and indicators across the full CS2 marketplace ecosystem." },
+  ],
+  faqs: [
+    { q: "What CS2 data does the API expose?", a: "Pricing, buy orders, sales history, OHLCV candlesticks, market analytics, and the full item catalog — all queryable through REST endpoints with the same authentication and schema conventions." },
+    { q: "How fresh is the data?", a: "Live endpoints return real-time market state. Historical endpoints expose snapshots and candlesticks down to 5-minute intervals." },
+    { q: "What format is the data in?", a: "JSON. Schemas are documented in the OpenAPI specification at docs.cs2cap.com." },
+    { q: "Can I get bulk historical CS2 data?", a: "Yes. The price history and candlestick endpoints support pagination, time range filters, and provider filters for bulk pulls." },
+  ],
+  relatedFeatures: ["cs2-price-api", "cs2-buy-order-api", "cs2-price-history-api", "cs2-candlestick-api", "cs2-sales-api", "cs2-market-analytics-api"],
+};
+
+const CS2_ITEMS_API_CONTENT: SeoPageContent = {
+  intro:
+    "Search, list, and look up every CS2 item through the CS2Cap items API. Browse the full Counter-Strike 2 skin database with metadata, rarity, collection, wear range, and live pricing across 39+ marketplaces.",
+  purposeHeading: "THE FULL CS2 ITEM DATABASE",
+  purposeText:
+    "CS2Cap maintains a comprehensive catalog of every CS2 item — skins, knives, gloves, agents, stickers, music kits, patches, cases, and more. The items API exposes the catalog with rich metadata so you can build search experiences, valuation tools, and inventory trackers without scraping.",
+  dataPoints: [
+    { icon: "FileJson", label: "ITEM METADATA", description: "Item ID, market hash name, base name, skin name, wear name, item type, weapon, collection, rarity, finish style, and phase." },
+    { icon: "Filter", label: "FILTERS & SEARCH", description: "Filter by item type, weapon type, wear, rarity, collection, or free-text search query." },
+    { icon: "Layers", label: "WEAR & VARIANTS", description: "Each wear and StatTrak/Souvenir variant is a distinct item with its own ID and image." },
+    { icon: "Globe", label: "LINKED PRICING", description: "Every item links to live multi-marketplace pricing, buy orders, sales history, and analytics endpoints." },
+  ],
+  useCases: [
+    { icon: "Terminal", title: "INVENTORY TOOLS", desc: "Build CS2 inventory valuation tools that look up items by hash name and price them across all supported markets." },
+    { icon: "Globe", title: "SEARCH UIs", desc: "Power autocomplete and faceted search experiences for skin marketplaces or comparison sites." },
+    { icon: "BarChart3", title: "FAMILY ROLLUPS", desc: "Group items by base/skin family to display every wear and variant in a single price card." },
+    { icon: "Layers", title: "BOT METADATA", desc: "Use catalog metadata to filter target items by rarity, collection, or wear range in trading bots." },
+  ],
+  faqs: [
+    { q: "How many CS2 items are in the catalog?", a: "Tens of thousands — every wear, StatTrak, Souvenir, phase, and finish style for every skin, knife, glove, sticker, agent, music kit, patch, and case." },
+    { q: "What identifies an item?", a: "Each item has a numeric item_id and a market_hash_name. Both can be used to look up pricing and analytics for that specific item." },
+    { q: "Can I search by name?", a: "Yes. The items endpoint accepts a free-text q parameter that performs forgiving search across the catalog." },
+    { q: "Are CS:GO items included?", a: "Yes. CS:GO and CS2 share the same item catalog — there is no separate CS:GO database." },
+  ],
+  relatedFeatures: ["cs2-price-api", "cs2-buy-order-api", "cs2-sales-api", "cs2-item-catalog-api"],
+};
+
+const CS2_SKINS_API_CONTENT: SeoPageContent = {
+  intro:
+    "Live CS2 skin pricing, buy orders, sales records, and analytics for every Counter-Strike 2 skin via one REST API. CS2Cap aggregates 39+ skin marketplaces so you can query any CS2 skin with a single request.",
+  purposeHeading: "EVERY CS2 SKIN, ONE API",
+  purposeText:
+    "From popular skins like AWP Dragon Lore and AK-47 Redline to rarity-low stickers and rare patterns, CS2Cap covers the full CS2 skin catalog with live cross-market pricing, buy orders, and historical data.",
+  dataPoints: [
+    { icon: "DollarSign", label: "SKIN PRICING", description: "Lowest ask and listing quantity for every CS2 skin variant — by wear, StatTrak, Souvenir, and phase." },
+    { icon: "TrendingUp", label: "SKIN BUY ORDERS", description: "Highest bid and bid count for skins on every marketplace that supports buy orders." },
+    { icon: "Clock", label: "SKIN PRICE HISTORY", description: "Historical snapshots and OHLCV candles for every CS2 skin going back as far as data has been tracked." },
+    { icon: "FileJson", label: "SKIN METADATA", description: "Float range, rarity, collection, finish style, phase, and image URL for every skin in the catalog." },
+  ],
+  useCases: [
+    { icon: "Globe", title: "PRICE TRACKERS", desc: "Build a tracker that shows the cheapest CS2 skin price across every marketplace in real time." },
+    { icon: "Terminal", title: "TRADING BOTS", desc: "Power CS2 skin trading bots with live cross-market pricing and bid data." },
+    { icon: "BarChart3", title: "SKIN ANALYTICS", desc: "Analyze CS2 skin price trends, volatility, and arbitrage spreads across marketplaces." },
+    { icon: "Layers", title: "INVENTORY VALUATION", desc: "Value entire CS2 skin inventories at current market rates using the batch pricing endpoint." },
+  ],
+  faqs: [
+    { q: "Are knives, gloves, stickers, and agents included?", a: "Yes. The CS2 skin API covers every cosmetic item type: rifles, pistols, SMGs, knives, gloves, stickers, agents, music kits, patches, and more." },
+    { q: "Are CS:GO skins included?", a: "Yes. CS2 and CS:GO share the same item set, so the same skin API serves both communities." },
+    { q: "How many CS2 skins are tracked?", a: "Tens of thousands of distinct skin variants — every wear, StatTrak, Souvenir, and phase combination." },
+    { q: "Can I get prices for a single skin?", a: "Yes. Query by item_id or market_hash_name to retrieve live multi-marketplace pricing for any individual skin." },
+  ],
+  relatedFeatures: ["cs2-price-api", "cs2-buy-order-api", "cs2-price-history-api", "cs2-sales-api", "cs2-item-catalog-api"],
+};
+
 /* ---------- Page definitions ---------- */
 
 const GENERAL_PAGES: SeoPageConfig[] = [
@@ -294,6 +406,61 @@ const GENERAL_PAGES: SeoPageConfig[] = [
     h1: "CS2 Skin API",
     canonicalPath: "/cs2-skin-api",
     includeInSitemap: true,
+  },
+  {
+    slug: "free-cs2-api",
+    type: "general",
+    title: "Free CS2 API — Real-Time Skin Market Data with No Credit Card",
+    description:
+      "Free tier CS2 API with live skin prices, buy orders, and analytics across 39+ marketplaces. No credit card required to start.",
+    h1: "Free CS2 API",
+    canonicalPath: "/free-cs2-api",
+    includeInSitemap: true,
+    content: FREE_CS2_API_CONTENT,
+  },
+  {
+    slug: "cs2-data-api",
+    type: "general",
+    title: "CS2 Data API — Skin Market & Pricing Data Feeds",
+    description:
+      "CS2 data API exposing live pricing, buy orders, sales, historical snapshots, candlesticks, and analytics across 39+ marketplaces.",
+    h1: "CS2 Data API",
+    canonicalPath: "/cs2-data-api",
+    includeInSitemap: true,
+    content: CS2_DATA_API_CONTENT,
+  },
+  {
+    slug: "cs2-items-api",
+    type: "general",
+    title: "CS2 Items API — Full Skin Catalog & Item Database",
+    description:
+      "Search and look up every CS2 item through one API. Full Counter-Strike 2 catalog with rarity, wear, collection, and live pricing.",
+    h1: "CS2 Items API",
+    canonicalPath: "/cs2-items-api",
+    includeInSitemap: true,
+    content: CS2_ITEMS_API_CONTENT,
+  },
+  {
+    slug: "cs2-skins-api",
+    type: "general",
+    title: "CS2 Skins API — Live Pricing for Every Counter-Strike 2 Skin",
+    description:
+      "Live CS2 skin prices, buy orders, sales, and analytics for every Counter-Strike 2 skin via one REST API across 39+ marketplaces.",
+    h1: "CS2 Skins API",
+    canonicalPath: "/cs2-skins-api",
+    includeInSitemap: true,
+    content: CS2_SKINS_API_CONTENT,
+  },
+  {
+    slug: "csgo-api",
+    type: "general",
+    title: "CSGO API — CS:GO Skin Market & Pricing Data via CS2Cap",
+    description:
+      "CS:GO skin market data API. Live pricing, buy orders, and historical data for every CS:GO/CS2 item across 39+ marketplaces.",
+    h1: "CSGO API",
+    canonicalPath: "/csgo-api",
+    includeInSitemap: true,
+    content: CSGO_API_CONTENT,
   },
 ];
 
@@ -463,4 +630,43 @@ export function getPageBySlug(slug: string): SeoPageConfig | undefined {
 
 export function getPagesByType(type: SeoPageType): SeoPageConfig[] {
   return SEO_PAGES.filter((p) => p.type === type);
+}
+
+const SITE_URL = "https://cs2cap.com";
+
+export function buildPageMetadata(slug: string): Metadata {
+  const page = getPageBySlug(slug);
+  if (!page) {
+    return {};
+  }
+
+  const url = `${SITE_URL}${page.canonicalPath}`;
+  const ogImage = `${SITE_URL}/api/og?slug=${page.slug}`;
+
+  return {
+    title: page.title,
+    description: page.description,
+    alternates: { canonical: page.canonicalPath },
+    openGraph: {
+      title: page.title,
+      description: page.description,
+      url,
+      siteName: "CS2Cap",
+      type: "website",
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: page.h1,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: page.title,
+      description: page.description,
+      images: [ogImage],
+    },
+  };
 }

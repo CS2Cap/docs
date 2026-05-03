@@ -10,14 +10,14 @@ import { StructuredData, buildOrganization, buildWebSite, buildWebApplication } 
 import { buildTickerRows, getLandingPageData } from "@/lib/api/compositions";
 
 const DESC =
-  "Unified REST API for CS2 and CSGO skin market data. Real-time prices, buy orders, sales history, and candlestick charts from Buff163, CSFloat, Skinport, and 35+ more marketplaces.";
+  "Free CS2 API for real-time skin prices, buy orders, sales history, items, and market analytics. Unified REST data feed from Buff163, CSFloat, Skinport, Steam, and 35+ more CS2/CSGO marketplaces.";
 
 export const metadata: Metadata = {
-  title: "CS2 API — Real-Time Skin Market Data Across 39+ Marketplaces",
+  title: "CS2 API — Free Skin Market & Pricing Data Across 39+ Marketplaces",
   description: DESC,
   alternates: { canonical: "/" },
   openGraph: {
-    title: "CS2 API — Real-Time Skin Market Data | CS2Cap",
+    title: "CS2 API — Free Skin Market & Pricing Data | CS2Cap",
     description: DESC,
     url: "https://cs2cap.com",
     siteName: "CS2Cap",
@@ -25,19 +25,26 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "CS2 API — Real-Time Skin Market Data | CS2Cap",
+    title: "CS2 API — Free Skin Market & Pricing Data | CS2Cap",
     description: DESC,
   },
 };
 
 const SEO_LINKS = [
   { href: "/cs2-api", label: "CS2 API" },
+  { href: "/free-cs2-api", label: "Free CS2 API" },
   { href: "/cs2-market-api", label: "CS2 Market API" },
   { href: "/cs2-price-api", label: "CS2 Price API" },
+  { href: "/cs2-data-api", label: "CS2 Data API" },
+  { href: "/cs2-items-api", label: "CS2 Items API" },
+  { href: "/cs2-skins-api", label: "CS2 Skins API" },
   { href: "/cs2-buy-order-api", label: "CS2 Buy Order API" },
+  { href: "/cs2-market-analytics-api", label: "CS2 Analytics API" },
+  { href: "/csgo-api", label: "CSGO API" },
   { href: "/buff163-api", label: "Buff163 API" },
-  { href: "/youpin-api", label: "YouPin API" },
-  { href: "/c5-api", label: "C5 API" },
+  { href: "/csfloat-api", label: "CSFloat API" },
+  { href: "/skinport-api", label: "Skinport API" },
+  { href: "/steam-api", label: "Steam API" },
 ];
 
 export default async function HomePage() {

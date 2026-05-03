@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { SeoLandingPage } from "@/components/seo/SeoLandingPage";
 import { buildPageMetadata, getPageBySlug } from "@/lib/seo/landing-pages";
 
-const SLUG = "skinsmonkey-api";
+const SLUG = "cs2-data-api";
 const page = getPageBySlug(SLUG)!;
 
 export const metadata: Metadata = buildPageMetadata(SLUG);

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -8,6 +9,12 @@ import { ProviderIdentity } from "@/components/ProviderIdentity";
 import { WatchItemButton } from "@/components/WatchItemButton";
 import { CollapsibleAsksList } from "@/components/item/CollapsibleAsksList";
 import {
+  StructuredData,
+  buildBreadcrumbList,
+  buildProduct,
+} from "@/components/seo/StructuredData";
+import {
+  formatPriceMinor,
   getProvider,
   providerLabel,
   rarityColor,
@@ -39,6 +46,69 @@ function formatNumber(value?: number | null) {
   }
 
   return value.toLocaleString();
+}
+
+const SITE_URL = "https://cs2cap.com";
+
+export async function generateMetadata({ params }: ItemPageProps): Promise<Metadata> {
+  const { itemId } = await params;
+  const numericItemId = Number.parseInt(itemId, 10);
+  if (!Number.isFinite(numericItemId)) {
+    return {};
+  }
+
+  const data = await getItemDetailPageCoreData(numericItemId);
+  if (!data) {
+    return {};
+  }
+
+  const itemName = data.item.market_hash_name;
+  const askProviders = data.coverage.askProviders;
+  const bestAskUsd =
+    data.bestAsk?.lowest_ask != null ? formatPriceMinor(data.bestAsk.lowest_ask) : null;
+  const bestBidUsd =
+    data.bestBid?.highest_bid != null ? formatPriceMinor(data.bestBid.highest_bid) : null;
+
+  const title =
+    askProviders > 0
+      ? `${itemName} — CS2 Skin Prices Across ${askProviders} Markets`
+      : `${itemName} — CS2 Skin Price & Market Data`;
+
+  const descriptionParts: string[] = [`Live CS2 prices for ${itemName}.`];
+  if (bestAskUsd) {
+    descriptionParts.push(`Lowest ask ${bestAskUsd}.`);
+  }
+  if (bestBidUsd) {
+    descriptionParts.push(`Highest bid ${bestBidUsd}.`);
+  }
+  if (askProviders > 0) {
+    descriptionParts.push(
+      `Tracked across ${askProviders} marketplaces including Buff163, CSFloat, Skinport, and Steam.`,
+    );
+  }
+  descriptionParts.push("Free CS2 API access available via CS2Cap.");
+  const description = descriptionParts.join(" ");
+
+  const canonical = `/item/${numericItemId}`;
+  const url = `${SITE_URL}${canonical}`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical },
+    openGraph: {
+      title,
+      description,
+      url,
+      siteName: "CS2Cap",
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+  };
 }
 
 function normalizeHexColor(value?: string | null): string | null {
@@ -101,9 +171,43 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
   ].filter((entry) => entry.value);
 
   const bestAskProvider = data.bestAsk ? getProvider(data.bestAsk.provider, data.providers) : null;
+  const itemUrl = `${SITE_URL}/item/${numericItemId}`;
+  const productDescriptionParts: string[] = [
+    `${data.item.market_hash_name} — Counter-Strike 2 ${data.item.rarity_name?.toLowerCase() ?? "skin"}`,
+  ];
+  if (data.item.collection) {
+    productDescriptionParts.push(`from the ${data.item.collection} collection`);
+  }
+  if (data.coverage.askProviders > 0) {
+    productDescriptionParts.push(
+      `with live pricing tracked across ${data.coverage.askProviders} marketplaces`,
+    );
+  }
+  const productDescription = productDescriptionParts.join(" ") + ".";
+  const highestAskCents =
+    askRows.length > 0 ? askRows[askRows.length - 1].lowest_ask : undefined;
 
   return (
     <>
+      <StructuredData
+        data={buildBreadcrumbList([
+          { name: "Home", url: SITE_URL },
+          { name: "Search", url: `${SITE_URL}/search` },
+          { name: data.item.market_hash_name, url: itemUrl },
+        ])}
+      />
+      <StructuredData
+        data={buildProduct({
+          name: data.item.market_hash_name,
+          url: itemUrl,
+          description: productDescription,
+          image: data.item.image_url,
+          category: data.item.item_type,
+          lowestAskCents: data.bestAsk?.lowest_ask,
+          highestAskCents,
+          offerCount: askRows.length,
+        })}
+      />
       <section className="border-b-2 border-border bg-secondary/20 py-3">
         <div className="container flex items-center gap-2 font-mono text-xs text-muted-foreground">
           <Link href="/" className="transition-colors hover:text-primary">

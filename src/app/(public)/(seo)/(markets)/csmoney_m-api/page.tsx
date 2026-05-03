@@ -1,14 +1,11 @@
 import type { Metadata } from "next";
 import { SeoLandingPage } from "@/components/seo/SeoLandingPage";
-import { getPageBySlug } from "@/lib/seo/landing-pages";
+import { buildPageMetadata, getPageBySlug } from "@/lib/seo/landing-pages";
 
-const page = getPageBySlug("csmoney_m-api")!;
+const SLUG = "csmoney_m-api";
+const page = getPageBySlug(SLUG)!;
 
-export const metadata: Metadata = {
-  title: page.title,
-  description: page.description,
-  alternates: { canonical: page.canonicalPath },
-};
+export const metadata: Metadata = buildPageMetadata(SLUG);
 
 export default function Page() {
   return <SeoLandingPage config={page} />;
