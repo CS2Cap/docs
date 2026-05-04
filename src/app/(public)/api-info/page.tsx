@@ -176,13 +176,13 @@ export default async function ApiPage() {
               >
                 <Link
                   href="/login"
-                  className="border-2 border-primary bg-primary px-8 py-3 font-mono text-sm font-bold tracking-wider text-primary-foreground brutalist-hover"
+                  className="w-full sm:w-auto text-center border-2 border-primary bg-primary px-8 py-3 font-mono text-sm font-bold tracking-wider text-primary-foreground brutalist-hover"
                 >
                   GET ACCESS →
                 </Link>
                 <a
                   href="#endpoints"
-                  className="border-brutal px-8 py-3 font-mono text-sm font-bold tracking-wider text-foreground brutalist-hover hover:border-primary transition-colors"
+                  className="w-full sm:w-auto text-center border-brutal px-8 py-3 font-mono text-sm font-bold tracking-wider text-foreground brutalist-hover hover:border-primary transition-colors"
                 >
                   EXPLORE ENDPOINTS
                 </a>
