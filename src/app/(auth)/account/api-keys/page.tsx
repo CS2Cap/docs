@@ -28,6 +28,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useSession, useSubKeys, webApi } from "@/lib/api";
+import { PlanUpgradeCard } from "@/components/PlanUpgradeCard";
 import { queryKeys } from "@/lib/api/hooks";
 import type { ChildAPIKeyCreateResponse } from "@/lib/api/types";
 
