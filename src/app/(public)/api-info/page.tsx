@@ -147,7 +147,7 @@ export default async function ApiPage() {
         <div className="absolute top-1/3 right-1/4 h-2 w-2 animate-pulse-glow bg-primary" />
 
         <div className="container relative z-10">
-          <div className="grid items-center gap-12 lg:grid-cols-2">
+          <div className="grid items-center gap-8 lg:gap-12 lg:grid-cols-2">
             <div>
               <div className="mb-6 flex items-center gap-3 animate-fade-in-up-sm">
                 <Code className="h-5 w-5 text-primary" />
