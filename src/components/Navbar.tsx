@@ -141,7 +141,7 @@ export function Navbar() {
                   <span>{initials || <User className="h-4 w-4" strokeWidth={1.5} />}</span>
                 )}
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 rounded-none border-2 border-border bg-popover p-0">
+              <DropdownMenuContent align="end" className="w-56 rounded-none border-2 border-border bg-popover p-0 max-h-[calc(100vh-5rem)] overflow-y-auto">
                 <DropdownMenuLabel className="px-3 py-2 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
                   <div className="truncate text-foreground text-xs normal-case tracking-normal">{displayName}</div>
                   {session?.email && (
