@@ -9,6 +9,7 @@ import {
 } from "@/lib/inventory-value-cache";
 import {
   resolveCatalogIds,
+  catalogKey,
   type CatalogResolution,
 } from "@/lib/catalog-index";
 import type {
@@ -201,7 +202,7 @@ function resolveInventory(
 
   for (const asset of inventory) {
     const phase = asset.phase ?? null;
-    const itemId = catalog.get(asset.market_hash_name);
+    const itemId = catalog.get(catalogKey(asset.market_hash_name, phase));
 
     if (itemId === undefined) {
       unmatched.push({
@@ -469,7 +470,7 @@ export async function POST(request: NextRequest) {
   try {
     catalog = await resolveCatalogIds(
       SERVICE_KEY,
-      inventory.map((item) => item.market_hash_name),
+      inventory.map((item) => ({ market_hash_name: item.market_hash_name, phase: item.phase })),
     );
   } catch (err) {
     logEvent("catalog_lookup_failed", {

@@ -136,10 +136,12 @@ export interface ItemsResponse {
 
 export interface ItemIdLookupRequest {
   market_hash_names: string[];
+  phases?: (string | null)[] | null;
 }
 
 export interface ItemIdLookupResult {
   market_hash_name: string;
+  phase?: string | null;
   item_id: number | null;
 }
 
