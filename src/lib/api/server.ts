@@ -81,7 +81,7 @@ export async function serverFetch<T>(
   try {
     const response = await fetch(`${API_BASE_URL}${path}`, {
       method,
-      headers,
+      headers: { ...headers, connection: "close" },
       cache: revalidate === false ? "no-store" : "force-cache",
       next: revalidate === false ? undefined : { revalidate },
       body: body !== undefined ? JSON.stringify(body) : undefined,
