@@ -154,7 +154,7 @@ export default async function ApiPage() {
                 <span className="font-mono text-xs tracking-widest text-primary">// API</span>
               </div>
               <h1
-                className="display-heading mb-6 text-5xl font-black tracking-tighter md:text-7xl animate-fade-in-up-sm"
+                className="display-heading mb-6 text-4xl sm:text-5xl font-black tracking-tighter md:text-7xl animate-fade-in-up-sm"
                 style={{ animationDelay: "0.05s", animationFillMode: "both" }}
               >
                 <span className="text-foreground">BUILD WITH</span>
