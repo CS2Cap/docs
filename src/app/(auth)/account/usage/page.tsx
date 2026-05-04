@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { BarChart3 } from "lucide-react";
 import { useAccountUsageStats } from "@/lib/api";
+import { PlanUpgradeCard } from "@/components/PlanUpgradeCard";
 
 export default function AccountUsagePage() {
   const { data: usage, isLoading } = useAccountUsageStats();
