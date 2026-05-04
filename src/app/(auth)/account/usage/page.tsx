@@ -38,6 +38,10 @@ export default function AccountUsagePage() {
         <h1 className="text-3xl font-black tracking-tighter">API USAGE</h1>
       </div>
 
+      <div className="mb-6">
+        <PlanUpgradeCard highlight={usage.projection.upgrade_recommended} />
+      </div>
+
       <Card className="bg-card/50 border-border/50 mb-6">
         <CardHeader>
           <div className="flex items-center justify-between">
