@@ -252,6 +252,10 @@ export default function AccountApiKeysPage() {
         )}
       </div>
 
+      <div className="mb-6">
+        <PlanUpgradeCard />
+      </div>
+
       <Card className="bg-yellow-500/5 border-yellow-500/20 mb-6">
         <CardContent className="pt-6">
           <div className="flex items-start gap-3">
