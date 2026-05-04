@@ -76,6 +76,10 @@ export default function DashboardPage() {
         </p>
       </div>
 
+      <div className="mb-6">
+        <PlanUpgradeCard />
+      </div>
+
       <div className="mb-8 grid gap-4 md:grid-cols-3">
         {stats.map((stat) => (
           <Card key={stat.label} className="border-border/50 bg-card/50">
