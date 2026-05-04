@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Search } from "lucide-react";
@@ -17,6 +18,113 @@ type SearchPageProps = {
     page?: string;
   }>;
 };
+
+const SEARCH_CANONICAL_PARAMS = [
+  "q",
+  "item_type",
+  "item_subtype",
+  "weapon_type",
+  "wear_name",
+  "rarity_name",
+  "collection",
+] as const;
+
+function titleCase(value: string): string {
+  return value
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part[0].toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function buildCanonicalSearchPath(
+  values: Record<(typeof SEARCH_CANONICAL_PARAMS)[number], string | undefined>,
+): string {
+  const params = new URLSearchParams();
+  for (const key of SEARCH_CANONICAL_PARAMS) {
+    const value = values[key];
+    if (value) {
+      params.set(key, value);
+    }
+  }
+  const qs = params.toString();
+  return qs ? `/search?${qs}` : "/search";
+}
+
+export async function generateMetadata({
+  searchParams,
+}: SearchPageProps): Promise<Metadata> {
+  const resolved = await searchParams;
+  const q = resolved.q?.trim();
+  const itemType = resolved.item_type?.trim();
+  const itemSubtype = resolved.item_subtype?.trim();
+  const weaponType = resolved.weapon_type?.trim();
+  const wearName = resolved.wear_name?.trim();
+  const rarityName = resolved.rarity_name?.trim();
+  const collection = resolved.collection?.trim();
+
+  const titleParts: string[] = [];
+  if (q) titleParts.push(titleCase(q));
+  if (weaponType) titleParts.push(weaponType);
+  if (wearName) titleParts.push(wearName);
+  if (rarityName) titleParts.push(rarityName);
+  if (itemType && titleParts.length === 0) titleParts.push(`CS2 ${itemType}`);
+  if (collection) titleParts.push(collection);
+
+  const titleSubject = titleParts.length > 0 ? titleParts.join(" ") : null;
+
+  const title = titleSubject
+    ? `${titleSubject} CS2 Skin Prices — Live Market Data`
+    : "Search CS2 Skins — Live Prices Across 39+ Markets";
+
+  const description = titleSubject
+    ? `Live CS2 skin prices for ${titleSubject}. Compare ask prices, buy orders, and market analytics across 39+ marketplaces with the CS2Cap API.`
+    : "Search every CS2 skin in the catalog and compare live prices, buy orders, and analytics across 39+ marketplaces.";
+
+  const hasFilter = Boolean(
+    q || itemType || itemSubtype || weaponType || wearName || rarityName || collection,
+  );
+
+  const canonical = buildCanonicalSearchPath({
+    q,
+    item_type: itemType,
+    item_subtype: itemSubtype,
+    weapon_type: weaponType,
+    wear_name: wearName,
+    rarity_name: rarityName,
+    collection,
+  });
+
+  return {
+    title,
+    description,
+    alternates: { canonical },
+    robots: hasFilter
+      ? { index: true, follow: true }
+      : { index: false, follow: true },
+    openGraph: {
+      title,
+      description,
+      url: `https://cs2cap.com${canonical}`,
+      siteName: "CS2Cap",
+      type: "website",
+      images: [
+        {
+          url: "https://cs2cap.com/api/og?slug=cs2-skins-api",
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: ["https://cs2cap.com/api/og?slug=cs2-skins-api"],
+    },
+  };
+}
 
 const FILTER_FIELDS: Array<{
   key: keyof SearchFilterValues;

@@ -24,10 +24,13 @@ export function HeroSection({
         <div className="grid items-center gap-12 lg:grid-cols-12">
           <div className="lg:col-span-7">
             {/* Status bar */}
-            <div className="flex items-center gap-3 mb-8 animate-fade-in-up">
+            <div className="flex items-center gap-3 mb-8 animate-fade-in-up flex-wrap">
               <div className="h-2 w-2 bg-success animate-pulse-glow" />
               <span className="font-mono text-xs tracking-widest text-success uppercase">
                 {providerCount} markets · live
+              </span>
+              <span className="font-mono text-[10px] tracking-widest text-primary uppercase border border-primary/40 px-2 py-0.5">
+                Free tier — no card
               </span>
             </div>
 
@@ -42,7 +45,7 @@ export function HeroSection({
 
             {/* Subtitle */}
             <p className="font-mono text-sm md:text-base text-muted-foreground max-w-xl mb-10 leading-relaxed animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
-              One REST API for real-time CS2 skin prices, buy orders, sales history, and analytics across {providerCount}+ marketplaces. Built for developers and trading tools.
+              One free REST API for real-time CS2 skin prices, buy orders, sales history, items, and analytics across {providerCount}+ marketplaces. Built for developers, trading tools, and data teams.
             </p>
 
             {/* CTA buttons */}

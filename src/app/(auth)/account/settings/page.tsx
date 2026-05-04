@@ -43,14 +43,6 @@ const currencyOptions = [
   { value: "CNY", label: "CNY (¥)" },
 ];
 
-const timezoneOptions = [
-  { value: "UTC", label: "UTC" },
-  { value: "America/New_York", label: "Eastern Time" },
-  { value: "America/Los_Angeles", label: "Pacific Time" },
-  { value: "Europe/London", label: "London" },
-  { value: "Europe/Berlin", label: "Berlin" },
-];
-
 function providerLabel(provider: string) {
   return provider.charAt(0).toUpperCase() + provider.slice(1);
 }
@@ -67,7 +59,6 @@ export default function AccountSettingsPage() {
 
   // Preferences state
   const [preferredCurrency, setPreferredCurrency] = useState("USD");
-  const [timezone, setTimezone] = useState("UTC");
   const [alertEmailsEnabled, setAlertEmailsEnabled] = useState(true);
   const [productUpdateEmailsEnabled, setProductUpdateEmailsEnabled] = useState(false);
   const [billingReminderEmailsEnabled, setBillingReminderEmailsEnabled] = useState(true);
@@ -104,7 +95,6 @@ export default function AccountSettingsPage() {
     if (!preferences || prefInitialized.current) return;
     prefInitialized.current = true;
     setPreferredCurrency(preferences.preferred_currency);
-    setTimezone(preferences.timezone);
     setAlertEmailsEnabled(preferences.alert_emails_enabled);
     setProductUpdateEmailsEnabled(preferences.product_update_emails_enabled);
     setBillingReminderEmailsEnabled(preferences.billing_reminder_emails_enabled);
@@ -129,7 +119,6 @@ export default function AccountSettingsPage() {
   const linkedProviders = session.linked_providers;
   const hasChanges = preferences
     ? preferredCurrency !== preferences.preferred_currency ||
-      timezone !== preferences.timezone ||
       alertEmailsEnabled !== preferences.alert_emails_enabled ||
       productUpdateEmailsEnabled !== preferences.product_update_emails_enabled ||
       billingReminderEmailsEnabled !== preferences.billing_reminder_emails_enabled
@@ -142,7 +131,6 @@ export default function AccountSettingsPage() {
     try {
       await webApi.updateAccountPreferences({
         preferred_currency: preferredCurrency,
-        timezone,
         alert_emails_enabled: alertEmailsEnabled,
         product_update_emails_enabled: productUpdateEmailsEnabled,
         billing_reminder_emails_enabled: billingReminderEmailsEnabled,
@@ -471,7 +459,7 @@ export default function AccountSettingsPage() {
         <Card className="border-border/50 bg-card/50">
           <CardHeader>
             <CardTitle className="text-base">Preferences</CardTitle>
-            <CardDescription>Currency, timezone, and alerts</CardDescription>
+            <CardDescription>Currency and notification preferences</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {preferencesLoading ? (
@@ -491,22 +479,6 @@ export default function AccountSettingsPage() {
                     </SelectTrigger>
                     <SelectContent>
                       {currencyOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Timezone</Label>
-                  <Select value={timezone} onValueChange={setTimezone}>
-                    <SelectTrigger className="w-full bg-secondary/50">
-                      <SelectValue placeholder="Select timezone" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {timezoneOptions.map((option) => (
                         <SelectItem key={option.value} value={option.value}>
                           {option.label}
                         </SelectItem>

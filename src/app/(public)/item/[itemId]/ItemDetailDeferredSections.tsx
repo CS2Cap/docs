@@ -3,13 +3,13 @@ import { ItemPriceHistoryChart } from "@/components/ItemPriceHistoryChart";
 import { ProviderIdentity } from "@/components/ProviderIdentity";
 import {
   formatCompact,
-  formatPriceMinor,
   getProvider,
   getSiblingVariants,
   getVariantKindLabel,
   getVariantWearLabel,
   providerLabel,
 } from "@/lib/api";
+import { Price } from "@/components/Price";
 import { serverApi } from "@/lib/api/server";
 import { buildQuery } from "@/lib/api/shared";
 import type {
@@ -54,54 +54,16 @@ function buildPriceCandleSeries(priceCandles: PriceCandlesPage | null) {
 }
 
 async function getLongRangePriceCandles(itemId: number) {
-  const rows: PriceCandlesPage["data"] = [];
-  let cursor: string | null = null;
-  let meta: PriceCandlesPage["meta"] | null = null;
-  let pagesFetched = 0;
+  // The candles endpoint now returns the full requested history in a single
+  // response — no pagination/cursor handling required.
+  const params = new URLSearchParams({
+    item_id: String(itemId),
+    lookback: "365d",
+    interval: "1d",
+    fill: "true",
+  });
 
-  do {
-    // 365d @ 1d interval = ~365 candles; fetch them in one hop instead of
-    // paginating 4× serially. Backend caps this endpoint at 1000; the loop
-    // below still handles lower tier caps if present.
-    const params = new URLSearchParams({
-      item_id: String(itemId),
-      lookback: "365d",
-      interval: "1d",
-      fill: "true",
-      limit: "400",
-    });
-
-    if (cursor) {
-      params.set("cursor", cursor);
-    }
-
-    const page = await serverApi.getPriceCandles(`/v1/web/prices/candles?${params.toString()}`, 120);
-
-    if (!page) {
-      break;
-    }
-
-    meta = page.meta;
-    rows.push(...page.data);
-    cursor = page.pagination.has_next ? page.pagination.next_cursor ?? null : null;
-    pagesFetched += 1;
-  } while (cursor && pagesFetched < 4 && rows.length < 370);
-
-  if (!meta) {
-    return null;
-  }
-
-  return {
-    meta,
-    data: rows,
-    pagination: {
-      limit: rows.length,
-      offset: 0,
-      total: rows.length,
-      has_next: false,
-      has_prev: false,
-    },
-  } satisfies PriceCandlesPage;
+  return serverApi.getPriceCandles(`/v1/web/prices/candles?${params.toString()}`, 120);
 }
 
 function getBestBatchQuote(batchItem?: BatchPriceItem | null) {
@@ -227,7 +189,7 @@ export async function ItemConditionVariants({
                   }`}
                 >
                   <span>{getVariantWearLabel(variant.item)}</span>
-                  <span className="font-bold">{formatPriceMinor(variant.bestAsk)}</span>
+                  <span className="font-bold"><Price cents={variant.bestAsk} /></span>
                 </Link>
               ) : null,
             )}
@@ -395,7 +357,7 @@ export async function ItemRecentSalesSection({
               />
             </div>
             <div className="font-mono text-xs font-bold text-foreground md:text-right">
-              {formatPriceMinor(sale.price)}
+              <Price cents={sale.price} />
             </div>
             <div className="font-mono text-xs text-muted-foreground md:text-right">
               {sale.float != null ? `Float ${sale.float.toFixed(4)}` : "No float"}
@@ -502,7 +464,7 @@ export async function ItemRelatedItemsSection({ item }: { item: ItemOut }) {
               <div className="mt-3 flex items-center justify-between">
                 <span className="font-mono text-[10px] tracking-widest text-primary">BEST ASK</span>
                 <span className="font-mono text-xs font-bold text-foreground">
-                  {formatPriceMinor(related.bestAsk)}
+                  <Price cents={related.bestAsk} />
                 </span>
               </div>
             </Link>

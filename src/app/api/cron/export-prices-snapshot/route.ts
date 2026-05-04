@@ -14,6 +14,7 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 export async function GET(request: NextRequest) {
+  const startedAt = Date.now();
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
     console.error("[export-prices-snapshot] CRON_SECRET not configured");
@@ -51,7 +52,11 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     const detail = error instanceof Error ? error.message : "unknown error";
-    console.error("[export-prices-snapshot] upstream fetch failed:", detail);
+    console.error(JSON.stringify({
+      event: "cron.export_prices_snapshot.upstream_fetch_failed",
+      duration_ms: Date.now() - startedAt,
+      error: detail,
+    }));
     return NextResponse.json(
       { code: "UPSTREAM_FETCH_FAILED", detail },
       { status: 502 },
@@ -60,10 +65,12 @@ export async function GET(request: NextRequest) {
 
   if (!upstreamResponse.ok) {
     const body = await upstreamResponse.text().catch(() => "");
-    console.error(
-      `[export-prices-snapshot] upstream returned ${upstreamResponse.status}:`,
-      body.slice(0, 500),
-    );
+    console.error(JSON.stringify({
+      event: "cron.export_prices_snapshot.upstream_error",
+      upstream_status: upstreamResponse.status,
+      duration_ms: Date.now() - startedAt,
+      detail: body.slice(0, 500),
+    }));
     return NextResponse.json(
       {
         code: "UPSTREAM_ERROR",
@@ -79,6 +86,11 @@ export async function GET(request: NextRequest) {
 
   const rawBuffer = Buffer.from(await upstreamResponse.arrayBuffer());
   if (rawBuffer.length === 0) {
+    console.warn(JSON.stringify({
+      event: "cron.export_prices_snapshot.empty_snapshot",
+      upstream_status: upstreamResponse.status,
+      duration_ms: Date.now() - startedAt,
+    }));
     return NextResponse.json({ code: "EMPTY_SNAPSHOT" }, { status: 502 });
   }
 
@@ -91,6 +103,15 @@ export async function GET(request: NextRequest) {
       addRandomSuffix: false,
       allowOverwrite: true,
     });
+    console.log(JSON.stringify({
+      event: "cron.export_prices_snapshot.completed",
+      upstream_status: upstreamResponse.status,
+      duration_ms: Date.now() - startedAt,
+      snapshot_timestamp: snapshotTimestamp,
+      snapshot_total: snapshotTotal != null ? Number(snapshotTotal) : null,
+      raw_bytes: rawBuffer.length,
+      compressed_bytes: compressed.length,
+    }));
 
     return NextResponse.json({
       timestamp: new Date().toISOString(),
@@ -107,7 +128,12 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     const detail = error instanceof Error ? error.message : "unknown error";
-    console.error("[export-prices-snapshot] blob write failed:", detail);
+    console.error(JSON.stringify({
+      event: "cron.export_prices_snapshot.blob_write_failed",
+      upstream_status: upstreamResponse.status,
+      duration_ms: Date.now() - startedAt,
+      error: detail,
+    }));
     return NextResponse.json(
       { code: "BLOB_WRITE_FAILED", detail },
       { status: 500 },

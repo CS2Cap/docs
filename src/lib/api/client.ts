@@ -30,6 +30,8 @@ import type {
   DeleteAccountResponse,
   EmailChangeRequest,
   EmailSetRequest,
+  InventoryValueRequest,
+  InventoryValueToolResponse,
   ItemOut,
   ItemsMetadataResponse,
   ItemsResponse,
@@ -118,6 +120,22 @@ export const webApi = {
     return request(`/v1/web/auth/providers/${provider}`, { method: "DELETE" });
   },
 
+  // Public Inventory Value tool — talks to the app-owned route, NOT to /api/cs2c.
+  // The route injects CS2CAP_PUBLIC_TOOL_API_KEY server-side so the upstream
+  // endpoints (/v1/inventory/steam/lookup and /v1/portfolio/value) are never
+  // exposed to the browser.
+  async valueSteamInventory(
+    body: InventoryValueRequest,
+  ): Promise<InventoryValueToolResponse> {
+    const response = await fetch("/api/inventory-value", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    return parseApiResponse<InventoryValueToolResponse>(response);
+  },
+
   getItems(
     params: {
       q?: string;
@@ -201,8 +219,6 @@ export const webApi = {
     interval?: "5m" | "1h" | "1d";
     fill?: boolean;
     currency?: string;
-    limit?: number;
-    cursor?: string;
   }): Promise<PriceCandlesPage> {
     return request(`/v1/web/prices/candles${buildQuery(params)}`);
   },
@@ -252,10 +268,6 @@ export const webApi = {
 
   reissueAPIKey(): Promise<APIKeyReissueResponse> {
     return request("/v1/web/account/key/reissue", { method: "POST" });
-  },
-
-  resetAPIKeyIP(): Promise<unknown> {
-    return request("/v1/web/account/key/reset-ip", { method: "POST" });
   },
 
   getWatchlist(params: { limit?: number; offset?: number; search?: string } = {}): Promise<WatchlistResponse> {

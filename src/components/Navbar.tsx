@@ -18,6 +18,7 @@ import {
 
 const navItems = [
   { label: "SEARCH", href: "/search" },
+  { label: "INVENTORY", href: "/inventory-value" },
   { label: "API", href: "/api-info" },
   { label: "DASHBOARD", href: "/dashboard" },
   { label: "DOCS", href: "https://docs.cs2cap.com/", external: true },

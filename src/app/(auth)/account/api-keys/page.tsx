@@ -14,7 +14,6 @@ import {
   AlertCircle,
   RefreshCw,
   CheckCircle,
-  Globe,
   Plus,
   Trash2,
   Pencil,
@@ -28,12 +27,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { useSession, useSubKeys, webApi } from "@/lib/api";
 import { queryKeys } from "@/lib/api/hooks";
 import type { ChildAPIKeyCreateResponse } from "@/lib/api/types";
@@ -75,8 +68,6 @@ export default function AccountApiKeysPage() {
   const [newKey, setNewKey] = useState<ReissueResponse | null>(null);
   const [reissuing, setReissuing] = useState(false);
   const [reissueError, setReissueError] = useState<string | null>(null);
-  const [resettingIp, setResettingIp] = useState(false);
-  const [resetIpMessage, setResetIpMessage] = useState<string | null>(null);
 
   // Sub-key create
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -135,23 +126,7 @@ export default function AccountApiKeysPage() {
     }
   }
 
-  async function handleResetIp() {
-    setResettingIp(true);
-    setResetIpMessage(null);
-    try {
-      await webApi.resetAPIKeyIP();
-      setResetIpMessage("IP rebound. Your next request will set the new bound IP.");
-      await refetchSession();
-    } catch (error: unknown) {
-      setResetIpMessage(
-        error && typeof error === "object" && "message" in error
-          ? String((error as { message: string }).message)
-          : "Failed to rebind IP.",
-      );
-    } finally {
-      setResettingIp(false);
-    }
-  }
+
 
   async function handleCreateSubKey() {
     setCreating(true);
@@ -378,7 +353,7 @@ export default function AccountApiKeysPage() {
                 </Dialog>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-3">
+              <div className="grid gap-4 md:grid-cols-2">
                 <div className="rounded-lg border border-border/50 bg-secondary/20 p-4">
                   <div className="text-sm text-muted-foreground">Monthly Limit</div>
                   <div className="mt-1 text-lg font-semibold text-foreground">
@@ -391,34 +366,6 @@ export default function AccountApiKeysPage() {
                     {(activeKey.effective_rate_requests_per_minute ?? tier_info.rate_requests_per_minute).toLocaleString()}
                   </div>
                 </div>
-                <div className="rounded-lg border border-border/50 bg-secondary/20 p-4">
-                  <div className="text-sm text-muted-foreground">Bound IP</div>
-                  <div className="mt-1 text-lg font-semibold text-foreground">
-                    {activeKey.bound_ip ?? "None"}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-3">
-                <TooltipProvider delayDuration={150}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="outline" onClick={handleResetIp} disabled={resettingIp}>
-                        <Globe className="mr-2 h-4 w-4" />
-                        {resettingIp ? "Rebinding…" : "Rebind to current IP"}
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" className="max-w-xs">
-                      <p>
-                        Clears the bound IP so the next request from your key sets a new one. Limit: 1 / day
-                      </p>
-                      <p className="mt-1 text-muted-foreground">
-                        IP binding only applies on the Free tier — paid tiers can send requests regardless of IP.
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-                {resetIpMessage && <p className="text-sm text-muted-foreground">{resetIpMessage}</p>}
               </div>
             </div>
           </CardContent>

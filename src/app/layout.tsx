@@ -3,15 +3,43 @@ import Script from "next/script";
 import "./globals.css";
 import { Providers } from "./providers";
 
+const ROOT_DESCRIPTION =
+  "Free CS2 API for live skin prices, buy orders, sales history, candlestick charts, and market analytics across 39+ marketplaces. One REST integration covers every CS2/CSGO item.";
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://cs2cap.com"),
   title: {
-    default: "CS2Cap — CS2 Skin Market Analytics",
+    default: "CS2 API — Free CS2 Skin Market & Pricing Data | CS2Cap",
     template: "%s | CS2Cap",
   },
-  description:
-    "Professional-grade CS2 skin market analytics. Search the live catalog, compare marketplace prices, chart history, and manage watchlists, alerts, billing, and API access.",
-  keywords: ["CS2", "Counter-Strike 2", "skin market", "price tracker", "analytics", "watchlist"],
+  description: ROOT_DESCRIPTION,
+  keywords: [
+    "CS2 API",
+    "CS2 market API",
+    "CS2 skin API",
+    "CS2 prices",
+    "CS2 pricing data",
+    "CS2 analytics",
+    "CS2 items",
+    "CS2 skins",
+    "CSGO API",
+    "free CS2 API",
+    "skin market data",
+    "Counter-Strike 2 API",
+    "Buff163 API",
+  ],
+  openGraph: {
+    title: "CS2 API — Free CS2 Skin Market & Pricing Data | CS2Cap",
+    description: ROOT_DESCRIPTION,
+    url: "https://cs2cap.com",
+    siteName: "CS2Cap",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "CS2 API — Free CS2 Skin Market & Pricing Data | CS2Cap",
+    description: ROOT_DESCRIPTION,
+  },
   icons: {
     icon: [
       {

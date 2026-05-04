@@ -55,6 +55,7 @@ function matchEdgeCachePolicy(pathname: string): EdgeCachePolicy | null {
 }
 
 async function proxyRequest(request: NextRequest, { params }: RouteContext) {
+  const startedAt = Date.now();
   const { path } = await params;
   const pathname = path.join("/");
   const targetUrl = new URL(`${API_BASE_URL}/${path.join("/")}`);
@@ -87,15 +88,32 @@ async function proxyRequest(request: NextRequest, { params }: RouteContext) {
     );
   }
 
-  const upstreamResponse = await fetch(targetUrl, {
-    method: request.method,
-    headers,
-    body: request.method === "GET" || request.method === "HEAD"
-      ? undefined
-      : await request.text(),
-    redirect: "manual",
-    cache: "no-store",
-  });
+  let upstreamResponse: Response;
+  try {
+    upstreamResponse = await fetch(targetUrl, {
+      method: request.method,
+      headers,
+      body: request.method === "GET" || request.method === "HEAD"
+        ? undefined
+        : await request.text(),
+      redirect: "manual",
+      cache: "no-store",
+    });
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : "unknown error";
+    console.warn(JSON.stringify({
+      event: "cs2c_proxy.upstream_fetch_failed",
+      path: pathname,
+      method: request.method,
+      duration_ms: Date.now() - startedAt,
+      vercel_id: request.headers.get("x-vercel-id"),
+      error: detail,
+    }));
+    return NextResponse.json(
+      { code: "UPSTREAM_FETCH_FAILED", detail },
+      { status: 502 },
+    );
+  }
 
   const responseHeaders = new Headers();
 
@@ -125,6 +143,18 @@ async function proxyRequest(request: NextRequest, { params }: RouteContext) {
   }
 
   const responseBody = upstreamResponse.status === 204 ? null : await upstreamResponse.arrayBuffer();
+  console.log(JSON.stringify({
+    event: "cs2c_proxy.upstream_response",
+    path: pathname,
+    method: request.method,
+    status: upstreamResponse.status,
+    duration_ms: Date.now() - startedAt,
+    anonymous: isAnonymous,
+    edge_cache_policy: cachePolicy,
+    upstream_cache_control: upstreamResponse.headers.get("cache-control"),
+    upstream_status: upstreamResponse.headers.get("x-upstream-status"),
+    vercel_id: request.headers.get("x-vercel-id"),
+  }));
   const response = new NextResponse(responseBody, {
     status: upstreamResponse.status,
     headers: responseHeaders,

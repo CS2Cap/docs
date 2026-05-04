@@ -258,21 +258,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -539,7 +539,7 @@
           "Prices"
         ],
         "summary": "Price History",
-        "description": "Return historical price snapshots.\n\nParameters:\n- Filters: `item_id`, `market_hash_name`, `phase`, `provider` (singular string key).\n- Time window: `start`, `end` (ISO 8601).\n- `currency`: Quote currency (default `USD`).\n- `limit`: Items per page.\n- `cursor`: Opaque cursor from `next_cursor` for the next page.\n\nResponse:\n- `items`: Historical snapshots ordered newest first.\n- `meta`: Applied filters and time window.\n- `pagination`: Standardized pagination footer with cursor state.\n\nRequirements:\n- Valid API key with access to `/v1/prices/history`.\n- `start`/`end` must be valid ISO 8601 timestamps.\n- Requested time range must be within the endpoint retention window.\n- `limit` is capped by your tier.",
+        "description": "Return historical price snapshots.\n\nParameters:\n- Filters: `item_id`, `market_hash_name`, `phase`, `provider` (singular string key).\n- Time window: `start`, `end` (ISO 8601). If `start` is omitted, the\n  endpoint defaults to the last 14 days of raw history.\n- `currency`: Quote currency (default `USD`).\n- `limit`: Items per page.\n- `cursor`: Opaque cursor from `next_cursor` for the next page.\n\nResponse:\n- `items`: Historical snapshots ordered newest first.\n- `meta`: Applied filters and time window.\n- `pagination`: Standardized pagination footer with cursor state.\n\nRequirements:\n- Valid API key with access to `/v1/prices/history`.\n- `start`/`end` must be valid ISO 8601 timestamps.\n- Requested time range must be within the endpoint retention window.\n- `limit` is capped by your tier.",
         "operationId": "priceHistory",
         "security": [
           {
@@ -825,21 +825,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -916,7 +916,7 @@
           "Prices"
         ],
         "summary": "Price Candles",
-        "description": "Return composite OHLCV candle data for a single item across all providers.\n\nParameters:\n- Item filter: `item_id` or `market_hash_name` (one is required).\n- Optional filter: `phase`.\n- Time window: `start`/`end` (ISO 8601) or `lookback` (for example `7d` or `7`).\n- `interval`: `5m`, `1h`, or `1d`.\n- `fill`: Include empty buckets with carry-forward prices when `true`.\n- `currency`: Quote currency (default `USD`).\n- `limit`, `cursor`: Cursor-based pagination controls.\n\nNotes:\n- If both `start` and `lookback` are sent, `lookback` takes precedence.\n- Maximum lookback depends on `interval`:\n  `5m` up to 7 days, `1h` up to 30 days, `1d` up to 365 days.\n\nResponse:\n- `meta`: Item, provider scope, interval, phase, currency, start/end timestamps.\n- `data`: Candle buckets in oldest-to-newest order\n  (`t`, `o`, `h`, `l`, `c`, `v`, `q`, `providers`).\n  `o`/`c` are unweighted averages across provider snapshots, `l` is the minimum provider\n  low, `h` is capped at `median(provider_highs) * 1.5`, `v` is the non-negative depletion\n  flow between buckets, and `q` is the summed close-side inventory at bucket end when\n  available. `providers.l` and `providers.h` identify the provider keys contributing the\n  returned low/high values. For `1d` requests starting more than 30 days back, `v` falls\n  back to legacy depletion-derived `volume_qty` and `q` is `null`.\n- `pagination`: Standardized pagination footer with cursor state.\n\nRequirements:\n- Valid API key with access to `/v1/prices/candles`.\n- `item_id` or `market_hash_name` is required.\n- `start`/`end` must be valid ISO 8601 timestamps.\n- `limit` is capped by your tier.",
+        "description": "Return composite OHLCV candle data for a single item across all providers.\n\nParameters:\n- Item filter: `item_id` or `market_hash_name` (one is required).\n- Optional filter: `phase`.\n- Time window: `start`/`end` (ISO 8601) or `lookback` (for example `7d` or `7`).\n- `interval`: `5m`, `1h`, or `1d`.\n- `fill`: Include empty buckets with carry-forward prices when `true`.\n- `currency`: Quote currency (default `USD`).\n\nNotes:\n- If both `start` and `lookback` are sent, `lookback` takes precedence.\n- Maximum lookback depends on `interval`:\n  `5m` up to 7 days, `1h` up to 30 days, `1d` up to 365 days.\n- Free tiers are additionally capped by their tier restrictions and default\n  to the maximum allowed window when no explicit lookback is supplied.\n\nResponse:\n- `meta`: Item, provider scope, interval, phase, currency, start/end timestamps.\n- `data`: Candle buckets in oldest-to-newest order\n  (`t`, `o`, `h`, `l`, `c`, `v`, `q`, `providers`).\n  `o`/`c` are the lowest effective provider prices, `l` is the minimum provider\n  low, `h` is capped at `median(provider_highs) * 1.5`, `v` is the non-negative depletion\n  flow between buckets, and `q` is the summed close-side inventory at bucket end when\n  available. `providers.o`, `providers.h`, `providers.l`, and `providers.c` identify the\n  provider keys contributing the returned open/high/low/close values. For `1d` requests\n  starting more than 30 days back, `v` falls back to legacy depletion-derived `volume_qty`\n  and `q` is `null`.\n\nRequirements:\n- Valid API key with access to `/v1/prices/candles`.\n- `item_id` or `market_hash_name` is required.\n- `start`/`end` must be valid ISO 8601 timestamps.",
         "operationId": "priceCandles",
         "security": [
           {
@@ -1029,10 +1029,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Lookback window in days. Use `7d` or plain `7`; both mean 7 days and set start=now-lookback.",
+              "description": "Lookback window in days. Use `7d` or plain `7`; both mean 7 days and set start=now-lookback. Free tiers cap this at 30 days.",
               "title": "Lookback"
             },
-            "description": "Lookback window in days. Use `7d` or plain `7`; both mean 7 days and set start=now-lookback.",
+            "description": "Lookback window in days. Use `7d` or plain `7`; both mean 7 days and set start=now-lookback. Free tiers cap this at 30 days.",
             "examples": {
               "stringDays": {
                 "summary": "String shorthand",
@@ -1050,16 +1050,16 @@
             "required": false,
             "schema": {
               "type": "string",
-              "description": "Time bucket interval",
+              "description": "Time bucket interval (default: `1d`)",
               "enum": [
                 "1d",
                 "1h",
                 "5m"
               ],
-              "default": "1h",
+              "default": "1d",
               "title": "Interval"
             },
-            "description": "Time bucket interval"
+            "description": "Time bucket interval (default: `1d`)"
           },
           {
             "name": "fill",
@@ -1084,43 +1084,6 @@
               "title": "Currency"
             },
             "description": "Target currency. Any ISO 4217 code supported by `/v1/fx` (see `/v1/fx` for the full list). Invalid codes return a 422 validation error."
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "integer",
-                  "minimum": 1
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Maximum number of candles to return. Defaults to the effective tier cap.",
-              "title": "Limit"
-            },
-            "description": "Maximum number of candles to return. Defaults to the effective tier cap."
-          },
-          {
-            "name": "cursor",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Opaque pagination cursor from previous response",
-              "title": "Cursor"
-            },
-            "description": "Opaque pagination cursor from previous response"
           }
         ],
         "responses": {
@@ -1137,7 +1100,7 @@
                     "market_hash_name": "AK-47 | Redline (Field-Tested)",
                     "provider": "All Providers",
                     "currency": "USD",
-                    "interval": "1h",
+                    "interval": "1d",
                     "start": "2026-01-20T00:00:00Z",
                     "end": "2026-01-21T00:00:00Z"
                   },
@@ -1168,12 +1131,7 @@
                         "l": "steam"
                       }
                     }
-                  ],
-                  "pagination": {
-                    "limit": 100,
-                    "has_next": false,
-                    "has_prev": false
-                  }
+                  ]
                 }
               }
             }
@@ -1246,21 +1204,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -1333,10 +1291,16 @@
                       "detail": "end must be after start"
                     }
                   },
-                  "invalidCursor": {
-                    "summary": "Invalid cursor",
+                  "removedCursor": {
+                    "summary": "Removed cursor parameter",
                     "value": {
-                      "detail": "invalid cursor format"
+                      "detail": "cursor parameter has been removed; /v1/prices/candles no longer supports pagination"
+                    }
+                  },
+                  "removedLimit": {
+                    "summary": "Removed limit parameter",
+                    "value": {
+                      "detail": "limit parameter has been removed; /v1/prices/candles no longer supports pagination"
                     }
                   },
                   "legacyProvider": {
@@ -1457,21 +1421,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -1790,21 +1754,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -2180,21 +2144,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -2461,21 +2425,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -2650,21 +2614,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -3428,21 +3392,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -3469,6 +3433,150 @@
             }
           }
         }
+      },
+      "post": {
+        "tags": [
+          "Items"
+        ],
+        "summary": "Resolve Item IDs By Market Hash Name",
+        "description": "Internal catalog lookup for resolving up to 1,000 Steam market hash names to canonical `item_id` values from the cached catalog.",
+        "operationId": "resolveItemIdsByMarketHashName",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ItemIdLookupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemIdLookupResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "detail": "Missing Authorization header"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted to access this resource.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "FORBIDDEN",
+                  "detail": "Account is disabled"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (burst or monthly quota).",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "burstRateLimit": {
+                    "summary": "Per-window rate limit exceeded",
+                    "value": {
+                      "code": "RATE_LIMIT_EXCEEDED",
+                      "detail": "Too Many Requests"
+                    }
+                  },
+                  "monthlyQuotaExceeded": {
+                    "summary": "Monthly quota exhausted",
+                    "value": {
+                      "code": "RATE_LIMIT_MONTHLY_QUOTA_EXCEEDED",
+                      "detail": "Monthly quota exceeded (500000/500000 requests)."
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying when present.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "X-RateLimit-Tier": {
+                "description": "Authenticated caller tier code.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Request limit for the rate-limit window that was exceeded.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Seconds until the rate-limit window resets.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed. The detail list contains field-specific validation errors.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Tier": {
+                "description": "Authenticated caller tier code when available.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "x-internal": true
       }
     },
     "/v1/items/metadata": {
@@ -3535,21 +3643,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -3712,21 +3820,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -3871,21 +3979,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -4089,21 +4197,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -4252,21 +4360,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -4359,21 +4467,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -4494,21 +4602,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -4637,21 +4745,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -4772,21 +4880,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -4947,21 +5055,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -5092,21 +5200,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -5199,21 +5307,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -5344,21 +5452,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -5487,21 +5595,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -5622,21 +5730,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -5757,21 +5865,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -5829,141 +5937,6 @@
                 },
                 "example": {
                   "detail": "User not found"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ]
-      }
-    },
-    "/v1/account/key/reset-ip": {
-      "post": {
-        "tags": [
-          "Account / API Keys"
-        ],
-        "summary": "Reset Free Tier Ip Binding",
-        "description": "Rebind the active key to the caller IP for free tier with cooldown protection.",
-        "operationId": "resetFreeTierIpBinding",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/IPResetResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Missing or invalid authentication credentials.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "code": "UNAUTHORIZED",
-                  "detail": "Missing Authorization header"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Authenticated but not permitted to access this resource.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "code": "FORBIDDEN",
-                  "detail": "Account is disabled"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "Rate limit exceeded (burst or monthly quota).",
-            "headers": {
-              "Retry-After": {
-                "description": "Seconds to wait before retrying when present.",
-                "schema": {
-                  "type": "integer",
-                  "minimum": 1
-                }
-              },
-              "X-RateLimit-Tier": {
-                "description": "Authenticated caller tier code.",
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
-                "schema": {
-                  "type": "integer",
-                  "minimum": 0.0
-                }
-              },
-              "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
-                "schema": {
-                  "type": "integer",
-                  "minimum": 0.0
-                }
-              },
-              "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
-                "schema": {
-                  "type": "integer",
-                  "minimum": 0.0
-                }
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "examples": {
-                  "burstRateLimit": {
-                    "summary": "Per-window rate limit exceeded",
-                    "value": {
-                      "code": "RATE_LIMIT_EXCEEDED",
-                      "detail": "Too Many Requests"
-                    }
-                  },
-                  "monthlyQuotaExceeded": {
-                    "summary": "Monthly quota exhausted",
-                    "value": {
-                      "code": "RATE_LIMIT_MONTHLY_QUOTA_EXCEEDED",
-                      "detail": "Monthly quota exceeded (500000/500000 requests)."
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Request validation failed. The detail list contains field-specific validation errors.",
-            "headers": {
-              "X-RateLimit-Tier": {
-                "description": "Authenticated caller tier code when available.",
-                "schema": {
-                  "type": "string"
-                }
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ValidationErrorResponse"
                 }
               }
             }
@@ -6094,21 +6067,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -6237,21 +6210,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -6386,21 +6359,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -6543,21 +6516,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -6692,21 +6665,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -6841,21 +6814,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -7020,21 +6993,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -7163,21 +7136,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -7309,21 +7282,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -7488,21 +7461,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -7631,21 +7604,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -7766,21 +7739,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -7971,21 +7944,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -8116,21 +8089,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -8278,21 +8251,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -8385,21 +8358,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -8528,21 +8501,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -8718,21 +8691,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -8865,21 +8838,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -9022,21 +8995,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -9167,21 +9140,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -9314,21 +9287,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -9431,21 +9404,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -9576,21 +9549,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -9711,21 +9684,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -9856,21 +9829,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -9991,21 +9964,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -10126,21 +10099,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -10261,21 +10234,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -10607,21 +10580,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -10711,9 +10684,9 @@
                           "sales_30d": 2096,
                           "steam_sales_7d": 34,
                           "steam_sales_30d": 587,
-                          "listing_score": 25,
-                          "gap_score": 25,
-                          "volume_score": 28,
+                          "listing_score": 12,
+                          "gap_score": 7,
+                          "volume_score": 24,
                           "liquidity_last_updated": "2026-01-20T12:06:10Z"
                         }
                       },
@@ -10741,9 +10714,9 @@
                           "sales_30d": 301,
                           "steam_sales_7d": 16,
                           "steam_sales_30d": 73,
-                          "listing_score": 18,
-                          "gap_score": 20,
-                          "volume_score": 26,
+                          "listing_score": 9,
+                          "gap_score": 5,
+                          "volume_score": 18,
                           "liquidity_last_updated": "2026-01-20T12:06:02Z"
                         }
                       }
@@ -10798,21 +10771,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -10946,9 +10919,9 @@
                       "sales_30d": 2096,
                       "steam_sales_7d": 34,
                       "steam_sales_30d": 587,
-                      "listing_score": 25,
-                      "gap_score": 25,
-                      "volume_score": 28,
+                      "listing_score": 12,
+                      "gap_score": 7,
+                      "volume_score": 24,
                       "liquidity_last_updated": "2026-01-20T12:06:10Z"
                     },
                     "providers": [
@@ -11060,21 +11033,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -11116,14 +11089,14 @@
         }
       }
     },
-    "/v1/market/indices": {
+    "/v1/market/indexes": {
       "get": {
         "tags": [
           "Market Intelligence"
         ],
-        "summary": "Get Market Cap Indices",
-        "description": "Aggregate the cached 24h market snapshot into category-level indices.\n\nSupports grouping by `item_type` or `weapon_type`.\nItems are excluded from market cap totals when bid/ask/marketcap data is incomplete or spread exceeds the internal spread threshold.\n\nResponse:\n- no pagination\n- groups sorted by `marketcap_usd desc`\n- totals computed from the same filtered item set\n\nTier: Quant-only.",
-        "operationId": "getMarketCapIndices",
+        "summary": "Get Market Cap Indexes",
+        "description": "Aggregate the cached 24h market snapshot into category-level indexes.\n\nSupports grouping by `item_type` or `weapon_type`.\nItems are excluded from market cap totals when bid/ask/marketcap data is incomplete or spread exceeds the internal spread threshold.\n\nResponse:\n- no pagination\n- groups sorted by `marketcap_usd desc`\n- totals computed from the same filtered item set\n\nTier: Quant-only.",
+        "operationId": "getMarketCapIndexes",
         "security": [
           {
             "BearerAuth": []
@@ -11153,7 +11126,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MarketIndicesResponse"
+                  "$ref": "#/components/schemas/MarketIndexesResponse"
                 },
                 "example": {
                   "meta": {
@@ -11256,21 +11229,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -11555,21 +11528,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -11660,21 +11633,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -11846,21 +11819,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -12016,21 +11989,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -12157,21 +12130,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -12296,21 +12269,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -12474,21 +12447,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -12637,21 +12610,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -12808,21 +12781,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -12973,21 +12946,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -13143,21 +13116,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -13333,21 +13306,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -13616,21 +13589,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -13793,21 +13766,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -13962,21 +13935,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -14139,21 +14112,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -14297,21 +14270,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -14465,21 +14438,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -14632,21 +14605,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -15620,21 +15593,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -15727,21 +15700,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -15896,21 +15869,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -16051,21 +16024,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -16345,21 +16318,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -16407,7 +16380,7 @@
           "Prices"
         ],
         "summary": "Web Price History V1 Web Prices History",
-        "description": "Return historical price snapshots.\n\nParameters:\n- Filters: `item_id`, `market_hash_name`, `phase`, `provider` (singular string key).\n- Time window: `start`, `end` (ISO 8601).\n- `currency`: Quote currency (default `USD`).\n- `limit`: Items per page.\n- `cursor`: Opaque cursor from `next_cursor` for the next page.\n\nResponse:\n- `items`: Historical snapshots ordered newest first.\n- `meta`: Applied filters and time window.\n- `pagination`: Standardized pagination footer with cursor state.\n\nRequirements:\n- Valid API key with access to `/v1/prices/history`.\n- `start`/`end` must be valid ISO 8601 timestamps.\n- Requested time range must be within the endpoint retention window.\n- `limit` is capped by your tier.",
+        "description": "Return historical price snapshots.\n\nParameters:\n- Filters: `item_id`, `market_hash_name`, `phase`, `provider` (singular string key).\n- Time window: `start`, `end` (ISO 8601). If `start` is omitted, the\n  endpoint defaults to the last 14 days of raw history.\n- `currency`: Quote currency (default `USD`).\n- `limit`: Items per page.\n- `cursor`: Opaque cursor from `next_cursor` for the next page.\n\nResponse:\n- `items`: Historical snapshots ordered newest first.\n- `meta`: Applied filters and time window.\n- `pagination`: Standardized pagination footer with cursor state.\n\nRequirements:\n- Valid API key with access to `/v1/prices/history`.\n- `start`/`end` must be valid ISO 8601 timestamps.\n- Requested time range must be within the endpoint retention window.\n- `limit` is capped by your tier.",
         "operationId": "webPriceHistory",
         "security": [],
         "parameters": [
@@ -16691,21 +16664,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -16782,7 +16755,7 @@
           "Prices"
         ],
         "summary": "Web Price Candles V1 Web Prices Candles",
-        "description": "Return composite OHLCV candle data for a single item across all providers.\n\nParameters:\n- Item filter: `item_id` or `market_hash_name` (one is required).\n- Optional filter: `phase`.\n- Time window: `start`/`end` (ISO 8601) or `lookback` (for example `7d` or `7`).\n- `interval`: `5m`, `1h`, or `1d`.\n- `fill`: Include empty buckets with carry-forward prices when `true`.\n- `currency`: Quote currency (default `USD`).\n- `limit`, `cursor`: Cursor-based pagination controls.\n\nNotes:\n- If both `start` and `lookback` are sent, `lookback` takes precedence.\n- Maximum lookback depends on `interval`:\n  `5m` up to 7 days, `1h` up to 30 days, `1d` up to 365 days.\n\nResponse:\n- `meta`: Item, provider scope, interval, phase, currency, start/end timestamps.\n- `data`: Candle buckets in oldest-to-newest order\n  (`t`, `o`, `h`, `l`, `c`, `v`, `q`, `providers`).\n  `o`/`c` are unweighted averages across provider snapshots, `l` is the minimum provider\n  low, `h` is capped at `median(provider_highs) * 1.5`, `v` is the non-negative depletion\n  flow between buckets, and `q` is the summed close-side inventory at bucket end when\n  available. `providers.l` and `providers.h` identify the provider keys contributing the\n  returned low/high values. For `1d` requests starting more than 30 days back, `v` falls\n  back to legacy depletion-derived `volume_qty` and `q` is `null`.\n- `pagination`: Standardized pagination footer with cursor state.\n\nRequirements:\n- Valid API key with access to `/v1/prices/candles`.\n- `item_id` or `market_hash_name` is required.\n- `start`/`end` must be valid ISO 8601 timestamps.\n- `limit` is capped by your tier.",
+        "description": "Return composite OHLCV candle data for a single item across all providers.\n\nParameters:\n- Item filter: `item_id` or `market_hash_name` (one is required).\n- Optional filter: `phase`.\n- Time window: `start`/`end` (ISO 8601) or `lookback` (for example `7d` or `7`).\n- `interval`: `5m`, `1h`, or `1d`.\n- `fill`: Include empty buckets with carry-forward prices when `true`.\n- `currency`: Quote currency (default `USD`).\n\nNotes:\n- If both `start` and `lookback` are sent, `lookback` takes precedence.\n- Maximum lookback depends on `interval`:\n  `5m` up to 7 days, `1h` up to 30 days, `1d` up to 365 days.\n- Free tiers are additionally capped by their tier restrictions and default\n  to the maximum allowed window when no explicit lookback is supplied.\n\nResponse:\n- `meta`: Item, provider scope, interval, phase, currency, start/end timestamps.\n- `data`: Candle buckets in oldest-to-newest order\n  (`t`, `o`, `h`, `l`, `c`, `v`, `q`, `providers`).\n  `o`/`c` are the lowest effective provider prices, `l` is the minimum provider\n  low, `h` is capped at `median(provider_highs) * 1.5`, `v` is the non-negative depletion\n  flow between buckets, and `q` is the summed close-side inventory at bucket end when\n  available. `providers.o`, `providers.h`, `providers.l`, and `providers.c` identify the\n  provider keys contributing the returned open/high/low/close values. For `1d` requests\n  starting more than 30 days back, `v` falls back to legacy depletion-derived `volume_qty`\n  and `q` is `null`.\n\nRequirements:\n- Valid API key with access to `/v1/prices/candles`.\n- `item_id` or `market_hash_name` is required.\n- `start`/`end` must be valid ISO 8601 timestamps.",
         "operationId": "webPriceCandles",
         "security": [],
         "parameters": [
@@ -16891,10 +16864,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Lookback window in days. Use `7d` or plain `7`; both mean 7 days and set start=now-lookback.",
+              "description": "Lookback window in days. Use `7d` or plain `7`; both mean 7 days and set start=now-lookback. Free tiers cap this at 30 days.",
               "title": "Lookback"
             },
-            "description": "Lookback window in days. Use `7d` or plain `7`; both mean 7 days and set start=now-lookback.",
+            "description": "Lookback window in days. Use `7d` or plain `7`; both mean 7 days and set start=now-lookback. Free tiers cap this at 30 days.",
             "examples": {
               "stringDays": {
                 "summary": "String shorthand",
@@ -16912,16 +16885,16 @@
             "required": false,
             "schema": {
               "type": "string",
-              "description": "Time bucket interval",
+              "description": "Time bucket interval (default: `1d`)",
               "enum": [
                 "1d",
                 "1h",
                 "5m"
               ],
-              "default": "1h",
+              "default": "1d",
               "title": "Interval"
             },
-            "description": "Time bucket interval"
+            "description": "Time bucket interval (default: `1d`)"
           },
           {
             "name": "fill",
@@ -16946,43 +16919,6 @@
               "title": "Currency"
             },
             "description": "Target currency. Any ISO 4217 code supported by `/v1/fx` (see `/v1/fx` for the full list). Invalid codes return a 422 validation error."
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "integer",
-                  "minimum": 1
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Maximum number of candles to return. Defaults to the effective tier cap.",
-              "title": "Limit"
-            },
-            "description": "Maximum number of candles to return. Defaults to the effective tier cap."
-          },
-          {
-            "name": "cursor",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Opaque pagination cursor from previous response",
-              "title": "Cursor"
-            },
-            "description": "Opaque pagination cursor from previous response"
           }
         ],
         "responses": {
@@ -16999,7 +16935,7 @@
                     "market_hash_name": "AK-47 | Redline (Field-Tested)",
                     "provider": "All Providers",
                     "currency": "USD",
-                    "interval": "1h",
+                    "interval": "1d",
                     "start": "2026-01-20T00:00:00Z",
                     "end": "2026-01-21T00:00:00Z"
                   },
@@ -17030,14 +16966,7 @@
                         "l": "steam"
                       }
                     }
-                  ],
-                  "pagination": {
-                    "limit": 100,
-                    "offset": 0,
-                    "total": -1,
-                    "has_next": false,
-                    "has_prev": false
-                  }
+                  ]
                 }
               }
             }
@@ -17110,21 +17039,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -17197,10 +17126,16 @@
                       "detail": "end must be after start"
                     }
                   },
-                  "invalidCursor": {
-                    "summary": "Invalid cursor",
+                  "removedCursor": {
+                    "summary": "Removed cursor parameter",
                     "value": {
-                      "detail": "invalid cursor format"
+                      "detail": "cursor parameter has been removed; /v1/prices/candles no longer supports pagination"
+                    }
+                  },
+                  "removedLimit": {
+                    "summary": "Removed limit parameter",
+                    "value": {
+                      "detail": "limit parameter has been removed; /v1/prices/candles no longer supports pagination"
                     }
                   },
                   "legacyProvider": {
@@ -17321,21 +17256,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -17462,21 +17397,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -17777,21 +17712,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -18042,21 +17977,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -18332,21 +18267,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -18436,9 +18371,9 @@
                           "sales_30d": 2096,
                           "steam_sales_7d": 34,
                           "steam_sales_30d": 587,
-                          "listing_score": 25,
-                          "gap_score": 25,
-                          "volume_score": 28,
+                          "listing_score": 12,
+                          "gap_score": 7,
+                          "volume_score": 24,
                           "liquidity_last_updated": "2026-01-20T12:06:10Z"
                         }
                       },
@@ -18466,9 +18401,9 @@
                           "sales_30d": 301,
                           "steam_sales_7d": 16,
                           "steam_sales_30d": 73,
-                          "listing_score": 18,
-                          "gap_score": 20,
-                          "volume_score": 26,
+                          "listing_score": 9,
+                          "gap_score": 5,
+                          "volume_score": 18,
                           "liquidity_last_updated": "2026-01-20T12:06:02Z"
                         }
                       }
@@ -18523,21 +18458,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -18600,14 +18535,14 @@
         "security": []
       }
     },
-    "/v1/web/market/indices": {
+    "/v1/web/market/indexes": {
       "get": {
         "tags": [
           "Market Intelligence"
         ],
-        "summary": "Get Market Cap Indices",
-        "description": "Aggregate the cached 24h market snapshot into category-level indices.\n\nSupports grouping by `item_type` or `weapon_type`.\nItems are excluded from market cap totals when bid/ask/marketcap data is incomplete or spread exceeds the internal spread threshold.\n\nResponse:\n- no pagination\n- groups sorted by `marketcap_usd desc`\n- totals computed from the same filtered item set\n\nTier: Quant-only.",
-        "operationId": "webGetMarketCapIndices",
+        "summary": "Get Market Cap Indexes",
+        "description": "Aggregate the cached 24h market snapshot into category-level indexes.\n\nSupports grouping by `item_type` or `weapon_type`.\nItems are excluded from market cap totals when bid/ask/marketcap data is incomplete or spread exceeds the internal spread threshold.\n\nResponse:\n- no pagination\n- groups sorted by `marketcap_usd desc`\n- totals computed from the same filtered item set\n\nTier: Quant-only.",
+        "operationId": "webGetMarketCapIndexes",
         "security": [],
         "parameters": [
           {
@@ -18633,7 +18568,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MarketIndicesResponse"
+                  "$ref": "#/components/schemas/MarketIndexesResponse"
                 },
                 "example": {
                   "meta": {
@@ -18736,21 +18671,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -18852,9 +18787,9 @@
                       "sales_30d": 2096,
                       "steam_sales_7d": 34,
                       "steam_sales_30d": 587,
-                      "listing_score": 25,
-                      "gap_score": 25,
-                      "volume_score": 28,
+                      "listing_score": 12,
+                      "gap_score": 7,
+                      "volume_score": 24,
                       "liquidity_last_updated": "2026-01-20T12:06:10Z"
                     },
                     "providers": [
@@ -18966,21 +18901,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -19264,21 +19199,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -19370,21 +19305,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -19518,21 +19453,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -19653,21 +19588,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -19725,141 +19660,6 @@
                 },
                 "example": {
                   "detail": "User not found"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "WebSessionCookie": []
-          }
-        ]
-      }
-    },
-    "/v1/web/account/key/reset-ip": {
-      "post": {
-        "tags": [
-          "Account / API Keys"
-        ],
-        "summary": "Web Reset Free Tier Ip Binding V1 Web Account Key Reset-Ip",
-        "description": "Rebind the active key to the caller IP for free tier with cooldown protection.",
-        "operationId": "webResetFreeTierIpBinding",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/IPResetResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Missing or invalid authentication credentials.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "code": "UNAUTHORIZED",
-                  "detail": "Missing Authorization header"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Authenticated but not permitted to access this resource.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "code": "FORBIDDEN",
-                  "detail": "Account is disabled"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "Rate limit exceeded (burst or monthly quota).",
-            "headers": {
-              "Retry-After": {
-                "description": "Seconds to wait before retrying when present.",
-                "schema": {
-                  "type": "integer",
-                  "minimum": 1
-                }
-              },
-              "X-RateLimit-Tier": {
-                "description": "Authenticated caller tier code.",
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
-                "schema": {
-                  "type": "integer",
-                  "minimum": 0.0
-                }
-              },
-              "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
-                "schema": {
-                  "type": "integer",
-                  "minimum": 0.0
-                }
-              },
-              "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
-                "schema": {
-                  "type": "integer",
-                  "minimum": 0.0
-                }
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "examples": {
-                  "burstRateLimit": {
-                    "summary": "Per-window rate limit exceeded",
-                    "value": {
-                      "code": "RATE_LIMIT_EXCEEDED",
-                      "detail": "Too Many Requests"
-                    }
-                  },
-                  "monthlyQuotaExceeded": {
-                    "summary": "Monthly quota exhausted",
-                    "value": {
-                      "code": "RATE_LIMIT_MONTHLY_QUOTA_EXCEEDED",
-                      "detail": "Monthly quota exceeded (500000/500000 requests)."
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Request validation failed. The detail list contains field-specific validation errors.",
-            "headers": {
-              "X-RateLimit-Tier": {
-                "description": "Authenticated caller tier code when available.",
-                "schema": {
-                  "type": "string"
-                }
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ValidationErrorResponse"
                 }
               }
             }
@@ -20008,21 +19808,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -20151,21 +19951,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -20297,21 +20097,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -20476,21 +20276,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -20619,21 +20419,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -20776,21 +20576,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -20921,21 +20721,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -21083,21 +20883,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -21194,21 +20994,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -21366,21 +21166,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -21473,21 +21273,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -21608,21 +21408,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -21743,21 +21543,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -21888,21 +21688,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -22033,21 +21833,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -22168,21 +21968,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -22313,21 +22113,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -22448,21 +22248,21 @@
                 }
               },
               "X-RateLimit-Limit": {
-                "description": "Monthly request quota for this key (returned on quota 429).",
+                "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Remaining": {
-                "description": "Remaining monthly requests (returned on quota 429).",
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
                 }
               },
               "X-RateLimit-Reset": {
-                "description": "Seconds until monthly quota reset (returned on quota 429).",
+                "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0.0
@@ -23256,6 +23056,20 @@
               "title": "User Id"
             },
             "description": "User ID."
+          },
+          {
+            "name": "window_days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 365,
+              "minimum": 1,
+              "description": "Number of days of history to return.",
+              "default": 30,
+              "title": "Window Days"
+            },
+            "description": "Number of days of history to return."
           }
         ],
         "responses": {
@@ -25816,31 +25630,6 @@
             "title": "Expires At",
             "description": "ISO 8601 UTC timestamp when this resource expires, if applicable."
           },
-          "bound_ip": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Bound Ip",
-            "description": "Client IP currently bound to the active API key (null when unbound)."
-          },
-          "bound_ip_set_at": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Bound Ip Set At",
-            "description": "ISO 8601 UTC timestamp when the API key IP binding was last set."
-          },
           "quota_requests_per_month_override": {
             "anyOf": [
               {
@@ -26321,6 +26110,11 @@
             "type": "boolean",
             "title": "Product Update Emails Enabled",
             "description": "Whether non-essential product update emails are enabled."
+          },
+          "billing_reminder_emails_enabled": {
+            "type": "boolean",
+            "title": "Billing Reminder Emails Enabled",
+            "description": "Whether non-essential billing reminder emails are enabled."
           }
         },
         "type": "object",
@@ -26328,7 +26122,8 @@
           "preferred_currency",
           "timezone",
           "alert_emails_enabled",
-          "product_update_emails_enabled"
+          "product_update_emails_enabled",
+          "billing_reminder_emails_enabled"
         ],
         "title": "AccountPreferences",
         "description": "Mutable user preferences for account features."
@@ -27222,7 +27017,6 @@
           "cstrade",
           "dmarket",
           "ecosteam",
-          "gamerpay",
           "haloskins",
           "itradegg",
           "lisskins",
@@ -29116,32 +28910,6 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
-      "IPResetResponse": {
-        "properties": {
-          "ok": {
-            "type": "boolean",
-            "title": "Ok",
-            "description": "Boolean success indicator for this operation."
-          },
-          "key_id": {
-            "type": "string",
-            "title": "Key Id",
-            "description": "Unique identifier for the API key."
-          },
-          "cooldown_sec": {
-            "type": "integer",
-            "title": "Cooldown Sec",
-            "description": "Cooldown period in seconds before this action can be retried."
-          }
-        },
-        "type": "object",
-        "required": [
-          "ok",
-          "key_id",
-          "cooldown_sec"
-        ],
-        "title": "IPResetResponse"
-      },
       "IndicatorDataCoverage": {
         "properties": {
           "candle_count": {
@@ -29581,6 +29349,82 @@
         "type": "object",
         "title": "InspectInfo",
         "description": "In-game inspect link and screenshot URLs."
+      },
+      "ItemIdLookupRequest": {
+        "properties": {
+          "market_hash_names": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 1000,
+            "minItems": 1,
+            "title": "Market Hash Names",
+            "description": "Steam market hash names to resolve, up to 1,000 per request."
+          }
+        },
+        "type": "object",
+        "required": [
+          "market_hash_names"
+        ],
+        "title": "ItemIdLookupRequest"
+      },
+      "ItemIdLookupResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ItemIdLookupResult"
+            },
+            "type": "array",
+            "title": "Items",
+            "description": "Lookup results in the same order as the requested market hash names."
+          },
+          "found_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Found Count",
+            "description": "Number of requested names resolved."
+          },
+          "missing_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Missing Count",
+            "description": "Number of requested names not resolved."
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "found_count",
+          "missing_count"
+        ],
+        "title": "ItemIdLookupResponse"
+      },
+      "ItemIdLookupResult": {
+        "properties": {
+          "market_hash_name": {
+            "type": "string",
+            "title": "Market Hash Name",
+            "description": "Requested Steam market hash name."
+          },
+          "item_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Item Id",
+            "description": "Canonical catalog item ID, or null when the name is not in the catalog."
+          }
+        },
+        "type": "object",
+        "required": [
+          "market_hash_name"
+        ],
+        "title": "ItemIdLookupResult"
       },
       "ItemOut": {
         "properties": {
@@ -30328,7 +30172,106 @@
           "excluded_count"
         ],
         "title": "MarketIndexGroup",
-        "description": "Single group row for /v1/market/indices."
+        "description": "Single group row for /v1/market/indexes."
+      },
+      "MarketIndexesData": {
+        "properties": {
+          "total_marketcap_usd": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Total Marketcap Usd",
+            "description": "Money amount as a decimal string in USD major units (for example \"25.82\")."
+          },
+          "groups": {
+            "items": {
+              "$ref": "#/components/schemas/MarketIndexGroup"
+            },
+            "type": "array",
+            "title": "Groups",
+            "description": "Category groups sorted by market cap descending."
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_marketcap_usd",
+          "groups"
+        ],
+        "title": "MarketIndexesData",
+        "description": "Payload for /v1/market/indexes."
+      },
+      "MarketIndexesMeta": {
+        "properties": {
+          "generated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Generated At",
+            "description": "ISO 8601 UTC timestamp when this response was generated."
+          },
+          "data_source": {
+            "type": "string",
+            "enum": [
+              "cache",
+              "live",
+              "mixed"
+            ],
+            "title": "Data Source",
+            "description": "Primary data source used to build this response."
+          },
+          "freshness_sec": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Freshness Sec",
+            "description": "Estimated freshness of source data in seconds."
+          },
+          "window": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MarketTimeWindowMeta"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Effective analytics time window metadata."
+          },
+          "group_by": {
+            "type": "string",
+            "enum": [
+              "item_type",
+              "weapon_type"
+            ],
+            "title": "Group By",
+            "description": "Catalog dimension used to group market items."
+          }
+        },
+        "type": "object",
+        "required": [
+          "generated_at",
+          "data_source",
+          "freshness_sec",
+          "group_by"
+        ],
+        "title": "MarketIndexesMeta",
+        "description": "Metadata for /v1/market/indexes."
+      },
+      "MarketIndexesResponse": {
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/MarketIndexesMeta",
+            "description": "Response metadata for this payload."
+          },
+          "data": {
+            "$ref": "#/components/schemas/MarketIndexesData",
+            "description": "Primary data payload for this response."
+          }
+        },
+        "type": "object",
+        "required": [
+          "meta",
+          "data"
+        ],
+        "title": "MarketIndexesResponse",
+        "description": "Response envelope for /v1/market/indexes."
       },
       "MarketIndicatorsItemData": {
         "properties": {
@@ -30488,105 +30431,6 @@
         ],
         "title": "MarketIndicatorsMeta",
         "description": "Metadata for indicators endpoint."
-      },
-      "MarketIndicesData": {
-        "properties": {
-          "total_marketcap_usd": {
-            "type": "string",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-            "title": "Total Marketcap Usd",
-            "description": "Money amount as a decimal string in USD major units (for example \"25.82\")."
-          },
-          "groups": {
-            "items": {
-              "$ref": "#/components/schemas/MarketIndexGroup"
-            },
-            "type": "array",
-            "title": "Groups",
-            "description": "Category groups sorted by market cap descending."
-          }
-        },
-        "type": "object",
-        "required": [
-          "total_marketcap_usd",
-          "groups"
-        ],
-        "title": "MarketIndicesData",
-        "description": "Payload for /v1/market/indices."
-      },
-      "MarketIndicesMeta": {
-        "properties": {
-          "generated_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Generated At",
-            "description": "ISO 8601 UTC timestamp when this response was generated."
-          },
-          "data_source": {
-            "type": "string",
-            "enum": [
-              "cache",
-              "live",
-              "mixed"
-            ],
-            "title": "Data Source",
-            "description": "Primary data source used to build this response."
-          },
-          "freshness_sec": {
-            "type": "integer",
-            "minimum": 0.0,
-            "title": "Freshness Sec",
-            "description": "Estimated freshness of source data in seconds."
-          },
-          "window": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/MarketTimeWindowMeta"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Effective analytics time window metadata."
-          },
-          "group_by": {
-            "type": "string",
-            "enum": [
-              "item_type",
-              "weapon_type"
-            ],
-            "title": "Group By",
-            "description": "Catalog dimension used to group market items."
-          }
-        },
-        "type": "object",
-        "required": [
-          "generated_at",
-          "data_source",
-          "freshness_sec",
-          "group_by"
-        ],
-        "title": "MarketIndicesMeta",
-        "description": "Metadata for /v1/market/indices."
-      },
-      "MarketIndicesResponse": {
-        "properties": {
-          "meta": {
-            "$ref": "#/components/schemas/MarketIndicesMeta",
-            "description": "Response metadata for this payload."
-          },
-          "data": {
-            "$ref": "#/components/schemas/MarketIndicesData",
-            "description": "Primary data payload for this response."
-          }
-        },
-        "type": "object",
-        "required": [
-          "meta",
-          "data"
-        ],
-        "title": "MarketIndicesResponse",
-        "description": "Response envelope for /v1/market/indices."
       },
       "MarketItem": {
         "properties": {
@@ -31243,6 +31087,30 @@
             ],
             "title": "Volume Score",
             "description": "Volume component score."
+          },
+          "stability_score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stability Score",
+            "description": "Price stability component score (0-20): observation density and inverse coefficient of variation of hourly close."
+          },
+          "external_score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "External Score",
+            "description": "External confirmation component score (0-20): Steam volume + Buff163 depth."
           },
           "liquidity_last_updated": {
             "anyOf": [
@@ -32517,6 +32385,18 @@
             ],
             "title": "Product Update Emails Enabled",
             "description": "Whether non-essential product update emails are enabled."
+          },
+          "billing_reminder_emails_enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Billing Reminder Emails Enabled",
+            "description": "Whether non-essential billing reminder emails are enabled."
           }
         },
         "type": "object",
@@ -32568,7 +32448,7 @@
           },
           "providers": {
             "$ref": "#/components/schemas/Providers",
-            "description": "Provider provenance for the returned low/high values in this composite candle."
+            "description": "Provider provenance for the returned open/high/low/close values in this composite candle."
           }
         },
         "type": "object",
@@ -32662,24 +32542,15 @@
             "type": "array",
             "title": "Data",
             "description": "Primary data payload for this response."
-          },
-          "pagination": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/CursorPaginationMeta"
-              }
-            ],
-            "description": "Pagination metadata for this response."
           }
         },
         "type": "object",
         "required": [
           "meta",
-          "data",
-          "pagination"
+          "data"
         ],
         "title": "PriceCandlesPage",
-        "description": "Paginated candle response with cursor-based pagination."
+        "description": "Candle response for a requested time window."
       },
       "PriceHistoryFiltersMeta": {
         "properties": {
@@ -33291,6 +33162,12 @@
       },
       "Providers": {
         "properties": {
+          "o": {
+            "type": "string",
+            "title": "O",
+            "description": "Provider key that contributed the returned open value.",
+            "default": "unknown"
+          },
           "h": {
             "type": "string",
             "title": "H",
@@ -33300,6 +33177,12 @@
             "type": "string",
             "title": "L",
             "description": "Provider key that contributed the returned low value."
+          },
+          "c": {
+            "type": "string",
+            "title": "C",
+            "description": "Provider key that contributed the returned close value.",
+            "default": "unknown"
           }
         },
         "type": "object",
@@ -33308,7 +33191,7 @@
           "l"
         ],
         "title": "Providers",
-        "description": "Provider provenance for composite candle extremes."
+        "description": "Provider provenance for composite candle values."
       },
       "RecentSalesProvider": {
         "type": "string",
