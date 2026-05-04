@@ -147,14 +147,14 @@ export default async function ApiPage() {
         <div className="absolute top-1/3 right-1/4 h-2 w-2 animate-pulse-glow bg-primary" />
 
         <div className="container relative z-10">
-          <div className="grid items-center gap-12 lg:grid-cols-2">
+          <div className="grid items-center gap-8 lg:gap-12 lg:grid-cols-2">
             <div>
               <div className="mb-6 flex items-center gap-3 animate-fade-in-up-sm">
                 <Code className="h-5 w-5 text-primary" />
                 <span className="font-mono text-xs tracking-widest text-primary">// API</span>
               </div>
               <h1
-                className="display-heading mb-6 text-5xl font-black tracking-tighter md:text-7xl animate-fade-in-up-sm"
+                className="display-heading mb-6 text-4xl sm:text-5xl font-black tracking-tighter md:text-7xl animate-fade-in-up-sm"
                 style={{ animationDelay: "0.05s", animationFillMode: "both" }}
               >
                 <span className="text-foreground">BUILD WITH</span>
@@ -176,13 +176,13 @@ export default async function ApiPage() {
               >
                 <Link
                   href="/login"
-                  className="border-2 border-primary bg-primary px-8 py-3 font-mono text-sm font-bold tracking-wider text-primary-foreground brutalist-hover"
+                  className="w-full sm:w-auto text-center border-2 border-primary bg-primary px-8 py-3 font-mono text-sm font-bold tracking-wider text-primary-foreground brutalist-hover"
                 >
                   GET ACCESS →
                 </Link>
                 <a
                   href="#endpoints"
-                  className="border-brutal px-8 py-3 font-mono text-sm font-bold tracking-wider text-foreground brutalist-hover hover:border-primary transition-colors"
+                  className="w-full sm:w-auto text-center border-brutal px-8 py-3 font-mono text-sm font-bold tracking-wider text-foreground brutalist-hover hover:border-primary transition-colors"
                 >
                   EXPLORE ENDPOINTS
                 </a>
@@ -218,11 +218,11 @@ export default async function ApiPage() {
               ].map((stat, i) => (
                 <div
                   key={stat.label}
-                  className="bg-card p-5 md:p-6 animate-fade-in-up-sm"
+                  className="bg-card p-4 md:p-6 animate-fade-in-up-sm"
                   style={{ animationDelay: `${0.3 + i * 0.08}s`, animationFillMode: "both" }}
                 >
                   <stat.icon className="mb-3 h-4 w-4 text-primary" strokeWidth={1.5} />
-                  <div className="font-mono text-2xl font-bold text-foreground">{stat.value}</div>
+                  <div className="font-mono text-xl md:text-2xl font-bold text-foreground">{stat.value}</div>
                   <div className="font-mono text-[10px] tracking-widest text-muted-foreground">{stat.label}</div>
                   <div className="mt-1 font-mono text-[10px] text-muted-foreground/70">{stat.sub}</div>
                 </div>

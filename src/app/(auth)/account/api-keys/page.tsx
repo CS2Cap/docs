@@ -28,6 +28,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useSession, useSubKeys, webApi } from "@/lib/api";
+import { PlanUpgradeCard } from "@/components/PlanUpgradeCard";
 import { queryKeys } from "@/lib/api/hooks";
 import type { ChildAPIKeyCreateResponse } from "@/lib/api/types";
 
@@ -249,6 +250,10 @@ export default function AccountApiKeysPage() {
             </Button>
           )
         )}
+      </div>
+
+      <div className="mb-6">
+        <PlanUpgradeCard />
       </div>
 
       <Card className="bg-yellow-500/5 border-yellow-500/20 mb-6">
