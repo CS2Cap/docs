@@ -342,8 +342,10 @@ Returns composite OHLCV candles across all providers for the resolved item. Supp
       "v": 24,
       "q": 54792,
       "providers": {
+        "o": "csfloat",
         "h": "steam",
-        "l": "csfloat"
+        "l": "csfloat",
+        "c": "buff163"
       }
     },
     {
@@ -390,7 +392,7 @@ Returns composite OHLCV candles across all providers for the resolved item. Supp
 </ResponseField>
 
 <ResponseField name="providers" type="object">
-  Optional. When present, identifies which provider contributed the high (`h`) and low (`l`) values for this candle.
+  Identifies which provider contributed the open (`o`), high (`h`), low (`l`), and close (`c`) values for this candle.
 </ResponseField>
 
 ### Data retention
