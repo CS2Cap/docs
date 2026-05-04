@@ -61,7 +61,7 @@ function jsonError(
 }
 
 function normalizeSteamInput(raw: string): NormalizedTarget | null {
-  let value = raw.trim();
+  const value = raw.trim();
   if (!value || value.length > MAX_INPUT_LENGTH) return null;
 
   // Strip protocol and trailing slashes, lowercase the host portion only.
