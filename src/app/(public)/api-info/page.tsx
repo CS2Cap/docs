@@ -218,11 +218,11 @@ export default async function ApiPage() {
               ].map((stat, i) => (
                 <div
                   key={stat.label}
-                  className="bg-card p-5 md:p-6 animate-fade-in-up-sm"
+                  className="bg-card p-4 md:p-6 animate-fade-in-up-sm"
                   style={{ animationDelay: `${0.3 + i * 0.08}s`, animationFillMode: "both" }}
                 >
                   <stat.icon className="mb-3 h-4 w-4 text-primary" strokeWidth={1.5} />
-                  <div className="font-mono text-2xl font-bold text-foreground">{stat.value}</div>
+                  <div className="font-mono text-xl md:text-2xl font-bold text-foreground">{stat.value}</div>
                   <div className="font-mono text-[10px] tracking-widest text-muted-foreground">{stat.label}</div>
                   <div className="mt-1 font-mono text-[10px] text-muted-foreground/70">{stat.sub}</div>
                 </div>
