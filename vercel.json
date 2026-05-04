@@ -9,5 +9,9 @@
       "path": "/api/cron/export-prices-snapshot",
       "schedule": "0 * * * *"
     }
-  ]
+  ],
+  "functions": {
+    "src/app/api/cs2c/[...path]/route.ts": { "regions": ["fra1"] },
+    "src/app/api/inventory-value/route.ts": { "regions": ["fra1"] }
+  }
 }

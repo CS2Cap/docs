@@ -5,6 +5,8 @@ import {
   WEB_SESSION_COOKIE_NAME,
 } from "@/lib/api/config";
 
+export const maxDuration = 30;
+
 type RouteContext = {
   params: Promise<{
     path: string[];
@@ -98,6 +100,7 @@ async function proxyRequest(request: NextRequest, { params }: RouteContext) {
         : await request.text(),
       redirect: "manual",
       cache: "no-store",
+      signal: AbortSignal.timeout(10_000),
     });
   } catch (error) {
     const detail = error instanceof Error ? error.message : "unknown error";
