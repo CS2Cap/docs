@@ -20,20 +20,21 @@ const navItems = [
   { label: "SEARCH", href: "/search" },
   { label: "INVENTORY", href: "/inventory-value" },
   { label: "API", href: "/api-info" },
+  { label: "PRICING", href: "/api-info#pricing" },
   { label: "DASHBOARD", href: "/dashboard" },
   { label: "DOCS", href: "https://docs.cs2cap.com/", external: true },
-  { label: "UPTIME", href: "https://status.cs2c.app/", external: true },
 ];
 
 const accountMenuItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Billing", href: "/account/billing", icon: CreditCard },
+  { label: "Usage", href: "/account/usage", icon: BarChart3 },
+  { label: "API Keys", href: "/account/api-keys", icon: Key },
+  { type: "divider" as const },
   { label: "Watchlist", href: "/watchlist", icon: Eye },
   { label: "Alerts", href: "/alerts", icon: Bell },
   { type: "divider" as const },
   { label: "Account", href: "/account", icon: User },
-  { label: "API Keys", href: "/account/api-keys", icon: Key },
-  { label: "Usage", href: "/account/usage", icon: BarChart3 },
-  { label: "Billing", href: "/account/billing", icon: CreditCard },
   { label: "Settings", href: "/account/settings", icon: Settings },
 ];
 
