@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { BarChart3 } from "lucide-react";
 import { useAccountUsageStats } from "@/lib/api";
+import { PlanUpgradeCard } from "@/components/PlanUpgradeCard";
 
 export default function AccountUsagePage() {
   const { data: usage, isLoading } = useAccountUsageStats();
@@ -35,6 +36,10 @@ export default function AccountUsagePage() {
       <div className="mb-8">
         <div className="font-mono text-xs tracking-widest text-primary mb-2">// USAGE</div>
         <h1 className="text-3xl font-black tracking-tighter">API USAGE</h1>
+      </div>
+
+      <div className="mb-6">
+        <PlanUpgradeCard highlight={usage.projection.upgrade_recommended} />
       </div>
 
       <Card className="bg-card/50 border-border/50 mb-6">

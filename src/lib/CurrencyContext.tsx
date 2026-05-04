@@ -37,10 +37,6 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
   const [rate, setRate] = useState(1);
 
   useEffect(() => {
-    if (currency === "USD") {
-      setRate(1);
-      return;
-    }
     getRates()
       .then((rates) => setRate(rates[currency.toLowerCase()] ?? 1))
       .catch(() => setRate(1));
