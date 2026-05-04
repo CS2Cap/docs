@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAlertEvents, useAlerts, useSession, useWatchlist } from "@/lib/api";
+import { PlanUpgradeCard } from "@/components/PlanUpgradeCard";
 
 function formatThreshold(value: string, currency?: string) {
   const parsed = Number(value);
