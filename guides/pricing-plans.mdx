@@ -3,7 +3,7 @@ title: "Pricing: Compare Free, Pro, and Quant Plans"
 description: "Compare CS2Cap's three API tiers — Free at $0, Pro at $79/month, and Quant at $179/month — by quota, endpoint access, and features."
 ---
 
-CS2Cap offers three API tiers to fit every use case, from quick evaluation to production-scale analytics. Free gives you immediate access at no cost, Pro unlocks the full market-data surface for traders and bot builders, and Quant adds advanced analytics, webhooks, and child key management for teams and resellers. Every tier is backed by the same 39-marketplace data network with 5–10 minute freshness.
+CS2Cap offers three API tiers to fit every use case, from quick evaluation to production-scale analytics. Free gives you immediate access at no cost, Pro unlocks the full market-data surface for traders and bot builders, and Quant adds advanced analytics, webhooks, and child key management for teams and resellers. Every tier is backed by the same 38-marketplace data network with 5–10 minute freshness.
 
 ## At a glance
 
@@ -12,7 +12,6 @@ CS2Cap offers three API tiers to fit every use case, from quick evaluation to pr
 | Monthly price | **\$0** | **\$79** | **\$179** |
 | Requests / month | 1,000 | 500,000 | 1,000,000 |
 | Requests / minute | 20 | 100 | 300 |
-| `limit` query param cap | 100 | 1,000 | 1,000 |
 | Support | — | Basic | Priority (24 h SLA) |
 | Best for | Evaluation & hobby use | Traders, bots, tooling | Analytics, B2B, resellers |
 
@@ -20,26 +19,26 @@ CS2Cap offers three API tiers to fit every use case, from quick evaluation to pr
 
 | Endpoint | Free | Pro | Quant |
 | --- | :-: | :-: | :-: |
-| `GET /v1/prices` — current lowest asks | ✅ | ✅ | ✅ |
+| `GET /v1/prices` — current lowest asks _(38 providers)_ | ✅ | ✅ | ✅ |
 | `POST /v1/prices` — full prices snapshot (NDJSON stream) | — | ✅ | ✅ |
 | `POST /v1/prices/batch` — multi-item price lookup | — | ✅ | ✅ |
-| `GET /v1/prices/candles` — OHLC candles | ⚠️ daily only | ✅ | ✅ |
-| `GET /v1/prices/history` — historical prices (up to 365 d) | — | ✅ | ✅ |
-| `GET /v1/bids` — highest buy orders | — | ✅ | ✅ |
+| `GET /v1/prices/candles` — 5m, 1h, 1d OHLC candles (≤ 365 d) | ⚠️ daily only | ✅ | ✅ |
+| `GET /v1/prices/history` — price & quantity changes (≤ 35 d) | — | ✅ | ✅ |
+| `GET /v1/bids` — highest buy orders _(11 providers)_ | — | ✅ | ✅ |
 | `POST /v1/bids` — full bids snapshot (NDJSON stream) | — | ✅ | ✅ |
 | `POST /v1/bids/batch` — multi-item buy-order lookup | — | ✅ | ✅ |
-| `GET /v1/sales` — recent sales | — | ✅ | ✅ |
-| `GET /v1/items` — item catalog | ✅ | ✅ | ✅ |
-| `GET /v1/items/metadata` — catalog filter metadata | ✅ | ✅ | ✅ |
+| `GET /v1/sales` — recent sales _(8 providers)_ | — | ✅ | ✅ |
 | `GET /v1/providers` — marketplace catalog | ✅ | ✅ | ✅ |
-| `GET /v1/fx` — currency conversion | ✅ | ✅ | ✅ |
-| `GET /v1/portfolio` — portfolio management | ✅ | ✅ | ✅ |
-| `GET /v1/portfolio/value` — portfolio valuation | ✅ | ✅ | ✅ |
-| `GET /v1/inventory/steam` — Steam inventory import | ✅ | ✅ | ✅ |
 | `GET /v1/market/items` — enriched item metadata | — | ✅ | ✅ |
 | `GET /v1/market/arbitrage` — cross-market arbitrage | — | — | ✅ |
 | `GET /v1/market/indexes` — category market cap indexes | — | — | ✅ |
 | `GET /v1/market/indicators` — technical indicators | — | — | ✅ |
+| `GET /v1/items` — item catalog | ✅ | ✅ | ✅ |
+| `GET /v1/items/metadata` — catalog filter metadata | ✅ | ✅ | ✅ |
+| `GET /v1/portfolio` — portfolio management | ✅ | ✅ | ✅ |
+| `GET /v1/portfolio/value` — portfolio valuation | ✅ | ✅ | ✅ |
+| `GET /v1/inventory/steam` — Steam inventory lookup | ✅ | ✅ | ✅ |
+| `GET /v1/fx` — currency conversion | ✅ | ✅ | ✅ |
 
 <Note>
   **Free-tier candles restriction:** Free keys can only call `GET /v1/prices/candles` with `interval=1d` and a lookback window measured in whole days up to 30 days (for example `30d` or `30`). Pro and Quant have no such restriction and can request up to 365 days of candle history at any supported interval.
@@ -73,7 +72,7 @@ CS2Cap offers three API tiers to fit every use case, from quick evaluation to pr
 
 Every plan — including Free — ships with the full breadth of CS2Cap's data network:
 
-- **39 supported marketplaces**, including BUFF163, Youpin898, C5, CSFloat, Skinport, Skinbid, DMarket, Waxpeer, Bitskins, Haloskins, Market.csgo, Tradeit, and more.
+- **38 supported marketplaces**, including BUFF163, Youpin898, C5, CSFloat, Skinport, DMarket, Waxpeer, Bitskins, Haloskins, Market.csgo, Tradeit, and more.
 - **Doppler phase differentiation** in prices, buy orders, and recent sales whenever the underlying marketplace exposes phase data.
 - **5–10 minute data freshness** across most providers. Prices and bids are served from a pre-built index for fast, consistent responses.
 - **Stable, machine-readable error codes** on every error response.
@@ -81,12 +80,12 @@ Every plan — including Free — ships with the full breadth of CS2Cap's data n
 
 ## Billing
 
-Paid tiers are billed monthly through Stripe.
+Paid tiers are billed monthly through Stripe via card, or NOWPayments via cryptocurrency.
 
 - **Upgrades** take effect immediately and are prorated on the current invoice.
 - **Downgrades** take effect at the start of the next billing cycle. Until then, you retain your current tier's access.
-- **Payment failures** move the subscription to `past_due` and drop the account to the Free tier until Stripe resolves the retry. No data is lost.
-- **Cancellation** is self-service through the Stripe customer portal. A cancelled subscription stays active until the end of the current billing cycle, then reverts to Free.
+- **Payment failures** move the subscription to `past_due` and drop the account to the Free tier until the payment processor resolves the retry. No data is lost.
+- **Cancellation** is self-service through the Stripe customer portal. A cancelled subscription stays active until the end of the current billing cycle, then reverts to Free. Subscriptions paid through cryptocurrencies do not renew automatically and cannot be cancelled before the end of the billing period.
 
 ## FAQ
 
@@ -100,10 +99,10 @@ Paid tiers are billed monthly through Stripe.
   </Accordion>
 
   <Accordion title="Is historical data really 365 days?">
-    Yes. Pro and Quant include up to one year of per-item OHLCV history through `GET /v1/prices/candles`. Per-provider history goes back up to 2 weeks through `GET /v1/prices/history`.
+    Yes. Pro and Quant include up to one year of per-item daily OHLCV history through `GET /v1/prices/candles`. Granular per-provider history goes back up to 35 day through `GET /v1/prices/history`.
   </Accordion>
 
-  <Accordion title="Do I get all 39 marketplaces on Free?">
+  <Accordion title="Do I get all 38 marketplaces on Free?">
     You can browse the provider catalog on every tier, but live cross-market price, bid, and sales coverage requires Pro or Quant. Free is limited to current prices from `GET /v1/prices`.
   </Accordion>
 
