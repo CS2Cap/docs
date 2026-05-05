@@ -1,5 +1,5 @@
 ---
-title: "CS2Cap Pricing: Compare Free, Pro, and Quant Plans"
+title: "Pricing: Compare Free, Pro, and Quant Plans"
 description: "Compare CS2Cap's three API tiers — Free at $0, Pro at $79/month, and Quant at $179/month — by quota, endpoint access, and features."
 ---
 
@@ -7,9 +7,9 @@ CS2Cap offers three API tiers to fit every use case, from quick evaluation to pr
 
 ## At a glance
 
-| | **Free** | **Pro** | **Quant** |
-|---|---|---|---|
-| Monthly price | **$0** | **$79** | **$179** |
+|  | **Free** | **Pro** | **Quant** |
+| --- | --- | --- | --- |
+| Monthly price | **\$0** | **\$79** | **\$179** |
 | Requests / month | 1,000 | 500,000 | 1,000,000 |
 | Requests / minute | 20 | 100 | 300 |
 | `limit` query param cap | 100 | 1,000 | 1,000 |
@@ -19,7 +19,7 @@ CS2Cap offers three API tiers to fit every use case, from quick evaluation to pr
 ## Endpoint access
 
 | Endpoint | Free | Pro | Quant |
-|---|:---:|:---:|:---:|
+| --- | :-: | :-: | :-: |
 | `GET /v1/prices` — current lowest asks | ✅ | ✅ | ✅ |
 | `POST /v1/prices` — full prices snapshot (NDJSON stream) | — | ✅ | ✅ |
 | `POST /v1/prices/batch` — multi-item price lookup | — | ✅ | ✅ |
@@ -42,13 +42,13 @@ CS2Cap offers three API tiers to fit every use case, from quick evaluation to pr
 | `GET /v1/market/indicators` — technical indicators | — | — | ✅ |
 
 <Note>
-**Free-tier candles restriction:** Free keys can only call `GET /v1/prices/candles` with `interval=1d` and a lookback window measured in whole days up to 30 days (for example `30d` or `30`). Pro and Quant have no such restriction and can request up to 365 days of candle history at any supported interval.
+  **Free-tier candles restriction:** Free keys can only call `GET /v1/prices/candles` with `interval=1d` and a lookback window measured in whole days up to 30 days (for example `30d` or `30`). Pro and Quant have no such restriction and can request up to 365 days of candle history at any supported interval.
 </Note>
 
 ## Features and add-ons
 
 | Feature | Free | Pro | Quant |
-|---|:---:|:---:|:---:|
+| --- | :-: | :-: | :-: |
 | Raw provider listing URLs in responses | — | ✅ | ✅ |
 | Bulk snapshot exports | — | ✅ | ✅ |
 | Cross-market arbitrage scanner | — | — | ✅ |
@@ -60,7 +60,7 @@ CS2Cap offers three API tiers to fit every use case, from quick evaluation to pr
 ## Portfolio limits
 
 | Limit | Free | Pro | Quant |
-|---|---:|---:|---:|
+| --- | --: | --: | --: |
 | Max portfolios | 20 | 50 | 1,000 |
 | Max items per portfolio | 1,000 | 5,000 | 10,000 |
 
