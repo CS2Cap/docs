@@ -10,6 +10,7 @@ CS2Cap enforces two independent rate limits on every API key: a per-minute burst
 | Tier | Requests / minute | Requests / month |
 | --- | :-: | :-: |
 | Free | 20 | 1,000 |
+| Starter | 40 | 50,000 |
 | Pro | 100 | 500,000 |
 | Quant | 300 | 1,000,000 |
 
@@ -21,7 +22,7 @@ CS2Cap enforces two independent rate limits on every API key: a per-minute burst
 
 Monthly quota applies to **public core market-data endpoints** — prices, bids, candles, history, sales, items, providers, FX, and market analytics. These are the endpoints that drive the most data volume.
 
-The following route categories are **exempt from monthly quota** (they still have burst protection, but they do not count against your 1,000 / 500,000 / 1,000,000 monthly total):
+The following route categories are **exempt from monthly quota** (they still have burst protection, but they do not count against your 1,000 / 50,000 / 500,000 / 1,000,000 monthly total):
 
 - Account and billing management routes
 - Email verification and account recovery routes
@@ -38,7 +39,7 @@ When you are approaching or have exceeded a limit, the API includes the followin
 | `X-RateLimit-Limit` | Your tier's monthly quota. |
 | `X-RateLimit-Remaining` | Monthly quota requests remaining in the current billing period. |
 | `X-RateLimit-Reset` | Unix timestamp (seconds) when the monthly quota resets. |
-| `X-RateLimit-Tier` | Your current tier identifier (`free`, `pro`, or `quant`). |
+| `X-RateLimit-Tier` | Your current tier identifier (`free`, `starter`, `pro`, or `quant`). |
 
 ### Example 429 response headers
 
@@ -74,7 +75,7 @@ Both rate limit conditions return HTTP `429` with a machine-readable `code` fiel
 </Tip>
 
 - **Check `X-RateLimit-Remaining` proactively.** If your remaining monthly quota is low, throttle your request rate rather than waiting for a hard block.
-- **Batch requests wherever possible.** Use `POST /v1/prices/batch` and `POST /v1/bids/batch` (Pro and Quant) to fetch prices for multiple items in a single request instead of making one request per item.
-- **Use `POST /v1/prices` for bulk data.** When you need a full market snapshot, one call to `POST /v1/prices` costs a single request against your quota, regardless of how many items it returns. Schedule it no more than once every 30 seconds.
-- **Treat monthly quota as a budget.** Allocate quota across your use cases. On Free (1,000 requests/month), favor cached or batched lookups over per-item polling loops.
+- **Batch requests wherever possible.** Use `POST /v1/prices/batch` and `POST /v1/bids/batch` (Starter, Pro, and Quant) to fetch up to 100 items in a single request instead of making one request per item.
+- **Use `POST /v1/prices` for bulk data only when your tier includes it.** When you need a full market snapshot, one call to `POST /v1/prices` costs a single request against your quota, regardless of how many items it returns. Schedule it no more than once every 30 seconds.
+- **Treat monthly quota as a budget.** Allocate quota across your use cases. On Free (1,000 requests/month), keep calls exploratory; on Starter (50,000 requests/month), use batch lookups for known item sets instead of per-item polling loops.
 - **Handle `429` with exponential backoff** when `Retry-After` is not present, adding jitter to avoid synchronized retry storms across multiple keys.

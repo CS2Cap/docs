@@ -11,7 +11,7 @@ The Prices API gives you access to the current lowest ask for every CS2 item acr
 
 Returns the current lowest ask across marketplaces. You can filter by item, phase, provider, and currency.
 
-**Tiers:** `free` · `pro` · `quant`
+**Tiers:** `free` · `starter` · `pro` · `quant`
 
 ### Parameters
 
@@ -36,7 +36,7 @@ Returns the current lowest ask across marketplaces. You can filter by item, phas
 </ParamField>
 
 <ParamField query="limit" type="integer">
-  Results per page. Defaults to the caller's effective tier cap: `100` for Free, `1000` for Pro and Quant.
+  Results per page. Defaults to the caller's effective tier cap: `100` for Free, `1000` for Starter, Pro, and Quant.
 </ParamField>
 
 <ParamField query="offset" type="integer" default="0">
@@ -109,7 +109,7 @@ Returns the current lowest ask across marketplaces. You can filter by item, phas
 </ResponseField>
 
 <ResponseField name="url" type="string">
-  Direct marketplace URL. Returned on paid tiers only (`pro`, `quant`).
+  Direct marketplace URL. Returned on Pro and Quant only.
 </ResponseField>
 
 <ResponseField name="timestamp" type="string">
@@ -154,7 +154,7 @@ Streams the complete live prices catalog as NDJSON, with one JSON object per lin
 
 Returns current lowest asks for up to 100 items in a single request, grouped by item ID across the selected providers.
 
-**Tiers:** `pro` · `quant`
+**Tiers:** `starter` · `pro` · `quant`
 
 ### Request body
 
@@ -287,7 +287,7 @@ Returns current lowest asks for up to 100 items in a single request, grouped by 
 
 Returns composite OHLCV candles across all providers for the resolved item. Supports `5m`, `1h`, and `1d` intervals. Empty buckets can optionally be forward-filled.
 
-**Tiers:** `free` (1d only) · `pro` · `quant`
+**Tiers:** `free` (1d only) · `starter` (1d only) · `pro` · `quant`
 
 ### Parameters
 
@@ -406,7 +406,7 @@ Returns composite OHLCV candles across all providers for the resolved item. Supp
 | `1d` | 365 days |
 
 <Note>
-  Free-tier accounts may only use `interval=1d`. The `fill`, `start`, and `end` parameters are not available on the free tier — use `lookback` instead.
+  Free and Starter accounts may only use `interval=1d`. The `fill`, `start`, and `end` parameters are not available on those tiers — use `lookback` instead.
 </Note>
 
 ---

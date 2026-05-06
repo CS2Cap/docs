@@ -148,7 +148,7 @@ This guide walks you through everything you need to make a live CS2 item price r
     ```
 
     ```bash Get current buy orders
-    # Highest buy orders across buy-order-enabled providers (Pro/Quant)
+    # Highest buy orders across buy-order-enabled providers (Starter/Pro/Quant)
     curl -sS -H "Authorization: Bearer $CS2C_API_KEY" \
       "$CS2C_API_BASE/bids?market_hash_name=AK-47%20%7C%20Redline%20(Field-Tested)&providers=steam&limit=5"
     ```
@@ -168,7 +168,7 @@ This guide walks you through everything you need to make a live CS2 item price r
     </CodeGroup>
 
     <Note>
-      Endpoints marked **Pro/Quant** require a paid plan. If you're on the Free tier, these requests return a `403` until you upgrade. See [Pricing & Plans](/guides/pricing-plans) for a full endpoint-by-tier breakdown.
+      Buy orders require Starter or higher. Sales and raw history require Pro or higher. If your tier does not include an endpoint, the request returns `403` until you upgrade. See [Pricing & Plans](/guides/pricing-plans) for a full endpoint-by-tier breakdown.
     </Note>
 
   </Step>
@@ -206,6 +206,6 @@ This guide walks you through everything you need to make a live CS2 item price r
     Browse every endpoint: prices, bids, sales, analytics, portfolio, and account management.
   </Card>
   <Card title="Pricing & plans" icon="credit-card" href="/guides/pricing-plans">
-    Compare Free, Pro, and Quant tiers by endpoint access, rate limits, and monthly quotas.
+    Compare Free, Starter, Pro, and Quant tiers by endpoint access, rate limits, and monthly quotas.
   </Card>
 </CardGroup>

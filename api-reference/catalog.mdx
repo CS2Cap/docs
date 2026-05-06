@@ -11,7 +11,7 @@ The Catalog API gives you everything you need to build search interfaces, valida
 
 Searches the CS2 item catalog and returns full metadata for every match. You can filter by name, type, wear, phase, rarity, and many other attributes. Omit `limit` to return all matching items in a single response.
 
-**Tiers:** `free` · `pro` · `quant`
+**Tiers:** `free` · `starter` · `pro` · `quant`
 
 ### Parameters
 
@@ -220,7 +220,7 @@ Searches the CS2 item catalog and returns full metadata for every match. You can
 
 Returns catalog summary counts and the valid filter option values for every enumerated field. Use this endpoint to pre-populate search dropdowns or validate filter inputs before calling `GET /items`.
 
-**Tiers:** `free` · `pro` · `quant`
+**Tiers:** `free` · `starter` · `pro` · `quant`
 
 ### Parameters
 
@@ -263,7 +263,7 @@ This endpoint takes no parameters.
 
 Returns metadata, fee information, and live health data for all enabled CS2 marketplaces. You can optionally filter to a single provider by key.
 
-**Tiers:** `free` · `pro` · `quant`
+**Tiers:** `free` · `starter` · `pro` · `quant`
 
 ### Parameters
 
@@ -409,7 +409,7 @@ The response is a map keyed by the provider's display name. Each value is an obj
 
 Returns the current FX table with USD as the base currency. These rates power the automatic currency conversion that applies when you pass a `currency` parameter to any market-data endpoint.
 
-**Tiers:** `free` · `pro` · `quant`
+**Tiers:** `free` · `starter` · `pro` · `quant`
 
 ### Parameters
 

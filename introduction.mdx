@@ -1,9 +1,9 @@
 ---
 title: "CS2Cap API: Build on Normalized CS2 Market Data"
-description: "CS2Cap aggregates normalized prices, buy orders, sales, analytics, and portfolio data from 39 CS2 marketplaces into one unified REST API."
+description: "CS2Cap aggregates normalized prices, buy orders, sales, analytics, and portfolio data from 38 CS2 marketplaces into one unified REST API."
 ---
 
-CS2Cap is a REST API that aggregates and normalizes market data from 39 CS2 marketplaces — including BUFF163, CSFloat, Skinport, Steam, and more. Whether you're building a trading bot, pricing dashboard, arbitrage scanner, or portfolio tracker, CS2Cap eliminates the work of integrating each marketplace individually and delivers consistent, structured data through a single base URL: `https://api.cs2c.app/v1`.
+CS2Cap is a REST API that aggregates and normalizes market data from 38 CS2 marketplaces — including BUFF163, CSFloat, Skinport, Steam, and more. Whether you're building a trading bot, pricing dashboard, arbitrage scanner, or portfolio tracker, CS2Cap eliminates the work of integrating each marketplace individually and delivers consistent, structured data through a single base URL: `https://api.cs2c.app/v1`.
 
 ## Key capabilities
 
@@ -20,16 +20,17 @@ CS2Cap is a REST API that aggregates and normalizes market data from 39 CS2 mark
 
 ## Tiers
 
-CS2Cap offers three tiers. All tiers use the same endpoints and authentication model — tier determines your rate limits, monthly quota, and which endpoints are accessible.
+CS2Cap offers four tiers. All tiers use the same endpoints and authentication model — tier determines your rate limits, monthly quota, and which endpoints are accessible.
 
 | Tier | Requests/min | Requests/month | Notes |
 | --- | --- | --- | --- |
 | **Free** | 20 | 1,000 | Prices endpoint only |
+| **Starter** | 40 | 50,000 | Prices, bids, and 100-item batch lookups |
 | **Pro** | 100 | 500,000 | Prices, bids, sales, portfolio |
 | **Quant** | 300 | 1,000,000 | All endpoints including analytics |
 
 <Note>
-  Buy orders, sales history, and market analytics endpoints require a Pro or Quant key. Free keys are limited to the `/v1/prices` endpoint.
+  Starter includes current prices and bids for known item sets. Sales, raw history, market analytics, listing URLs, and NDJSON snapshots require Pro or Quant where applicable.
 </Note>
 
 ## Where to go next
@@ -45,6 +46,6 @@ CS2Cap offers three tiers. All tiers use the same endpoints and authentication m
     Explore all endpoints: prices, bids, sales, analytics, and more.
   </Card>
   <Card title="Pricing & Plans" icon="credit-card" href="/guides/pricing-plans">
-    Compare Free, Pro, and Quant tiers by endpoint access and quotas.
+    Compare Free, Starter, Pro, and Quant tiers by endpoint access and quotas.
   </Card>
 </CardGroup>

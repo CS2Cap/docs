@@ -9,7 +9,7 @@ The Account API lets you inspect your current API key's metadata — including t
 
 Returns metadata for the authenticated key. When called with a session JWT, it resolves to the account's active root key. When called with a child (sub-key) token, it returns that child key's own metadata.
 
-**Tiers:** Free, Pro, Quant · **Auth:** Session JWT or API key · **Rate limit:** Standard per-tier RPM
+**Tiers:** Free, Starter, Pro, Quant · **Auth:** Session JWT or API key · **Rate limit:** Standard per-tier RPM
 
 ```bash Request
 curl https://api.cs2c.app/v1/account/key \
@@ -98,7 +98,7 @@ curl https://api.cs2c.app/v1/account/key \
 
 Replaces your active root key and revokes the entire child-key tree under it in the same security event. Use this whenever you need to rotate credentials or suspect a key has been compromised.
 
-**Tiers:** Free, Pro, Quant · **Auth:** Session JWT or root API key · **Rate limit:** Standard per-tier RPM
+**Tiers:** Free, Starter, Pro, Quant · **Auth:** Session JWT or root API key · **Rate limit:** Standard per-tier RPM
 
 ```bash Request
 curl -X POST https://api.cs2c.app/v1/account/key/reissue \

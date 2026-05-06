@@ -1,67 +1,67 @@
 ---
-title: "Pricing: Compare Free, Pro, and Quant Plans"
-description: "Compare CS2Cap's three API tiers — Free at $0, Pro at $79/month, and Quant at $179/month — by quota, endpoint access, and features."
+title: "Pricing: Compare Free, Starter, Pro, and Quant Plans"
+description: "Compare CS2Cap's four API tiers — Free at $0, Starter at $19/month, Pro at $79/month, and Quant at $179/month — by quota, endpoint access, and features."
 ---
 
-CS2Cap offers three API tiers to fit every use case, from quick evaluation to production-scale analytics. Free gives you immediate access at no cost, Pro unlocks the full market-data surface for traders and bot builders, and Quant adds advanced analytics, webhooks, and child key management for teams and resellers. Every tier is backed by the same 38-marketplace data network with 5–10 minute freshness.
+CS2Cap offers four API tiers to fit every use case, from quick evaluation to production-scale analytics. Free gives you immediate access at no cost, Starter adds higher current-price and bid limits for serious hobbyists, Pro unlocks the full market-data surface for traders and bot builders, and Quant adds advanced analytics, webhooks, and child key management for teams and resellers. Every tier is backed by the same 38-marketplace data network with 5–10 minute freshness.
 
 ## At a glance
 
-|  | **Free** | **Pro** | **Quant** |
-| --- | --- | --- | --- |
-| Monthly price | **\$0** | **\$79** | **\$179** |
-| Requests / month | 1,000 | 500,000 | 1,000,000 |
-| Requests / minute | 20 | 100 | 300 |
-| Support | — | Basic | Priority (24 h SLA) |
-| Best for | Evaluation & hobby use | Traders, bots, tooling | Analytics, B2B, resellers |
+|  | **Free** | **Starter** | **Pro** | **Quant** |
+| --- | --- | --- | --- | --- |
+| Monthly price | **\$0** | **\$19** | **\$79** | **\$179** |
+| Requests / month | 1,000 | 50,000 | 500,000 | 1,000,000 |
+| Requests / minute | 20 | 40 | 100 | 300 |
+| Support | — | Basic | Basic | Priority (24 h SLA) |
+| Best for | Evaluation & hobby use | Known item sets | Traders, bots, tooling | Analytics, B2B, resellers |
 
 ## Endpoint access
 
-| Endpoint | Free | Pro | Quant |
-| --- | :-: | :-: | :-: |
-| `GET /v1/prices` — current lowest asks _(38 providers)_ | ✅ | ✅ | ✅ |
-| `POST /v1/prices` — full prices snapshot (NDJSON stream) | — | ✅ | ✅ |
-| `POST /v1/prices/batch` — multi-item price lookup | — | ✅ | ✅ |
-| `GET /v1/prices/candles` — 5m, 1h, 1d OHLC candles (≤ 365 d) | ⚠️ daily only | ✅ | ✅ |
-| `GET /v1/prices/history` — price & quantity changes (≤ 35 d) | — | ✅ | ✅ |
-| `GET /v1/bids` — highest buy orders _(11 providers)_ | — | ✅ | ✅ |
-| `POST /v1/bids` — full bids snapshot (NDJSON stream) | — | ✅ | ✅ |
-| `POST /v1/bids/batch` — multi-item buy-order lookup | — | ✅ | ✅ |
-| `GET /v1/sales` — recent sales _(8 providers)_ | — | ✅ | ✅ |
-| `GET /v1/providers` — marketplace catalog | ✅ | ✅ | ✅ |
-| `GET /v1/market/items` — enriched item metadata | — | ✅ | ✅ |
-| `GET /v1/market/arbitrage` — cross-market arbitrage | — | — | ✅ |
-| `GET /v1/market/indexes` — category market cap indexes | — | — | ✅ |
-| `GET /v1/market/indicators` — technical indicators | — | — | ✅ |
-| `GET /v1/items` — item catalog | ✅ | ✅ | ✅ |
-| `GET /v1/items/metadata` — catalog filter metadata | ✅ | ✅ | ✅ |
-| `GET /v1/portfolio` — portfolio management | ✅ | ✅ | ✅ |
-| `GET /v1/portfolio/value` — portfolio valuation | ✅ | ✅ | ✅ |
-| `GET /v1/inventory/steam` — Steam inventory lookup | ✅ | ✅ | ✅ |
-| `GET /v1/fx` — currency conversion | ✅ | ✅ | ✅ |
+| Endpoint | Free | Starter | Pro | Quant |
+| --- | :-: | :-: | :-: | :-: |
+| `GET /v1/prices` — current lowest asks _(38 providers)_ | ✅ | ✅ | ✅ | ✅ |
+| `POST /v1/prices` — full prices snapshot (NDJSON stream) | — | — | ✅ | ✅ |
+| `POST /v1/prices/batch` — multi-item price lookup | — | ✅ | ✅ | ✅ |
+| `GET /v1/prices/candles` — 5m, 1h, 1d OHLC candles (≤ 365 d) | ⚠️ daily only | ⚠️ daily only | ✅ | ✅ |
+| `GET /v1/prices/history` — price & quantity changes (≤ 35 d) | — | — | ✅ | ✅ |
+| `GET /v1/bids` — highest buy orders _(11 providers)_ | — | ✅ | ✅ | ✅ |
+| `POST /v1/bids` — full bids snapshot (NDJSON stream) | — | — | ✅ | ✅ |
+| `POST /v1/bids/batch` — multi-item buy-order lookup | — | ✅ | ✅ | ✅ |
+| `GET /v1/sales` — recent sales _(8 providers)_ | — | — | ✅ | ✅ |
+| `GET /v1/providers` — marketplace catalog | ✅ | ✅ | ✅ | ✅ |
+| `GET /v1/market/items` — enriched item metadata | — | — | ✅ | ✅ |
+| `GET /v1/market/arbitrage` — cross-market arbitrage | — | — | — | ✅ |
+| `GET /v1/market/indexes` — category market cap indexes | — | — | — | ✅ |
+| `GET /v1/market/indicators` — technical indicators | — | — | — | ✅ |
+| `GET /v1/items` — item catalog | ✅ | ✅ | ✅ | ✅ |
+| `GET /v1/items/metadata` — catalog filter metadata | ✅ | ✅ | ✅ | ✅ |
+| `GET /v1/portfolio` — portfolio management | ✅ | ✅ | ✅ | ✅ |
+| `GET /v1/portfolio/value` — portfolio valuation | ✅ | ✅ | ✅ | ✅ |
+| `GET /v1/inventory/steam` — Steam inventory lookup | ✅ | ✅ | ✅ | ✅ |
+| `GET /v1/fx` — currency conversion | ✅ | ✅ | ✅ | ✅ |
 
 <Note>
-  **Free-tier candles restriction:** Free keys can only call `GET /v1/prices/candles` with `interval=1d` and a lookback window measured in whole days up to 30 days (for example `30d` or `30`). Pro and Quant have no such restriction and can request up to 365 days of candle history at any supported interval.
+  **Free and Starter candles restriction:** Free and Starter keys can only call `GET /v1/prices/candles` with `interval=1d` and a lookback window measured in whole days up to 30 days (for example `30d` or `30`). Pro and Quant have no such restriction and can request up to 365 days of candle history at any supported interval.
 </Note>
 
 ## Features and add-ons
 
-| Feature | Free | Pro | Quant |
-| --- | :-: | :-: | :-: |
-| Raw provider listing URLs in responses | — | ✅ | ✅ |
-| Bulk snapshot exports | — | ✅ | ✅ |
-| Cross-market arbitrage scanner | — | — | ✅ |
-| Technical indicators (RSI, MACD, EMA, …) | — | — | ✅ |
-| Customer webhooks | — | — | ✅ |
-| Child API keys for sub-leasing | — | — | ✅ up to **25** per account |
-| Per-child key quota & rate overrides | — | — | ✅ |
+| Feature | Free | Starter | Pro | Quant |
+| --- | :-: | :-: | :-: | :-: |
+| Raw provider listing URLs in responses | — | — | ✅ | ✅ |
+| Bulk snapshot exports | — | — | ✅ | ✅ |
+| Cross-market arbitrage scanner | — | — | — | ✅ |
+| Technical indicators (RSI, MACD, EMA, …) | — | — | — | ✅ |
+| Customer webhooks | — | — | — | ✅ |
+| Child API keys for sub-leasing | — | — | — | ✅ up to **25** per account |
+| Per-child key quota & rate overrides | — | — | — | ✅ |
 
 ## Portfolio limits
 
-| Limit | Free | Pro | Quant |
-| --- | --: | --: | --: |
-| Max portfolios | 20 | 50 | 1,000 |
-| Max items per portfolio | 1,000 | 5,000 | 10,000 |
+| Limit | Free | Starter | Pro | Quant |
+| --- | --: | --: | --: | --: |
+| Max portfolios | 20 | 20 | 50 | 1,000 |
+| Max items per portfolio | 1,000 | 1,000 | 5,000 | 10,000 |
 
 ## API key rules
 
@@ -103,7 +103,7 @@ Paid tiers are billed monthly through Stripe via card, or NOWPayments via crypto
   </Accordion>
 
   <Accordion title="Do I get all 38 marketplaces on Free?">
-    You can browse the provider catalog on every tier, but live cross-market price, bid, and sales coverage requires Pro or Quant. Free is limited to current prices from `GET /v1/prices`.
+    You can browse the provider catalog on every tier, but Free is limited to current prices from `GET /v1/prices`. Starter adds current bids and 100-item batch lookups, but not sales, history, analytics, listing URLs, or NDJSON snapshots.
   </Accordion>
 
   <Accordion title="How do I get an API key?">
