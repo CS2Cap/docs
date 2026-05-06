@@ -1,5 +1,5 @@
 ---
-title: "Portfolio Management: Track CS2 Skins Investments"
+title: "Track CS2 Holdings with Portfolio Management"
 description: "Create saved portfolios, import Steam inventories, record buy/sell transactions, and value your CS2 holdings in real time using the CS2Cap Portfolio API."
 ---
 
@@ -8,7 +8,7 @@ The CS2Cap Portfolio API supports two distinct use cases. For one-off calculatio
 ## Portfolio limits by tier
 
 | Limit | Free | Pro | Quant |
-| --- | --: | --: | --: |
+|-------|-----:|----:|------:|
 | Max portfolios | 20 | 50 | 1,000 |
 | Max items per portfolio | 1,000 | 5,000 | 10,000 |
 
@@ -36,6 +36,7 @@ The item limit applies regardless of how items were added — manually, via Stea
     }
     ```
   </Step>
+
   <Step title="Add items to the portfolio">
     Use `POST /portfolio/{id}/items` to add items manually. Supply the catalog `item_id`, the quantity you hold, and an optional Doppler `phase` if relevant.
 
@@ -49,6 +50,7 @@ The item limit applies regardless of how items were added — manually, via Stea
 
     Alternatively, import directly from your linked Steam inventory (see [Importing from Steam](#importing-from-steam)) or upload a CSV (see [CSV import/export](#csv-importexport)).
   </Step>
+
   <Step title="Record a transaction">
     Log every purchase or sale with `POST /portfolio/{id}/transactions`. Recording transactions enables historical valuation by rebuilding your holdings day by day from the ledger.
 
@@ -64,6 +66,7 @@ The item limit applies regardless of how items were added — manually, via Stea
     }
     ```
   </Step>
+
   <Step title="Value your portfolio">
     Call `GET /portfolio/{id}/value` to get a live valuation using current indexed prices. You can filter by `currency` and `providers` as query parameters.
   </Step>
@@ -100,7 +103,7 @@ Permanently deletes the portfolio and all of its saved items and transactions.
 Add one item at a time by `item_id` or `market_hash_name`. Use this route for items that did not come from a Steam import.
 
 | Field | Type | Description |
-| --- | --- | --- |
+|-------|------|-------------|
 | `item_id` | integer | Catalog item ID. Required if `market_hash_name` is not provided. |
 | `quantity` | integer | Number of units held. |
 | `phase` | string or null | Doppler phase, if applicable. |
@@ -137,7 +140,7 @@ Upload a CSV file to bulk-import transactions or snapshot-style holdings. The fo
 Downloads portfolio data as a CSV file. Use the `type` query parameter to choose what to export:
 
 | Value | Description |
-| --- | --- |
+|-------|-------------|
 | `transactions` | Full buy/sell ledger (default) |
 | `items` | Current item snapshot |
 
@@ -148,11 +151,11 @@ Downloads portfolio data as a CSV file. Use the `type` query parameter to choose
 Record a buy or sell event against an item in the portfolio. The transaction ledger powers historical valuation.
 
 | Field | Type | Description |
-| --- | --- | --- |
+|-------|------|-------------|
 | `item_id` | integer | Catalog item ID. Required if `market_hash_name` is not provided. |
 | `type` | string | `buy` or `sell`. |
 | `quantity` | integer | Number of units in the transaction. |
-| `price` | integer | Price in minor units (e.g., `2500` = \$25.00). |
+| `price` | integer | Price in minor units (e.g., `2500` = $25.00). |
 | `date` | string | Transaction date in `YYYY-MM-DD` format. |
 | `marketplace` | string | Marketplace where the trade occurred (e.g., `skinport`). |
 | `currency` | string | ISO 4217 currency code (e.g., `USD`). |
@@ -218,15 +221,15 @@ Values all items in a saved portfolio using current indexed prices. Accepts opti
 Rebuilds daily portfolio values by replaying the transaction ledger. Holdings are constructed from transactions, not from the portfolio's current saved item list, so the history accurately reflects what you held on each date.
 
 | Parameter | Type | Description |
-| --- | --- | --- |
+|-----------|------|-------------|
 | `start_date` | string | Inclusive start date (`YYYY-MM-DD`). |
 | `end_date` | string | Inclusive end date. Defaults to today. |
 | `lookback` | string | Shorthand window such as `30d`. Overrides `start_date`. |
 | `currency` | string | Target currency (ISO 4217). Default: `USD`. |
-| `providers` | string\[\] | Optional provider filter. Repeat to pass multiple values. |
+| `providers` | string[] | Optional provider filter. Repeat to pass multiple values. |
 | `limit` | integer | Maximum daily data points to return. |
 | `cursor` | string | Opaque cursor from the previous page. |
 
 <Note>
-  Historical portfolio valuation is daily only — transactions are stored as calendar dates, not timestamps. The response uses cursor pagination, and `pagination.total = -1` is expected behavior on this endpoint.
+Historical portfolio valuation is daily only — transactions are stored as calendar dates, not timestamps. The response uses cursor pagination, and `pagination.total = -1` is expected behavior on this endpoint.
 </Note>

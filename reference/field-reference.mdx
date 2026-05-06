@@ -1,12 +1,12 @@
 ---
-title: "Field Reference: All Response Fields"
+title: "CS2Cap Field Reference: All Response Fields"
 description: "Complete definitions for every field returned by the CS2Cap API, including price fields, pagination, the response envelope, and item catalog metadata."
 ---
 
 Every CS2Cap endpoint returns a predictable set of fields. This reference covers what each field means, its type, which endpoints return it, and any important formatting rules you need to follow when reading values — especially the minor-units convention for all price data.
 
 <Note>
-  All price fields (`lowest_ask`, `highest_bid`, `price`, `best_ask`, `item_value`, `total_value`) are returned in **minor units** of the response currency. Divide by 100 to get the display value. For example, `lowest_ask = 2550` with `currency = USD` means **\$25.50**.
+  All price fields (`lowest_ask`, `highest_bid`, `price`, `best_ask`, `item_value`, `total_value`) are returned in **minor units** of the response currency. Divide by 100 to get the display value. For example, `lowest_ask = 2550` with `currency = USD` means **$25.50**.
 </Note>
 
 ## Field availability
@@ -56,12 +56,12 @@ These fields are specific to the portfolio system and appear on `/portfolio/item
 
 These fields identify an item and appear in most responses across the API.
 
-| Field | Type | Description |  |
-| --- | --- | --- | --- |
-| `item_id` | integer | Internal catalog ID assigned by CS2Cap. It stays stable across providers. Prefer this over `market_hash_name` once you have resolved it. |  |
-| `market_hash_name` | string | Canonical Steam market hash name, for example \`★ Gut Knife | Fade (Factory New)`. Use this when you do not have an `item\_id\` yet. |
-| `phase` | string | Doppler or Gamma Doppler variant label, for example `Phase 1` or `Emerald`. Returns `null` when phase is not relevant to the item. |  |
-| `provider` | string | Provider key used by this API, for example `steam`, `buff163`, or `csfloat`. Use provider keys in request parameters, not brand names. |  |
+| Field | Type | Description |
+| --- | --- | --- |
+| `item_id` | integer | Internal catalog ID assigned by CS2Cap. It stays stable across providers. Prefer this over `market_hash_name` once you have resolved it. |
+| `market_hash_name` | string | Canonical Steam market hash name, for example `★ Gut Knife \| Fade (Factory New)`. Use this when you do not have an `item_id` yet. |
+| `phase` | string | Doppler or Gamma Doppler variant label, for example `Phase 1` or `Emerald`. Returns `null` when phase is not relevant to the item. |
+| `provider` | string | Provider key used by this API, for example `steam`, `buff163`, or `csfloat`. Use provider keys in request parameters, not brand names. |
 
 ## Price fields
 
@@ -127,7 +127,7 @@ Most list endpoints return these top-level fields:
 | `pagination` | object | Pagination metadata. See [Pagination](#pagination) above. |
 | `meta` | object | Response context such as currency, filters, and returned providers. |
 | `meta.currency` | string | ISO 4217 currency code that all price values in the response use. |
-| `meta.returned_providers` | array\[string\] | Provider keys that returned data in this response. This can be a subset of what you requested. |
+| `meta.returned_providers` | array[string] | Provider keys that returned data in this response. This can be a subset of what you requested. |
 | `meta.filters` | object | Echo of the effective filters applied to the request, including `market_hash_name`, `phase`, and `requested_providers`. |
 
 ## Item catalog fields
@@ -145,7 +145,7 @@ These fields are returned by `/items`. All are nullable — a `null` value means
 | `rarity_name` | string | Human-readable rarity tier, for example `Classified` or `Covert`. |
 | `rarity_color` | string | Normalized hex alias for the rarity color. |
 | `collection` | string | Collection name, when available. |
-| `crates` | array\[string\] | Cases or crates the item can come from. |
+| `crates` | array[string] | Cases or crates the item can come from. |
 | `is_stattrak` | boolean | Whether the item is a StatTrak variant. |
 | `is_souvenir` | boolean | Whether the item is a Souvenir variant. |
 | `min_float` | float | Lowest possible float value for the item variant. |

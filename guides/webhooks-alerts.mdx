@@ -1,5 +1,5 @@
 ---
-title: "Alerts and Webhooks: Setup and Configuration"
+title: "CS2Cap Alerts and Webhooks: Setup and Configuration"
 description: "Create price and spread alerts that notify you by email, and configure Quant-tier webhooks to receive real-time alert.triggered events in your own systems."
 ---
 
@@ -12,7 +12,7 @@ CS2Cap gives you two complementary ways to stay on top of market movements. Aler
 CS2Cap supports three alert kinds:
 
 | Kind | Trigger condition |
-| --- | --- |
+|------|-------------------|
 | `price_below` | The current best ask falls below your threshold value. |
 | `price_above` | The current best ask rises above your threshold value. |
 | `spread_exceeds` | The spread `((best_ask - best_bid) / best_ask) * 100` exceeds your threshold percentage. |
@@ -32,7 +32,7 @@ CS2Cap supports three alert kinds:
 ```
 
 | Field | Type | Description |
-| --- | --- | --- |
+|-------|------|-------------|
 | `item_id` | integer | **Required.** Catalog item ID to monitor. |
 | `kind` | string | **Required.** One of `price_below`, `price_above`, `spread_exceeds`. |
 | `threshold_value` | string | **Required.** Decimal string greater than zero. |
@@ -76,7 +76,7 @@ Create up to 100 alerts in a single request. The batch counts as one request aga
 ### Listing and managing alerts
 
 | Operation | Endpoint |
-| --- | --- |
+|-----------|----------|
 | List all alerts | `GET /account/alerts` |
 | Update threshold or enabled state | `PATCH /account/alerts/{id}` |
 | Delete an alert | `DELETE /account/alerts/{id}` |
@@ -90,7 +90,7 @@ Create up to 100 alerts in a single request. The batch counts as one request aga
 Returns recent alert trigger events and their email delivery attempts, newest first. Use this endpoint to audit which alerts have fired and whether email delivery succeeded.
 
 <Note>
-  Alert routes are **exempt from monthly quota**. Creating, listing, updating, and deleting alerts does not count against your 1,000 / 500,000 / 1,000,000 monthly request total.
+Alert routes are **exempt from monthly quota**. Creating, listing, updating, and deleting alerts does not count against your 1,000 / 500,000 / 1,000,000 monthly request total.
 </Note>
 
 ---
@@ -98,7 +98,7 @@ Returns recent alert trigger events and their email delivery attempts, newest fi
 ## Webhooks
 
 <Warning>
-  Webhooks are available on the **Quant tier only**. Accounts on Free or Pro will receive a `403` when attempting to create or manage webhooks.
+Webhooks are available on the **Quant tier only**. Accounts on Free or Pro will receive a `403` when attempting to create or manage webhooks.
 </Warning>
 
 ### Creating a webhook
@@ -134,7 +134,7 @@ Example response:
 ```
 
 <Warning>
-  The `secret` field is returned **only once** at creation time. Store it securely (for example in a secrets manager or environment variable). After this response, you can only see the last four characters via `secret_last4`.
+The `secret` field is returned **only once** at creation time. Store it securely (for example in a secrets manager or environment variable). After this response, you can only see the last four characters via `secret_last4`.
 </Warning>
 
 The `url` must be a reachable HTTP or HTTPS destination. CS2Cap will POST signed event payloads to this URL whenever an alert fires.
@@ -144,7 +144,7 @@ The `url` must be a reachable HTTP or HTTPS destination. CS2Cap will POST signed
 CS2Cap delivers one event type to your webhook endpoint:
 
 | Event type | Description |
-| --- | --- |
+|------------|-------------|
 | `alert.triggered` | An alert condition was met and email delivery was attempted. |
 
 The delivery payload includes the `alert_id`, `item_id`, and `market_hash_name` of the triggered alert.
@@ -173,7 +173,7 @@ Generate a new signing secret for an existing webhook. The new secret is returne
 ### Listing and managing webhooks
 
 | Operation | Endpoint |
-| --- | --- |
+|-----------|----------|
 | List all webhooks | `GET /account/webhooks` |
 | Update label, URL, or active state | `PATCH /account/webhooks/{id}` |
 | Delete a webhook | `DELETE /account/webhooks/{id}` |
@@ -186,9 +186,11 @@ Generate a new signing secret for an existing webhook. The new secret is returne
   <Step title="Verify your email address">
     Before you can enable an alert, your account must have a verified email. If you have not verified yet, complete verification from your account settings — CS2Cap will reject enabled alert creation until this step is done.
   </Step>
+
   <Step title="Find the item ID">
     Query `GET /v1/items` or `GET /v1/items/metadata` to find the catalog `item_id` for the item you want to monitor. The `item_id` is a stable integer identifier.
   </Step>
+
   <Step title="Create the alert">
     Call `POST /account/alerts` with your chosen `kind`, `threshold_value`, and `threshold_currency`.
 
@@ -205,9 +207,11 @@ Generate a new signing secret for an existing webhook. The new secret is returne
       }'
     ```
   </Step>
+
   <Step title="Wait for the trigger email">
     When the market condition is met, CS2Cap sends a notification to your verified email address and automatically disables the alert. To have it fire again, re-enable it with `PATCH /account/alerts/{id}` — set `is_enabled` to `true`.
   </Step>
+
   <Step title="(Quant only) Connect a webhook">
     To receive machine-readable events in addition to email, create a webhook destination with `POST /account/webhooks`. Store the returned secret, then monitor `GET /account/webhooks/deliveries` to confirm delivery.
   </Step>

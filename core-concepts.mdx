@@ -1,5 +1,5 @@
 ---
-title: "Core Concepts: Data Model and Terminology"
+title: "CS2Cap Core Concepts: Data Model and Terminology"
 description: "Understand the CS2Cap data model: quotes, providers, minor units, item identity, indexed-only paths, and common integration pitfalls to avoid."
 ---
 
@@ -26,7 +26,7 @@ Before you start building with CS2Cap, it helps to understand a few core concept
 
 All price fields are returned as integers in the **smallest unit** of the requested currency — not decimal amounts.
 
-- For `USD`: the unit is cents. A value of `2550` means **\$25.50**.
+- For `USD`: the unit is cents. A value of `2550` means **$25.50**.
 - For `EUR`: the unit is euro cents.
 
 This applies consistently to `lowest_ask`, `highest_bid`, `price`, and any other monetary field in the API.
@@ -85,19 +85,15 @@ A `null` value means the field does not apply to that item — it is not an erro
   <Accordion title="Treating price integers as full currency amounts">
     Price fields like `lowest_ask` and `highest_bid` are in minor units (e.g., cents for USD). A value of `5000` means $50.00, not $5000. Always divide by 100 before displaying prices to users.
   </Accordion>
-
   <Accordion title="Using provider display names instead of provider keys">
     The `providers` parameter expects machine-readable keys like `steam` or `csfloat`, not display names like "Steam" or "CS.Float". Passing a display name will result in no data being returned for that provider, or a validation error.
   </Accordion>
-
   <Accordion title="Assuming every item supports phase metadata">
     The `phase` field is only populated for Doppler and Gamma Doppler knives. For all other items it is `null`. Do not use `null` to infer that an item is a knife — check the `item_id` or category metadata instead.
   </Accordion>
-
   <Accordion title="Confusing tracked redirect links with direct marketplace URLs">
     API responses include both a `link` field (a tracked `cs2c.app/r/...` redirect) and a `url` field (the direct marketplace URL). Use `link` if you want to support click attribution; use `url` if you need the canonical marketplace page.
   </Accordion>
-
   <Accordion title="Assuming prices and bids fall back to a live non-indexed path">
     `/v1/prices` and `/v1/bids` have no live fallback. A `503` response means the index is temporarily unavailable — not that the item doesn't exist or that you should query a different endpoint. Implement retry logic and surface the outage to your users if it persists.
   </Accordion>

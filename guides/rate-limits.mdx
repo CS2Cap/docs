@@ -1,5 +1,5 @@
 ---
-title: "Rate Limits: Per-Minute and Monthly Quotas"
+title: "CS2Cap Rate Limits: Per-Minute and Monthly Quotas"
 description: "Understand CS2Cap's per-minute and monthly request limits, how to read rate-limit headers, and best practices for staying within your quota."
 ---
 
@@ -8,7 +8,7 @@ CS2Cap enforces two independent rate limits on every API key: a per-minute burst
 ## Limits by tier
 
 | Tier | Requests / minute | Requests / month |
-| --- | :-: | :-: |
+|------|:-----------------:|:----------------:|
 | Free | 20 | 1,000 |
 | Pro | 100 | 500,000 |
 | Quant | 300 | 1,000,000 |
@@ -33,7 +33,7 @@ The following route categories are **exempt from monthly quota** (they still hav
 When you are approaching or have exceeded a limit, the API includes the following headers on the response:
 
 | Header | Description |
-| --- | --- |
+|--------|-------------|
 | `Retry-After` | Seconds to wait before the next request will succeed. Present on `429` responses. |
 | `X-RateLimit-Limit` | Your tier's monthly quota. |
 | `X-RateLimit-Remaining` | Monthly quota requests remaining in the current billing period. |
@@ -56,7 +56,7 @@ X-RateLimit-Tier: pro
 Both rate limit conditions return HTTP `429` with a machine-readable `code` field in the response body.
 
 | Code | HTTP status | Meaning |
-| --- | :-: | --- |
+|------|:-----------:|---------|
 | `RATE_LIMIT_EXCEEDED` | 429 | Per-minute burst limit hit. Wait for the number of seconds in `Retry-After`. |
 | `RATE_LIMIT_MONTHLY_QUOTA_EXCEEDED` | 429 | Monthly quota exhausted. Requests will resume at the start of the next billing period. |
 
@@ -70,7 +70,7 @@ Both rate limit conditions return HTTP `429` with a machine-readable `code` fiel
 ## Best practices
 
 <Tip>
-  Always read the `Retry-After` header on a `429` response and wait the indicated number of seconds before retrying. Retrying immediately wastes quota and continues to return `429`.
+Always read the `Retry-After` header on a `429` response and wait the indicated number of seconds before retrying. Retrying immediately wastes quota and continues to return `429`.
 </Tip>
 
 - **Check `X-RateLimit-Remaining` proactively.** If your remaining monthly quota is low, throttle your request rate rather than waiting for a hard block.
