@@ -60,7 +60,6 @@ async function getLongRangePriceCandles(itemId: number) {
     item_id: String(itemId),
     lookback: "365d",
     interval: "1d",
-    fill: "true",
   });
 
   return serverApi.getPriceCandles(`/v1/web/prices/candles?${params.toString()}`, 86400);
