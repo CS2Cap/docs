@@ -308,14 +308,14 @@ Returns composite OHLCV candles across all providers for the resolved item. Supp
 </ParamField>
 
 <ParamField query="end" type="string">
-  Exclusive ISO 8601 end timestamp. Defaults to now when omitted.
+  Exclusive ISO 8601 end timestamp. Defaults to the current time when omitted.
 </ParamField>
 
 <ParamField query="lookback" type="string">
-  Duration shorthand such as `7d` or `30d`. Overrides `start` when provided.
+  Duration shorthand such as `7d` or `30`. Overrides `start` when provided. For `interval=1h`, the window ends at the hour boundary after a 15-minute freshness buffer.
 </ParamField>
 
-<ParamField query="interval" type="string" default="1h">
+<ParamField query="interval" type="string" default="1d">
   Candle interval. One of: `5m`, `1h`, `1d`.
 </ParamField>
 
@@ -328,6 +328,8 @@ Returns composite OHLCV candles across all providers for the resolved item. Supp
 </ParamField>
 
 ### Response example
+
+`meta.start` and `meta.end` describe the effective query window. With `fill=false`, `data` can be sparse inside that window; use `fill=true` to forward-fill empty buckets.
 
 ```json
 {
