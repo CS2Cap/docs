@@ -29361,6 +29361,28 @@
             "minItems": 1,
             "title": "Market Hash Names",
             "description": "Steam market hash names to resolve, up to 1,000 per request."
+          },
+          "phases": {
+            "anyOf": [
+              {
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phases",
+            "description": "Optional parallel array of phases (same length as market_hash_names). When provided, each entry is resolved against the matching (name, phase) pair so Doppler variants return the correct phase-specific item ID."
           }
         },
         "type": "object",
@@ -29406,6 +29428,18 @@
             "type": "string",
             "title": "Market Hash Name",
             "description": "Requested Steam market hash name."
+          },
+          "phase": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phase",
+            "description": "Echoed phase from the request, or null when no phase was requested."
           },
           "item_id": {
             "anyOf": [
