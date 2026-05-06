@@ -1,5 +1,5 @@
 ---
-title: "CS2Cap Error Codes and HTTP Status Reference"
+title: "Error Codes and HTTP Status Reference"
 description: "Reference for every HTTP status code and machine-readable error code returned by the CS2Cap API, with descriptions and retry guidance."
 ---
 
@@ -36,17 +36,14 @@ Use `code` for programmatic error handling. Use `detail` for logging or displayi
 
 <AccordionGroup>
   <Accordion title="Authentication errors">
-
     | Code | HTTP Status | Description |
     | --- | --- | --- |
     | `AUTH_INVALID_API_KEY` | 401 | The API key in the `Authorization` header is not recognized or is malformed. Check that you are sending `Authorization: Bearer <your_key>`. |
     | `AUTH_API_KEY_REVOKED` | 401 | The API key has been revoked. Issue a new key from your account settings. |
     | `AUTH_ACCOUNT_DISABLED` | 401 | Your account has been disabled. Contact support for assistance. |
-
   </Accordion>
 
   <Accordion title="Rate limit errors">
-
     | Code | HTTP Status | Description |
     | --- | --- | --- |
     | `RATE_LIMIT_EXCEEDED` | 429 | You have exceeded the per-minute request limit for your tier. Check the `Retry-After` header and wait before retrying. |
@@ -57,11 +54,9 @@ Use `code` for programmatic error handling. Use `detail` for logging or displayi
 
       The response also includes `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`, and `X-RateLimit-Tier` headers for monitoring your usage.
     </Warning>
-
   </Accordion>
 
   <Accordion title="Data index errors">
-
     | Code | HTTP Status | Description |
     | --- | --- | --- |
     | `PRICES_INDEX_UNAVAILABLE` | 503 | The prices index is temporarily unavailable. This is a transient condition — retry the request after a short delay. |
@@ -70,25 +65,20 @@ Use `code` for programmatic error handling. Use `detail` for logging or displayi
     <Note>
       Index unavailability errors are temporary. They typically resolve within minutes. Implement an exponential backoff retry strategy with a cap of a few minutes.
     </Note>
-
   </Accordion>
 
   <Accordion title="Portfolio errors">
-
     | Code | HTTP Status | Description |
     | --- | --- | --- |
     | `PORTFOLIO_NOT_FOUND` | 404 | The requested portfolio does not exist or does not belong to your account. |
     | `PORTFOLIO_LIMIT_REACHED` | 409 | Your account has reached the maximum number of portfolios allowed on your current tier. |
     | `PORTFOLIO_ITEM_LIMIT_REACHED` | 409 | The portfolio has reached its maximum item count. Remove items or upgrade your tier to add more. |
-
   </Accordion>
 
   <Accordion title="Validation errors">
-
     | Code | HTTP Status | Description |
     | --- | --- | --- |
     | `VALIDATION_ERROR` | 422 | One or more request parameters failed validation. The `detail` field describes which parameter is invalid and why. |
-
   </Accordion>
 </AccordionGroup>
 

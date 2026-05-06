@@ -17,7 +17,7 @@ The docs are written for API consumers: developers building pricing tools, tradi
 | `api-reference/` | Endpoint-level reference pages for prices, bids, sales, catalog, analytics, portfolio, account, sub-keys, alerts, and webhooks. |
 | `guides/` | Task-oriented guides for pricing plans, rate limits, portfolio workflows, and webhook/alert integrations. |
 | `reference/` | Cross-cutting reference material for fields, error codes, and provider keys. |
-| `openapi/openapi.json` | Filtered public OpenAPI spec generated from the backend contract. |
+| `openapi.json` | Filtered public OpenAPI spec generated from the backend contract. |
 | `changelog.mdx` | Public documentation changelog. |
 
 ## Navigation Model
