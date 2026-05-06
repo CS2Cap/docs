@@ -2,16 +2,9 @@ import "server-only";
 
 import { NextRequest, NextResponse } from "next/server";
 import { API_BASE_URL } from "@/lib/api/config";
-import { buildQuery } from "@/lib/api/shared";
 import { setCachedMarketItemsSnapshot } from "@/lib/upstash-cache";
-import type {
-  MarketItemsSnapshotResponse,
-  MarketTimeframe,
-} from "@/lib/api/types";
+import type { MarketItemsSnapshotResponse, MarketTimeframe } from "@/lib/api/types";
 
-// Force a fresh fetch + Upstash write so users never hit the 20s cold path
-// in getCachedMarketItemsSnapshot. Only 24h is rendered today; extend this
-// list if more timeframes ship to user-visible pages.
 const PREWARM_TIMEFRAMES: MarketTimeframe[] = ["24h"];
 
 export const dynamic = "force-dynamic";
@@ -19,17 +12,16 @@ export const maxDuration = 60;
 
 async function fetchAndStore(
   timeframe: MarketTimeframe,
+  exportApiKey: string,
 ): Promise<{ ok: true } | { ok: false; reason: string }> {
   const startedAt = Date.now();
   let upstreamStatus: number | null = null;
   try {
-    const response = await fetch(
-      `${API_BASE_URL}/v1/web/market/items${buildQuery({ timeframe })}`,
-      {
-        cache: "no-store",
-        signal: AbortSignal.timeout(25000),
-      },
-    );
+    const response = await fetch(`${API_BASE_URL}/v1/market/items?timeframe=${timeframe}`, {
+      headers: { Authorization: `Bearer ${exportApiKey}` },
+      cache: "no-store",
+      signal: AbortSignal.timeout(25_000),
+    });
     upstreamStatus = response.status;
 
     if (!response.ok) {
@@ -51,7 +43,7 @@ async function fetchAndStore(
       stored,
       duration_ms: Date.now() - startedAt,
     }));
-    return stored ? { ok: true } : { ok: false, reason: "upstash write failed" };
+    return stored ? { ok: true } : { ok: false, reason: "blob write failed" };
   } catch (error) {
     console.warn(JSON.stringify({
       event: "cron.prewarm_market_snapshot.failed",
@@ -60,41 +52,31 @@ async function fetchAndStore(
       duration_ms: Date.now() - startedAt,
       error: error instanceof Error ? error.message : "unknown error",
     }));
-    return {
-      ok: false,
-      reason: error instanceof Error ? error.message : "unknown error",
-    };
+    return { ok: false, reason: error instanceof Error ? error.message : "unknown error" };
   }
 }
 
 export async function GET(request: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
-    return NextResponse.json(
-      { code: "CRON_SECRET_MISSING" },
-      { status: 500 },
-    );
+    return NextResponse.json({ code: "CRON_SECRET_MISSING" }, { status: 500 });
+  }
+  if (request.headers.get("authorization") !== `Bearer ${cronSecret}`) {
+    return NextResponse.json({ code: "UNAUTHORIZED" }, { status: 401 });
   }
 
-  const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ code: "UNAUTHORIZED" }, { status: 401 });
+  const exportApiKey = process.env.CS2C_EXPORT_API_KEY;
+  if (!exportApiKey) {
+    return NextResponse.json({ code: "EXPORT_API_KEY_MISSING" }, { status: 500 });
   }
 
   const results = await Promise.all(
     PREWARM_TIMEFRAMES.map(async (timeframe) => ({
       timeframe,
-      ...(await fetchAndStore(timeframe)),
+      ...(await fetchAndStore(timeframe, exportApiKey)),
     })),
   );
 
-  const allOk = results.every((entry) => entry.ok);
-
-  return NextResponse.json(
-    {
-      timestamp: new Date().toISOString(),
-      results,
-    },
-    { status: allOk ? 200 : 502 },
-  );
+  const allOk = results.every((r) => r.ok);
+  return NextResponse.json({ timestamp: new Date().toISOString(), results }, { status: allOk ? 200 : 502 });
 }

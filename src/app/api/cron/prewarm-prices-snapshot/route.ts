@@ -3,18 +3,10 @@ import "server-only";
 import { NextRequest, NextResponse } from "next/server";
 import { API_BASE_URL } from "@/lib/api/config";
 import { setCachedPricesSnapshot } from "@/lib/upstash-cache";
-import type { MarketItem, PricesPaginatedResponse } from "@/lib/api/types";
+import type { MarketItem } from "@/lib/api/types";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
-
-function groupByItemId(items: MarketItem[]): Record<number, MarketItem[]> {
-  const grouped: Record<number, MarketItem[]> = {};
-  for (const item of items) {
-    (grouped[item.item_id] ??= []).push(item);
-  }
-  return grouped;
-}
 
 export async function GET(request: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
@@ -25,16 +17,20 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ code: "UNAUTHORIZED" }, { status: 401 });
   }
 
+  const exportApiKey = process.env.CS2C_EXPORT_API_KEY;
+  if (!exportApiKey) {
+    return NextResponse.json({ code: "EXPORT_API_KEY_MISSING" }, { status: 500 });
+  }
+
   const startedAt = Date.now();
   let upstreamStatus: number | null = null;
 
   try {
-    const response = await fetch(`${API_BASE_URL}/v1/web/prices`, {
+    const response = await fetch(`${API_BASE_URL}/v1/prices`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({}),
+      headers: { Authorization: `Bearer ${exportApiKey}` },
       cache: "no-store",
-      signal: AbortSignal.timeout(240000),
+      signal: AbortSignal.timeout(240_000),
     });
     upstreamStatus = response.status;
 
@@ -47,26 +43,30 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ ok: false, reason: `upstream ${response.status}` }, { status: 502 });
     }
 
-    const data = (await response.json()) as PricesPaginatedResponse;
-    const snapshot = {
-      byItemId: groupByItemId(data.items),
-      timestamp: new Date().toISOString(),
-    };
+    const text = await response.text();
+    const items = text.trim().split("\n").filter(Boolean).map((l) => JSON.parse(l) as MarketItem);
+
+    const byItemId: Record<number, MarketItem[]> = {};
+    for (const item of items) {
+      (byItemId[item.item_id] ??= []).push(item);
+    }
+
+    const snapshot = { byItemId, timestamp: new Date().toISOString() };
     const stored = await setCachedPricesSnapshot(snapshot);
 
     console.log(JSON.stringify({
       event: "cron.prewarm_prices_snapshot.completed",
       upstream_status: upstreamStatus,
-      item_count: data.items.length,
-      unique_items: Object.keys(snapshot.byItemId).length,
+      item_count: items.length,
+      unique_items: Object.keys(byItemId).length,
       stored,
       duration_ms: Date.now() - startedAt,
     }));
 
     return NextResponse.json({
       ok: stored,
-      item_count: data.items.length,
-      unique_items: Object.keys(snapshot.byItemId).length,
+      item_count: items.length,
+      unique_items: Object.keys(byItemId).length,
       timestamp: snapshot.timestamp,
       duration_ms: Date.now() - startedAt,
     }, { status: stored ? 200 : 502 });

@@ -8,8 +8,6 @@ import type { ItemOut, ItemsResponse } from "@/lib/api/types";
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
-const FETCH_LIMIT = 1000;
-
 export async function GET(request: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
@@ -19,70 +17,59 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ code: "UNAUTHORIZED" }, { status: 401 });
   }
 
+  const exportApiKey = process.env.CS2C_EXPORT_API_KEY;
+  if (!exportApiKey) {
+    return NextResponse.json({ code: "EXPORT_API_KEY_MISSING" }, { status: 500 });
+  }
+
   const startedAt = Date.now();
-  const allItems: ItemOut[] = [];
-  let offset = 0;
-  let page = 0;
+  let upstreamStatus: number | null = null;
 
   try {
-    while (true) {
-      const url = `${API_BASE_URL}/v1/web/items?limit=${FETCH_LIMIT}&offset=${offset}`;
-      const response = await fetch(url, {
-        cache: "no-store",
-        signal: AbortSignal.timeout(30000),
-      });
+    const response = await fetch(`${API_BASE_URL}/v1/items`, {
+      headers: { Authorization: `Bearer ${exportApiKey}` },
+      cache: "no-store",
+      signal: AbortSignal.timeout(60_000),
+    });
+    upstreamStatus = response.status;
 
-      if (!response.ok) {
-        console.warn(JSON.stringify({
-          event: "cron.prewarm_items_snapshot.upstream_error",
-          page,
-          offset,
-          upstream_status: response.status,
-          duration_ms: Date.now() - startedAt,
-        }));
-        return NextResponse.json({ ok: false, reason: `upstream ${response.status} at page ${page}` }, { status: 502 });
-      }
-
-      const data = (await response.json()) as ItemsResponse;
-      allItems.push(...data.items);
-      page += 1;
-
-      if (!data.pagination.has_next || data.items.length < FETCH_LIMIT) break;
-      offset += data.items.length;
+    if (!response.ok) {
+      console.warn(JSON.stringify({
+        event: "cron.prewarm_items_snapshot.upstream_error",
+        upstream_status: response.status,
+        duration_ms: Date.now() - startedAt,
+      }));
+      return NextResponse.json({ ok: false, reason: `upstream ${response.status}` }, { status: 502 });
     }
 
+    const data = (await response.json()) as ItemsResponse;
+    const items: ItemOut[] = data.items;
+
     const byItemId: Record<number, ItemOut> = {};
-    for (const item of allItems) {
+    for (const item of items) {
       if (item.item_id != null) byItemId[item.item_id] = item;
     }
 
-    const snapshot = {
-      items: allItems,
-      byItemId,
-      total: allItems.length,
-      timestamp: new Date().toISOString(),
-    };
+    const snapshot = { items, byItemId, total: items.length, timestamp: new Date().toISOString() };
     const stored = await setCachedItemsSnapshot(snapshot);
 
     console.log(JSON.stringify({
       event: "cron.prewarm_items_snapshot.completed",
-      pages_fetched: page,
-      total_items: allItems.length,
+      upstream_status: upstreamStatus,
+      total_items: items.length,
       stored,
       duration_ms: Date.now() - startedAt,
     }));
 
     return NextResponse.json({
       ok: stored,
-      total_items: allItems.length,
-      pages_fetched: page,
+      total_items: items.length,
       timestamp: snapshot.timestamp,
       duration_ms: Date.now() - startedAt,
     }, { status: stored ? 200 : 502 });
   } catch (error) {
     console.warn(JSON.stringify({
       event: "cron.prewarm_items_snapshot.failed",
-      page,
       duration_ms: Date.now() - startedAt,
       error: error instanceof Error ? error.message : "unknown error",
     }));

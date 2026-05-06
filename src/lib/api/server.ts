@@ -21,6 +21,7 @@ import {
 } from "../upstash-cache";
 import type {
   AccountInfo,
+  BatchPricesResponse,
   BidsResponse,
   BillingOverviewResponse,
   BuyOrderItem,
@@ -95,38 +96,42 @@ export async function serverFetch<T>(
 // ── Background refresh helpers (raw fetch, no user cookies) ──────────────────
 
 async function fetchAllPricesAndStore() {
+  const apiKey = process.env.CS2C_EXPORT_API_KEY;
+  if (!apiKey) return;
   try {
-    const response = await fetch(`${API_BASE_URL}/v1/web/prices`, {
+    const response = await fetch(`${API_BASE_URL}/v1/prices`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({}),
+      headers: { Authorization: `Bearer ${apiKey}` },
       cache: "no-store",
-      signal: AbortSignal.timeout(60000),
+      signal: AbortSignal.timeout(120_000),
     });
     if (!response.ok) return;
-    const data = (await response.json()) as PricesPaginatedResponse;
+    const text = await response.text();
+    const items = text.trim().split("\n").filter(Boolean).map((l) => JSON.parse(l) as MarketItem);
     await setCachedPricesSnapshot({
-      byItemId: groupMarketItemsById(data.items),
+      byItemId: groupMarketItemsById(items),
       timestamp: new Date().toISOString(),
     });
   } catch {
-    // Silently fail — next request retries, cron ensures eventual freshness
+    // Silently fail — cron ensures eventual freshness
   }
 }
 
 async function fetchAllBidsAndStore() {
+  const apiKey = process.env.CS2C_EXPORT_API_KEY;
+  if (!apiKey) return;
   try {
-    const response = await fetch(`${API_BASE_URL}/v1/web/bids`, {
+    const response = await fetch(`${API_BASE_URL}/v1/bids`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({}),
+      headers: { Authorization: `Bearer ${apiKey}` },
       cache: "no-store",
-      signal: AbortSignal.timeout(60000),
+      signal: AbortSignal.timeout(120_000),
     });
     if (!response.ok) return;
-    const data = (await response.json()) as BidsResponse;
+    const text = await response.text();
+    const items = text.trim().split("\n").filter(Boolean).map((l) => JSON.parse(l) as BuyOrderItem);
     await setCachedBidsSnapshot({
-      byItemId: groupBidItemsById(data.items),
+      byItemId: groupBidItemsById(items),
       timestamp: new Date().toISOString(),
     });
   } catch {
@@ -135,17 +140,17 @@ async function fetchAllBidsAndStore() {
 }
 
 async function fetchAllItemsAndStore() {
+  const apiKey = process.env.CS2C_EXPORT_API_KEY;
+  if (!apiKey) return;
   try {
-    const response = await fetch(`${API_BASE_URL}/v1/web/items?limit=1000`, {
+    const response = await fetch(`${API_BASE_URL}/v1/items`, {
+      headers: { Authorization: `Bearer ${apiKey}` },
       cache: "no-store",
-      signal: AbortSignal.timeout(30000),
+      signal: AbortSignal.timeout(60_000),
     });
     if (!response.ok) return;
     const data = (await response.json()) as ItemsResponse;
-    if (!data.pagination.has_next) {
-      await setCachedItemsSnapshot(buildItemsSnapshotData(data.items));
-    }
-    // Partial data — let cron handle full pagination
+    await setCachedItemsSnapshot(buildItemsSnapshotData(data.items));
   } catch {
     // Silently fail
   }
@@ -308,13 +313,13 @@ export const serverApi = {
     return serverFetch<ItemsMetadataResponse>("/v1/web/items/metadata", { revalidate });
   },
 
-  getProviders(revalidate: number | false = false) {
-    return serverFetch<ProvidersResponse>("/v1/web/providers", { revalidate }).then(
-      normalizeProvidersResponse,
+  async getProviders(revalidate: number | false = false) {
+    return normalizeProvidersResponse(
+      await serverFetch<ProvidersResponse>("/v1/web/providers", { revalidate }),
     );
   },
 
-  // Prices — served from Redis snapshot; cold-starts fall through to targeted POST.
+  // Prices — served from Redis snapshot; cold-starts fall through to targeted API calls.
   async postPrices(
     query: { item_ids: number[]; currency?: string; limit?: number },
   ): Promise<PricesPaginatedResponse | null> {
@@ -323,15 +328,44 @@ export const serverApi = {
       if (cached.isStale) refreshPricesSnapshotInBackground(fetchAllPricesAndStore);
       return assemblePricesResponse(cached.snapshot.byItemId, query);
     }
-    return serverFetch<PricesPaginatedResponse>("/v1/web/prices", {
+    // Cold-start: single item uses GET, multiple items use batch POST
+    if (query.item_ids.length === 1) {
+      const params = new URLSearchParams({ item_id: String(query.item_ids[0]) });
+      if (query.limit != null) params.set("limit", String(query.limit));
+      if (query.currency) params.set("currency", query.currency);
+      return serverFetch<PricesPaginatedResponse>(`/v1/web/prices?${params}`, {
+        revalidate: false,
+        timeoutMs: 10000,
+      });
+    }
+    const batch = await serverFetch<BatchPricesResponse>("/v1/web/prices/batch", {
       method: "POST",
-      body: query,
+      body: { item_ids: query.item_ids, currency: query.currency },
       revalidate: false,
-      timeoutMs: 20000,
+      timeoutMs: 15000,
     });
+    if (!batch) return null;
+    const priceItems: MarketItem[] = batch.items.flatMap((bi) =>
+      bi.quotes.map((q) => ({
+        provider: q.provider,
+        item_id: bi.item_id,
+        market_hash_name: bi.market_hash_name,
+        phase: bi.phase,
+        lowest_ask: q.lowest_ask,
+        quantity: q.quantity,
+        timestamp: q.timestamp,
+        last_updated: q.last_updated,
+      })),
+    );
+    const limited = query.limit != null ? priceItems.slice(0, query.limit) : priceItems;
+    return {
+      meta: { currency: query.currency ?? "USD", filters: {}, returned_providers: batch.meta.providers_queried },
+      items: limited,
+      pagination: { limit: query.limit ?? limited.length, offset: 0, total: limited.length, has_next: false, has_prev: false },
+    };
   },
 
-  // Bids — served from Redis snapshot; cold-starts fall through to targeted POST.
+  // Bids — served from Redis snapshot; cold-starts fall through to targeted GET.
   async postBids(
     query: { item_ids: number[]; currency?: string; limit?: number },
   ): Promise<BidsResponse | null> {
@@ -340,11 +374,14 @@ export const serverApi = {
       if (cached.isStale) refreshBidsSnapshotInBackground(fetchAllBidsAndStore);
       return assembleBidsResponse(cached.snapshot.byItemId, query);
     }
-    return serverFetch<BidsResponse>("/v1/web/bids", {
-      method: "POST",
-      body: query,
+    // Cold-start: single item GET only — no multi-item bids endpoint
+    if (query.item_ids.length !== 1) return null;
+    const params = new URLSearchParams({ item_id: String(query.item_ids[0]) });
+    if (query.limit != null) params.set("limit", String(query.limit));
+    if (query.currency) params.set("currency", query.currency);
+    return serverFetch<BidsResponse>(`/v1/web/bids?${params}`, {
       revalidate: false,
-      timeoutMs: 20000,
+      timeoutMs: 10000,
     });
   },
 
