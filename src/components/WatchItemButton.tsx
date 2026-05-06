@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { Eye } from "lucide-react";
 import { toast } from "sonner";
+import posthog from "posthog-js";
 import { Button } from "@/components/ui/button";
 import { useAddToWatchlistMutation, useSession } from "@/lib/api";
 
@@ -29,7 +30,10 @@ export function WatchItemButton({
         }
 
         mutation.mutate(itemId, {
-          onSuccess: () => toast.success("Added to watchlist"),
+          onSuccess: () => {
+            toast.success("Added to watchlist");
+            posthog.capture("item_added_to_watchlist", { item_id: itemId });
+          },
           onError: (error) => toast.error(error.message || "Could not add to watchlist"),
         });
       }}

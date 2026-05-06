@@ -13,8 +13,8 @@ import { Price } from "@/components/Price";
 import { serverApi } from "@/lib/api/server";
 import { buildQuery } from "@/lib/api/shared";
 import type {
-  BatchPriceItem,
   ItemOut,
+  MarketItem,
   PriceCandlesPage,
   ProviderInfo,
 } from "@/lib/api/types";
@@ -63,17 +63,17 @@ async function getLongRangePriceCandles(itemId: number) {
     fill: "true",
   });
 
-  return serverApi.getPriceCandles(`/v1/web/prices/candles?${params.toString()}`, 120);
+  return serverApi.getPriceCandles(`/v1/web/prices/candles?${params.toString()}`, 86400);
 }
 
-function getBestBatchQuote(batchItem?: BatchPriceItem | null) {
-  if (!batchItem?.quotes.length) {
-    return null;
+function getBestAskFromPrices(prices: MarketItem[], itemId: number): number | null {
+  let best: number | null = null;
+  for (const p of prices) {
+    if (p.item_id === itemId && (best === null || p.lowest_ask < best)) {
+      best = p.lowest_ask;
+    }
   }
-
-  return batchItem.quotes.reduce((best, quote) =>
-    quote.lowest_ask < best.lowest_ask ? quote : best,
-  );
+  return best;
 }
 
 function SkeletonLine({ className = "" }: { className?: string }) {
@@ -127,8 +127,20 @@ export async function ItemConditionVariants({
     return null;
   }
 
-  const siblingBatch = await serverApi.getBatchPrices({ item_ids: siblingItemIds, currency: "USD" }, 30);
-  const siblingVariants = getSiblingVariants(siblingItems?.items ?? [], item, siblingBatch?.items ?? []);
+  const siblingPrices = await serverApi.postPrices({ item_ids: siblingItemIds, currency: "USD" });
+  const priceItems = siblingPrices?.items ?? [];
+  const siblingVariants = getSiblingVariants(
+    siblingItems?.items ?? [],
+    item,
+    // Adapt MarketItem[] → BatchPriceItem[] shape for getSiblingVariants
+    siblingItemIds.map((id) => ({
+      item_id: id,
+      market_hash_name: "",
+      quotes: priceItems
+        .filter((p) => p.item_id === id)
+        .map((p) => ({ provider: p.provider, lowest_ask: p.lowest_ask, quantity: p.quantity })),
+    })),
+  );
 
   if (siblingVariants.length === 0) {
     return null;
@@ -258,7 +270,8 @@ export async function ItemMarketInsightsSection({
   itemId: number;
   listingProvidersCount: number;
 }) {
-  const analyticsSummary = (await serverApi.getMarketItem(itemId, 60))?.data.summary;
+  const snapshot = await serverApi.getMarketItemsSnapshot({ timeframe: "24h" });
+  const analyticsSummary = snapshot?.data.items.find((i) => i.item_id === itemId)?.summary ?? null;
 
   return (
     <div className="grid gap-px bg-border md:grid-cols-4">
@@ -330,7 +343,7 @@ export async function ItemRecentSalesSection({
   itemId: number;
   providers: ProviderInfo[];
 }) {
-  const sales = await serverApi.getSales(`/v1/web/sales?item_id=${itemId}&limit=10`, 60);
+  const sales = await serverApi.getSales(`/v1/web/sales?item_id=${itemId}&limit=10`, 600);
 
   return (
     <div className="border-brutal bg-card">
@@ -419,12 +432,8 @@ export async function ItemRelatedItemsSection({ item }: { item: ItemOut }) {
     return null;
   }
 
-  const relatedBatch = await serverApi.getBatchPrices({ item_ids: relatedItemIds, currency: "USD" }, 30);
-  const relatedQuotes = new Map<number, BatchPriceItem>();
-
-  for (const row of relatedBatch?.items ?? []) {
-    relatedQuotes.set(row.item_id, row);
-  }
+  const relatedPrices = await serverApi.postPrices({ item_ids: relatedItemIds, currency: "USD" });
+  const relatedPriceItems = relatedPrices?.items ?? [];
 
   const items =
     relatedItems?.items
@@ -432,10 +441,7 @@ export async function ItemRelatedItemsSection({ item }: { item: ItemOut }) {
       .slice(0, 6)
       .map((related) => ({
         item: related,
-        bestAsk:
-          related.item_id != null
-            ? getBestBatchQuote(relatedQuotes.get(related.item_id))?.lowest_ask ?? null
-            : null,
+        bestAsk: related.item_id != null ? getBestAskFromPrices(relatedPriceItems, related.item_id) : null,
       })) ?? [];
 
   if (items.length === 0) {

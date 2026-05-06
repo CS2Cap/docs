@@ -25,6 +25,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import posthog from "posthog-js";
 import { useBillingOverview, useBillingPlans, webApi } from "@/lib/api";
 import { queryKeys } from "@/lib/api/hooks";
 import { formatPriceMinor, planFeatureList } from "@/lib/api/view-models";
@@ -76,6 +77,11 @@ export default function AccountBillingPage() {
   async function startCheckout(priceId: string, code: string) {
     setCheckoutLoadingCode(code);
     try {
+      posthog.capture("checkout_initiated", {
+        plan_code: code,
+        billing_cycle: cycleChoice,
+        payment_method: "card",
+      });
       const response = await webApi.createCheckout({
         price_id: priceId,
         success_url: `${window.location.origin}/account/billing`,
@@ -93,6 +99,11 @@ export default function AccountBillingPage() {
   ) {
     setCheckoutLoadingCode(tierCode);
     try {
+      posthog.capture("checkout_initiated", {
+        plan_code: tierCode,
+        billing_cycle: interval,
+        payment_method: "crypto",
+      });
       const response = await webApi.createCryptoCheckout({
         tier_code: tierCode,
         billing_interval: interval,
@@ -116,6 +127,11 @@ export default function AccountBillingPage() {
       } else {
         setChangePlanMessage("Change scheduled for your next billing cycle.");
       }
+      posthog.capture("plan_changed", {
+        new_plan_code: code,
+        billing_cycle: cycleChoice,
+        outcome: response.outcome,
+      });
       await refetchOverview();
       queryClient.invalidateQueries({ queryKey: queryKeys.billingOverview });
       queryClient.invalidateQueries({ queryKey: queryKeys.session });

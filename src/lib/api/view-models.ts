@@ -127,8 +127,8 @@ export function getCoverageSummary(
   bids: BidsResponse | null,
 ): { askProviders: number; bidProviders: number } {
   return {
-    askProviders: prices?.meta.returned_providers.length ?? 0,
-    bidProviders: bids?.meta.providers_queried.length ?? 0,
+    askProviders: prices?.meta.returned_providers?.length ?? 0,
+    bidProviders: bids?.meta.providers_queried?.length ?? 0,
   };
 }
 

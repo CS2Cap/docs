@@ -7,6 +7,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import posthog from "posthog-js";
 import { webApi } from "@/lib/api";
 import { APIError } from "@/lib/api/shared";
 import { steamIconUrl } from "@/lib/utils";
@@ -48,6 +49,14 @@ export function InventoryValueTool() {
       const data = await webApi.valueSteamInventory({ steam_id: trimmed });
       setResult(data);
       setSubmittedTarget(trimmed);
+      posthog.capture("inventory_valued", {
+        total_value_cents: data.stats.total_value,
+        currency: data.stats.currency,
+        items_priced: data.stats.items_priced,
+        items_unpriced: data.stats.items_unpriced,
+        providers_queried: data.stats.providers_queried_count,
+        cache_hit: data.meta.cache_hit,
+      });
     } catch (err) {
       setResult(null);
       if (err instanceof APIError) {

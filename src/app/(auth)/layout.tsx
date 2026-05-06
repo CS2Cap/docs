@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { AuthLayout } from "../../components/layouts/AuthLayout";
 import { serverApi } from "@/lib/api/server";
+import { PostHogIdentify } from "@/components/PostHogIdentify";
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
@@ -22,5 +23,10 @@ async function AuthLayoutContent({ children }: { children: React.ReactNode }) {
     redirect("/login");
   }
 
-  return <AuthLayout>{children}</AuthLayout>;
+  return (
+    <AuthLayout>
+      <PostHogIdentify />
+      {children}
+    </AuthLayout>
+  );
 }
