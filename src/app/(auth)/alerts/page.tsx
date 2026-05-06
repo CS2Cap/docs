@@ -34,6 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import posthog from "posthog-js";
 import {
   useAlertEvents,
   useAlerts,
@@ -100,13 +101,24 @@ export default function AlertsPage() {
       return;
     }
 
-    createAlertMutation.mutate({
-      item_id: parsedItemId,
-      kind,
-      threshold_value: normalizedThresholdValue,
-      threshold_currency: kind === "spread_exceeds" ? undefined : thresholdCurrency,
-      is_enabled: true,
-    });
+    createAlertMutation.mutate(
+      {
+        item_id: parsedItemId,
+        kind,
+        threshold_value: normalizedThresholdValue,
+        threshold_currency: kind === "spread_exceeds" ? undefined : thresholdCurrency,
+        is_enabled: true,
+      },
+      {
+        onSuccess: () => {
+          posthog.capture("alert_created", {
+            item_id: parsedItemId,
+            kind,
+            threshold_currency: kind === "spread_exceeds" ? undefined : thresholdCurrency,
+          });
+        },
+      },
+    );
   }
 
   if (alertsLoading || eventsLoading) {
@@ -293,12 +305,21 @@ export default function AlertsPage() {
                         <div className="flex items-center gap-4">
                           <Switch
                             checked={alert.is_enabled}
-                            onCheckedChange={(checked) =>
-                              updateAlertMutation.mutate({
-                                alertId: alert.id,
-                                data: { is_enabled: checked },
-                              })
-                            }
+                            onCheckedChange={(checked) => {
+                              updateAlertMutation.mutate(
+                                { alertId: alert.id, data: { is_enabled: checked } },
+                                {
+                                  onSuccess: () => {
+                                    posthog.capture("alert_toggled", {
+                                      alert_id: alert.id,
+                                      item_id: alert.item.item_id,
+                                      kind: alert.kind,
+                                      enabled: checked,
+                                    });
+                                  },
+                                },
+                              );
+                            }}
                           />
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -309,7 +330,17 @@ export default function AlertsPage() {
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem
                                 className="text-destructive"
-                                onClick={() => deleteAlertMutation.mutate(alert.id)}
+                                onClick={() =>
+                                  deleteAlertMutation.mutate(alert.id, {
+                                    onSuccess: () => {
+                                      posthog.capture("alert_deleted", {
+                                        alert_id: alert.id,
+                                        item_id: alert.item.item_id,
+                                        kind: alert.kind,
+                                      });
+                                    },
+                                  })
+                                }
                               >
                                 <Trash2 className="mr-2 h-4 w-4" />
                                 Delete

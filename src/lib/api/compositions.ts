@@ -6,16 +6,14 @@ import {
   getBestAsk,
   getBestBid,
   getCoverageSummary,
-  getSiblingVariants,
   providerLabel,
   providerLogo,
 } from "./view-models";
 import type {
-  BatchPriceItem,
   ItemOut,
   ItemsResponse,
+  MarketItem,
   PaginationMeta,
-  PriceSnapshotPage,
   ProviderInfo,
 } from "./types";
 
@@ -93,19 +91,9 @@ function uniqByItemId<T extends { item_id?: number; market_hash_name: string }>(
   return unique;
 }
 
-function getBestBatchQuote(batchItem?: BatchPriceItem | null) {
-  if (!batchItem?.quotes.length) {
-    return null;
-  }
-
-  return batchItem.quotes.reduce((best, quote) =>
-    quote.lowest_ask < best.lowest_ask ? quote : best,
-  );
-}
-
 function buildLandingTickerItems(
   items: ItemOut[],
-  batchItems: BatchPriceItem[],
+  priceItems: MarketItem[],
 ): Array<{
   item_id: number;
   market_hash_name: string;
@@ -113,7 +101,14 @@ function buildLandingTickerItems(
   lowest_ask: number;
   provider: string;
 }> {
-  const batchItemsById = new Map(batchItems.map((batchItem) => [batchItem.item_id, batchItem]));
+  const bestByItemId = new Map<number, MarketItem>();
+  for (const price of priceItems) {
+    const current = bestByItemId.get(price.item_id);
+    if (!current || price.lowest_ask < current.lowest_ask) {
+      bestByItemId.set(price.item_id, price);
+    }
+  }
+
   const uniqueItems = uniqByItemId(items);
   const tickerItems: Array<{
     item_id: number;
@@ -124,26 +119,17 @@ function buildLandingTickerItems(
   }> = [];
 
   for (const item of uniqueItems) {
-    if (!item.item_id) {
-      continue;
-    }
-
-    const bestQuote = getBestBatchQuote(batchItemsById.get(item.item_id));
-    if (!bestQuote) {
-      continue;
-    }
-
+    if (!item.item_id) continue;
+    const best = bestByItemId.get(item.item_id);
+    if (!best) continue;
     tickerItems.push({
       item_id: item.item_id,
       market_hash_name: item.market_hash_name,
       image_url: item.image_url ?? null,
-      lowest_ask: bestQuote.lowest_ask,
-      provider: bestQuote.provider,
+      lowest_ask: best.lowest_ask,
+      provider: best.provider,
     });
-
-    if (tickerItems.length >= LANDING_TICKER_TARGET_ITEMS) {
-      break;
-    }
+    if (tickerItems.length >= LANDING_TICKER_TARGET_ITEMS) break;
   }
 
   return tickerItems;
@@ -278,12 +264,12 @@ async function getForgivingSearchItems(input: {
 
 export async function getLandingPageData() {
   const [metadata, providers, catalogItems, tickerPrices] = await Promise.all([
-    serverApi.getItemsMetadata(300),
-    serverApi.getProviders(300),
+    serverApi.getItemsMetadata(86400),
+    serverApi.getProviders(3600),
     Promise.all(
-      LANDING_TICKER_ITEM_IDS.map((itemId) => serverApi.getItem(itemId, 60)),
+      LANDING_TICKER_ITEM_IDS.map((itemId) => serverApi.getItemById(itemId)),
     ).then((items) => items.filter((item): item is ItemOut => item != null)),
-    serverApi.getBatchPrices({ item_ids: LANDING_TICKER_ITEM_IDS, currency: "USD" }, 60),
+    serverApi.postPrices({ item_ids: LANDING_TICKER_ITEM_IDS, currency: "USD" }),
   ]);
   const tickerItems = buildLandingTickerItems(
     catalogItems,
@@ -331,8 +317,8 @@ export async function getSearchPageData(input: {
   const shouldGroup = !filters.wear_name;
 
   const [metadata, marketSnapshot] = await Promise.all([
-    serverApi.getItemsMetadata(300),
-    serverApi.getMarketItemsSnapshot({ timeframe: "24h" }, 30),
+    serverApi.getItemsMetadata(86400),
+    serverApi.getMarketItemsSnapshot({ timeframe: "24h" }),
   ]);
 
   const snapshotItemsById = new Map(
@@ -542,134 +528,12 @@ function groupSearchResults(items: ItemOut[]): SearchGroup[] {
   return orderedKeys.map((key) => groupsByKey.get(key)!);
 }
 
-function buildPriceHistorySeries(priceHistory: PriceSnapshotPage | null) {
-  const snapshots = priceHistory?.items ?? [];
-  const byTime = new Map<string, { isoTime: string; price: number }>();
-
-  for (const snapshot of snapshots) {
-    const existing = byTime.get(snapshot.time);
-    if (!existing || snapshot.price < existing.price) {
-      byTime.set(snapshot.time, { isoTime: snapshot.time, price: snapshot.price });
-    }
-  }
-
-  return [...byTime.values()]
-    .sort((left, right) => new Date(left.isoTime).getTime() - new Date(right.isoTime).getTime())
-    .map((point) => ({
-      ...point,
-      label: new Date(point.isoTime).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      }),
-    }));
-}
-
-export async function getItemDetailPageData(itemId: number) {
-  const item = await serverApi.getItem(itemId, 120);
-  if (!item) {
-    return null;
-  }
-
-  const [providers, prices, bids, sales, analytics, priceHistory, siblingItems, relatedItems] =
-    await Promise.all([
-      serverApi.getProviders(300),
-      serverApi.getPrices(`/v1/web/prices?item_id=${itemId}&limit=50`, 30),
-      serverApi.getBids(`/v1/web/bids?item_id=${itemId}&limit=50`, 30),
-      serverApi.getSales(`/v1/web/sales?item_id=${itemId}&limit=10`, 60),
-      serverApi.getMarketItem(itemId, 60),
-      serverApi.getPriceHistory(`/v1/web/prices/history?item_id=${itemId}&limit=36`, 120),
-      item.base_name && item.skin_name
-        ? serverApi.getItems(
-            buildQuery({
-              base_name: item.base_name,
-              skin_name: item.skin_name,
-              limit: 50,
-            }),
-            300,
-          )
-        : Promise.resolve(null),
-      item.weapon_type
-        ? serverApi.getItems(
-            buildQuery({
-              weapon_type: item.weapon_type,
-              limit: 12,
-            }),
-            300,
-          )
-        : Promise.resolve(null),
-    ]);
-
-  const siblingItemIds =
-    siblingItems?.items
-      .map((candidate) => candidate.item_id)
-      .filter((candidate): candidate is number => typeof candidate === "number") ?? [];
-
-  const siblingBatch =
-    siblingItemIds.length > 0
-      ? await serverApi.getBatchPrices({ item_ids: siblingItemIds, currency: "USD" }, 30)
-      : null;
-
-  const relatedItemIds =
-    relatedItems?.items
-      .map((candidate) => candidate.item_id)
-      .filter((candidate): candidate is number => typeof candidate === "number")
-      .filter((candidate) => candidate !== item.item_id)
-      .slice(0, 6) ?? [];
-
-  const relatedBatch =
-    relatedItemIds.length > 0
-      ? await serverApi.getBatchPrices({ item_ids: relatedItemIds, currency: "USD" }, 30)
-      : null;
-
-  const relatedQuotes = new Map<number, BatchPriceItem>();
-  for (const row of relatedBatch?.items ?? []) {
-    relatedQuotes.set(row.item_id, row);
-  }
-
-  return {
-    item,
-    providers,
-    prices,
-    bids,
-    sales,
-    analytics,
-    priceHistory,
-    chartSeries: buildPriceHistorySeries(priceHistory),
-    bestAsk: getBestAsk(prices?.items ?? []),
-    bestBid: getBestBid(bids?.items ?? []),
-    coverage: getCoverageSummary(prices, bids),
-    siblingVariants: getSiblingVariants(
-      siblingItems?.items ?? [],
-      item,
-      siblingBatch?.items ?? [],
-    ),
-    relatedItems:
-      relatedItems?.items
-        .filter((candidate) => candidate.item_id !== item.item_id)
-        .slice(0, 6)
-        .map((related) => {
-          const bestQuote =
-            related.item_id != null
-              ? relatedQuotes
-                  .get(related.item_id)
-                  ?.quotes.slice()
-                  .sort((left, right) => left.lowest_ask - right.lowest_ask)[0] ?? null
-              : null;
-
-          return {
-            item: related,
-            bestAsk: bestQuote?.lowest_ask ?? null,
-          };
-        }) ?? [],
-  };
-}
-
 export async function getItemDetailPageCoreData(itemId: number) {
   const [item, providers, prices, bids] = await Promise.all([
-    serverApi.getItem(itemId, 120),
-    serverApi.getProviders(300),
-    serverApi.getPrices(`/v1/web/prices?item_id=${itemId}&limit=50`, 30),
-    serverApi.getBids(`/v1/web/bids?item_id=${itemId}&limit=50`, 30),
+    serverApi.getItemById(itemId),
+    serverApi.getProviders(3600),
+    serverApi.postPrices({ item_ids: [itemId], limit: 50 }),
+    serverApi.postBids({ item_ids: [itemId], limit: 50 }),
   ]);
 
   if (!item) {

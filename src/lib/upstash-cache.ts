@@ -1,278 +1,197 @@
 import "server-only";
 
 import { gunzipSync, gzipSync } from "node:zlib";
-import type { MarketItemsSnapshotResponse, MarketTimeframe } from "./api/types";
+import { list, put } from "@vercel/blob";
+import type {
+  BuyOrderItem,
+  ItemOut,
+  MarketItem,
+  MarketItemsSnapshotResponse,
+  MarketTimeframe,
+} from "./api/types";
 
-const UPSTASH_REDIS_REST_URL = process.env.UPSTASH_REDIS_REST_URL;
-const UPSTASH_REDIS_REST_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
+// ── Exported snapshot data types ──────────────────────────────────────────────
 
-const SNAPSHOT_CACHE_PREFIX = "market-snapshot:v1";
-// Keep entries in Redis for 24h so we can always serve a stale copy while we refresh in the background.
-const SNAPSHOT_CACHE_TTL_SECONDS = 60 * 60 * 24;
-// Consider the snapshot "fresh" for 5 minutes — beyond that we revalidate in the background (SWR).
-const SNAPSHOT_FRESH_SECONDS = 60 * 5;
-const SNAPSHOT_CHUNK_SIZE = 4_000_000;
-
-// In-memory L1 cache so hot requests on the same server instance skip the Upstash roundtrip entirely.
-const MEMORY_CACHE_TTL_MS = 60 * 1000;
-type MemoryCacheEntry = {
-  snapshot: MarketItemsSnapshotResponse;
-  cachedAt: number;
-  expiresAt: number;
-};
-const memoryCache = new Map<MarketTimeframe, MemoryCacheEntry>();
-const inflightRefreshes = new Map<MarketTimeframe, Promise<void>>();
-
-type SnapshotCacheMeta = {
-  encoding: "gzip-base64";
-  chunkCount: number;
-  cachedAt: string;
+export type PricesSnapshotData = {
+  byItemId: Record<number, MarketItem[]>;
+  timestamp: string;
 };
 
-export type CachedSnapshotResult = {
-  snapshot: MarketItemsSnapshotResponse;
+export type BidsSnapshotData = {
+  byItemId: Record<number, BuyOrderItem[]>;
+  timestamp: string;
+};
+
+export type ItemsSnapshotData = {
+  items: ItemOut[];
+  byItemId: Record<number, ItemOut>;
+  total: number;
+  timestamp: string;
+};
+
+export type CachedSnapshotResult<T> = {
+  snapshot: T;
   cachedAt: number;
   isStale: boolean;
 };
 
-function hasUpstashConfig() {
-  return Boolean(UPSTASH_REDIS_REST_URL && UPSTASH_REDIS_REST_TOKEN);
-}
+// ── Blob pathnames ────────────────────────────────────────────────────────────
 
-function getSnapshotCacheBaseKey(timeframe: MarketTimeframe) {
-  return `${SNAPSHOT_CACHE_PREFIX}:${timeframe}`;
-}
+const PRICES_BLOB = "snapshots/prices.json.gz";
+const BIDS_BLOB = "snapshots/bids.json.gz";
+const ITEMS_BLOB = "snapshots/items.json.gz";
+const marketBlobPath = (tf: MarketTimeframe) => `snapshots/market-${tf}.json.gz`;
 
-function getSnapshotMetaKey(timeframe: MarketTimeframe) {
-  return `${getSnapshotCacheBaseKey(timeframe)}:meta`;
-}
+// ── Freshness windows ─────────────────────────────────────────────────────────
 
-function getSnapshotChunkKey(timeframe: MarketTimeframe, index: number) {
-  return `${getSnapshotCacheBaseKey(timeframe)}:chunk:${index}`;
-}
+const MARKET_FRESH_MS = 5 * 60 * 1000;
+const PRICES_FRESH_MS = 30 * 60 * 1000;
+const BIDS_FRESH_MS = 30 * 60 * 1000;
+const ITEMS_FRESH_MS = 24 * 60 * 60 * 1000;
 
-async function upstashGet(key: string) {
-  if (!hasUpstashConfig()) {
-    return null;
-  }
+// ── L1 in-memory cache ────────────────────────────────────────────────────────
 
+const MEMORY_TTL_MS = 60 * 1000;
+
+type Entry<T> = { data: T; uploadedAt: number; expiresAt: number };
+const l1 = new Map<string, Entry<unknown>>();
+const inflights = new Map<string, Promise<void>>();
+
+// ── Generic Blob helpers ──────────────────────────────────────────────────────
+
+async function readBlob<T>(pathname: string): Promise<{ data: T; uploadedAt: number } | null> {
+  if (!process.env.BLOB_READ_WRITE_TOKEN) return null;
   try {
-    const response = await fetch(
-      `${UPSTASH_REDIS_REST_URL}/get/${encodeURIComponent(key)}`,
-      {
-        headers: {
-          Authorization: `Bearer ${UPSTASH_REDIS_REST_TOKEN}`,
-        },
-        cache: "no-store",
-        signal: AbortSignal.timeout(8000),
-      },
-    );
-
-    if (!response.ok) {
-      return null;
-    }
-
-    const payload = (await response.json()) as { result?: string | null; error?: string };
-    if (payload.error) {
-      return null;
-    }
-
-    return payload.result ?? null;
+    const { blobs } = await list({ prefix: pathname, limit: 1 });
+    const blob = blobs.find((b) => b.pathname === pathname);
+    if (!blob) return null;
+    const res = await fetch(blob.url, { cache: "no-store", signal: AbortSignal.timeout(15000) });
+    if (!res.ok) return null;
+    const data = JSON.parse(
+      gunzipSync(Buffer.from(await res.arrayBuffer())).toString("utf8"),
+    ) as T;
+    return { data, uploadedAt: blob.uploadedAt.getTime() };
   } catch {
     return null;
   }
 }
 
-async function upstashMget(keys: string[]) {
-  if (!hasUpstashConfig() || keys.length === 0) {
-    return [];
-  }
-
+async function writeBlob<T>(data: T, pathname: string): Promise<boolean> {
+  if (!process.env.BLOB_READ_WRITE_TOKEN) return false;
   try {
-    const response = await fetch(UPSTASH_REDIS_REST_URL!, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${UPSTASH_REDIS_REST_TOKEN}`,
-        "Content-Type": "application/json",
-      },
-      cache: "no-store",
-      body: JSON.stringify(["MGET", ...keys]),
-      signal: AbortSignal.timeout(8000),
+    await put(pathname, gzipSync(Buffer.from(JSON.stringify(data))), {
+      access: "public",
+      contentType: "application/gzip",
+      addRandomSuffix: false,
+      allowOverwrite: true,
     });
-
-    if (!response.ok) {
-      return null;
-    }
-
-    const payload = (await response.json()) as {
-      result?: Array<string | null>;
-      error?: string;
-    };
-
-    if (payload.error || !Array.isArray(payload.result)) {
-      return null;
-    }
-
-    return payload.result;
-  } catch {
-    return null;
-  }
-}
-
-async function upstashSet(key: string, value: string, ttlSeconds: number) {
-  if (!hasUpstashConfig()) {
-    return false;
-  }
-
-  try {
-    const response = await fetch(
-      `${UPSTASH_REDIS_REST_URL}/set/${encodeURIComponent(key)}?EX=${ttlSeconds}`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${UPSTASH_REDIS_REST_TOKEN}`,
-        },
-        cache: "no-store",
-        body: value,
-        signal: AbortSignal.timeout(12000),
-      },
-    );
-
-    if (!response.ok) {
-      return false;
-    }
-
-    const payload = (await response.json()) as { result?: string; error?: string };
-    return payload.result === "OK" && !payload.error;
+    return true;
   } catch {
     return false;
   }
 }
 
-function splitIntoChunks(value: string, chunkSize: number) {
-  const chunks: string[] = [];
-
-  for (let index = 0; index < value.length; index += chunkSize) {
-    chunks.push(value.slice(index, index + chunkSize));
-  }
-
-  return chunks;
+function fromL1<T>(key: string, freshMs: number): CachedSnapshotResult<T> | null {
+  const entry = l1.get(key) as Entry<T> | undefined;
+  if (!entry || Date.now() > entry.expiresAt) return null;
+  return {
+    snapshot: entry.data,
+    cachedAt: entry.uploadedAt,
+    isStale: Date.now() - entry.uploadedAt > freshMs,
+  };
 }
+
+function toL1<T>(key: string, data: T, uploadedAt: number) {
+  l1.set(key, { data, uploadedAt, expiresAt: Date.now() + MEMORY_TTL_MS } as Entry<unknown>);
+}
+
+async function getCached<T>(
+  blobPath: string,
+  freshMs: number,
+): Promise<CachedSnapshotResult<T> | null> {
+  const hit = fromL1<T>(blobPath, freshMs);
+  if (hit) return hit;
+  const result = await readBlob<T>(blobPath);
+  if (!result) return null;
+  toL1(blobPath, result.data, result.uploadedAt);
+  return {
+    snapshot: result.data,
+    cachedAt: result.uploadedAt,
+    isStale: Date.now() - result.uploadedAt > freshMs,
+  };
+}
+
+async function setCached<T>(data: T, blobPath: string): Promise<boolean> {
+  toL1(blobPath, data, Date.now());
+  return writeBlob(data, blobPath);
+}
+
+function refreshInBackground(key: string, refresher: () => Promise<void>) {
+  if (inflights.has(key)) return;
+  const p = refresher().finally(() => inflights.delete(key));
+  inflights.set(key, p);
+}
+
+// ── Market items snapshot ─────────────────────────────────────────────────────
 
 export async function getCachedMarketItemsSnapshot(
   timeframe: MarketTimeframe,
-): Promise<CachedSnapshotResult | null> {
-  // L1: in-memory
-  const memEntry = memoryCache.get(timeframe);
-  const now = Date.now();
-  if (memEntry && memEntry.expiresAt > now) {
-    return {
-      snapshot: memEntry.snapshot,
-      cachedAt: memEntry.cachedAt,
-      isStale: now - memEntry.cachedAt > SNAPSHOT_FRESH_SECONDS * 1000,
-    };
-  }
-
-  // L2: Upstash
-  const rawMeta = await upstashGet(getSnapshotMetaKey(timeframe));
-  if (!rawMeta) {
-    return null;
-  }
-
-  try {
-    const meta = JSON.parse(rawMeta) as SnapshotCacheMeta;
-    if (meta.encoding !== "gzip-base64" || meta.chunkCount < 1) {
-      return null;
-    }
-
-    const chunkKeys = Array.from({ length: meta.chunkCount }, (_, index) =>
-      getSnapshotChunkKey(timeframe, index),
-    );
-    const chunkValues = await upstashMget(chunkKeys);
-    if (!chunkValues || chunkValues.some((value) => typeof value !== "string")) {
-      return null;
-    }
-
-    const encodedPayload = chunkValues.join("");
-    const compressedPayload = Buffer.from(encodedPayload, "base64");
-    const decompressedPayload = gunzipSync(compressedPayload).toString("utf8");
-
-    const snapshot = JSON.parse(decompressedPayload) as MarketItemsSnapshotResponse;
-    const cachedAt = new Date(meta.cachedAt).getTime() || now;
-
-    // Promote to L1.
-    memoryCache.set(timeframe, {
-      snapshot,
-      cachedAt,
-      expiresAt: now + MEMORY_CACHE_TTL_MS,
-    });
-
-    return {
-      snapshot,
-      cachedAt,
-      isStale: now - cachedAt > SNAPSHOT_FRESH_SECONDS * 1000,
-    };
-  } catch {
-    return null;
-  }
+): Promise<CachedSnapshotResult<MarketItemsSnapshotResponse> | null> {
+  return getCached<MarketItemsSnapshotResponse>(marketBlobPath(timeframe), MARKET_FRESH_MS);
 }
 
 export async function setCachedMarketItemsSnapshot(
   timeframe: MarketTimeframe,
-  snapshot: MarketItemsSnapshotResponse,
-) {
-  const now = Date.now();
-  memoryCache.set(timeframe, {
-    snapshot,
-    cachedAt: now,
-    expiresAt: now + MEMORY_CACHE_TTL_MS,
-  });
-
-  const rawPayload = JSON.stringify(snapshot);
-  const encodedPayload = gzipSync(rawPayload).toString("base64");
-  const chunks = splitIntoChunks(encodedPayload, SNAPSHOT_CHUNK_SIZE);
-
-  for (const [index, chunk] of chunks.entries()) {
-    const ok = await upstashSet(
-      getSnapshotChunkKey(timeframe, index),
-      chunk,
-      SNAPSHOT_CACHE_TTL_SECONDS,
-    );
-
-    if (!ok) {
-      return false;
-    }
-  }
-
-  const meta: SnapshotCacheMeta = {
-    encoding: "gzip-base64",
-    chunkCount: chunks.length,
-    cachedAt: new Date().toISOString(),
-  };
-
-  return upstashSet(
-    getSnapshotMetaKey(timeframe),
-    JSON.stringify(meta),
-    SNAPSHOT_CACHE_TTL_SECONDS,
-  );
+  data: MarketItemsSnapshotResponse,
+): Promise<boolean> {
+  return setCached(data, marketBlobPath(timeframe));
 }
 
-/**
- * Coalesce concurrent background refreshes so we never hit the upstream more than once
- * per timeframe at a time. The provided refresher is responsible for actually fetching
- * the snapshot and persisting it via setCachedMarketItemsSnapshot.
- */
 export function refreshMarketItemsSnapshotInBackground(
   timeframe: MarketTimeframe,
   refresher: () => Promise<void>,
 ) {
-  if (inflightRefreshes.has(timeframe)) {
-    return;
-  }
+  refreshInBackground(marketBlobPath(timeframe), refresher);
+}
 
-  const promise = refresher().finally(() => {
-    inflightRefreshes.delete(timeframe);
-  });
+// ── Prices snapshot ───────────────────────────────────────────────────────────
 
-  inflightRefreshes.set(timeframe, promise);
+export async function getCachedPricesSnapshot(): Promise<CachedSnapshotResult<PricesSnapshotData> | null> {
+  return getCached<PricesSnapshotData>(PRICES_BLOB, PRICES_FRESH_MS);
+}
+
+export async function setCachedPricesSnapshot(data: PricesSnapshotData): Promise<boolean> {
+  return setCached(data, PRICES_BLOB);
+}
+
+export function refreshPricesSnapshotInBackground(refresher: () => Promise<void>) {
+  refreshInBackground(PRICES_BLOB, refresher);
+}
+
+// ── Bids snapshot ─────────────────────────────────────────────────────────────
+
+export async function getCachedBidsSnapshot(): Promise<CachedSnapshotResult<BidsSnapshotData> | null> {
+  return getCached<BidsSnapshotData>(BIDS_BLOB, BIDS_FRESH_MS);
+}
+
+export async function setCachedBidsSnapshot(data: BidsSnapshotData): Promise<boolean> {
+  return setCached(data, BIDS_BLOB);
+}
+
+export function refreshBidsSnapshotInBackground(refresher: () => Promise<void>) {
+  refreshInBackground(BIDS_BLOB, refresher);
+}
+
+// ── Items snapshot ────────────────────────────────────────────────────────────
+
+export async function getCachedItemsSnapshot(): Promise<CachedSnapshotResult<ItemsSnapshotData> | null> {
+  return getCached<ItemsSnapshotData>(ITEMS_BLOB, ITEMS_FRESH_MS);
+}
+
+export async function setCachedItemsSnapshot(data: ItemsSnapshotData): Promise<boolean> {
+  return setCached(data, ITEMS_BLOB);
+}
+
+export function refreshItemsSnapshotInBackground(refresher: () => Promise<void>) {
+  refreshInBackground(ITEMS_BLOB, refresher);
 }

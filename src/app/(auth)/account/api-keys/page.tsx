@@ -27,6 +27,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import posthog from "posthog-js";
 import { useSession, useSubKeys, webApi } from "@/lib/api";
 import { PlanUpgradeCard } from "@/components/PlanUpgradeCard";
 import { queryKeys } from "@/lib/api/hooks";
@@ -112,9 +113,11 @@ export default function AccountApiKeysPage() {
   async function handleReissue() {
     setReissuing(true);
     setReissueError(null);
+    const isCreating = !sessionData?.active_key_summary.has_active_key;
     try {
       const response = await webApi.reissueAPIKey();
       setNewKey(response);
+      posthog.capture(isCreating ? "api_key_created" : "api_key_regenerated");
       await refetchSession();
     } catch (error: unknown) {
       setReissueError(
@@ -139,6 +142,9 @@ export default function AccountApiKeysPage() {
         quota_requests_per_month_override: quota ?? null,
       });
       setNewSubKey(response);
+      posthog.capture("sub_key_created", {
+        has_quota_override: !!quota,
+      });
       await refetchSubKeys();
     } catch (error: unknown) {
       setCreateError(

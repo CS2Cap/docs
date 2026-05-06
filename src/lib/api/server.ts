@@ -6,24 +6,34 @@ import {
 } from "./config";
 import { buildQuery } from "./shared";
 import {
+  getCachedBidsSnapshot,
+  getCachedItemsSnapshot,
   getCachedMarketItemsSnapshot,
+  getCachedPricesSnapshot,
+  refreshBidsSnapshotInBackground,
+  refreshItemsSnapshotInBackground,
   refreshMarketItemsSnapshotInBackground,
+  refreshPricesSnapshotInBackground,
+  setCachedBidsSnapshot,
+  setCachedItemsSnapshot,
   setCachedMarketItemsSnapshot,
+  setCachedPricesSnapshot,
 } from "../upstash-cache";
 import type {
   AccountInfo,
   BatchPricesResponse,
   BidsResponse,
   BillingOverviewResponse,
+  BuyOrderItem,
   ItemOut,
   ItemsMetadataResponse,
   ItemsResponse,
-  MarketItemAnalyticsResponse,
+  MarketItem,
   MarketItemsSnapshotResponse,
   MarketTimeframe,
   PlansResponse,
   PriceCandlesPage,
-  PriceSnapshotPage,
+  PricesMeta,
   PricesPaginatedResponse,
   ProviderInfo,
   ProvidersResponse,
@@ -41,18 +51,9 @@ interface ServerFetchOptions {
 function normalizeProvidersResponse(
   providers: ProvidersResponse | null | undefined,
 ): ProviderInfo[] {
-  if (!providers) {
-    return [];
-  }
-
-  if (Array.isArray(providers)) {
-    return providers;
-  }
-
-  return Object.entries(providers).map(([name, provider]) => ({
-    ...provider,
-    name,
-  }));
+  if (!providers) return [];
+  if (Array.isArray(providers)) return providers;
+  return Object.entries(providers).map(([name, provider]) => ({ ...provider, name }));
 }
 
 export async function serverFetch<T>(
@@ -69,11 +70,9 @@ export async function serverFetch<T>(
   if (authTokenCookie?.value) {
     headers.Authorization = `Bearer ${authTokenCookie.value}`;
   }
-
   if (sessionCookie) {
     headers.Cookie = `${sessionCookie.name}=${sessionCookie.value}`;
   }
-
   if (body !== undefined) {
     headers["Content-Type"] = "application/json";
   }
@@ -87,72 +86,315 @@ export async function serverFetch<T>(
       body: body !== undefined ? JSON.stringify(body) : undefined,
       signal: AbortSignal.timeout(timeoutMs),
     });
-
-    if (!response.ok) {
-      return null;
-    }
-
+    if (!response.ok) return null;
     return (await response.json()) as T;
   } catch {
     return null;
   }
 }
 
+// ── Background refresh helpers (raw fetch, no user cookies) ──────────────────
+
+async function fetchAllPricesAndStore() {
+  const apiKey = process.env.CS2C_EXPORT_API_KEY;
+  if (!apiKey) return;
+  try {
+    const response = await fetch(`${API_BASE_URL}/v1/prices`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}` },
+      cache: "no-store",
+      signal: AbortSignal.timeout(120_000),
+    });
+    if (!response.ok) return;
+    const text = await response.text();
+    const items = text.trim().split("\n").filter(Boolean).map((l) => JSON.parse(l) as MarketItem);
+    await setCachedPricesSnapshot({
+      byItemId: groupMarketItemsById(items),
+      timestamp: new Date().toISOString(),
+    });
+  } catch {
+    // Silently fail — cron ensures eventual freshness
+  }
+}
+
+async function fetchAllBidsAndStore() {
+  const apiKey = process.env.CS2C_EXPORT_API_KEY;
+  if (!apiKey) return;
+  try {
+    const response = await fetch(`${API_BASE_URL}/v1/bids`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}` },
+      cache: "no-store",
+      signal: AbortSignal.timeout(120_000),
+    });
+    if (!response.ok) return;
+    const text = await response.text();
+    const items = text.trim().split("\n").filter(Boolean).map((l) => JSON.parse(l) as BuyOrderItem);
+    await setCachedBidsSnapshot({
+      byItemId: groupBidItemsById(items),
+      timestamp: new Date().toISOString(),
+    });
+  } catch {
+    // Silently fail
+  }
+}
+
+async function fetchAllItemsAndStore() {
+  const apiKey = process.env.CS2C_EXPORT_API_KEY;
+  if (!apiKey) return;
+  try {
+    const response = await fetch(`${API_BASE_URL}/v1/items`, {
+      headers: { Authorization: `Bearer ${apiKey}` },
+      cache: "no-store",
+      signal: AbortSignal.timeout(60_000),
+    });
+    if (!response.ok) return;
+    const data = (await response.json()) as ItemsResponse;
+    await setCachedItemsSnapshot(buildItemsSnapshotData(data.items));
+  } catch {
+    // Silently fail
+  }
+}
+
+// ── Data assembly helpers ─────────────────────────────────────────────────────
+
+function groupMarketItemsById(items: MarketItem[]): Record<number, MarketItem[]> {
+  const grouped: Record<number, MarketItem[]> = {};
+  for (const item of items) {
+    (grouped[item.item_id] ??= []).push(item);
+  }
+  return grouped;
+}
+
+function groupBidItemsById(items: BuyOrderItem[]): Record<number, BuyOrderItem[]> {
+  const grouped: Record<number, BuyOrderItem[]> = {};
+  for (const item of items) {
+    (grouped[item.item_id] ??= []).push(item);
+  }
+  return grouped;
+}
+
+function buildItemsSnapshotData(items: ItemOut[]) {
+  const byItemId: Record<number, ItemOut> = {};
+  for (const item of items) {
+    if (item.item_id != null) byItemId[item.item_id] = item;
+  }
+  return { items, byItemId, total: items.length, timestamp: new Date().toISOString() };
+}
+
+function assemblePricesResponse(
+  byItemId: Record<number, MarketItem[]>,
+  query: { item_ids: number[]; currency?: string; limit?: number },
+): PricesPaginatedResponse {
+  const priceItems: MarketItem[] = [];
+  const returnedProviders = new Set<string>();
+  for (const itemId of query.item_ids) {
+    const asks = byItemId[itemId] ?? [];
+    const limited = query.limit != null ? asks.slice(0, query.limit) : asks;
+    for (const ask of limited) {
+      priceItems.push(ask);
+      returnedProviders.add(ask.provider);
+    }
+  }
+  const meta: PricesMeta = {
+    currency: query.currency ?? "USD",
+    filters: {},
+    returned_providers: [...returnedProviders],
+  };
+  return {
+    meta,
+    items: priceItems,
+    pagination: {
+      limit: query.limit ?? priceItems.length,
+      offset: 0,
+      total: priceItems.length,
+      has_next: false,
+      has_prev: false,
+    },
+  };
+}
+
+function assembleBidsResponse(
+  byItemId: Record<number, BuyOrderItem[]>,
+  query: { item_ids: number[]; currency?: string; limit?: number },
+): BidsResponse {
+  const bidItems: BuyOrderItem[] = [];
+  const queriedProviders = new Set<string>();
+  for (const itemId of query.item_ids) {
+    const bids = byItemId[itemId] ?? [];
+    const limited = query.limit != null ? bids.slice(0, query.limit) : bids;
+    for (const bid of limited) {
+      bidItems.push(bid);
+      queriedProviders.add(bid.provider);
+    }
+  }
+  return {
+    meta: {
+      currency: query.currency ?? "USD",
+      filters: {},
+      providers_queried: [...queriedProviders],
+    },
+    items: bidItems,
+    pagination: {
+      limit: query.limit ?? bidItems.length,
+      offset: 0,
+      total: bidItems.length,
+      has_next: false,
+      has_prev: false,
+    },
+  };
+}
+
+function filterItemsFromSnapshot(items: ItemOut[], query: URLSearchParams): ItemOut[] {
+  let filtered = items;
+  const baseName = query.get("base_name");
+  const skinName = query.get("skin_name");
+  const weaponType = query.get("weapon_type");
+  const offset = Number(query.get("offset")) || 0;
+  const limit = Number(query.get("limit")) || 0;
+  if (baseName) filtered = filtered.filter((i) => i.base_name === baseName);
+  if (skinName) filtered = filtered.filter((i) => i.skin_name === skinName);
+  if (weaponType) filtered = filtered.filter((i) => i.weapon_type === weaponType);
+  if (offset) filtered = filtered.slice(offset);
+  if (limit) filtered = filtered.slice(0, limit);
+  return filtered;
+}
+
+// ── serverApi ─────────────────────────────────────────────────────────────────
+
 export const serverApi = {
   async getSession() {
     const cookieStore = await cookies();
     const hasSessionCookie = cookieStore.has(WEB_SESSION_COOKIE_NAME);
     const hasAuthTokenCookie = cookieStore.has(WEB_AUTH_TOKEN_COOKIE_NAME);
-
-    if (!hasSessionCookie && !hasAuthTokenCookie) {
-      return null;
-    }
-
+    if (!hasSessionCookie && !hasAuthTokenCookie) return null;
     const session = await serverFetch<AccountInfo>("/v1/web/session");
-    if (session) {
-      return session;
-    }
-
+    if (session) return session;
     return serverFetch<AccountInfo>("/v1/web/account");
   },
-  getItems(params = "", revalidate: number | false = false) {
+
+  // Returns from items snapshot when no full-text `q` param is present.
+  async getItems(params = "", revalidate: number | false = false): Promise<ItemsResponse | null> {
+    const qs = params.startsWith("?") ? params.slice(1) : params;
+    const query = new URLSearchParams(qs);
+
+    if (!query.has("q")) {
+      const cached = await getCachedItemsSnapshot();
+      if (cached) {
+        if (cached.isStale) refreshItemsSnapshotInBackground(fetchAllItemsAndStore);
+        const filtered = filterItemsFromSnapshot(cached.snapshot.items, query);
+        return {
+          items: filtered,
+          pagination: {
+            limit: Number(query.get("limit")) || filtered.length,
+            offset: Number(query.get("offset")) || 0,
+            total: filtered.length,
+            has_next: false,
+            has_prev: false,
+          },
+        };
+      }
+    }
+
     return serverFetch<ItemsResponse>(`/v1/web/items${params}`, { revalidate });
   },
-  getItem(itemId: number, revalidate: number | false = false) {
-    return serverFetch<ItemOut>(`/v1/web/items/${itemId}`, { revalidate });
+
+  // Single item by ID — reads from items snapshot, falls back to per-item API call.
+  async getItemById(itemId: number): Promise<ItemOut | null> {
+    const cached = await getCachedItemsSnapshot();
+    if (cached) {
+      if (cached.isStale) refreshItemsSnapshotInBackground(fetchAllItemsAndStore);
+      return cached.snapshot.byItemId[itemId] ?? null;
+    }
+    return serverFetch<ItemOut>(`/v1/web/items/${itemId}`, { revalidate: 3600 });
   },
+
   getItemsMetadata(revalidate: number | false = false) {
     return serverFetch<ItemsMetadataResponse>("/v1/web/items/metadata", { revalidate });
   },
-  getProviders(revalidate: number | false = false) {
-    return serverFetch<ProvidersResponse>("/v1/web/providers", { revalidate }).then(
-      normalizeProvidersResponse,
+
+  async getProviders(revalidate: number | false = false) {
+    return normalizeProvidersResponse(
+      await serverFetch<ProvidersResponse>("/v1/web/providers", { revalidate }),
     );
   },
-  getPrices(path: string, revalidate: number | false = false) {
-    return serverFetch<PricesPaginatedResponse>(path, { revalidate });
-  },
-  getBatchPrices(body: { item_ids: number[]; currency?: string }, revalidate: number | false = false) {
-    return serverFetch<BatchPricesResponse>("/v1/web/prices/batch", {
+
+  // Prices — served from Redis snapshot; cold-starts fall through to targeted API calls.
+  async postPrices(
+    query: { item_ids: number[]; currency?: string; limit?: number },
+  ): Promise<PricesPaginatedResponse | null> {
+    const cached = await getCachedPricesSnapshot();
+    if (cached) {
+      if (cached.isStale) refreshPricesSnapshotInBackground(fetchAllPricesAndStore);
+      return assemblePricesResponse(cached.snapshot.byItemId, query);
+    }
+    // Cold-start: single item uses GET, multiple items use batch POST
+    if (query.item_ids.length === 1) {
+      const params = new URLSearchParams({ item_id: String(query.item_ids[0]) });
+      if (query.limit != null) params.set("limit", String(query.limit));
+      if (query.currency) params.set("currency", query.currency);
+      return serverFetch<PricesPaginatedResponse>(`/v1/web/prices?${params}`, {
+        revalidate: false,
+        timeoutMs: 10000,
+      });
+    }
+    const batch = await serverFetch<BatchPricesResponse>("/v1/web/prices/batch", {
       method: "POST",
-      body,
-      revalidate,
+      body: { item_ids: query.item_ids, currency: query.currency },
+      revalidate: false,
+      timeoutMs: 15000,
+    });
+    if (!batch) return null;
+    const priceItems: MarketItem[] = batch.items.flatMap((bi) =>
+      bi.quotes.map((q) => ({
+        provider: q.provider,
+        item_id: bi.item_id,
+        market_hash_name: bi.market_hash_name,
+        phase: bi.phase,
+        lowest_ask: q.lowest_ask,
+        quantity: q.quantity,
+        timestamp: q.timestamp,
+        last_updated: q.last_updated,
+      })),
+    );
+    const limited = query.limit != null ? priceItems.slice(0, query.limit) : priceItems;
+    return {
+      meta: { currency: query.currency ?? "USD", filters: {}, returned_providers: batch.meta.providers_queried },
+      items: limited,
+      pagination: { limit: query.limit ?? limited.length, offset: 0, total: limited.length, has_next: false, has_prev: false },
+    };
+  },
+
+  // Bids — served from Redis snapshot; cold-starts fall through to targeted GET.
+  async postBids(
+    query: { item_ids: number[]; currency?: string; limit?: number },
+  ): Promise<BidsResponse | null> {
+    const cached = await getCachedBidsSnapshot();
+    if (cached) {
+      if (cached.isStale) refreshBidsSnapshotInBackground(fetchAllBidsAndStore);
+      return assembleBidsResponse(cached.snapshot.byItemId, query);
+    }
+    // Cold-start: single item GET only — no multi-item bids endpoint
+    if (query.item_ids.length !== 1) return null;
+    const params = new URLSearchParams({ item_id: String(query.item_ids[0]) });
+    if (query.limit != null) params.set("limit", String(query.limit));
+    if (query.currency) params.set("currency", query.currency);
+    return serverFetch<BidsResponse>(`/v1/web/bids?${params}`, {
+      revalidate: false,
+      timeoutMs: 10000,
     });
   },
-  getBids(path: string, revalidate: number | false = false) {
-    return serverFetch<BidsResponse>(path, { revalidate });
-  },
+
   getSales(path: string, revalidate: number | false = false) {
     return serverFetch<SalesHistoryResponse>(path, { revalidate });
   },
-  getPriceHistory(path: string, revalidate: number | false = false) {
-    return serverFetch<PriceSnapshotPage>(path, { revalidate });
-  },
+
   getPriceCandles(path: string, revalidate: number | false = false) {
     return serverFetch<PriceCandlesPage>(path, { revalidate });
   },
+
   async getMarketItemsSnapshot(
-    params: { timeframe?: MarketTimeframe } = {},
+    params: { timeframe?: MarketTimeframe; item_id?: number } = {},
     revalidate: number | false = false,
   ) {
     void revalidate;
@@ -161,46 +403,25 @@ export const serverApi = {
 
     const fetchAndStore = async () => {
       const fresh = await serverFetch<MarketItemsSnapshotResponse>(
-        `/v1/web/market/items${buildQuery(params)}`,
-        {
-          revalidate: false,
-          timeoutMs: 20000,
-        },
+        `/v1/web/market/items${buildQuery({ timeframe })}`,
+        { revalidate: false, timeoutMs: 20000 },
       );
-
-      if (fresh) {
-        await setCachedMarketItemsSnapshot(timeframe, fresh);
-      }
+      if (fresh) await setCachedMarketItemsSnapshot(timeframe, fresh);
     };
 
     if (cached) {
-      // Stale-while-revalidate: serve immediately, refresh in the background if stale.
-      if (cached.isStale) {
-        refreshMarketItemsSnapshotInBackground(timeframe, fetchAndStore);
-      }
+      if (cached.isStale) refreshMarketItemsSnapshotInBackground(timeframe, fetchAndStore);
       return cached.snapshot;
     }
 
-    // Cold cache — we have to wait, but cap the wait so the page never hangs forever.
     const fresh = await serverFetch<MarketItemsSnapshotResponse>(
-      `/v1/web/market/items${buildQuery(params)}`,
-      {
-        revalidate: false,
-        timeoutMs: 20000,
-      },
+      `/v1/web/market/items${buildQuery({ timeframe })}`,
+      { revalidate: false, timeoutMs: 20000 },
     );
-
-    if (fresh) {
-      void setCachedMarketItemsSnapshot(timeframe, fresh);
-    }
-
+    if (fresh) void setCachedMarketItemsSnapshot(timeframe, fresh);
     return fresh;
   },
-  getMarketItem(itemId: number, revalidate: number | false = false) {
-    return serverFetch<MarketItemAnalyticsResponse>(`/v1/web/market/items/${itemId}`, {
-      revalidate,
-    });
-  },
+
   getBillingPlans(revalidate: number | false = false) {
     return serverFetch<PlansResponse>("/v1/web/account/billing/plans", { revalidate });
   },
@@ -208,8 +429,6 @@ export const serverApi = {
     return serverFetch<SubscriptionStatus>("/v1/web/account/billing/status", { revalidate });
   },
   getBillingOverview(revalidate: number | false = false) {
-    return serverFetch<BillingOverviewResponse>("/v1/web/account/billing/overview", {
-      revalidate,
-    });
+    return serverFetch<BillingOverviewResponse>("/v1/web/account/billing/overview", { revalidate });
   },
 };

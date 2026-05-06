@@ -162,7 +162,7 @@
                   "meta": {
                     "currency": "USD",
                     "filters": {},
-                    "returned_providers": [
+                    "providers_queried": [
                       "avanmarket"
                     ]
                   },
@@ -916,7 +916,7 @@
           "Prices"
         ],
         "summary": "Price Candles",
-        "description": "Return composite OHLCV candle data for a single item across all providers.\n\nParameters:\n- Item filter: `item_id` or `market_hash_name` (one is required).\n- Optional filter: `phase`.\n- Time window: `start`/`end` (ISO 8601) or `lookback` (for example `7d` or `7`).\n- `interval`: `5m`, `1h`, or `1d`.\n- `fill`: Include empty buckets with carry-forward prices when `true`.\n- `currency`: Quote currency (default `USD`).\n\nNotes:\n- If both `start` and `lookback` are sent, `lookback` takes precedence.\n- Maximum lookback depends on `interval`:\n  `5m` up to 7 days, `1h` up to 30 days, `1d` up to 365 days.\n- Free tiers are additionally capped by their tier restrictions and default\n  to the maximum allowed window when no explicit lookback is supplied.\n\nResponse:\n- `meta`: Item, provider scope, interval, phase, currency, start/end timestamps.\n- `data`: Candle buckets in oldest-to-newest order\n  (`t`, `o`, `h`, `l`, `c`, `v`, `q`, `providers`).\n  `o`/`c` are the lowest effective provider prices, `l` is the minimum provider\n  low, `h` is capped at `median(provider_highs) * 1.5`, `v` is the non-negative depletion\n  flow between buckets, and `q` is the summed close-side inventory at bucket end when\n  available. `providers.o`, `providers.h`, `providers.l`, and `providers.c` identify the\n  provider keys contributing the returned open/high/low/close values. For `1d` requests\n  starting more than 30 days back, `v` falls back to legacy depletion-derived `volume_qty`\n  and `q` is `null`.\n\nRequirements:\n- Valid API key with access to `/v1/prices/candles`.\n- `item_id` or `market_hash_name` is required.\n- `start`/`end` must be valid ISO 8601 timestamps.",
+        "description": "Return composite OHLCV candle data for a single item across all providers.\n\nParameters:\n- Item filter: `item_id` or `market_hash_name` (one is required).\n- Optional filter: `phase`.\n- Time window: `start`/`end` (ISO 8601) or `lookback` (for example `7d` or `7`).\n- `interval`: `5m`, `1h`, or `1d`.\n- `fill`: Include empty buckets with carry-forward prices when `true`.\n- `currency`: Quote currency (default `USD`).\n\nNotes:\n- If both `start` and `lookback` are sent, `lookback` takes precedence.\n  Lookback requests are aligned to completed candle buckets; `1h` lookback\n  windows use a 15-minute freshness buffer before flooring to the hour.\n- Maximum lookback depends on `interval`:\n  `5m` up to 7 days, `1h` up to 30 days, `1d` up to 365 days.\n- Free tiers are additionally capped by their tier restrictions and default\n  to the maximum allowed window when no explicit lookback is supplied.\n\nResponse:\n- `meta`: Item, provider scope, interval, phase, currency, and effective query-window\n  start/end timestamps.\n- `data`: Candle buckets in oldest-to-newest order\n  (`t`, `o`, `h`, `l`, `c`, `v`, `q`, `providers`).\n  `o`/`c` are the lowest effective provider prices, `l` is the minimum provider\n  low, `h` is capped at `median(provider_highs) * 1.5`, `v` is the non-negative depletion\n  flow between buckets, and `q` is the summed close-side inventory at bucket end when\n  available. `providers.o`, `providers.h`, `providers.l`, and `providers.c` identify the\n  provider keys contributing the returned open/high/low/close values. For `1d` requests\n  starting more than 30 days back, `v` falls back to legacy depletion-derived `volume_qty`\n  and `q` is `null`.\n\nRequirements:\n- Valid API key with access to `/v1/prices/candles`.\n- `item_id` or `market_hash_name` is required.\n- `start`/`end` must be valid ISO 8601 timestamps.",
         "operationId": "priceCandles",
         "security": [
           {
@@ -1029,10 +1029,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Lookback window in days. Use `7d` or plain `7`; both mean 7 days and set start=now-lookback. Free tiers cap this at 30 days.",
+              "description": "Lookback window in days. Use `7d` or plain `7`; both mean 7 days and select a completed candle-bucket window. Free tiers cap this at 30 days.",
               "title": "Lookback"
             },
-            "description": "Lookback window in days. Use `7d` or plain `7`; both mean 7 days and set start=now-lookback. Free tiers cap this at 30 days.",
+            "description": "Lookback window in days. Use `7d` or plain `7`; both mean 7 days and select a completed candle-bucket window. Free tiers cap this at 30 days.",
             "examples": {
               "stringDays": {
                 "summary": "String shorthand",
@@ -16222,7 +16222,7 @@
                   "meta": {
                     "currency": "USD",
                     "filters": {},
-                    "returned_providers": [
+                    "providers_queried": [
                       "avanmarket"
                     ]
                   },
@@ -16755,7 +16755,7 @@
           "Prices"
         ],
         "summary": "Web Price Candles V1 Web Prices Candles",
-        "description": "Return composite OHLCV candle data for a single item across all providers.\n\nParameters:\n- Item filter: `item_id` or `market_hash_name` (one is required).\n- Optional filter: `phase`.\n- Time window: `start`/`end` (ISO 8601) or `lookback` (for example `7d` or `7`).\n- `interval`: `5m`, `1h`, or `1d`.\n- `fill`: Include empty buckets with carry-forward prices when `true`.\n- `currency`: Quote currency (default `USD`).\n\nNotes:\n- If both `start` and `lookback` are sent, `lookback` takes precedence.\n- Maximum lookback depends on `interval`:\n  `5m` up to 7 days, `1h` up to 30 days, `1d` up to 365 days.\n- Free tiers are additionally capped by their tier restrictions and default\n  to the maximum allowed window when no explicit lookback is supplied.\n\nResponse:\n- `meta`: Item, provider scope, interval, phase, currency, start/end timestamps.\n- `data`: Candle buckets in oldest-to-newest order\n  (`t`, `o`, `h`, `l`, `c`, `v`, `q`, `providers`).\n  `o`/`c` are the lowest effective provider prices, `l` is the minimum provider\n  low, `h` is capped at `median(provider_highs) * 1.5`, `v` is the non-negative depletion\n  flow between buckets, and `q` is the summed close-side inventory at bucket end when\n  available. `providers.o`, `providers.h`, `providers.l`, and `providers.c` identify the\n  provider keys contributing the returned open/high/low/close values. For `1d` requests\n  starting more than 30 days back, `v` falls back to legacy depletion-derived `volume_qty`\n  and `q` is `null`.\n\nRequirements:\n- Valid API key with access to `/v1/prices/candles`.\n- `item_id` or `market_hash_name` is required.\n- `start`/`end` must be valid ISO 8601 timestamps.",
+        "description": "Return composite OHLCV candle data for a single item across all providers.\n\nParameters:\n- Item filter: `item_id` or `market_hash_name` (one is required).\n- Optional filter: `phase`.\n- Time window: `start`/`end` (ISO 8601) or `lookback` (for example `7d` or `7`).\n- `interval`: `5m`, `1h`, or `1d`.\n- `fill`: Include empty buckets with carry-forward prices when `true`.\n- `currency`: Quote currency (default `USD`).\n\nNotes:\n- If both `start` and `lookback` are sent, `lookback` takes precedence.\n  Lookback requests are aligned to completed candle buckets; `1h` lookback\n  windows use a 15-minute freshness buffer before flooring to the hour.\n- Maximum lookback depends on `interval`:\n  `5m` up to 7 days, `1h` up to 30 days, `1d` up to 365 days.\n- Free tiers are additionally capped by their tier restrictions and default\n  to the maximum allowed window when no explicit lookback is supplied.\n\nResponse:\n- `meta`: Item, provider scope, interval, phase, currency, and effective query-window\n  start/end timestamps.\n- `data`: Candle buckets in oldest-to-newest order\n  (`t`, `o`, `h`, `l`, `c`, `v`, `q`, `providers`).\n  `o`/`c` are the lowest effective provider prices, `l` is the minimum provider\n  low, `h` is capped at `median(provider_highs) * 1.5`, `v` is the non-negative depletion\n  flow between buckets, and `q` is the summed close-side inventory at bucket end when\n  available. `providers.o`, `providers.h`, `providers.l`, and `providers.c` identify the\n  provider keys contributing the returned open/high/low/close values. For `1d` requests\n  starting more than 30 days back, `v` falls back to legacy depletion-derived `volume_qty`\n  and `q` is `null`.\n\nRequirements:\n- Valid API key with access to `/v1/prices/candles`.\n- `item_id` or `market_hash_name` is required.\n- `start`/`end` must be valid ISO 8601 timestamps.",
         "operationId": "webPriceCandles",
         "security": [],
         "parameters": [
@@ -16864,10 +16864,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Lookback window in days. Use `7d` or plain `7`; both mean 7 days and set start=now-lookback. Free tiers cap this at 30 days.",
+              "description": "Lookback window in days. Use `7d` or plain `7`; both mean 7 days and select a completed candle-bucket window. Free tiers cap this at 30 days.",
               "title": "Lookback"
             },
-            "description": "Lookback window in days. Use `7d` or plain `7`; both mean 7 days and set start=now-lookback. Free tiers cap this at 30 days.",
+            "description": "Lookback window in days. Use `7d` or plain `7`; both mean 7 days and select a completed candle-bucket window. Free tiers cap this at 30 days.",
             "examples": {
               "stringDays": {
                 "summary": "String shorthand",
@@ -27519,97 +27519,10 @@
         "title": "BatchPricesResponse",
         "description": "Response envelope for POST /v1/prices/batch."
       },
-      "BidsFilterMeta": {
-        "properties": {
-          "item_id": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Item Id",
-            "description": "Normalized catalog item ID used by this API."
-          },
-          "market_hash_name": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Market Hash Name",
-            "description": "Canonical Steam market hash name for the item."
-          },
-          "phase": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Phase",
-            "description": "Phased finish/variant label when applicable."
-          },
-          "requested_providers": {
-            "anyOf": [
-              {
-                "items": {
-                  "type": "string"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Requested Providers",
-            "description": "Provider keys requested for this operation."
-          }
-        },
-        "type": "object",
-        "title": "BidsFilterMeta",
-        "description": "Filter metadata for bids endpoint."
-      },
-      "BidsMeta": {
-        "properties": {
-          "currency": {
-            "type": "string",
-            "title": "Currency",
-            "description": "ISO 4217 currency code for the value context."
-          },
-          "filters": {
-            "$ref": "#/components/schemas/BidsFilterMeta",
-            "description": "Effective request filters applied to this response."
-          },
-          "providers_queried": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Providers Queried",
-            "description": "Provider keys queried while building this response."
-          }
-        },
-        "type": "object",
-        "required": [
-          "currency",
-          "filters",
-          "providers_queried"
-        ],
-        "title": "BidsMeta",
-        "description": "Metadata for bids response."
-      },
       "BidsResponse": {
         "properties": {
           "meta": {
-            "$ref": "#/components/schemas/BidsMeta",
+            "$ref": "#/components/schemas/PricesMeta",
             "description": "Response metadata for this payload."
           },
           "items": {
@@ -27622,7 +27535,7 @@
           },
           "pagination": {
             "$ref": "#/components/schemas/PaginationMeta",
-            "description": "Pagination metadata for this response."
+            "description": "Offset pagination metadata."
           }
         },
         "type": "object",
@@ -29361,6 +29274,28 @@
             "minItems": 1,
             "title": "Market Hash Names",
             "description": "Steam market hash names to resolve, up to 1,000 per request."
+          },
+          "phases": {
+            "anyOf": [
+              {
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phases",
+            "description": "Optional parallel array of phases (same length as market_hash_names). When provided, each entry is resolved against the matching (name, phase) pair so Doppler variants return the correct phase-specific item ID."
           }
         },
         "type": "object",
@@ -29406,6 +29341,18 @@
             "type": "string",
             "title": "Market Hash Name",
             "description": "Requested Steam market hash name."
+          },
+          "phase": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phase",
+            "description": "Echoed phase from the request, or null when no phase was requested."
           },
           "item_id": {
             "anyOf": [
@@ -32758,6 +32705,18 @@
       },
       "PricesFilterMeta": {
         "properties": {
+          "item_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Item Id",
+            "description": "Normalized catalog item ID used by this API."
+          },
           "market_hash_name": {
             "anyOf": [
               {
@@ -32800,7 +32759,7 @@
         },
         "type": "object",
         "title": "PricesFilterMeta",
-        "description": "Filter metadata for prices endpoint."
+        "description": "Filter metadata for prices and bids endpoints."
       },
       "PricesMeta": {
         "properties": {
@@ -32813,23 +32772,23 @@
             "$ref": "#/components/schemas/PricesFilterMeta",
             "description": "Effective request filters applied to this response."
           },
-          "returned_providers": {
+          "providers_queried": {
             "items": {
               "type": "string"
             },
             "type": "array",
-            "title": "Returned Providers",
-            "description": "Provider keys that returned data in this response."
+            "title": "Providers Queried",
+            "description": "Provider keys queried."
           }
         },
         "type": "object",
         "required": [
           "currency",
           "filters",
-          "returned_providers"
+          "providers_queried"
         ],
         "title": "PricesMeta",
-        "description": "Metadata for prices response."
+        "description": "Metadata for prices and bids responses."
       },
       "PricesPaginatedResponse_MarketItem_": {
         "properties": {
