@@ -162,7 +162,7 @@
                   "meta": {
                     "currency": "USD",
                     "filters": {},
-                    "returned_providers": [
+                    "providers_queried": [
                       "avanmarket"
                     ]
                   },
@@ -16222,7 +16222,7 @@
                   "meta": {
                     "currency": "USD",
                     "filters": {},
-                    "returned_providers": [
+                    "providers_queried": [
                       "avanmarket"
                     ]
                   },
@@ -27519,97 +27519,10 @@
         "title": "BatchPricesResponse",
         "description": "Response envelope for POST /v1/prices/batch."
       },
-      "BidsFilterMeta": {
-        "properties": {
-          "item_id": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Item Id",
-            "description": "Normalized catalog item ID used by this API."
-          },
-          "market_hash_name": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Market Hash Name",
-            "description": "Canonical Steam market hash name for the item."
-          },
-          "phase": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Phase",
-            "description": "Phased finish/variant label when applicable."
-          },
-          "requested_providers": {
-            "anyOf": [
-              {
-                "items": {
-                  "type": "string"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Requested Providers",
-            "description": "Provider keys requested for this operation."
-          }
-        },
-        "type": "object",
-        "title": "BidsFilterMeta",
-        "description": "Filter metadata for bids endpoint."
-      },
-      "BidsMeta": {
-        "properties": {
-          "currency": {
-            "type": "string",
-            "title": "Currency",
-            "description": "ISO 4217 currency code for the value context."
-          },
-          "filters": {
-            "$ref": "#/components/schemas/BidsFilterMeta",
-            "description": "Effective request filters applied to this response."
-          },
-          "providers_queried": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Providers Queried",
-            "description": "Provider keys queried while building this response."
-          }
-        },
-        "type": "object",
-        "required": [
-          "currency",
-          "filters",
-          "providers_queried"
-        ],
-        "title": "BidsMeta",
-        "description": "Metadata for bids response."
-      },
       "BidsResponse": {
         "properties": {
           "meta": {
-            "$ref": "#/components/schemas/BidsMeta",
+            "$ref": "#/components/schemas/PricesMeta",
             "description": "Response metadata for this payload."
           },
           "items": {
@@ -27622,7 +27535,7 @@
           },
           "pagination": {
             "$ref": "#/components/schemas/PaginationMeta",
-            "description": "Pagination metadata for this response."
+            "description": "Offset pagination metadata."
           }
         },
         "type": "object",
@@ -32792,6 +32705,18 @@
       },
       "PricesFilterMeta": {
         "properties": {
+          "item_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Item Id",
+            "description": "Normalized catalog item ID used by this API."
+          },
           "market_hash_name": {
             "anyOf": [
               {
@@ -32834,7 +32759,7 @@
         },
         "type": "object",
         "title": "PricesFilterMeta",
-        "description": "Filter metadata for prices endpoint."
+        "description": "Filter metadata for prices and bids endpoints."
       },
       "PricesMeta": {
         "properties": {
@@ -32847,23 +32772,23 @@
             "$ref": "#/components/schemas/PricesFilterMeta",
             "description": "Effective request filters applied to this response."
           },
-          "returned_providers": {
+          "providers_queried": {
             "items": {
               "type": "string"
             },
             "type": "array",
-            "title": "Returned Providers",
-            "description": "Provider keys that returned data in this response."
+            "title": "Providers Queried",
+            "description": "Provider keys queried."
           }
         },
         "type": "object",
         "required": [
           "currency",
           "filters",
-          "returned_providers"
+          "providers_queried"
         ],
         "title": "PricesMeta",
-        "description": "Metadata for prices response."
+        "description": "Metadata for prices and bids responses."
       },
       "PricesPaginatedResponse_MarketItem_": {
         "properties": {
