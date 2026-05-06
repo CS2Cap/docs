@@ -132,6 +132,8 @@ export default async function ApiPage() {
     serverApi.getBillingPlans(300),
   ]);
 
+  const paidPlans = plans?.plans.filter((p) => p.code.toLowerCase() !== "free") ?? [];
+
   return (
     <>
       <StructuredData
@@ -394,8 +396,8 @@ export default async function ApiPage() {
             <p className="mx-auto max-w-lg font-mono text-sm text-muted-foreground">Pick a tier. Start building.</p>
           </div>
 
-          {plans?.plans.length ? (
-            <PricingPlans plans={plans.plans} />
+          {paidPlans.length ? (
+            <PricingPlans plans={paidPlans} />
           ) : (
             <div className="mx-auto max-w-2xl border-brutal bg-card p-8 text-center">
               <div className="font-mono text-sm text-muted-foreground">
