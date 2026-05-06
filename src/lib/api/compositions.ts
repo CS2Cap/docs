@@ -263,13 +263,21 @@ async function getForgivingSearchItems(input: {
 }
 
 export async function getLandingPageData() {
+  // anon: true — landing data is identical for every visitor (catalog, ticker,
+  // provider list). Reading cookies via `cookies()` would force the route into
+  // dynamic rendering, which currently makes every "first" hit pay the full
+  // server-fetch path. With anon, the page can be statically generated with ISR.
   const [metadata, providers, catalogItems, tickerPrices] = await Promise.all([
-    serverApi.getItemsMetadata(86400),
-    serverApi.getProviders(3600),
-    Promise.all(
-      LANDING_TICKER_ITEM_IDS.map((itemId) => serverApi.getItemById(itemId)),
-    ).then((items) => items.filter((item): item is ItemOut => item != null)),
-    serverApi.postPrices({ item_ids: LANDING_TICKER_ITEM_IDS, currency: "USD" }),
+    serverApi.getItemsMetadata(86400, { anon: true }),
+    serverApi.getProviders(3600, { anon: true }),
+    serverApi.getItemsByIds(LANDING_TICKER_ITEM_IDS, { anon: true }),
+    serverApi.postPrices(
+      { item_ids: LANDING_TICKER_ITEM_IDS, currency: "USD" },
+      // revalidate: 60 here matters for cold-cache fallback only — the warm
+      // path reads the blob snapshot directly. Without this, Next.js sees
+      // `cache: "no-store"` during build and refuses to mark the page static.
+      { anon: true, revalidate: 60 },
+    ),
   ]);
   const tickerItems = buildLandingTickerItems(
     catalogItems,

@@ -51,11 +51,22 @@ const ITEMS_FRESH_MS = 24 * 60 * 60 * 1000;
 
 // ── L1 in-memory cache ────────────────────────────────────────────────────────
 
-const MEMORY_TTL_MS = 60 * 1000;
+// Per-blob L1 TTL. Snapshots are read-mostly global data, so we keep them in
+// memory for roughly the same horizon as their freshness window — the blob
+// `uploadedAt` tells us if the entry is stale; we just need it in RAM long
+// enough to amortize Blob fetches across requests on the same warm instance.
+// Items snapshot is large (MBs gzipped) and changes at most daily.
+const DEFAULT_MEMORY_TTL_MS = 5 * 60 * 1000;
+const MEMORY_TTL_BY_PATH: Record<string, number> = {
+  [ITEMS_BLOB]: ITEMS_FRESH_MS,
+  [PRICES_BLOB]: PRICES_FRESH_MS,
+  [BIDS_BLOB]: BIDS_FRESH_MS,
+};
 
 type Entry<T> = { data: T; uploadedAt: number; expiresAt: number };
 const l1 = new Map<string, Entry<unknown>>();
 const inflights = new Map<string, Promise<void>>();
+const readInflights = new Map<string, Promise<unknown>>();
 
 // ── Generic Blob helpers ──────────────────────────────────────────────────────
 
@@ -102,7 +113,8 @@ function fromL1<T>(key: string, freshMs: number): CachedSnapshotResult<T> | null
 }
 
 function toL1<T>(key: string, data: T, uploadedAt: number) {
-  l1.set(key, { data, uploadedAt, expiresAt: Date.now() + MEMORY_TTL_MS } as Entry<unknown>);
+  const ttl = MEMORY_TTL_BY_PATH[key] ?? DEFAULT_MEMORY_TTL_MS;
+  l1.set(key, { data, uploadedAt, expiresAt: Date.now() + ttl } as Entry<unknown>);
 }
 
 async function getCached<T>(
@@ -111,9 +123,28 @@ async function getCached<T>(
 ): Promise<CachedSnapshotResult<T> | null> {
   const hit = fromL1<T>(blobPath, freshMs);
   if (hit) return hit;
-  const result = await readBlob<T>(blobPath);
+
+  // Coalesce concurrent reads on the same key — a fan-out of N callers (e.g.
+  // 10 ticker lookups on the landing page) must not turn into N independent
+  // Blob list+fetch+gunzip+parse cycles.
+  const existing = readInflights.get(blobPath) as
+    | Promise<{ data: T; uploadedAt: number } | null>
+    | undefined;
+  const promise =
+    existing ??
+    (async () => {
+      try {
+        const result = await readBlob<T>(blobPath);
+        if (result) toL1(blobPath, result.data, result.uploadedAt);
+        return result;
+      } finally {
+        readInflights.delete(blobPath);
+      }
+    })();
+  if (!existing) readInflights.set(blobPath, promise);
+
+  const result = await promise;
   if (!result) return null;
-  toL1(blobPath, result.data, result.uploadedAt);
   return {
     snapshot: result.data,
     cachedAt: result.uploadedAt,
