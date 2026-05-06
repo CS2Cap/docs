@@ -58,7 +58,8 @@ async function getLongRangePriceCandles(itemId: number) {
   // response — no pagination/cursor handling required.
   const params = new URLSearchParams({
     item_id: String(itemId),
-    lookback: "365d",
+    // API rejects exactly 365d for 1d interval ("start must be within last 365 days").
+    lookback: "364d",
     interval: "1d",
   });
 
