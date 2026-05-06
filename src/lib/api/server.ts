@@ -46,6 +46,10 @@ interface ServerFetchOptions {
   body?: unknown;
   revalidate?: number | false;
   timeoutMs?: number;
+  // Skip reading cookies. Required for any caller that wants the surrounding
+  // route to remain statically renderable — `cookies()` opts the route into
+  // dynamic rendering even if the cookie value is unused.
+  anon?: boolean;
 }
 
 function normalizeProvidersResponse(
@@ -60,18 +64,20 @@ export async function serverFetch<T>(
   path: string,
   options: ServerFetchOptions = {},
 ): Promise<T | null> {
-  const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get(WEB_SESSION_COOKIE_NAME);
-  const authTokenCookie = cookieStore.get(WEB_AUTH_TOKEN_COOKIE_NAME);
-  const { method = "GET", body, revalidate = false, timeoutMs = 8000 } = options;
+  const { method = "GET", body, revalidate = false, timeoutMs = 8000, anon = false } = options;
 
   const headers: Record<string, string> = {};
 
-  if (authTokenCookie?.value) {
-    headers.Authorization = `Bearer ${authTokenCookie.value}`;
-  }
-  if (sessionCookie) {
-    headers.Cookie = `${sessionCookie.name}=${sessionCookie.value}`;
+  if (!anon) {
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get(WEB_SESSION_COOKIE_NAME);
+    const authTokenCookie = cookieStore.get(WEB_AUTH_TOKEN_COOKIE_NAME);
+    if (authTokenCookie?.value) {
+      headers.Authorization = `Bearer ${authTokenCookie.value}`;
+    }
+    if (sessionCookie) {
+      headers.Cookie = `${sessionCookie.name}=${sessionCookie.value}`;
+    }
   }
   if (body !== undefined) {
     headers["Content-Type"] = "application/json";
@@ -300,49 +306,78 @@ export const serverApi = {
   },
 
   // Single item by ID — reads from items snapshot, falls back to per-item API call.
-  async getItemById(itemId: number): Promise<ItemOut | null> {
+  async getItemById(itemId: number, opts: { anon?: boolean } = {}): Promise<ItemOut | null> {
     const cached = await getCachedItemsSnapshot();
     if (cached) {
       if (cached.isStale) refreshItemsSnapshotInBackground(fetchAllItemsAndStore);
       return cached.snapshot.byItemId[itemId] ?? null;
     }
-    return serverFetch<ItemOut>(`/v1/web/items/${itemId}`, { revalidate: 3600 });
+    return serverFetch<ItemOut>(`/v1/web/items/${itemId}`, { revalidate: 3600, anon: opts.anon });
   },
 
-  getItemsMetadata(revalidate: number | false = false) {
-    return serverFetch<ItemsMetadataResponse>("/v1/web/items/metadata", { revalidate });
+  // Bulk variant — read the items snapshot once and look up many ids in-process,
+  // instead of N parallel snapshot reads (each of which would re-fetch+gunzip
+  // the whole blob on a cold instance).
+  async getItemsByIds(
+    itemIds: number[],
+    opts: { anon?: boolean } = {},
+  ): Promise<ItemOut[]> {
+    const cached = await getCachedItemsSnapshot();
+    if (cached) {
+      if (cached.isStale) refreshItemsSnapshotInBackground(fetchAllItemsAndStore);
+      return itemIds
+        .map((id) => cached.snapshot.byItemId[id])
+        .filter((item): item is ItemOut => item != null);
+    }
+    const fetched = await Promise.all(
+      itemIds.map((id) =>
+        serverFetch<ItemOut>(`/v1/web/items/${id}`, { revalidate: 3600, anon: opts.anon }),
+      ),
+    );
+    return fetched.filter((item): item is ItemOut => item != null);
   },
 
-  async getProviders(revalidate: number | false = false) {
+  getItemsMetadata(revalidate: number | false = false, opts: { anon?: boolean } = {}) {
+    return serverFetch<ItemsMetadataResponse>("/v1/web/items/metadata", {
+      revalidate,
+      anon: opts.anon,
+    });
+  },
+
+  async getProviders(revalidate: number | false = false, opts: { anon?: boolean } = {}) {
     return normalizeProvidersResponse(
-      await serverFetch<ProvidersResponse>("/v1/web/providers", { revalidate }),
+      await serverFetch<ProvidersResponse>("/v1/web/providers", { revalidate, anon: opts.anon }),
     );
   },
 
   // Prices — served from Redis snapshot; cold-starts fall through to targeted API calls.
   async postPrices(
     query: { item_ids: number[]; currency?: string; limit?: number },
+    opts: { anon?: boolean; revalidate?: number | false } = {},
   ): Promise<PricesPaginatedResponse | null> {
     const cached = await getCachedPricesSnapshot();
     if (cached) {
       if (cached.isStale) refreshPricesSnapshotInBackground(fetchAllPricesAndStore);
       return assemblePricesResponse(cached.snapshot.byItemId, query);
     }
+    const revalidate = opts.revalidate ?? false;
     // Cold-start: single item uses GET, multiple items use batch POST
     if (query.item_ids.length === 1) {
       const params = new URLSearchParams({ item_id: String(query.item_ids[0]) });
       if (query.limit != null) params.set("limit", String(query.limit));
       if (query.currency) params.set("currency", query.currency);
       return serverFetch<PricesPaginatedResponse>(`/v1/web/prices?${params}`, {
-        revalidate: false,
+        revalidate,
         timeoutMs: 10000,
+        anon: opts.anon,
       });
     }
     const batch = await serverFetch<BatchPricesResponse>("/v1/web/prices/batch", {
       method: "POST",
       body: { item_ids: query.item_ids, currency: query.currency },
-      revalidate: false,
+      revalidate,
       timeoutMs: 15000,
+      anon: opts.anon,
     });
     if (!batch) return null;
     const priceItems: MarketItem[] = batch.items.flatMap((bi) =>

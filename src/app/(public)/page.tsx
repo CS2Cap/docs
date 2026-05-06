@@ -30,6 +30,12 @@ export const metadata: Metadata = {
   },
 };
 
+// Public, identical for every visitor — let Vercel CDN serve the rendered HTML
+// and revalidate it at most once a minute. This is what flips the response
+// from `x-vercel-cache: MISS` (full SSR every time) to HIT.
+export const revalidate = 60;
+export const dynamic = "force-static";
+
 const SEO_LINKS = [
   { href: "/cs2-api", label: "CS2 API" },
   { href: "/free-cs2-api", label: "Free CS2 API" },
