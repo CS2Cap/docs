@@ -357,7 +357,7 @@
           "Prices"
         ],
         "summary": "Stream Full Prices Snapshot",
-        "description": "Return the full live prices snapshot as an NDJSON stream.\n\nBehavior:\n- pro and quant tiers only\n- requires a real `sk_*` API key; session JWTs are not accepted\n- optional `providers` filter; omit to stream all providers\n- fixed USD output\n- `lowest_ask` values are returned in USD minor units\n- one JSON object per line using the `MarketItem` field set\n- the live index is copied into temporary Redis keys so the export is stable for the duration of the stream\n- per-API-key cooldown of 30 seconds for this POST operation",
+        "description": "Return the full live prices snapshot as an NDJSON stream.\n\nBehavior:\n- pro and quant tiers only\n- requires a real `sk_*` API key; session JWTs are not accepted\n- optional `providers` filter; omit to stream all providers\n- fixed USD output\n- `lowest_ask` values are returned in USD minor units\n- one JSON object per line using the `MarketItem` field set\n- the live indexed Redis cache is streamed in bounded chunks without request-scoped Redis copies\n- per-API-key cooldown of 5 minutes for this POST operation",
         "operationId": "streamFullPricesSnapshot",
         "security": [
           {
@@ -463,7 +463,7 @@
               "application/json": {
                 "example": {
                   "code": "RATE_LIMIT_EXCEEDED",
-                  "detail": "Bulk snapshot cooldown active for /v1/prices. Retry after 30 seconds."
+                  "detail": "Bulk snapshot cooldown active for /v1/prices. Retry after 300 seconds."
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -1866,7 +1866,7 @@
           "Bids"
         ],
         "summary": "Stream Full Bids Snapshot",
-        "description": "Return the full live bids snapshot as an NDJSON stream.\n\nBehavior:\n- pro and quant tiers only\n- requires a real `sk_*` API key; session JWTs are not accepted\n- optional `providers` filter; omit to stream all providers\n- fixed USD output\n- `highest_bid` values are returned in USD minor units\n- one JSON object per line using the `BuyOrderItem` field set\n- the live index is copied into temporary Redis keys so the export is stable for the duration of the stream\n- per-API-key cooldown of 30 seconds for this POST operation",
+        "description": "Return the full live bids snapshot as an NDJSON stream.\n\nBehavior:\n- pro and quant tiers only\n- requires a real `sk_*` API key; session JWTs are not accepted\n- optional `providers` filter; omit to stream all providers\n- fixed USD output\n- `highest_bid` values are returned in USD minor units\n- one JSON object per line using the `BuyOrderItem` field set\n- the live indexed Redis cache is streamed in bounded chunks without request-scoped Redis copies\n- per-API-key cooldown of 5 minutes for this POST operation",
         "operationId": "streamFullBidsSnapshot",
         "security": [
           {
@@ -1972,7 +1972,7 @@
               "application/json": {
                 "example": {
                   "code": "RATE_LIMIT_EXCEEDED",
-                  "detail": "Bulk snapshot cooldown active for /v1/bids. Retry after 30 seconds."
+                  "detail": "Bulk snapshot cooldown active for /v1/bids. Retry after 300 seconds."
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
