@@ -7,10 +7,11 @@ export const alt = "CS2 skin price card — CS2Cap";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-type Params = { itemId: string };
+type Params = Promise<{ itemId: string }>;
 
 export default async function Image({ params }: { params: Params }) {
-  const parsed = parseItemRouteParam(params.itemId);
+  const { itemId } = await params;
+  const parsed = parseItemRouteParam(itemId);
   const data = parsed
     ? await getItemDetailPageCoreData(parsed.id)
     : null;
