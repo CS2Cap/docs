@@ -18,7 +18,7 @@ import {
   setCachedItemsSnapshot,
   setCachedMarketItemsSnapshot,
   setCachedPricesSnapshot,
-} from "../upstash-cache";
+} from "../blob-snapshot-cache";
 import type {
   AccountInfo,
   BatchPricesResponse,
@@ -350,7 +350,7 @@ export const serverApi = {
     );
   },
 
-  // Prices — served from Redis snapshot; cold-starts fall through to targeted API calls.
+  // Prices — served from Blob snapshot; cold-starts fall through to targeted API calls.
   async postPrices(
     query: { item_ids: number[]; currency?: string; limit?: number },
     opts: { anon?: boolean; revalidate?: number | false } = {},
@@ -400,7 +400,7 @@ export const serverApi = {
     };
   },
 
-  // Bids — served from Redis snapshot; cold-starts fall through to targeted GET.
+  // Bids — served from Blob snapshot; cold-starts fall through to targeted GET.
   async postBids(
     query: { item_ids: number[]; currency?: string; limit?: number },
   ): Promise<BidsResponse | null> {

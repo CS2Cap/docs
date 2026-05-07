@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { FooterSection } from "@/components/FooterSection";
 import { PricingPlans } from "@/components/PricingPlans";
-import { StructuredData, buildBreadcrumbList, buildWebApplication } from "@/components/seo/StructuredData";
+import { StructuredData, buildBreadcrumbList, buildSoftwareApplication } from "@/components/seo/StructuredData";
 import { getApiInfoPageData } from "@/lib/api/compositions";
 import { serverApi } from "@/lib/api/server";
 import { getPagesByType } from "@/lib/seo/landing-pages";
@@ -142,7 +142,7 @@ export default async function ApiPage() {
           { name: "API Reference", url: "https://cs2cap.com/api-info" },
         ])}
       />
-      <StructuredData data={buildWebApplication()} />
+      <StructuredData data={buildSoftwareApplication(paidPlans)} />
       <section className="relative overflow-hidden bg-grid py-20 md:py-28">
         <div className="absolute top-20 right-20 h-40 w-40 rotate-12 border-2 border-primary/10" />
         <div className="absolute bottom-10 right-40 h-24 w-24 -rotate-6 border-2 border-primary/5" />

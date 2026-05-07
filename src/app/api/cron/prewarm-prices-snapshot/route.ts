@@ -2,7 +2,7 @@ import "server-only";
 
 import { NextRequest, NextResponse } from "next/server";
 import { API_BASE_URL } from "@/lib/api/config";
-import { setCachedPricesSnapshot } from "@/lib/upstash-cache";
+import { setCachedPricesSnapshot } from "@/lib/blob-snapshot-cache";
 import type { MarketItem } from "@/lib/api/types";
 
 export const dynamic = "force-dynamic";

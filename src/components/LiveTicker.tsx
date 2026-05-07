@@ -3,6 +3,7 @@
 import { Fragment } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { buildItemPath } from "@/lib/seo/itemSlug";
 
 type TickerItem = {
   id: string | number;
@@ -20,7 +21,7 @@ export function LiveTicker({ items }: { items: TickerItem[] }) {
     items.map((item) => (
       <Fragment key={`${keyPrefix}-${item.id}`}>
         <Link
-          href={`/item/${item.id}`}
+          href={buildItemPath(typeof item.id === "string" ? Number.parseInt(item.id, 10) : item.id, item.name)}
           prefetch={false}
           title={`View ${item.name}`}
           className="group flex shrink-0 items-center gap-2 px-5 transition-colors hover:bg-secondary/80"

@@ -13,6 +13,12 @@ export const metadata: Metadata = {
     template: "%s | CS2Cap",
   },
   description: ROOT_DESCRIPTION,
+  alternates: {
+    languages: {
+      en: "https://cs2cap.com",
+      "x-default": "https://cs2cap.com",
+    },
+  },
   keywords: [
     "CS2 API",
     "CS2 market API",

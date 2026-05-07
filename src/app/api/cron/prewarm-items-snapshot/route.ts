@@ -2,7 +2,7 @@ import "server-only";
 
 import { NextRequest, NextResponse } from "next/server";
 import { API_BASE_URL } from "@/lib/api/config";
-import { setCachedItemsSnapshot } from "@/lib/upstash-cache";
+import { setCachedItemsSnapshot } from "@/lib/blob-snapshot-cache";
 import type { ItemOut, ItemsResponse } from "@/lib/api/types";
 
 export const dynamic = "force-dynamic";

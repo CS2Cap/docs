@@ -36,6 +36,7 @@
     "next-env.d.ts",
     "src/**/*.ts",
     "src/**/*.tsx",
+    "instrumentation-client.ts",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],

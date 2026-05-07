@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { useAlertEvents, useAlerts, useSession, useWatchlist } from "@/lib/api";
 import { PlanUpgradeCard } from "@/components/PlanUpgradeCard";
+import { buildItemPath } from "@/lib/seo/itemSlug";
 
 function formatThreshold(value: string, currency?: string) {
   const parsed = Number(value);
@@ -121,7 +122,7 @@ export default function DashboardPage() {
                 {watchlist.items.map((item) => (
                   <div key={item.id} className="flex items-center justify-between gap-4">
                     <div>
-                      <Link href={`/item/${item.item_id}`} className="text-sm font-medium text-foreground hover:text-primary">
+                      <Link href={buildItemPath(item.item_id, item.market_hash_name)} className="text-sm font-medium text-foreground hover:text-primary">
                         {item.market_hash_name}
                       </Link>
                       <p className="mt-1 text-xs text-muted-foreground">

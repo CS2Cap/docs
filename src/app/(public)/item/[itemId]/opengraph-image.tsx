@@ -1,6 +1,7 @@
 import { ImageResponse } from "next/og";
 import { getItemDetailPageCoreData } from "@/lib/api/compositions";
 import { formatPriceMinor } from "@/lib/api/view-models";
+import { parseItemRouteParam } from "@/lib/seo/itemSlug";
 
 export const alt = "CS2 skin price card — CS2Cap";
 export const size = { width: 1200, height: 630 };
@@ -9,9 +10,9 @@ export const contentType = "image/png";
 type Params = { itemId: string };
 
 export default async function Image({ params }: { params: Params }) {
-  const numericItemId = Number.parseInt(params.itemId, 10);
-  const data = Number.isFinite(numericItemId)
-    ? await getItemDetailPageCoreData(numericItemId)
+  const parsed = parseItemRouteParam(params.itemId);
+  const data = parsed
+    ? await getItemDetailPageCoreData(parsed.id)
     : null;
 
   const itemName = data?.item.market_hash_name ?? "CS2 Skin";

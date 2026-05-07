@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Search } from "lucide-react";
 import { FooterSection } from "@/components/FooterSection";
 import { getSearchPageData, type SearchFilterValues } from "@/lib/api/compositions";
+import { buildItemPath } from "@/lib/seo/itemSlug";
 
 type SearchPageProps = {
   searchParams: Promise<{
@@ -355,7 +356,7 @@ async function SearchResultsSection({
             return (
               <Link
                 key={item.item_id ?? item.market_hash_name}
-                href={item.item_id ? `/item/${item.item_id}` : "/search"}
+                href={buildItemPath(item.item_id, item.market_hash_name)}
                 className="block border-b border-border px-6 py-5 transition-colors hover:bg-card/40"
               >
                 <div className="md:grid md:grid-cols-[minmax(0,1.5fr)_160px_130px_140px] md:items-center md:gap-4">
