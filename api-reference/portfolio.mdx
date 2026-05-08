@@ -33,7 +33,7 @@ Returns all saved portfolios for your account.
 
 ---
 
-### DELETE /portfolio/{portfolio_id}
+### DELETE /portfolio/:id
 
 Permanently deletes a portfolio and all of its saved items and transactions.
 
@@ -128,7 +128,7 @@ Values a user-supplied item list using the current best ask across the selected 
 
 ---
 
-### GET /portfolio/{portfolio_id}/value
+### GET /portfolio/:id/value
 
 Values all items currently in a saved portfolio using live market prices.
 
@@ -154,7 +154,7 @@ Values all items currently in a saved portfolio using live market prices.
 
 ## Import and export
 
-### POST /portfolio/{portfolio_id}/import
+### POST /portfolio/:id/import
 
 Imports items from your linked Steam inventory into a saved portfolio. If you omit `asset_ids`, the full inventory is imported.
 
@@ -176,7 +176,7 @@ Imports items from your linked Steam inventory into a saved portfolio. If you om
 
 ---
 
-### POST /portfolio/{portfolio_id}/import/csv
+### POST /portfolio/:id/import/csv
 
 Uploads a CSV file to bulk import transactions or snapshot-style holdings into a portfolio.
 
@@ -192,7 +192,7 @@ Uploads a CSV file to bulk import transactions or snapshot-style holdings into a
 
 ---
 
-### GET /portfolio/{portfolio_id}/export
+### GET /portfolio/:id/export
 
 Downloads portfolio data as a CSV file.
 
@@ -210,7 +210,7 @@ Downloads portfolio data as a CSV file.
 
 ## Portfolio items
 
-### GET /portfolio/{portfolio_id}/items
+### GET /portfolio/:id/items
 
 Returns the items currently stored in a portfolio.
 
@@ -222,7 +222,7 @@ Returns the items currently stored in a portfolio.
 
 ---
 
-### POST /portfolio/{portfolio_id}/items
+### POST /portfolio/:id/items
 
 Manually adds one item to a portfolio.
 
@@ -254,7 +254,7 @@ Manually adds one item to a portfolio.
 
 ---
 
-### DELETE /portfolio/{portfolio_id}/items/{entry_id}
+### DELETE /portfolio/:id/items/:entry_id
 
 Removes a saved portfolio entry.
 
@@ -269,14 +269,14 @@ Removes a saved portfolio entry.
 </ParamField>
 
 <Note>
-  `entry_id` is the portfolio entry UUID, not the catalog `item_id`. You can retrieve it from `GET /portfolio/{portfolio_id}/items`.
+  `entry_id` is the portfolio entry UUID, not the catalog `item_id`. You can retrieve it from `GET /portfolio/:id/items`.
 </Note>
 
 ---
 
 ## Transactions
 
-### GET /portfolio/{portfolio_id}/transactions
+### GET /portfolio/:id/transactions
 
 Returns the portfolio's buy/sell ledger, newest first.
 
@@ -288,7 +288,7 @@ Returns the portfolio's buy/sell ledger, newest first.
 
 ---
 
-### POST /portfolio/{portfolio_id}/transactions
+### POST /portfolio/:id/transactions
 
 Records a buy or sell transaction for an item in the portfolio.
 
@@ -344,7 +344,7 @@ Records a buy or sell transaction for an item in the portfolio.
 
 ---
 
-### PATCH /portfolio/{portfolio_id}/transactions/{transaction_id}
+### PATCH /portfolio/:id/transactions/:tx_id
 
 Partially updates an existing transaction.
 
@@ -392,7 +392,7 @@ Partially updates an existing transaction.
 
 ---
 
-### DELETE /portfolio/{portfolio_id}/transactions/{transaction_id}
+### DELETE /portfolio/:id/transactions/:tx_id
 
 Permanently deletes a transaction from the portfolio ledger.
 
@@ -410,7 +410,7 @@ Permanently deletes a transaction from the portfolio ledger.
 
 ## Historical valuation
 
-### GET /portfolio/{portfolio_id}/history
+### GET /portfolio/:id/history
 
 Rebuilds daily portfolio values from the transaction ledger. Returns a time series of portfolio worth over the selected date range.
 

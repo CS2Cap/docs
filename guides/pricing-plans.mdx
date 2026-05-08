@@ -1,44 +1,47 @@
 ---
 title: "Pricing: Compare Free, Starter, Pro, and Quant Plans"
-description: "Compare CS2Cap's four API tiers — Free at $0, Starter at $19/month, Pro at $79/month, and Quant at $179/month — by quota, endpoint access, and features."
+description: "Compare CS2Cap's four API tiers: Free, Starter, Pro, and Quant — by quota, endpoint access, and features."
 ---
 
-CS2Cap offers four API tiers to fit every use case, from quick evaluation to production-scale analytics. Free gives you immediate access at no cost, Starter adds higher current-price and bid limits for serious hobbyists, Pro unlocks the full market-data surface for traders and bot builders, and Quant adds advanced analytics, webhooks, and child key management for teams and resellers. Every tier is backed by the same 38-marketplace data network with 5–10 minute freshness.
+CS2Cap offers four API tiers to fit every use case, from quick evaluation to production-scale analytics:
+
+- **Free** gives you immediate access to **Live Prices + 30d of OHLCV data** at no cost, 
+- **Starter** adds **Live Buy Orders, Batch Queries + Higher Limits** for serious hobbyists, 
+- **Pro** unlocks the **Full Market-Data surface** for full visibility across the market,
+- **Quant** enables **Advanced Analytics, Arbitrage Scanner + Webhook Support**
+
+Every tier is backed by the same 38-marketplace data network with 5–10 min freshness.
 
 ## At a glance
 
-|  | **Free** | **Starter** | **Pro** | **Quant** |
-| --- | --- | --- | --- | --- |
-| Monthly price | **\$0** | **\$19** | **\$79** | **\$179** |
-| Requests / month | 1,000 | 50,000 | 500,000 | 1,000,000 |
-| Requests / minute | 20 | 40 | 100 | 300 |
-| Support | — | Basic | Basic | Priority (24 h SLA) |
-| Best for | Evaluation & hobby use | Known item sets | Traders, bots, tooling | Analytics, B2B, resellers |
+|  | **Starter** | **Pro** | **Quant** |
+| --- | --- | --- | --- |
+| Monthly price | **\$19** | **\$79** | **\$179** |
+| Requests / month | 50,000 | 500,000 | 1,000,000 |
+| Requests / minute | 40 | 100 | 300 |
+| Support | Basic | Basic | Priority (24 h SLA) |
+| Best for | Evaluation & hobby use | Traders, bots, tooling | Analytics, B2B, resellers |
 
 ## Endpoint access
 
-| Endpoint | Free | Starter | Pro | Quant |
-| --- | :-: | :-: | :-: | :-: |
-| `GET /v1/prices` — current lowest asks _(38 providers)_ | ✅ | ✅ | ✅ | ✅ |
-| `POST /v1/prices` — full prices snapshot (NDJSON stream) | — | — | ✅ | ✅ |
-| `POST /v1/prices/batch` — multi-item price lookup | — | ✅ | ✅ | ✅ |
-| `GET /v1/prices/candles` — 5m, 1h, 1d OHLC candles (≤ 365 d) | ⚠️ daily only | ⚠️ daily only | ✅ | ✅ |
-| `GET /v1/prices/history` — price & quantity changes (≤ 35 d) | — | — | ✅ | ✅ |
-| `GET /v1/bids` — highest buy orders _(11 providers)_ | — | ✅ | ✅ | ✅ |
-| `POST /v1/bids` — full bids snapshot (NDJSON stream) | — | — | ✅ | ✅ |
-| `POST /v1/bids/batch` — multi-item buy-order lookup | — | ✅ | ✅ | ✅ |
-| `GET /v1/sales` — recent sales _(8 providers)_ | — | — | ✅ | ✅ |
-| `GET /v1/providers` — marketplace catalog | ✅ | ✅ | ✅ | ✅ |
-| `GET /v1/market/items` — enriched item metadata | — | — | ✅ | ✅ |
-| `GET /v1/market/arbitrage` — cross-market arbitrage | — | — | — | ✅ |
-| `GET /v1/market/indexes` — category market cap indexes | — | — | — | ✅ |
-| `GET /v1/market/indicators` — technical indicators | — | — | — | ✅ |
-| `GET /v1/items` — item catalog | ✅ | ✅ | ✅ | ✅ |
-| `GET /v1/items/metadata` — catalog filter metadata | ✅ | ✅ | ✅ | ✅ |
-| `GET /v1/portfolio` — portfolio management | ✅ | ✅ | ✅ | ✅ |
-| `GET /v1/portfolio/value` — portfolio valuation | ✅ | ✅ | ✅ | ✅ |
-| `GET /v1/inventory/steam` — Steam inventory lookup | ✅ | ✅ | ✅ | ✅ |
-| `GET /v1/fx` — currency conversion | ✅ | ✅ | ✅ | ✅ |
+| Endpoint | Starter | Pro | Quant |
+| --- | :-: | :-: | :-: |
+| `GET /prices` — current lowest asks _(38 providers)_ | ✅ | ✅ | ✅ |
+| `GET /bids` — highest buy orders _(11 providers)_ | ✅ | ✅ | ✅ |
+| `POST /prices/batch` — multi-item price lookup | ✅ | ✅ | ✅ |
+| `POST /bids/batch` — multi-item buy-order lookup | ✅ | ✅ | ✅ |
+| `GET /prices/candles` — 5m, 1h, 1d OHLCV  (≤ 365 d) | ⚠️ 1d candles only -- max 30d* | ✅ | ✅ |
+| `POST /prices` — full prices snapshot (NDJSON stream) | — | ✅ | ✅ |
+| `POST /bids` — full bids snapshot (NDJSON stream) | — | ✅ | ✅ |
+| `GET /prices/history` — per-provider pricing & quantity changes (≤ 35 d) | — | ✅ | ✅ |
+| `GET /sales` — most recent sales details _(8 providers)_ | — | ✅ | ✅ |
+| `GET /market/items/*` — enriched item metadata | — | ✅ | ✅ |
+| `GET /market/arbitrage` — cross-market arbitrage | — | — | ✅ |
+| `GET /market/indexes` — market cap indexes | — | — | ✅ |
+| `GET /market/indicators` — technical indicators | — | — | ✅ |
+| All `/items` — item catalog | ✅ | ✅ | ✅ |
+| All `/portfolio` — portfolio management | ✅ | ✅ | ✅ |
+| All `/inventory/steam` — Steam inventory lookup | ✅ | ✅ | ✅ |
 
 <Note>
   **Free and Starter candles restriction:** Free and Starter keys can only call `GET /v1/prices/candles` with `interval=1d` and a lookback window measured in whole days up to 30 days (for example `30d` or `30`). Pro and Quant have no such restriction and can request up to 365 days of candle history at any supported interval.
@@ -84,8 +87,8 @@ Paid tiers are billed monthly through Stripe via card, or NOWPayments via crypto
 
 - **Upgrades** take effect immediately and are prorated on the current invoice.
 - **Downgrades** take effect at the start of the next billing cycle. Until then, you retain your current tier's access.
-- **Payment failures** move the subscription to `past_due` and drop the account to the Free tier until the payment processor resolves the retry. No data is lost.
-- **Cancellation** is self-service through the Stripe customer portal. A cancelled subscription stays active until the end of the current billing cycle, then reverts to Free. Subscriptions paid through cryptocurrencies do not renew automatically and cannot be cancelled before the end of the billing period.
+- **Payment failures** keeps or returns your account to the Free tier until the payment processor resolves the retry. No data is lost.
+- **Cancellation** can be done at any time through the Stripe customer portal. A cancelled subscription stays active until the end of the current billing cycle, then reverts to Free. Subscriptions paid through cryptocurrencies do not renew automatically and cannot be cancelled before the end of the billing period.
 
 ## FAQ
 

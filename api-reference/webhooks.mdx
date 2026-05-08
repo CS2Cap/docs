@@ -202,7 +202,7 @@ Returns outbound webhook delivery jobs for your account, newest first.
 
 ---
 
-## GET /account/webhooks/deliveries/{delivery_id}
+## GET /account/webhooks/deliveries/:id
 
 Returns one webhook delivery job and its full attempt history.
 
@@ -263,7 +263,7 @@ Returns one webhook delivery job and its full attempt history.
 
 ---
 
-## PATCH /account/webhooks/{webhook_id}
+## PATCH /account/webhooks/:id
 
 Updates the editable fields of a webhook destination.
 
@@ -299,7 +299,7 @@ Updates the editable fields of a webhook destination.
 
 ---
 
-## DELETE /account/webhooks/{webhook_id}
+## DELETE /account/webhooks/:id
 
 Deletes an outbound webhook destination. Pending deliveries for this destination are cancelled.
 
@@ -317,7 +317,7 @@ Deletes an outbound webhook destination. Pending deliveries for this destination
 
 ---
 
-## POST /account/webhooks/{webhook_id}/rotate-secret
+## POST /account/webhooks/:id/rotate-secret
 
 Rotates the signing secret for a webhook destination and returns the new secret once.
 

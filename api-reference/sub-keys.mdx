@@ -104,7 +104,7 @@ Creates a new child API key and returns the plaintext key value once.
 
 ---
 
-## GET /account/sub-keys/{key_id}
+## GET /account/sub-keys/:id
 
 Returns one active child key and its current-month request count.
 
@@ -116,7 +116,7 @@ Returns one active child key and its current-month request count.
 
 ---
 
-## PATCH /account/sub-keys/{key_id}
+## PATCH /account/sub-keys/:id
 
 Updates a child key's name and optional quota or RPM overrides.
 
@@ -152,7 +152,7 @@ Updates a child key's name and optional quota or RPM overrides.
 
 ---
 
-## DELETE /account/sub-keys/{key_id}
+## DELETE /account/sub-keys/:id
 
 Revokes an active child key. The key immediately stops authenticating requests.
 
@@ -184,7 +184,7 @@ Revokes an active child key. The key immediately stops authenticating requests.
 
 ---
 
-## POST /account/sub-keys/{key_id}/reissue
+## POST /account/sub-keys/:id/reissue
 
 Replaces an active child key and returns the new plaintext key once. The old child key is immediately revoked.
 

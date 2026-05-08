@@ -41,6 +41,7 @@
             "pages": [
               "guides/pricing-plans",
               "guides/rate-limits",
+              "guides/liquidity-score",
               "guides/portfolio",
               "guides/webhooks-alerts"
             ]
