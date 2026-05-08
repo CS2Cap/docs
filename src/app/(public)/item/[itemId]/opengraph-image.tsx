@@ -13,7 +13,7 @@ export default async function Image({ params }: { params: Params }) {
   const { itemId } = await params;
   const parsed = parseItemRouteParam(itemId);
   const data = parsed
-    ? await getItemDetailPageCoreData(parsed.id)
+    ? await getItemDetailPageCoreData(parsed.id).catch(() => null)
     : null;
 
   const itemName = data?.item.market_hash_name ?? "CS2 Skin";
