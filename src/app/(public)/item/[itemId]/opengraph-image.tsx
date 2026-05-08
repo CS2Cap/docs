@@ -181,6 +181,7 @@ export default async function Image({ params }: { params: Params }) {
               >
                 <div
                   style={{
+                    display: "flex",
                     fontSize: 18,
                     letterSpacing: 4,
                     color: "#64748b",
@@ -192,6 +193,7 @@ export default async function Image({ params }: { params: Params }) {
                 </div>
                 <div
                   style={{
+                    display: "flex",
                     fontSize: 56,
                     fontWeight: 900,
                     color: "#34d399",
@@ -210,6 +212,7 @@ export default async function Image({ params }: { params: Params }) {
               >
                 <div
                   style={{
+                    display: "flex",
                     fontSize: 18,
                     letterSpacing: 4,
                     color: "#64748b",
@@ -221,6 +224,7 @@ export default async function Image({ params }: { params: Params }) {
                 </div>
                 <div
                   style={{
+                    display: "flex",
                     fontSize: 56,
                     fontWeight: 900,
                     color: "#f8fafc",
@@ -239,6 +243,7 @@ export default async function Image({ params }: { params: Params }) {
               >
                 <div
                   style={{
+                    display: "flex",
                     fontSize: 18,
                     letterSpacing: 4,
                     color: "#64748b",
@@ -250,6 +255,7 @@ export default async function Image({ params }: { params: Params }) {
                 </div>
                 <div
                   style={{
+                    display: "flex",
                     fontSize: 56,
                     fontWeight: 900,
                     color: "#60a5fa",

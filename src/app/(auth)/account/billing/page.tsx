@@ -272,7 +272,7 @@ export default function AccountBillingPage() {
               ) : (
                 <Button variant="outline" asChild>
                   <a
-                    href="https://docs.cs2cap.com/pricing/"
+                    href="https://docs.cs2cap.com/guides/pricing-plans"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
