@@ -12,10 +12,8 @@ import {
   getCachedPricesSnapshot,
   refreshItemsSnapshotInBackground,
   refreshMarketItemsSnapshotInBackground,
-  setCachedBidsSnapshot,
   setCachedItemsSnapshot,
   setCachedMarketItemsSnapshot,
-  setCachedPricesSnapshot,
 } from "../blob-snapshot-cache";
 import type {
   AccountInfo,
@@ -118,22 +116,6 @@ async function fetchAllItemsAndStore() {
 }
 
 // ── Data assembly helpers ─────────────────────────────────────────────────────
-
-function groupMarketItemsById(items: MarketItem[]): Record<number, MarketItem[]> {
-  const grouped: Record<number, MarketItem[]> = {};
-  for (const item of items) {
-    (grouped[item.item_id] ??= []).push(item);
-  }
-  return grouped;
-}
-
-function groupBidItemsById(items: BuyOrderItem[]): Record<number, BuyOrderItem[]> {
-  const grouped: Record<number, BuyOrderItem[]> = {};
-  for (const item of items) {
-    (grouped[item.item_id] ??= []).push(item);
-  }
-  return grouped;
-}
 
 function buildItemsSnapshotData(items: ItemOut[]) {
   const byItemId: Record<number, ItemOut> = {};
