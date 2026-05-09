@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAlertEvents, useAlerts, useSession, useWatchlist } from "@/lib/api";
-import { PlanUpgradeCard } from "@/components/PlanUpgradeCard";
+import { PlanUpgradeBanner } from "@/components/PlanUpgradeBanner";
 import { buildItemPath } from "@/lib/seo/itemSlug";
 
 function formatThreshold(value: string, currency?: string) {
@@ -75,10 +75,9 @@ export default function DashboardPage() {
         <p className="mt-2 text-sm text-muted-foreground">
           Welcome back, {displayName}.
         </p>
-      </div>
-
-      <div className="mb-6">
-        <PlanUpgradeCard />
+        <div className="mt-4">
+          <PlanUpgradeBanner />
+        </div>
       </div>
 
       <div className="mb-8 grid gap-4 md:grid-cols-3">
