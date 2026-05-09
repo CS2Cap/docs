@@ -7,7 +7,6 @@ import {
   Clock,
   Activity,
   Terminal,
-
   Globe,
   BadgeDollarSign,
   CandlestickChart,
@@ -20,6 +19,7 @@ import {
   Gauge,
   BookOpen,
   Braces,
+  CheckCircle2,
 } from "lucide-react";
 import { FooterSection } from "@/components/FooterSection";
 import { PricingPlans } from "@/components/PricingPlans";
@@ -397,7 +397,30 @@ export default async function ApiPage() {
           </div>
 
           {paidPlans.length ? (
-            <PricingPlans plans={paidPlans} />
+            <>
+              <PricingPlans plans={paidPlans} />
+              <div className="mx-auto mt-10 max-w-3xl">
+                <div className="flex flex-col items-center gap-4 border-2 border-dashed border-border bg-card/50 px-6 py-6 text-center md:flex-row md:justify-between md:px-8 md:text-left">
+                  <div className="flex items-center gap-3">
+                    <CheckCircle2 className="h-5 w-5 shrink-0 text-success" strokeWidth={2} />
+                    <div>
+                      <div className="font-mono text-xs font-bold tracking-wider text-foreground">
+                        FREE TIER INCLUDED
+                      </div>
+                      <div className="mt-0.5 font-mono text-[11px] text-muted-foreground">
+                        API access is free. No credit card required to start building.
+                      </div>
+                    </div>
+                  </div>
+                  <Link
+                    href="/login"
+                    className="shrink-0 border-brutal px-5 py-2.5 font-mono text-[11px] font-bold tracking-wider text-foreground brutalist-hover hover:border-primary transition-colors"
+                  >
+                    GET STARTED FREE →
+                  </Link>
+                </div>
+              </div>
+            </>
           ) : (
             <div className="mx-auto max-w-2xl border-brutal bg-card p-8 text-center">
               <div className="font-mono text-sm text-muted-foreground">
