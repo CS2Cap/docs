@@ -1,20 +1,33 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import Link from "next/link";
 import { ArrowUpRight, X, Zap } from "lucide-react";
 import { useSession } from "@/lib/api";
 
 const DISMISS_KEY = "plan-upgrade-banner-dismissed";
+const DISMISS_EVENT = "plan-upgrade-banner-dismissed-change";
+
+function subscribeDismissed(callback: () => void) {
+  window.addEventListener(DISMISS_EVENT, callback);
+  return () => window.removeEventListener(DISMISS_EVENT, callback);
+}
+
+function getDismissedSnapshot() {
+  return sessionStorage.getItem(DISMISS_KEY) === "1";
+}
+
+function getDismissedServerSnapshot() {
+  return true;
+}
 
 export function PlanUpgradeBanner() {
   const { data: session } = useSession();
-  const [dismissed, setDismissed] = useState(true);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    setDismissed(sessionStorage.getItem(DISMISS_KEY) === "1");
-  }, []);
+  const dismissed = useSyncExternalStore(
+    subscribeDismissed,
+    getDismissedSnapshot,
+    getDismissedServerSnapshot,
+  );
 
   if (!session || dismissed) return null;
 
@@ -25,7 +38,7 @@ export function PlanUpgradeBanner() {
 
   const handleDismiss = () => {
     sessionStorage.setItem(DISMISS_KEY, "1");
-    setDismissed(true);
+    window.dispatchEvent(new Event(DISMISS_EVENT));
   };
 
   return (
