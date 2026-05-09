@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import {
+  AlertTriangle,
   Calendar,
   CheckCircle,
   Mail,
@@ -275,15 +276,25 @@ export default function AccountSettingsPage() {
 
               {!session.email ? (
                 /* No email — show set form */
-                <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">No email on file.</p>
+                <div className="space-y-3 rounded-lg border-2 border-yellow-500/40 bg-yellow-500/5 p-4 shadow-[0_0_20px_rgba(234,179,8,0.08)]">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-yellow-400" />
+                    <div>
+                      <p className="text-sm font-bold text-yellow-400">
+                        EMAIL REQUIRED FOR API KEY
+                      </p>
+                      <p className="text-xs text-yellow-400/80">
+                        Set an email address before an API key can be generated.
+                      </p>
+                    </div>
+                  </div>
                   <div className="flex gap-2">
                     <Input
                       type="email"
                       placeholder="you@example.com"
                       value={emailInput}
                       onChange={(e) => setEmailInput(e.target.value)}
-                      className="bg-secondary/50"
+                      className="bg-secondary/50 border-yellow-500/30 focus-visible:ring-yellow-500/40"
                     />
                     <Button
                       onClick={handleSetEmail}
