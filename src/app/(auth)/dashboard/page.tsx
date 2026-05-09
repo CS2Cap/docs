@@ -76,7 +76,7 @@ export default function DashboardPage() {
           Welcome back, {displayName}.
         </p>
         <div className="mt-4">
-          <PlanUpgradeBanner />
+          <EmailVerificationBanner />
         </div>
       </div>
 
