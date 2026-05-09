@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(poetry run ruff check *)",
+      "Bash(poetry run mypy *)",
+      "Bash(npx tsc --noEmit *)",
+      "Bash(bunx tsc --noEmit *)"
+    ]
+  }
+}

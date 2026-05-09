@@ -49,6 +49,32 @@ const PRICES_FRESH_MS = 30 * 60 * 1000;
 const BIDS_FRESH_MS = 30 * 60 * 1000;
 const ITEMS_FRESH_MS = 24 * 60 * 60 * 1000;
 
+// ── Distributed refresh lock (Upstash Redis SET NX) ──────────────────────────
+
+const _REFRESH_LOCK_PREFIX = "snapshot-refresh-lock:v1";
+const _REFRESH_LOCK_TTL_SEC = 300;
+
+async function _tryAcquireRefreshLock(blobPath: string): Promise<boolean> {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return true;
+  const lockKey = `${_REFRESH_LOCK_PREFIX}:${blobPath.replace(/\//g, ":")}`;
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      cache: "no-store",
+      body: JSON.stringify(["SET", lockKey, "1", "NX", "EX", _REFRESH_LOCK_TTL_SEC]),
+      signal: AbortSignal.timeout(2000),
+    });
+    if (!res.ok) return true;
+    const payload = (await res.json()) as { result?: string | null };
+    return payload.result === "OK";
+  } catch {
+    return true;
+  }
+}
+
 // ── L1 in-memory cache ────────────────────────────────────────────────────────
 
 // Per-blob L1 TTL. Snapshots are read-mostly global data, so we keep them in
@@ -159,7 +185,9 @@ async function setCached<T>(data: T, blobPath: string): Promise<boolean> {
 
 function refreshInBackground(key: string, refresher: () => Promise<void>) {
   if (inflights.has(key)) return;
-  const p = refresher().finally(() => inflights.delete(key));
+  const p = _tryAcquireRefreshLock(key)
+    .then((acquired) => (acquired ? refresher() : Promise.resolve()))
+    .finally(() => inflights.delete(key));
   inflights.set(key, p);
 }
 
@@ -195,10 +223,6 @@ export async function setCachedPricesSnapshot(data: PricesSnapshotData): Promise
   return setCached(data, PRICES_BLOB);
 }
 
-export function refreshPricesSnapshotInBackground(refresher: () => Promise<void>) {
-  refreshInBackground(PRICES_BLOB, refresher);
-}
-
 // ── Bids snapshot ─────────────────────────────────────────────────────────────
 
 export async function getCachedBidsSnapshot(): Promise<CachedSnapshotResult<BidsSnapshotData> | null> {
@@ -207,10 +231,6 @@ export async function getCachedBidsSnapshot(): Promise<CachedSnapshotResult<Bids
 
 export async function setCachedBidsSnapshot(data: BidsSnapshotData): Promise<boolean> {
   return setCached(data, BIDS_BLOB);
-}
-
-export function refreshBidsSnapshotInBackground(refresher: () => Promise<void>) {
-  refreshInBackground(BIDS_BLOB, refresher);
 }
 
 // ── Items snapshot ────────────────────────────────────────────────────────────

@@ -42,6 +42,7 @@ import {
   useDeleteAlertMutation,
   useUpdateAlertMutation,
 } from "@/lib/api";
+import { buildItemPath } from "@/lib/seo/itemSlug";
 
 function getAlertTypeIcon(type: string) {
   switch (type) {
@@ -290,7 +291,7 @@ export default function AlertsPage() {
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="mb-1 flex items-center gap-2">
-                            <Link href={`/item/${alert.item.item_id}`} className="font-medium text-foreground hover:text-primary">
+                            <Link href={buildItemPath(alert.item.item_id, alert.item.market_hash_name)} className="font-medium text-foreground hover:text-primary">
                               {alert.item.market_hash_name}
                             </Link>
                             {getAlertTypeBadge(alert.kind)}

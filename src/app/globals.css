@@ -281,4 +281,9 @@
   .animate-float {
     animation: float 6s ease-in-out infinite;
   }
+
+  @keyframes nav-progress {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(0.85); }
+  }
 }

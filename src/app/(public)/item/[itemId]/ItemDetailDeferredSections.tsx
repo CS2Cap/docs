@@ -12,6 +12,7 @@ import {
 import { Price } from "@/components/Price";
 import { serverApi } from "@/lib/api/server";
 import { buildQuery } from "@/lib/api/shared";
+import { buildItemPath } from "@/lib/seo/itemSlug";
 import type {
   ItemOut,
   MarketItem,
@@ -193,7 +194,7 @@ export async function ItemConditionVariants({
               variant.item.item_id ? (
                 <Link
                   key={variant.item.item_id}
-                  href={`/item/${variant.item.item_id}`}
+                  href={buildItemPath(variant.item.item_id, variant.item.market_hash_name)}
                   className={`flex items-center justify-between px-2 py-2 font-mono text-xs transition-colors ${
                     variant.item.item_id === currentItemId
                       ? "bg-primary/10 text-foreground"
@@ -458,7 +459,7 @@ export async function ItemRelatedItemsSection({ item }: { item: ItemOut }) {
           related.item.item_id ? (
             <Link
               key={related.item.item_id}
-              href={`/item/${related.item.item_id}`}
+              href={buildItemPath(related.item.item_id, related.item.market_hash_name)}
               className="bg-card p-4 transition-colors hover:bg-secondary/30"
             >
               <div className="mb-2 font-mono text-xs font-bold text-foreground">

@@ -16,10 +16,6 @@
     {
       "path": "/api/cron/prewarm-items-snapshot",
       "schedule": "15 * * * *"
-    },
-    {
-      "path": "/api/cron/export-prices-snapshot",
-      "schedule": "0 * * * *"
     }
   ],
   "functions": {

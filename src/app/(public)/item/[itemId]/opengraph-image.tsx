@@ -1,17 +1,19 @@
 import { ImageResponse } from "next/og";
 import { getItemDetailPageCoreData } from "@/lib/api/compositions";
 import { formatPriceMinor } from "@/lib/api/view-models";
+import { parseItemRouteParam } from "@/lib/seo/itemSlug";
 
 export const alt = "CS2 skin price card — CS2Cap";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-type Params = { itemId: string };
+type Params = Promise<{ itemId: string }>;
 
 export default async function Image({ params }: { params: Params }) {
-  const numericItemId = Number.parseInt(params.itemId, 10);
-  const data = Number.isFinite(numericItemId)
-    ? await getItemDetailPageCoreData(numericItemId)
+  const { itemId } = await params;
+  const parsed = parseItemRouteParam(itemId);
+  const data = parsed
+    ? await getItemDetailPageCoreData(parsed.id).catch(() => null)
     : null;
 
   const itemName = data?.item.market_hash_name ?? "CS2 Skin";
@@ -179,6 +181,7 @@ export default async function Image({ params }: { params: Params }) {
               >
                 <div
                   style={{
+                    display: "flex",
                     fontSize: 18,
                     letterSpacing: 4,
                     color: "#64748b",
@@ -190,6 +193,7 @@ export default async function Image({ params }: { params: Params }) {
                 </div>
                 <div
                   style={{
+                    display: "flex",
                     fontSize: 56,
                     fontWeight: 900,
                     color: "#34d399",
@@ -208,6 +212,7 @@ export default async function Image({ params }: { params: Params }) {
               >
                 <div
                   style={{
+                    display: "flex",
                     fontSize: 18,
                     letterSpacing: 4,
                     color: "#64748b",
@@ -219,6 +224,7 @@ export default async function Image({ params }: { params: Params }) {
                 </div>
                 <div
                   style={{
+                    display: "flex",
                     fontSize: 56,
                     fontWeight: 900,
                     color: "#f8fafc",
@@ -237,6 +243,7 @@ export default async function Image({ params }: { params: Params }) {
               >
                 <div
                   style={{
+                    display: "flex",
                     fontSize: 18,
                     letterSpacing: 4,
                     color: "#64748b",
@@ -248,6 +255,7 @@ export default async function Image({ params }: { params: Params }) {
                 </div>
                 <div
                   style={{
+                    display: "flex",
                     fontSize: 56,
                     fontWeight: 900,
                     color: "#60a5fa",

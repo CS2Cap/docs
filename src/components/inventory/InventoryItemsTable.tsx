@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { ArrowDown, ArrowUp, ArrowUpDown, ExternalLink } from "lucide-react";
 import type { InventoryValueResolvedItem } from "@/lib/api/types";
 import { steamIconUrl } from "@/lib/utils";
+import { buildItemPath } from "@/lib/seo/itemSlug";
 
 type SortKey = "value" | "ask" | "qty" | "name";
 type SortDir = "asc" | "desc";
@@ -147,7 +148,7 @@ export function InventoryItemsTable({
 
       <ul className="divide-y-2 divide-border">
         {sorted.map((item) => {
-          const href = `/item/${item.item_id}`;
+          const href = buildItemPath(item.item_id, item.market_hash_name);
           const provider = topProviderLabel(item);
           return (
             <li

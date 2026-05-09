@@ -51,7 +51,11 @@ export function PricingPlans({ plans }: { plans: PlanInfo[] }) {
         </div>
       </div>
 
-      <div className="mx-auto grid max-w-5xl grid-cols-1 gap-px bg-border md:grid-cols-3">
+      <div
+        className={`mx-auto grid max-w-5xl grid-cols-1 gap-px bg-border ${
+          plans.length >= 3 ? "md:grid-cols-3" : "md:grid-cols-2"
+        }`}
+      >
         {plans.map((plan) => {
           const isQuarterly = cycle === "quarterly" && plan.billing_price_quarterly_id != null;
           const showCycle = cycle === "quarterly" && plan.monthly_price_cents > 0;

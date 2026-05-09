@@ -10,15 +10,13 @@ import {
   getCachedItemsSnapshot,
   getCachedMarketItemsSnapshot,
   getCachedPricesSnapshot,
-  refreshBidsSnapshotInBackground,
   refreshItemsSnapshotInBackground,
   refreshMarketItemsSnapshotInBackground,
-  refreshPricesSnapshotInBackground,
   setCachedBidsSnapshot,
   setCachedItemsSnapshot,
   setCachedMarketItemsSnapshot,
   setCachedPricesSnapshot,
-} from "../upstash-cache";
+} from "../blob-snapshot-cache";
 import type {
   AccountInfo,
   BatchPricesResponse,
@@ -101,49 +99,6 @@ export async function serverFetch<T>(
 
 // ── Background refresh helpers (raw fetch, no user cookies) ──────────────────
 
-async function fetchAllPricesAndStore() {
-  const apiKey = process.env.CS2C_EXPORT_API_KEY;
-  if (!apiKey) return;
-  try {
-    const response = await fetch(`${API_BASE_URL}/v1/prices`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}` },
-      cache: "no-store",
-      signal: AbortSignal.timeout(120_000),
-    });
-    if (!response.ok) return;
-    const text = await response.text();
-    const items = text.trim().split("\n").filter(Boolean).map((l) => JSON.parse(l) as MarketItem);
-    await setCachedPricesSnapshot({
-      byItemId: groupMarketItemsById(items),
-      timestamp: new Date().toISOString(),
-    });
-  } catch {
-    // Silently fail — cron ensures eventual freshness
-  }
-}
-
-async function fetchAllBidsAndStore() {
-  const apiKey = process.env.CS2C_EXPORT_API_KEY;
-  if (!apiKey) return;
-  try {
-    const response = await fetch(`${API_BASE_URL}/v1/bids`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}` },
-      cache: "no-store",
-      signal: AbortSignal.timeout(120_000),
-    });
-    if (!response.ok) return;
-    const text = await response.text();
-    const items = text.trim().split("\n").filter(Boolean).map((l) => JSON.parse(l) as BuyOrderItem);
-    await setCachedBidsSnapshot({
-      byItemId: groupBidItemsById(items),
-      timestamp: new Date().toISOString(),
-    });
-  } catch {
-    // Silently fail
-  }
-}
 
 async function fetchAllItemsAndStore() {
   const apiKey = process.env.CS2C_EXPORT_API_KEY;
@@ -350,14 +305,13 @@ export const serverApi = {
     );
   },
 
-  // Prices — served from Redis snapshot; cold-starts fall through to targeted API calls.
+  // Prices — served from Blob snapshot; cold-starts fall through to targeted API calls.
   async postPrices(
     query: { item_ids: number[]; currency?: string; limit?: number },
     opts: { anon?: boolean; revalidate?: number | false } = {},
   ): Promise<PricesPaginatedResponse | null> {
     const cached = await getCachedPricesSnapshot();
     if (cached) {
-      if (cached.isStale) refreshPricesSnapshotInBackground(fetchAllPricesAndStore);
       return assemblePricesResponse(cached.snapshot.byItemId, query);
     }
     const revalidate = opts.revalidate ?? false;
@@ -400,13 +354,12 @@ export const serverApi = {
     };
   },
 
-  // Bids — served from Redis snapshot; cold-starts fall through to targeted GET.
+  // Bids — served from Blob snapshot; cold-starts fall through to targeted GET.
   async postBids(
     query: { item_ids: number[]; currency?: string; limit?: number },
   ): Promise<BidsResponse | null> {
     const cached = await getCachedBidsSnapshot();
     if (cached) {
-      if (cached.isStale) refreshBidsSnapshotInBackground(fetchAllBidsAndStore);
       return assembleBidsResponse(cached.snapshot.byItemId, query);
     }
     // Cold-start: single item GET only — no multi-item bids endpoint

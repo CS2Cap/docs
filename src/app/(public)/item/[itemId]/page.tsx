@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
-import { Bell, ChevronRight } from "lucide-react";
+import { Bell, ChevronRight, Code } from "lucide-react";
 import { FooterSection } from "@/components/FooterSection";
 import { ProviderIdentity } from "@/components/ProviderIdentity";
 import { WatchItemButton } from "@/components/WatchItemButton";
@@ -21,6 +21,11 @@ import {
 } from "@/lib/api";
 import { Price } from "@/components/Price";
 import { getItemDetailPageCoreData } from "@/lib/api/compositions";
+import {
+  buildItemPath,
+  parseItemRouteParam,
+  slugifyMarketHashName,
+} from "@/lib/seo/itemSlug";
 import {
   ItemConditionVariants,
   ItemConditionVariantsFallback,
@@ -52,14 +57,19 @@ const SITE_URL = "https://cs2cap.com";
 
 export async function generateMetadata({ params }: ItemPageProps): Promise<Metadata> {
   const { itemId } = await params;
-  const numericItemId = Number.parseInt(itemId, 10);
-  if (!Number.isFinite(numericItemId)) {
+  const parsed = parseItemRouteParam(itemId);
+  if (!parsed) {
     return {};
   }
 
-  const data = await getItemDetailPageCoreData(numericItemId);
+  const data = await getItemDetailPageCoreData(parsed.id);
   if (!data) {
     return {};
+  }
+
+  const canonicalSlug = slugifyMarketHashName(data.item.market_hash_name);
+  if (canonicalSlug && parsed.slug !== canonicalSlug) {
+    redirect(buildItemPath(parsed.id, data.item.market_hash_name));
   }
 
   const itemName = data.item.market_hash_name;
@@ -89,7 +99,7 @@ export async function generateMetadata({ params }: ItemPageProps): Promise<Metad
   descriptionParts.push("Free CS2 API access available via CS2Cap.");
   const description = descriptionParts.join(" ");
 
-  const canonical = `/item/${numericItemId}`;
+  const canonical = buildItemPath(parsed.id, itemName);
   const url = `${SITE_URL}${canonical}`;
 
   return {
@@ -134,12 +144,13 @@ function normalizeHexColor(value?: string | null): string | null {
 
 export default async function ItemDetailPage({ params }: ItemPageProps) {
   const { itemId } = await params;
-  const numericItemId = Number.parseInt(itemId, 10);
+  const parsed = parseItemRouteParam(itemId);
 
-  if (!Number.isFinite(numericItemId)) {
+  if (!parsed) {
     notFound();
   }
 
+  const numericItemId = parsed.id;
   const data = await getItemDetailPageCoreData(numericItemId);
   if (!data) {
     notFound();
@@ -171,7 +182,7 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
   ].filter((entry) => entry.value);
 
   const bestAskProvider = data.bestAsk ? getProvider(data.bestAsk.provider, data.providers) : null;
-  const itemUrl = `${SITE_URL}/item/${numericItemId}`;
+  const itemUrl = `${SITE_URL}${buildItemPath(numericItemId, data.item.market_hash_name)}`;
   const productDescriptionParts: string[] = [
     `${data.item.market_hash_name} — Counter-Strike 2 ${data.item.rarity_name?.toLowerCase() ?? "skin"}`,
   ];
@@ -375,6 +386,21 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
               <Suspense fallback={<ItemConditionVariantsFallback />}>
                 <ItemConditionVariants item={data.item} currentItemId={numericItemId} />
               </Suspense>
+
+              <Link
+                href="/cs2-api"
+                className="group flex items-start gap-3 border-brutal bg-card p-4 transition-colors hover:border-primary"
+              >
+                <Code className="mt-0.5 h-4 w-4 shrink-0 text-primary" strokeWidth={1.5} />
+                <div className="min-w-0">
+                  <div className="font-mono text-[10px] tracking-widest text-primary">
+                    CS2 SKIN API
+                  </div>
+                  <div className="mt-1 font-mono text-[11px] leading-5 text-foreground transition-colors group-hover:text-primary">
+                    Access this pricing data via the CS2Cap API →
+                  </div>
+                </div>
+              </Link>
 
               {data.item.collection ? (
                 <div className="border-brutal bg-card p-4">

@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { API_BASE_URL } from "@/lib/api/config";
 import { buildQuery } from "@/lib/api/shared";
 import { SEO_PAGES } from "@/lib/seo/landing-pages";
+import { buildItemPath } from "@/lib/seo/itemSlug";
 import type { ItemsMetadataResponse, ItemsResponse } from "@/lib/api/types";
 
 const BASE = "https://cs2cap.com";
@@ -35,19 +36,22 @@ export default async function sitemap(props: {
 }): Promise<MetadataRoute.Sitemap> {
   const idStr = await props.id;
   const id = Number.parseInt(idStr, 10);
+  const lastModified = new Date();
+
   if (!Number.isFinite(id) || id === 0) {
     const staticPages: MetadataRoute.Sitemap = [
-      { url: BASE, changeFrequency: "daily", priority: 1.0 },
-      { url: `${BASE}/api-info`, changeFrequency: "weekly", priority: 0.9 },
-      { url: `${BASE}/search`, changeFrequency: "daily", priority: 0.7 },
-      { url: `${BASE}/inventory-value`, changeFrequency: "weekly", priority: 0.7 },
-      { url: `${BASE}/terms`, changeFrequency: "monthly", priority: 0.3 },
-      { url: `${BASE}/privacy`, changeFrequency: "monthly", priority: 0.3 },
+      { url: BASE, lastModified, changeFrequency: "daily", priority: 1.0 },
+      { url: `${BASE}/api-info`, lastModified, changeFrequency: "weekly", priority: 0.9 },
+      { url: `${BASE}/search`, lastModified, changeFrequency: "daily", priority: 0.7 },
+      { url: `${BASE}/inventory-value`, lastModified, changeFrequency: "weekly", priority: 0.7 },
+      { url: `${BASE}/terms`, lastModified, changeFrequency: "monthly", priority: 0.3 },
+      { url: `${BASE}/privacy`, lastModified, changeFrequency: "monthly", priority: 0.3 },
     ];
 
     const seoPages: MetadataRoute.Sitemap = SEO_PAGES.filter((p) => p.includeInSitemap).map(
       (p) => ({
         url: `${BASE}${p.canonicalPath}`,
+        lastModified,
         changeFrequency: "weekly" as const,
         priority: p.type === "general" ? 0.8 : 0.6,
       }),
@@ -64,7 +68,8 @@ export default async function sitemap(props: {
   return (response?.items ?? [])
     .filter((item): item is typeof item & { item_id: number } => item.item_id != null)
     .map((item) => ({
-      url: `${BASE}/item/${item.item_id}`,
+      url: `${BASE}${buildItemPath(item.item_id, item.market_hash_name)}`,
+      lastModified,
       changeFrequency: "weekly" as const,
       priority: 0.4,
     }));

@@ -1,3 +1,5 @@
+import type { PlanInfo } from "@/lib/api/types";
+
 /**
  * Renders a JSON-LD <script> tag for structured data.
  */
@@ -123,4 +125,36 @@ export function buildProduct(input: {
   }
 
   return product;
+}
+
+export function buildSoftwareApplication(plans: PlanInfo[]) {
+  const offers = plans
+    .filter((plan) => plan.monthly_price_cents > 0)
+    .map((plan) => ({
+      "@type": "Offer",
+      name: plan.display_name,
+      price: (plan.monthly_price_cents / 100).toFixed(2),
+      priceCurrency: plan.currency || "USD",
+      category: "Subscription",
+      url: `${SITE_URL}/api-info#pricing`,
+      priceSpecification: {
+        "@type": "UnitPriceSpecification",
+        price: (plan.monthly_price_cents / 100).toFixed(2),
+        priceCurrency: plan.currency || "USD",
+        unitCode: "MON",
+        billingDuration: "P1M",
+      },
+    }));
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: BRAND,
+    url: `${SITE_URL}/api-info`,
+    applicationCategory: "DeveloperApplication",
+    operatingSystem: "All",
+    description:
+      "Unified REST API for CS2 and CSGO skin market data — real-time prices, buy orders, candlestick charts, and analytics across 39+ marketplaces.",
+    ...(offers.length > 0 ? { offers } : {}),
+  };
 }

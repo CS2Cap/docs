@@ -2,7 +2,7 @@ import "server-only";
 
 import { NextRequest, NextResponse } from "next/server";
 import { API_BASE_URL } from "@/lib/api/config";
-import { setCachedBidsSnapshot } from "@/lib/upstash-cache";
+import { setCachedBidsSnapshot } from "@/lib/blob-snapshot-cache";
 import type { BuyOrderItem } from "@/lib/api/types";
 
 export const dynamic = "force-dynamic";

@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { FooterSection } from "@/components/FooterSection";
 import { PricingPlans } from "@/components/PricingPlans";
-import { StructuredData, buildBreadcrumbList, buildWebApplication } from "@/components/seo/StructuredData";
+import { StructuredData, buildBreadcrumbList, buildSoftwareApplication } from "@/components/seo/StructuredData";
 import { getApiInfoPageData } from "@/lib/api/compositions";
 import { serverApi } from "@/lib/api/server";
 import { getPagesByType } from "@/lib/seo/landing-pages";
@@ -132,6 +132,8 @@ export default async function ApiPage() {
     serverApi.getBillingPlans(300),
   ]);
 
+  const paidPlans = plans?.plans.filter((p) => p.code.toLowerCase() !== "free") ?? [];
+
   return (
     <>
       <StructuredData
@@ -140,7 +142,7 @@ export default async function ApiPage() {
           { name: "API Reference", url: "https://cs2cap.com/api-info" },
         ])}
       />
-      <StructuredData data={buildWebApplication()} />
+      <StructuredData data={buildSoftwareApplication(paidPlans)} />
       <section className="relative overflow-hidden bg-grid py-20 md:py-28">
         <div className="absolute top-20 right-20 h-40 w-40 rotate-12 border-2 border-primary/10" />
         <div className="absolute bottom-10 right-40 h-24 w-24 -rotate-6 border-2 border-primary/5" />
@@ -394,8 +396,8 @@ export default async function ApiPage() {
             <p className="mx-auto max-w-lg font-mono text-sm text-muted-foreground">Pick a tier. Start building.</p>
           </div>
 
-          {plans?.plans.length ? (
-            <PricingPlans plans={plans.plans} />
+          {paidPlans.length ? (
+            <PricingPlans plans={paidPlans} />
           ) : (
             <div className="mx-auto max-w-2xl border-brutal bg-card p-8 text-center">
               <div className="font-mono text-sm text-muted-foreground">

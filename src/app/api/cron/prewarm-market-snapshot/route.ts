@@ -2,7 +2,7 @@ import "server-only";
 
 import { NextRequest, NextResponse } from "next/server";
 import { API_BASE_URL } from "@/lib/api/config";
-import { setCachedMarketItemsSnapshot } from "@/lib/upstash-cache";
+import { setCachedMarketItemsSnapshot } from "@/lib/blob-snapshot-cache";
 import type { MarketItemsSnapshotResponse, MarketTimeframe } from "@/lib/api/types";
 
 const PREWARM_TIMEFRAMES: MarketTimeframe[] = ["24h"];

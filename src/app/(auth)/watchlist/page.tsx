@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAlerts, useRemoveFromWatchlistMutation, useWatchlist } from "@/lib/api";
+import { buildItemPath } from "@/lib/seo/itemSlug";
 
 export default function WatchlistPage() {
   const [search, setSearch] = useState("");
@@ -82,7 +83,7 @@ export default function WatchlistPage() {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <Link
-                          href={`/item/${item.item_id}`}
+                          href={buildItemPath(item.item_id, item.market_hash_name)}
                           className="truncate font-medium text-foreground transition-colors hover:text-primary"
                         >
                           {item.market_hash_name}
@@ -108,7 +109,7 @@ export default function WatchlistPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem asChild>
-                          <Link href={`/item/${item.item_id}`} className="flex items-center gap-2">
+                          <Link href={buildItemPath(item.item_id, item.market_hash_name)} className="flex items-center gap-2">
                             <ExternalLink className="h-4 w-4" />
                             View Item
                           </Link>
