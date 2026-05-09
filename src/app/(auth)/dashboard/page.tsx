@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAlertEvents, useAlerts, useSession, useWatchlist } from "@/lib/api";
-import { PlanUpgradeBanner } from "@/components/PlanUpgradeBanner";
+import { EmailVerificationBanner } from "@/components/EmailVerificationBanner";
 import { buildItemPath } from "@/lib/seo/itemSlug";
 
 function formatThreshold(value: string, currency?: string) {
