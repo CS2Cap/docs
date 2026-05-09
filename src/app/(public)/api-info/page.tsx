@@ -7,7 +7,6 @@ import {
   Clock,
   Activity,
   Terminal,
-
   Globe,
   BadgeDollarSign,
   CandlestickChart,
@@ -20,6 +19,7 @@ import {
   Gauge,
   BookOpen,
   Braces,
+  CheckCircle2,
 } from "lucide-react";
 import { FooterSection } from "@/components/FooterSection";
 import { PricingPlans } from "@/components/PricingPlans";
