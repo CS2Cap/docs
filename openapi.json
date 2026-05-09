@@ -24863,7 +24863,7 @@
           "Admin"
         ],
         "summary": "Get Providers Health Summary",
-        "description": "Provider health summary optimized for external monitors (e.g. Uptime Kuma).\n\nReturns:\n- HTTP 200 when all providers are below degradation threshold\n- HTTP 503 when any provider has consecutive_failures >= threshold",
+        "description": "Provider health summary optimized for external monitors (e.g. Uptime Kuma).\n\nReturns:\n- HTTP 200 when all providers are below degradation threshold\n- HTTP 503 when any provider has consecutive_failures >= threshold or has not\n  produced a successful job inside its expected freshness window",
         "operationId": "adminGetProvidersHealthSummary",
         "responses": {
           "200": {
@@ -24921,13 +24921,14 @@
             }
           },
           "503": {
-            "description": "Provider degradation detected: at least one provider has consecutive_failures >= 5.",
+            "description": "Provider degradation detected: at least one provider has consecutive_failures >= 5 or a stale last successful job.",
             "content": {
               "application/json": {
                 "example": {
                   "status": "degraded",
                   "provider_count": 39,
                   "degraded_provider_count": 1,
+                  "stale_provider_count": 0,
                   "max_consecutive_failures": 7,
                   "threshold": 5,
                   "degraded_providers": [
@@ -24937,7 +24938,8 @@
                       "last_failure": "2026-03-01T16:21:00Z",
                       "last_error": "timeout"
                     }
-                  ]
+                  ],
+                  "stale_jobs": []
                 }
               }
             }

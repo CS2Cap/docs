@@ -126,11 +126,11 @@ export default async function HomePage() {
                 <div className="h-2 w-2 rounded-full bg-warning/60" />
                 <div className="h-2 w-2 rounded-full bg-success/60" />
                 <span className="ml-2 font-mono text-[10px] text-muted-foreground">
-                  GET /v1/web/prices?item_id={featuredQuote?.item_id ?? "ITEM_ID"}&limit=3
+                  GET /v1/prices?item_id={featuredQuote?.item_id ?? "ITEM_ID"}&limit=3
                 </span>
               </div>
               <pre className="overflow-x-auto p-4 font-mono text-[11px] leading-relaxed text-muted-foreground">
-                <code>{`curl https://api.cs2c.app/v1/web/prices?item_id=${featuredQuote?.item_id ?? "1234"}&limit=3
+                <code>{`curl https://api.cs2c.app/v1/prices?item_id=${featuredQuote?.item_id ?? "1234"}&limit=3
 
 {
   "meta": {
