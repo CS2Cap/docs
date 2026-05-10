@@ -9,14 +9,14 @@ CS2Cap is a REST API that aggregates and normalizes market data from 38 CS2 mark
 
 | Capability | Endpoints | Description |
 | --- | --- | --- |
-| **Price data** | `/v1/prices`, `/v1/prices/history` | Current lowest asks and historical candles across providers |
-| **Buy orders** | `/v1/bids` | Highest buy order snapshots from bid-enabled marketplaces |
-| **Sales** | `/v1/sales` | Completed transaction records with price and timestamp |
-| **Candle data** | `/v1/prices/candles` | OHLCV candles aggregated across providers |
-| **Analytics** | `/v1/market/indicators`, `/v1/market/arbitrage` | Technical indicators, arbitrage edges, and liquidity scores |
-| **Portfolio** | `/v1/portfolio` | Track holdings, import from Steam, and value in real time |
-| **FX conversion** | `/v1/fx`, `?currency=` param | On-the-fly currency conversion on all price fields |
-| **Item catalog** | `/v1/items`, `/v1/providers` | Item identity, metadata, phase, wear, and provider details |
+| **Price data** | [`/prices`](/api-reference/prices), [`/prices/history`](/api-reference/prices#get-/prices/history-—-price-history) | Current lowest asks and historical candles across providers |
+| **Buy orders** | [`/bids`](/api-reference/bids) | Highest buy order snapshots from bid-enabled marketplaces |
+| **Sales** | [`/sales`](/api-reference/sales) | Completed transaction records with price and timestamp |
+| **Candle data** | [`/prices/candles`](/api-reference/prices#get-/prices/candles-—-price-candles-ohlcv) | OHLCV candles aggregated across providers |
+| **Analytics** | [`/market/indicators`](/api-reference/market-analytics#get-/market/indicators), [`/market/arbitrage`](/api-reference/market-analytics#get-/market/arbitrage) | Technical indicators, arbitrage edges, and liquidity scores |
+| **Portfolio** | [`/portfolio`](/api-reference/portfolio) | Track holdings, import from Steam, and value in real time |
+| **FX conversion** | [`/fx`](/api-reference/catalog#get-/fx-—-fx-rates), `?currency=` param | On-the-fly currency conversion on all price fields |
+| **Item catalog** | [`/items`](/api-reference/catalog#get-/items-—-list-items), [`/providers`](/api-reference/catalog#get-/providers-—-list-providers) | Item identity, metadata, phase, wear, and provider details |
 
 ## Tiers
 

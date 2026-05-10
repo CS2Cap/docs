@@ -8,17 +8,17 @@ Before you start building with CS2Cap, it helps to understand a few core concept
 ## Terminology
 
 | Term | Meaning | Common fields | Primary endpoints |
-| --- | --- | --- | --- |
-| **Quote** | A current listing snapshot for one item on one provider. | `provider`, `item_id`, `lowest_ask`, `quantity`, `timestamp` | `/v1/prices` |
-| **BuyOrderRecord** | A current highest-bid snapshot for one item on one provider. | `provider`, `item_id`, `highest_bid`, `num_bids`, `timestamp` | `/v1/bids` |
-| **SaleRecord** | A completed transaction record. | `provider`, `item_id`, `price`, `date` | `/v1/sales` |
-| **Provider** | A marketplace source such as `steam`, `skinport`, or `buff163`. | provider key, fee data, health metadata | `/v1/providers` |
-| **Phase** | A Doppler or Gamma Doppler variant label (e.g., "Phase 1", "Ruby"). | `phase` | `/v1/items`, `/v1/prices`, `/v1/bids`, `/v1/sales`, `/v1/market/*` |
-| **Wear** | The item's condition bucket, from Factory New to Battle-Scarred. | item naming, float context | `/v1/items`, `/v1/sales` |
-| **Liquidity Score** | A 0–100 score reflecting how tradable an item is. Combines listing depth, bid/ask gap ratio, 24h consumption churn, price stability, and external volume signals. Items with fewer than 2 active hours of history use only the first three components, rescaled to 100. | liquidity metrics | `/v1/market/items/item_id` |
-| **Arbitrage** | A cross-provider price edge calculated after marketplace fees. | buy provider, sell provider, edge metrics | `/v1/market/arbitrage` |
-| **Technical Indicators** | Trading signals derived from composite candle data across providers. Includes RSI, MACD, SMA/EMA, Bollinger Bands, ATR, VWAP, and OBV. | indicator values | `/v1/market/indicators` |
-| **FX Conversion** | On-the-fly currency conversion applied to returned price values via the `currency` query parameter. | `currency` | Most market-data endpoints, `/v1/fx` |
+| --- | --- | :---: | :--- |
+| **Quote** | A current listing snapshot for one item on one provider. | `provider`, `item_id`, `lowest_ask`, `quantity`, `timestamp` | [`/prices`](/api-reference/prices) |
+| **BuyOrderRecord** | A current highest-bid snapshot for one item on one provider. | `provider`, `item_id`, `highest_bid`, `num_bids`, `timestamp` | [`/bids`](/api-reference/bids) |
+| **SaleRecord** | A completed transaction record. | `provider`, `item_id`, `price`, `date` | [`/sales`](/api-reference/sales) |
+| **Provider** | A marketplace source such as `steam`, `skinport`, or `buff163`. | provider key, fee data, health metadata | [`/providers`](/api-reference/catalog#get-/providers-—-list-providers) |
+| **Phase** | A Doppler or Gamma Doppler variant label (e.g., "Phase 1", "Ruby"). | `phase` | [`/items`](/api-reference/catalog#get-/items-—-list-items), [`/prices`](/api-reference/prices), [`/bids`](/api-reference/bids), [`/sales`](/api-reference/sales) |
+| **Wear** | The item's condition bucket, from Factory New to Battle-Scarred. | item naming, float context | [`/items`](/api-reference/catalog#get-/items-—-list-items), [`/sales`](/api-reference/sales) |
+| **Liquidity Score** | A 0–100 score reflecting how tradable an item is. Formula explained [here](/guides/liquidity-score). | liquidity metrics | [`/market/items`](/api-reference/market-analytics#get-/market/items), [`/market/items/item_id`](/api-reference/market-analytics#get-/market/items/item_id) |
+| **Arbitrage** | A cross-provider price edge calculated after marketplace fees. | buy provider, sell provider, edge metrics | [`/market/arbitrage`](/api-reference/market-analytics#get-/market/arbitrage) |
+| **Technical Indicators** | Trading signals derived from composite candle data across providers. Includes RSI, MACD, SMA/EMA, Bollinger Bands, ATR, VWAP, and OBV. | indicator values | [`/market/indicators`](/api-reference/market-analytics#get-/market/indicators) |
+| **FX Conversion** | On-the-fly currency conversion applied to returned price values via the `currency` query parameter. | `currency` | Most market-data endpoints, [`/fx`](/api-reference/catalog#get-/fx-—-fx-rates) |
 
 ## Data semantics
 
@@ -37,7 +37,7 @@ This applies consistently to `lowest_ask`, `highest_bid`, `price`, and any other
 
 ### Prices and bids come from indexed data only
 
-`/v1/prices` and `/v1/bids` are served from a pre-built index, not from live per-request marketplace queries. This means:
+[`/prices`](/api-reference/prices) and [`/bids`](/api-reference/bids) are served from a pre-built index, not from live per-request marketplace queries. This means:
 
 - Responses are fast and consistent.
 - If the index is temporarily unavailable or fails an integrity check, the API returns `503` with `PRICES_INDEX_UNAVAILABLE` or `BIDS_INDEX_UNAVAILABLE`.
@@ -58,7 +58,7 @@ When a request parameter expects a provider, use the **provider key** — the lo
 | `csfloat` | CSFloat |
 | `buff163` | BUFF163 |
 
-Do not use display names or human-readable labels in API parameters. You can retrieve the full list of provider keys from `GET /v1/providers`.
+Do not use display names or human-readable labels in API parameters. You can query the full list from [`GET /providers`](/api-reference/catalog#get-/providers-—-list-providers) or visit the [Supported Marketplaces](/reference/providers) page.
 
 ### Item identity
 
@@ -99,6 +99,6 @@ A `null` value means the field does not apply to that item — it is not an erro
   </Accordion>
 
   <Accordion title="Assuming prices and bids fall back to a live non-indexed path">
-    `/v1/prices` and `/v1/bids` have no live fallback. A `503` response means the index is temporarily unavailable — not that the item doesn't exist or that you should query a different endpoint. Implement retry logic and surface the outage to your users if it persists.
+    [`/prices`](/api-reference/prices) and [`/bids`](/api-reference/bids) have no live fallback. A `503` response means the index is temporarily unavailable — not that the item doesn't exist or that you should query a different endpoint. Implement retry logic and surface the outage to your users if it persists.
   </Accordion>
 </AccordionGroup>

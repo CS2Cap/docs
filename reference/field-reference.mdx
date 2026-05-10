@@ -13,31 +13,26 @@ Every CS2Cap endpoint returns a predictable set of fields. This reference covers
 
 Fields marked **Yes** are included in that endpoint's response. Fields marked **–** are not.
 
-| Field | /prices | /bids | /sales | /items | /portfolio/items | /portfolio/transactions |
-| --- | --- | --- | --- | --- | --- | --- |
-| `item_id` | Yes | Yes | Yes | Yes | Yes | Yes |
-| `market_hash_name` | Yes | Yes | Yes | Yes | Yes | Yes |
-| `phase` | Yes | Yes | Yes | Yes | Yes | Yes |
-| `provider` | Yes | Yes | Yes | – | – | – |
-| `marketplace` | – | – | – | – | – | Yes |
-| `lowest_ask` | Yes | – | – | – | – | – |
-| `highest_bid` | – | Yes | – | – | – | – |
-| `price` | – | – | Yes | – | – | Yes |
-| `quantity` | Yes | – | – | – | Yes | Yes |
-| `num_bids` | – | Yes | – | – | – | – |
-| `type` | – | – | – | – | – | Yes |
-| `source` | – | – | – | – | Yes | – |
-| `steam_assetid` | – | – | – | – | Yes | – |
-| `link` | Yes | – | – | – | – | – |
-| `url` | Yes (paid) | – | – | – | – | – |
-| `timestamp` | Yes | Yes | – | – | – | – |
-| `last_updated` | Yes | Yes | – | – | – | – |
-| `date` | – | – | Yes | – | – | Yes |
-| `created_at` | – | – | – | – | Yes | Yes |
+| Field | /prices | /bids | /sales |
+| --- | :---: | :---: | :---: |
+| `item_id` | ✅ | ✅ | ✅ |
+| `market_hash_name` | ✅ | ✅ | ✅ |
+| `phase` | ✅ | ✅ | ✅ |
+| `provider` | ✅ | ✅ | ✅ |
+| `timestamp` | ✅ | ✅ | ❌ |
+| `last_updated` | ✅ | ✅ | ❌ |
+| `date` | ❌ | ❌ | ✅ |
+| `lowest_ask` | ✅ | ❌ | ❌ |
+| `highest_bid` | ❌ | ✅ | ❌ |
+| `price` | ❌ | ❌ | ✅ |
+| `quantity` | ✅ | ❌ | ❌ |
+| `num_bids` | ❌ | ✅ | ❌ |
+| `link` | ✅ | ❌ | ❌ |
+| `url` | Yes (paid) | ❌ | ❌ |
 
 ## Portfolio and transaction fields
 
-These fields are specific to the portfolio system and appear on `/portfolio/items` and `/portfolio/transactions`.
+These fields are specific to the portfolio system and appear on [`/portfolio/items`](/api-reference/portfolio#portfolio-management) and [`/portfolio/transactions`](/api-reference/portfolio#transactions).
 
 | Field | Type | Description |
 | --- | --- | --- |
@@ -56,10 +51,10 @@ These fields are specific to the portfolio system and appear on `/portfolio/item
 
 These fields identify an item and appear in most responses across the API.
 
-| Field | Type | Description |  |
-| --- | --- | --- | --- |
+| Field | Type | Description |
+| --- | --- | --- |
 | `item_id` | integer | Internal catalog ID assigned by CS2Cap. It stays stable across providers. Prefer this over `market_hash_name` once you have resolved it. |  |
-| `market_hash_name` | string | Canonical Steam market hash name, for example \`★ Gut Knife | Fade (Factory New)`. Use this when you do not have an `item\_id\` yet. |
+| `market_hash_name` | string | Canonical Steam market hash name. Use this when you do not have an `item_id` yet. |
 | `phase` | string | Doppler or Gamma Doppler variant label, for example `Phase 1` or `Emerald`. Returns `null` when phase is not relevant to the item. |  |
 | `provider` | string | Provider key used by this API, for example `steam`, `buff163`, or `csfloat`. Use provider keys in request parameters, not brand names. |  |
 
@@ -69,29 +64,29 @@ All price fields are returned in minor units of the response currency. See the n
 
 | Field | Type | Endpoint | Description |
 | --- | --- | --- | --- |
-| `lowest_ask` | integer | `/prices` | Current best ask price across listed offers. |
-| `highest_bid` | integer | `/bids` | Current best buy order price. |
-| `price` | integer | `/sales` | Completed sale price. |
-| `best_ask` | integer | `/portfolio/value` | Lowest ask across all queried providers for the item. |
-| `item_value` | integer | `/portfolio/value` | `best_ask × quantity`. |
-| `total_value` | integer | `/portfolio/value` | Sum of all `item_value` amounts in the response. |
+| `lowest_ask` | integer | [`/prices`](/api-reference/prices) | Current best ask price across listed offers. |
+| `highest_bid` | integer | [`/bids`](/api-reference/bids) | Current best buy order price. |
+| `price` | integer | [`/sales`](/api-reference/sales) | Completed sale price. |
+| `best_ask` | integer | [`/portfolio/value`](/api-reference/portfolio#valuation) | Lowest ask across all queried providers for the item. |
+| `item_value` | integer | [`/portfolio/value`](/api-reference/portfolio#valuation) | `best_ask × quantity`. |
+| `total_value` | integer | [`/portfolio/value`](/api-reference/portfolio#valuation) | Sum of all `item_value` amounts in the response. |
 
 ## Sale fields
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `quantity` | integer | Number of units in the listing. Returned by `/prices`. |
-| `num_bids` | integer | Number of active buy orders at the reported `highest_bid` price level. |
-| `date` | datetime | ISO 8601 UTC timestamp for when the sale happened on the provider marketplace. Returned by `/sales`. |
+| `quantity` | integer | Number of units in the listing. Returned by [`/prices`](/api-reference/prices). |
+| `num_bids` | integer | Number of active buy orders at the reported `highest_bid` price level. Returned by [`/bids`](/api-reference/bids). |
+| `date` | datetime | ISO 8601 UTC timestamp for when the sale happened on the provider marketplace. Returned by [`/sales`](/api-reference/sales). |
 | `currency` | string | ISO 4217 currency code used by the values in the record, for example `USD`. |
 
 ## Timestamp fields
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `timestamp` | datetime | Time when the current price and quantity combination was observed for a provider. |
-| `last_updated` | datetime | ISO 8601 UTC timestamp for when CS2Cap last ingested or processed the record. This differs from `timestamp`, which reflects the provider-side observation time. |
-| `date` | datetime | ISO 8601 UTC timestamp for the sale event time reported by the provider. Returned by `/sales`. |
+| `timestamp` | datetime | Time when the current `Quote` or `BuyOrderRecord` was observed. **Updates when the class changes**. |
+| `last_updated` | datetime | Time when CS2Cap last recorded a specific `Quote` or `BuyOrderRecord`. **Updates regardless of change**. |
+| `date` | datetime | Time when the sale event time reported by the provider. Returned by [`/sales`](/api-reference/sales). |
 
 ## Link fields
 
@@ -128,11 +123,11 @@ Most list endpoints return these top-level fields:
 | `meta` | object | Response context such as currency, filters, and returned providers. |
 | `meta.currency` | string | ISO 4217 currency code that all price values in the response use. |
 | `meta.returned_providers` | array\[string\] | Provider keys that returned data in this response. This can be a subset of what you requested. |
-| `meta.filters` | object | Echo of the effective filters applied to the request, including `market_hash_name`, `phase`, and `requested_providers`. |
+| `meta.filters` | object | Echo of the effective filters applied to the request, including `market_hash_name`, `phase`, and `providers_queried`. |
 
 ## Item catalog fields
 
-These fields are returned by `/items`. All are nullable — a `null` value means the field is either not applicable to that item or not yet known.
+These fields are returned by [`/items`](/api-reference/catalog#get-/items-—-list-items).
 
 | Field | Type | Description |
 | --- | --- | --- |

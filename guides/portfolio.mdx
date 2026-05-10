@@ -7,10 +7,10 @@ The CS2Cap Portfolio API supports two distinct use cases. For one-off calculatio
 
 ## Portfolio limits by tier
 
-| Limit | Free | Starter | Pro | Quant |
-| --- | --: | --: | --: | --: |
-| Max portfolios | 20 | 20 | 50 | 1,000 |
-| Max items per portfolio | 1,000 | 1,000 | 5,000 | 10,000 |
+| Limit | Starter | Pro | Quant |
+| --- | :--: | :--: | :--: |
+| Max portfolios | 20 | 50 | 1,000 |
+| Max items per portfolio | 1,000 | 5,000 | 10,000 |
 
 The item limit applies regardless of how items were added — manually, via Steam import, or via CSV import.
 
@@ -18,7 +18,7 @@ The item limit applies regardless of how items were added — manually, via Stea
 
 <Steps>
   <Step title="Create a portfolio">
-    Send a `POST /portfolio` request with a name for your portfolio. The API returns the new portfolio object including its `id`, which you will use in subsequent requests.
+    Send a [`POST /portfolio`](/api-reference/portfolio#post-/portfolio) request with a name for your portfolio. The API returns the new portfolio object including its `id`, which you will use in subsequent requests.
 
     ```json
     {
@@ -37,7 +37,7 @@ The item limit applies regardless of how items were added — manually, via Stea
     ```
   </Step>
   <Step title="Add items to the portfolio">
-    Use `POST /portfolio/{id}/items` to add items manually. Supply the catalog `item_id`, the quantity you hold, and an optional Doppler `phase` if relevant.
+    Use [`POST /portfolio/{id}/items`](/api-reference/portfolio#post-/portfolio/id/items) to add items manually. Supply the catalog `item_id`, the quantity you hold, and an optional Doppler `phase` if relevant.
 
     ```json
     {
@@ -47,10 +47,10 @@ The item limit applies regardless of how items were added — manually, via Stea
     }
     ```
 
-    Alternatively, import directly from your linked Steam inventory (see [Importing from Steam](#importing-from-steam)) or upload a CSV (see [CSV import/export](#csv-importexport)).
+    Alternatively, import directly from your linked Steam inventory (see [Importing from Steam](#importing-from-steam)) or upload a CSV (see [CSV import/export](#csv-import/export)).
   </Step>
   <Step title="Record a transaction">
-    Log every purchase or sale with `POST /portfolio/{id}/transactions`. Recording transactions enables historical valuation by rebuilding your holdings day by day from the ledger.
+    Log every purchase or sale with [`POST /portfolio/{id}/transactions`](/api-reference/portfolio#post-/portfolio/id/transactions). Recording transactions enables historical valuation by rebuilding your holdings day by day from the ledger.
 
     ```json
     {
@@ -65,7 +65,7 @@ The item limit applies regardless of how items were added — manually, via Stea
     ```
   </Step>
   <Step title="Value your portfolio">
-    Call `GET /portfolio/{id}/value` to get a live valuation using current indexed prices. You can filter by `currency` and `providers` as query parameters.
+    Call [`GET /portfolio/{id}/value`](/api-reference/portfolio#get-/portfolio/id/value) to get a live valuation using current indexed prices. You can filter by `currency` and `providers` as query parameters.
   </Step>
 </Steps>
 
@@ -73,7 +73,7 @@ The item limit applies regardless of how items were added — manually, via Stea
 
 ### Create a portfolio
 
-**Endpoint:** `POST /portfolio`
+**Endpoint:** [`POST /portfolio`](/api-reference/portfolio#post-/portfolio)
 
 ```json
 {
@@ -83,19 +83,19 @@ The item limit applies regardless of how items were added — manually, via Stea
 
 ### List portfolios
 
-**Endpoint:** `GET /portfolio`
+**Endpoint:** [`GET /portfolio`](/api-reference/portfolio#get-/portfolio)
 
 Returns all saved portfolios for your account.
 
 ### Delete a portfolio
 
-**Endpoint:** `DELETE /portfolio/{id}`
+**Endpoint:** [`DELETE /portfolio/{id}`](/api-reference/portfolio#delete-/portfolio/id)
 
 Permanently deletes the portfolio and all of its saved items and transactions.
 
 ## Adding items manually
 
-**Endpoint:** `POST /portfolio/{id}/items`
+**Endpoint:** [`POST /portfolio/{id}/items`](/api-reference/portfolio#post-/portfolio/id/items)
 
 Add one item at a time by `item_id` or `market_hash_name`. Use this route for items that did not come from a Steam import.
 
@@ -105,11 +105,11 @@ Add one item at a time by `item_id` or `market_hash_name`. Use this route for it
 | `quantity` | integer | Number of units held. |
 | `phase` | string or null | Doppler phase, if applicable. |
 
-To list the items currently stored in a portfolio, call `GET /portfolio/{id}/items`. To remove an entry, call `DELETE /portfolio/{id}/items/{entry_id}` — note that `entry_id` is the portfolio entry UUID, not the catalog `item_id`.
+To list the items currently stored in a portfolio, call [`GET /portfolio/{id}/items`](/api-reference/portfolio#get-/portfolio/id/items). To remove an entry, call [`DELETE /portfolio/{id}/items/{entry_id}`](/api-reference/portfolio#delete-/portfolio/id/items/entry_id) — note that `entry_id` is the portfolio entry UUID, not the catalog `item_id`.
 
 ## Importing from Steam
 
-**Endpoint:** `POST /portfolio/{id}/import`
+**Endpoint:** [`POST /portfolio/{id}/import`](/api-reference/portfolio#post-/portfolio/id/import)
 
 Imports items from your linked Steam inventory. Omit `asset_ids` to import the full inventory, or provide a specific list to import only those assets.
 
@@ -126,13 +126,13 @@ Imports items from your linked Steam inventory. Omit `asset_ids` to import the f
 
 ### Import from CSV
 
-**Endpoint:** `POST /portfolio/{id}/import/csv`
+**Endpoint:** [`POST /portfolio/{id}/import/csv`](/api-reference/portfolio#post-/portfolio/id/import/csv)
 
 Upload a CSV file to bulk-import transactions or snapshot-style holdings. The format (ledger or snapshot) is detected automatically from the CSV headers. Buy transactions imported from CSV can create missing portfolio items automatically.
 
 ### Export to CSV
 
-**Endpoint:** `GET /portfolio/{id}/export?type=transactions`
+**Endpoint:** [`GET /portfolio/{id}/export`](/api-reference/portfolio#get-/portfolio/id/export)
 
 Downloads portfolio data as a CSV file. Use the `type` query parameter to choose what to export:
 
@@ -143,7 +143,7 @@ Downloads portfolio data as a CSV file. Use the `type` query parameter to choose
 
 ## Recording transactions
 
-**Endpoint:** `POST /portfolio/{id}/transactions`
+**Endpoint:** [`POST /portfolio/{id}/transactions`](/api-reference/portfolio#post-/portfolio/id/transactions)
 
 Record a buy or sell event against an item in the portfolio. The transaction ledger powers historical valuation.
 
@@ -157,13 +157,13 @@ Record a buy or sell event against an item in the portfolio. The transaction led
 | `marketplace` | string | Marketplace where the trade occurred (e.g., `skinport`). |
 | `currency` | string | ISO 4217 currency code (e.g., `USD`). |
 
-Buy transactions automatically create portfolio items for any item not already tracked. To view the full ledger, call `GET /portfolio/{id}/transactions`. To correct a recorded transaction, use `PATCH /portfolio/{id}/transactions/{transaction_id}` — patchable fields include `quantity`, `price`, `date`, `fee_amount`, `fee_percentage`, `marketplace`, `note`, and `currency`. To remove a transaction, call `DELETE /portfolio/{id}/transactions/{transaction_id}`.
+Buy transactions automatically create portfolio items for any item not already tracked. To view the full ledger, call [`GET /portfolio/{id}/transactions`](/api-reference/portfolio#get-/portfolio/id/transactions). To correct a recorded transaction, use [`PATCH /portfolio/{id}/transactions/{transaction_id}`](/api-reference/portfolio#patch-/portfolio/id/transactions/tx_id) — patchable fields include `quantity`, `price`, `date`, `fee_amount`, `fee_percentage`, `marketplace`, `note`, and `currency`. To remove a transaction, call [`DELETE /portfolio/{id}/transactions/{transaction_id}`](/api-reference/portfolio#delete-/portfolio/id/transactions/tx_id).
 
 ## Valuing portfolios
 
 ### Stateless (ad-hoc) valuation
 
-**Endpoint:** `POST /portfolio/value`
+**Endpoint:** [`POST /portfolio/value`](/api-reference/portfolio#post-/portfolio/value)
 
 Value a list of items without creating a saved portfolio. Pass up to 100 items in the request body.
 
@@ -207,13 +207,13 @@ Example response:
 
 ### Live valuation of a saved portfolio
 
-**Endpoint:** `GET /portfolio/{id}/value`
+**Endpoint:** [`GET /portfolio/{id}/value`](/api-reference/portfolio#get-/portfolio/id/value)
 
 Values all items in a saved portfolio using current indexed prices. Accepts optional `currency` and `providers` query parameters. This is a live snapshot — it does not replay historical prices.
 
 ### Historical portfolio valuation
 
-**Endpoint:** `GET /portfolio/{id}/history`
+**Endpoint:** [`GET /portfolio/{id}/history`](/api-reference/portfolio#historical-valuation)
 
 Rebuilds daily portfolio values by replaying the transaction ledger. Holdings are constructed from transactions, not from the portfolio's current saved item list, so the history accurately reflects what you held on each date.
 

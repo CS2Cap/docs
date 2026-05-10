@@ -13,39 +13,51 @@ GET /prices?market_hash_name=AK-47+%7C+Redline+(Field-Tested)&providers=steam&pr
 
 ## Full provider catalog
 
-All 38 supported provider keys:
+The following providers support live prices data (a.k.a lowest asks). Used extensively in almost all endpoints.
 
-| Provider key | Provider key | Provider key |
-| --- | --- | --- |
-| `avanmarket` | `ecosteam` | `skinplace` |
-| `bitskins` | `haloskins` | `skinport` |
-| `buff163` | `itradegg` | `skinscom` |
-| `buffmarket` | `lisskins` | `skinsmonkey` |
-| `c5` | `lootfarm` | `skinswap` |
-| `csdeals` | `mannco` | `skinvault` |
-| `csfloat` | `marketcsgo` | `steam` |
-| `csgo500` | `pirateswap` | `swapgg` |
-| `csgoempire` | `rapidskins` | `tradeit` |
-| `csmoney_m` | `shadowpay` | `waxpeer` |
-| `csmoney_t` | `skinbaron` | `whitemarket` |
-| `cstrade` | `skinflow` | `youpin` |
-| `dmarket` | `skinout` | — |
+|  |  |  |
+| :---: | :---: | :---: |
+| Avan.Market | BitSkins | BUFF163 |
+| BUFF.Market | C5GAME | CS.Deals |
+| CSFloat | CSGO500 | CSGOEmpire |
+| CS.MONEY - Market | CS.MONEY - Trade | CS.Trade |
+| DMarket | ECOSteam | HaloSkins |
+| iTrade.gg | LIS-SKINS | LOOT.Farm |
+| Mannco.store |Market.CSGO | PirateSwap |
+| RapidSkins | ShadowPay | SkinBaron |
+| Skinflow | SkinOut | SkinPlace |
+| Skinport | Skins.com | SkinsMonkey |
+| SkinSwap | Skinvault | Steam |
+| Swap.gg | Tradeit.gg | WAXPEER |
+| white.market | Youpin898 | — |
 
-<Note>
-  Pass provider keys as the `provider` parameter (single value) or the `providers` parameter (repeatable) depending on the endpoint. The API never accepts display names — only the keys listed above.
-</Note>
 
 ## Buy-order enabled providers
 
-The following providers support buy orders. Use these with `/bids` endpoints or any endpoint that accepts a `providers_buy` parameter:
+The following providers support live buy orders data (a.k.a highest bids). Used with [`/bids`](/api-reference/bids) and [`/market/arbitrage`](/api-reference/market-analytics#get-/market/arbitrage) as `providers_sell`.
 
-`buff163` · `buffmarket` · `c5` · `csfloat` · `dmarket` · `ecosteam` · `marketcsgo` · `steam` · `waxpeer` · `whitemarket` · `youpin`
+|  |  |  
+| :---: | :---: |
+| BUFF163 | BUFF.Market |
+| C5GAME | CSFloat |
+| DMarket  | ECOSteam |
+| Market.CSGO | Steam |
+| WAXPEER | white.market |
+| Youpin898 | — |
+
+
 
 ## Recent-sales enabled providers
 
-The following providers support recent sales data. Use these with `/sales` endpoints or any endpoint that accepts a `providers_sell` parameter:
+The following providers support recent sales data. Used with [`/sales`](/api-reference/sales).
 
-`bitskins` · `buff163` · `c5` · `csfloat` · `csgo500` · `csgoempire` · `dmarket` · `youpin`
+|  |  |  
+| :---: | :---: |
+| BitSkins | BUFF163 |
+| C5GAME | CSFloat |
+| CSGO500 | CSGOEmpire |
+| DMarket | Youpin898 |
+
 
 ## GET /providers endpoint
 

@@ -1,21 +1,23 @@
 ---
 title: "Pricing: Compare Free, Starter, Pro, and Quant Plans"
-description: "Compare CS2Cap's four API tiers — Free, Starter, Pro, and Quant — by monthly quota, per-minute rate limits, endpoint access, and analytics features."
+description: "Compare CS2Cap's 4 API tiers — Free, Starter, Pro, and Quant — by monthly request quota, rate limits, endpoint access, and feature availability."
 ---
 
 CS2Cap offers four API tiers to fit every use case, from quick evaluation to production-scale analytics:
 
 - **Free** gives you immediate access to **Live Prices + 30d of OHLCV data** at no cost, 
 - **Starter** adds **Live Buy Orders, Batch Queries + Higher Limits** for serious hobbyists, 
-- **Pro** unlocks the **Full Market-Data surface** for full visibility across the market,
+- **Pro** unlocks the **Prices + Bids + Sales + History** endpoints for full visibility across the market,
 - **Quant** enables **Advanced Analytics, Arbitrage Scanner + Webhook Support**
 
-Every tier is backed by the same 38-marketplace data network with 5–10 min freshness.
+<Tip>
+Every tier is backed by the same 38-marketplace data network with 5–10 min freshness and all basic utility endpoints documented [here](/api-reference/catalog).
+</Tip>
 
 ## At a glance
 
 |  | **Starter** | **Pro** | **Quant** |
-| --- | --- | --- | --- |
+| --- | :---: | :---: | :---: |
 | Monthly price | **\$19** | **\$79** | **\$179** |
 | Requests / month | 50,000 | 500,000 | 1,000,000 |
 | Requests / minute | 40 | 100 | 300 |
@@ -25,46 +27,45 @@ Every tier is backed by the same 38-marketplace data network with 5–10 min fre
 ## Endpoint access
 
 | Endpoint | Starter | Pro | Quant |
-| --- | :-: | :-: | :-: |
-| `GET /prices` — current lowest asks _(38 providers)_ | ✅ | ✅ | ✅ |
-| `GET /bids` — highest buy orders _(11 providers)_ | ✅ | ✅ | ✅ |
-| `POST /prices/batch` — multi-item price lookup | ✅ | ✅ | ✅ |
-| `POST /bids/batch` — multi-item buy-order lookup | ✅ | ✅ | ✅ |
-| `GET /prices/candles` — 5m, 1h, 1d OHLCV  (≤ 365 d) | ⚠️ 1d candles only -- max 30d* | ✅ | ✅ |
-| `POST /prices` — full prices snapshot (NDJSON stream) | — | ✅ | ✅ |
-| `POST /bids` — full bids snapshot (NDJSON stream) | — | ✅ | ✅ |
-| `GET /prices/history` — per-provider pricing & quantity changes (≤ 35 d) | — | ✅ | ✅ |
-| `GET /sales` — most recent sales details _(8 providers)_ | — | ✅ | ✅ |
-| `GET /market/items/*` — enriched item metadata | — | ✅ | ✅ |
-| `GET /market/arbitrage` — cross-market arbitrage | — | — | ✅ |
-| `GET /market/indexes` — market cap indexes | — | — | ✅ |
-| `GET /market/indicators` — technical indicators | — | — | ✅ |
-| All `/items` — item catalog | ✅ | ✅ | ✅ |
-| All `/portfolio` — portfolio management | ✅ | ✅ | ✅ |
+| :--- | :-: | :-: | :-: |
+| [`GET /prices`](/api-reference/prices#get-/prices-—-list-prices) — current lowest asks _(38 providers)_ | ✅ | ✅ | ✅ |
+| [`GET /bids`](/api-reference/bids#get-/bids-—-list-bids) — highest buy orders _(11 providers)_ | ✅ | ✅ | ✅ |
+| [`POST /prices/batch`](/api-reference/prices#post-/prices/batch-—-batch-prices-lookup) — multi-item price lookup | ✅ | ✅ | ✅ |
+| [`POST /bids/batch`](/api-reference/bids#post-/bids/batch-—-batch-bids-lookup) — multi-item buy-order lookup | ✅ | ✅ | ✅ |
+| [`GET /prices/candles`](/api-reference/prices#get-/prices/candles-—-price-candles-ohlcv) — 5m, 1h, 1d OHLCV  (≤ 365 d) | ⚠️ 1d candles only -- max 30d* | ✅ | ✅ |
+| [`POST /prices`](/api-reference/prices#post-/prices-—-stream-full-prices-snapshot) — full prices snapshot (NDJSON stream) | — | ✅ | ✅ |
+| [`POST /bids`](/api-reference/bids#post-/bids-—-stream-full-bids-snapshot) — full bids snapshot (NDJSON stream) | — | ✅ | ✅ |
+| [`GET /prices/history`](/api-reference/prices#get-/prices/history-—-price-history) — per-provider pricing & quantity changes (≤ 35 d) | — | ✅ | ✅ |
+| [`GET /sales`](/api-reference/sales#get-/sales-—-list-recent-sales) — most recent sales details _(8 providers)_ | — | ✅ | ✅ |
+| [`GET /market/items/*`](/api-reference/market-analytics#get-/market/items) — enriched item metadata | — | ✅ | ✅ |
+| [`GET /market/arbitrage`](/api-reference/market-analytics#get-/market/arbitrage) — cross-market arbitrage | — | — | ✅ |
+| [`GET /market/indexes`](/api-reference/market-analytics#get-/market/indexes) — market cap indexes | — | — | ✅ |
+| [`GET /market/indicators`](/api-reference/market-analytics#get-/market/indicators) — technical indicators | — | — | ✅ |
+| All [`/items`](/api-reference/catalog#get-/items-—-list-items) — item catalog | ✅ | ✅ | ✅ |
+| All [`/portfolio`](/api-reference/portfolio) — portfolio management | ✅ | ✅ | ✅ |
 | All `/inventory/steam` — Steam inventory lookup | ✅ | ✅ | ✅ |
 
 <Note>
-  **Free and Starter candles restriction:** Free and Starter keys can only call `GET /v1/prices/candles` with `interval=1d` and a lookback window measured in whole days up to 30 days (for example `30d` or `30`). Pro and Quant have no such restriction and can request up to 365 days of candle history at any supported interval.
+  **Free and Starter candles restriction:** Free and Starter keys can only call [`GET /prices/candles`](/api-reference/prices#get-/prices/candles-—-price-candles-ohlcv) with `interval=1d` and a lookback window measured in whole days up to 30 days (for example `30d` or `30`). Pro and Quant have no such restriction and can request up to 365 days of candle history at any supported interval.
 </Note>
 
 ## Features and add-ons
 
-| Feature | Free | Starter | Pro | Quant |
-| --- | :-: | :-: | :-: | :-: |
-| Raw provider listing URLs in responses | — | — | ✅ | ✅ |
-| Bulk snapshot exports | — | — | ✅ | ✅ |
-| Cross-market arbitrage scanner | — | — | — | ✅ |
-| Technical indicators (RSI, MACD, EMA, …) | — | — | — | ✅ |
-| Customer webhooks | — | — | — | ✅ |
-| Child API keys for sub-leasing | — | — | — | ✅ up to **25** per account |
-| Per-child key quota & rate overrides | — | — | — | ✅ |
+| Feature | Starter | Pro | Quant |
+| --- | :-: | :-: | :-: |
+| Raw provider listing URLs in responses | — | ✅ | ✅ |
+| Bulk snapshot exports | — | ✅ | ✅ |
+| Cross-market arbitrage scanner | — | — | ✅ |
+| Technical indicators (RSI, MACD, EMA, …) | — | — | ✅ |
+| Customer webhooks | — | — | ✅ |
+| Child API keys for sub-leasing | — | — | ✅ up to **25** per account |
 
 ## Portfolio limits
 
-| Limit | Free | Starter | Pro | Quant |
-| --- | --: | --: | --: | --: |
-| Max portfolios | 20 | 20 | 50 | 1,000 |
-| Max items per portfolio | 1,000 | 1,000 | 5,000 | 10,000 |
+| Limit | Starter | Pro | Quant |
+| --- | :--: | :--: | :--: |
+| Max portfolios | 20 | 50 | 1,000 |
+| Max items per portfolio | 1,000 | 5,000 | 10,000 |
 
 ## API key rules
 
@@ -102,11 +103,11 @@ Paid tiers are billed monthly through Stripe via card, or NOWPayments via crypto
   </Accordion>
 
   <Accordion title="Is historical data really 365 days?">
-    Yes. Pro and Quant include up to one year of per-item daily OHLCV history through `GET /v1/prices/candles`. Granular per-provider history goes back up to 35 day through `GET /v1/prices/history`.
+    Yes. Pro and Quant include up to one year of per-item daily OHLCV history through [`GET /prices/candles`](/api-reference/prices#get-/prices/candles-—-price-candles-ohlcv). Granular per-provider history goes back up to 35 day through [`GET /prices/history`](/api-reference/prices#get-/prices/history-—-price-history).
   </Accordion>
 
   <Accordion title="Do I get all 38 marketplaces on Free?">
-    You can browse the provider catalog on every tier, but Free is limited to current prices from `GET /v1/prices`. Starter adds current bids and 100-item batch lookups, but not sales, history, analytics, listing URLs, or NDJSON snapshots.
+    You can browse the provider catalog on every tier, but Free is limited to current prices from [`GET /prices`](/api-reference/prices#get-/prices-—-list-prices). Starter adds current bids and 100-item batch lookups, but not sales, history, analytics, listing URLs, or NDJSON snapshots.
   </Accordion>
 
   <Accordion title="How do I get an API key?">

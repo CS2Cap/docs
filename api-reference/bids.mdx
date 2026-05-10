@@ -32,7 +32,7 @@ Returns the current highest buy order across buy-order-enabled providers. You ca
 </ParamField>
 
 <ParamField query="currency" type="string" default="USD">
-  Target currency. Accepts 160+ ISO 4217 codes. See [`GET /fx`](/api-reference/catalog#get-%2Ffx-—-fx-rates) for the full list.
+  Target currency. Accepts 160+ ISO 4217 codes. See [`GET /fx`](/api-reference/catalog#get-/fx-—-fx-rates) for the full list.
 </ParamField>
 
 <ParamField query="limit" type="integer">
@@ -134,7 +134,7 @@ Streams the complete live buy-orders catalog as NDJSON, with one JSON object per
 ### Query parameters
 
 <ParamField query="providers" type="string[]">
-  Optional. Repeat to restrict the stream to specific buy-order providers. Uses the same provider keys as `GET /bids`. If omitted, all buy-order providers are included.
+  Optional. Repeat to restrict the stream to specific buy-order providers. Uses the same provider keys as [`GET /bids`](/api-reference/bids#get-/bids-—-list-bids). If omitted, all buy-order providers are included.
 </ParamField>
 
 ### Response example
@@ -168,7 +168,7 @@ Returns current highest buy orders for up to 100 items in a single request, grou
 </ParamField>
 
 <ParamField body="currency" type="string" default="USD">
-  Target currency. Use [`GET /fx`](/api-reference/catalog#get-%2Ffx-—-fx-rates) for supported ISO 4217 codes.
+  Target currency. Use [`GET /fx`](/api-reference/catalog#get-/fx-—-fx-rates) for supported ISO 4217 codes.
 </ParamField>
 
 <Warning>

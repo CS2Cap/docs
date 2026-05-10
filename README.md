@@ -33,7 +33,7 @@ When adding a page, create the `.mdx` file in the relevant folder and add it to 
 
 The reference pages currently document the main public surfaces of the CS2Cap API:
 
-- Market data: `/v1/prices`, `/v1/bids`, `/v1/sales`, `/v1/items`, and provider catalog routes.
+- Market data: `/prices`, `/bids`, `/sales`, `/items`, and provider catalog routes.
 - Analytics: market indicators, arbitrage, inventory analytics, and related Quant-tier capabilities.
 - Portfolio: holdings, transactions, Steam imports, and portfolio valuation workflows.
 - Account workflows: API keys, sub-keys, alerts, webhooks, usage, and account-level operations.

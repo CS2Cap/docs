@@ -32,7 +32,7 @@ Returns the current lowest ask across marketplaces. You can filter by item, phas
 </ParamField>
 
 <ParamField query="currency" type="string" default="USD">
-  Target currency. Accepts 160+ ISO 4217 codes. See [`GET /fx`](/api-reference/catalog#get-%2Ffx-—-fx-rates) for the full list.
+  Target currency. Accepts 160+ ISO 4217 codes. See [`GET /fx`](/api-reference/catalog#get-/fx-—-fx-rates) for the full list.
 </ParamField>
 
 <ParamField query="limit" type="integer">
@@ -136,7 +136,7 @@ Streams the complete live prices catalog as NDJSON, with one JSON object per lin
 ### Query parameters
 
 <ParamField query="providers" type="string[]">
-  Optional. Repeat to restrict the stream to specific providers. Uses the same provider keys as `GET /prices`. If omitted, all providers are included.
+  Optional. Repeat to restrict the stream to specific providers. Uses the same provider keys as [`GET /prices`](/api-reference/prices#get-/prices-—-list-prices). If omitted, all providers are included.
 </ParamField>
 
 ### Response example
@@ -171,7 +171,7 @@ Returns current lowest asks for up to 100 items in a single request, grouped by 
 </ParamField>
 
 <ParamField body="currency" type="string" default="USD">
-  Target currency. Use [`GET /fx`](/api-reference/catalog#get-%2Ffx-—-fx-rates) for supported ISO 4217 codes.
+  Target currency. Use [`GET /fx`](/api-reference/catalog#get-/fx-—-fx-rates) for supported ISO 4217 codes.
 </ParamField>
 
 <Warning>

@@ -19,7 +19,7 @@ CS2Cap supports three alert kinds:
 
 ### Creating an alert
 
-**Endpoint:** `POST /account/alerts`
+**Endpoint:** [`POST /account/alerts`](/api-reference/alerts#post-/account/alerts)
 
 ```json
 {
@@ -41,12 +41,12 @@ CS2Cap supports three alert kinds:
 
 ### Alert behavior
 
-- After a successful email delivery, the alert **automatically disables itself**. Re-enable it via `PATCH /account/alerts/{id}` when you want it to fire again.
+- After a successful email delivery, the alert **automatically disables itself**. Re-enable it via [`PATCH /account/alerts/{id}`](/api-reference/alerts#patch-/account/alerts/alert_id) when you want it to fire again.
 - A **verified email address** is required before you can enable an alert. Alerts created with `is_enabled: false` do not require a verified email until you enable them.
 
 ### Batch alert creation
 
-**Endpoint:** `POST /account/alerts/batch`
+**Endpoint:** [`POST /account/alerts/batch`](/api-reference/alerts#post-/account/alerts/batch)
 
 Create up to 100 alerts in a single request. The batch counts as one request against your rate limit quota.
 
@@ -77,15 +77,15 @@ Create up to 100 alerts in a single request. The batch counts as one request aga
 
 | Operation | Endpoint |
 | --- | --- |
-| List all alerts | `GET /account/alerts` |
-| Update threshold or enabled state | `PATCH /account/alerts/{id}` |
-| Delete an alert | `DELETE /account/alerts/{id}` |
+| List all alerts | [`GET /account/alerts`](/api-reference/alerts#get-/account/alerts) |
+| Update threshold or enabled state | [`PATCH /account/alerts/{id}`](/api-reference/alerts#patch-/account/alerts/alert_id) |
+| Delete an alert | [`DELETE /account/alerts/{id}`](/api-reference/alerts#delete-/account/alerts/alert_id) |
 
-`GET /account/alerts` accepts a `search` parameter for filtering by exact `item_id` or a case-insensitive item name substring. Results are returned newest first with offset pagination (`limit` up to 200, default 50).
+[`GET /account/alerts`](/api-reference/alerts#get-/account/alerts) accepts a `search` parameter for filtering by exact `item_id` or a case-insensitive item name substring. Results are returned newest first with offset pagination (`limit` up to 200, default 50).
 
 ### Alert events
 
-**Endpoint:** `GET /account/alerts/events`
+**Endpoint:** [`GET /account/alerts/events`](/api-reference/alerts#get-/account/alerts/events)
 
 Returns recent alert trigger events and their email delivery attempts, newest first. Use this endpoint to audit which alerts have fired and whether email delivery succeeded.
 
@@ -103,7 +103,7 @@ Returns recent alert trigger events and their email delivery attempts, newest fi
 
 ### Creating a webhook
 
-**Endpoint:** `POST /account/webhooks`
+**Endpoint:** [`POST /account/webhooks`](/api-reference/webhooks#post-/account/webhooks)
 
 ```json
 {
@@ -151,15 +151,15 @@ The delivery payload includes the `alert_id`, `item_id`, and `market_hash_name` 
 
 ### Tracking webhook deliveries
 
-**Endpoint:** `GET /account/webhooks/deliveries`
+**Endpoint:** [`GET /account/webhooks/deliveries`](/api-reference/webhooks#get-/account/webhooks/deliveries)
 
 Returns all outbound webhook delivery jobs for your account, newest first. Each delivery record shows the event type, HTTP status of your endpoint's response, attempt count, and timestamps.
 
-To inspect a specific delivery including the full payload and per-attempt history, call `GET /account/webhooks/deliveries/{delivery_id}`.
+To inspect a specific delivery including the full payload and per-attempt history, call [`GET /account/webhooks/deliveries/{delivery_id}`](/api-reference/webhooks#get-/account/webhooks/deliveries/id).
 
 ### Rotating the signing secret
 
-**Endpoint:** `POST /account/webhooks/{id}/rotate-secret`
+**Endpoint:** [`POST /account/webhooks/{id}/rotate-secret`](/api-reference/webhooks#post-/account/webhooks/id/rotate-secret)
 
 Generate a new signing secret for an existing webhook. The new secret is returned **once** in the response — update your endpoint's verification logic before rotating to avoid a gap in signature validation.
 
@@ -174,9 +174,9 @@ Generate a new signing secret for an existing webhook. The new secret is returne
 
 | Operation | Endpoint |
 | --- | --- |
-| List all webhooks | `GET /account/webhooks` |
-| Update label, URL, or active state | `PATCH /account/webhooks/{id}` |
-| Delete a webhook | `DELETE /account/webhooks/{id}` |
+| List all webhooks | [`GET /account/webhooks`](/api-reference/webhooks#get-/account/webhooks) |
+| Update label, URL, or active state | [`PATCH /account/webhooks/{id}`](/api-reference/webhooks#patch-/account/webhooks/id) |
+| Delete a webhook | [`DELETE /account/webhooks/{id}`](/api-reference/webhooks#delete-/account/webhooks/id) |
 
 ---
 
@@ -187,10 +187,10 @@ Generate a new signing secret for an existing webhook. The new secret is returne
     Before you can enable an alert, your account must have a verified email. If you have not verified yet, complete verification from your account settings — CS2Cap will reject enabled alert creation until this step is done.
   </Step>
   <Step title="Find the item ID">
-    Query `GET /v1/items` or `GET /v1/items/metadata` to find the catalog `item_id` for the item you want to monitor. The `item_id` is a stable integer identifier.
+    Query [`GET /items`](/api-reference/catalog#get-/items-—-list-items) or [`GET /items/metadata`](/api-reference/catalog#get-/items/metadata-—-catalog-metadata) to find the catalog `item_id` for the item you want to monitor. The `item_id` is a stable integer identifier.
   </Step>
   <Step title="Create the alert">
-    Call `POST /account/alerts` with your chosen `kind`, `threshold_value`, and `threshold_currency`.
+    Call [`POST /account/alerts`](/api-reference/alerts#post-/account/alerts) with your chosen `kind`, `threshold_value`, and `threshold_currency`.
 
     ```bash
     curl -X POST https://api.cs2c.app/v1/account/alerts \
@@ -206,9 +206,9 @@ Generate a new signing secret for an existing webhook. The new secret is returne
     ```
   </Step>
   <Step title="Wait for the trigger email">
-    When the market condition is met, CS2Cap sends a notification to your verified email address and automatically disables the alert. To have it fire again, re-enable it with `PATCH /account/alerts/{id}` — set `is_enabled` to `true`.
+    When the market condition is met, CS2Cap sends a notification to your verified email address and automatically disables the alert. To have it fire again, re-enable it with [`PATCH /account/alerts/{id}`](/api-reference/alerts#patch-/account/alerts/alert_id) — set `is_enabled` to `true`.
   </Step>
   <Step title="(Quant only) Connect a webhook">
-    To receive machine-readable events in addition to email, create a webhook destination with `POST /account/webhooks`. Store the returned secret, then monitor `GET /account/webhooks/deliveries` to confirm delivery.
+    To receive machine-readable events in addition to email, create a webhook destination with [`POST /account/webhooks`](/api-reference/webhooks#post-/account/webhooks). Store the returned secret, then monitor [`GET /account/webhooks/deliveries`](/api-reference/webhooks#get-/account/webhooks/deliveries) to confirm delivery.
   </Step>
 </Steps>

@@ -45,7 +45,7 @@ Rate limits are enforced per API key based on your subscription tier:
 
 ### Special limits
 
-`POST /prices` and `POST /bids` (the full-snapshot streaming endpoints) each have an additional **1 request per 5 minutes** cooldown per API key, regardless of tier.
+[`POST /prices`](/api-reference/prices#post-/prices-—-stream-full-prices-snapshot) and [`POST /bids`](/api-reference/bids#post-/bids-—-stream-full-bids-snapshot) (the full-snapshot streaming endpoints) each have an additional **1 request per 5 minutes** cooldown per API key, regardless of tier.
 
 ### Rate limit response headers
 
@@ -74,7 +74,7 @@ X-RateLimit-Tier: pro
 ## Response conventions
 
 - Most list endpoints return an `items` array, plus `meta` and `pagination` objects when relevant.
-- `GET /items` returns all matches in a single response when you omit the `limit` parameter.
+- [`GET /items`](/api-reference/catalog#get-/items-—-list-items) returns all matches in a single response when you omit the `limit` parameter.
 - Cursor-paginated endpoints intentionally return `pagination.total = -1` because counting is skipped for performance.
 - Price fields—`lowest_ask`, `highest_bid`, and `price`—are always returned in **minor units** of the response currency. For example, `531143` in USD means $5,311.43. Divide by 100 for display.
 - `providers`, `providers_buy`, and `providers_sell` are **repeatable** query parameters. Pass them multiple times to include more than one provider: `providers=steam&providers=buff163`.

@@ -5,7 +5,7 @@ description: "How CS2Cap calculates the 0-100 item liquidity score from market d
 
 CS2Cap's liquidity score estimates how easy an item is to trade right now. It is an item-level score from `0` to `100`, where higher values mean deeper sell-side supply, stronger buy-side demand, more recent trading activity, steadier pricing, and better confirmation from major marketplaces.
 
-The score is exposed on market analytics responses such as [`GET /v1/market/items/item_id`](/api-reference/market-analytics#get-/market/items/item_id) and market snapshots. Liquidity is currently scored on the 24-hour horizon.
+The score is exposed on market analytics responses such as [`GET /market/items/item_id`](/api-reference/market-analytics#get-/market/items/item_id) and market snapshots. Liquidity is currently scored on the 24-hour horizon.
 
 ## Score summary
 
@@ -169,7 +169,7 @@ When this applies, the response marks that the high-tier override was used.
 
 ## API fields
 
-Analytics responses ([`/v1/market/*`](/api-reference/market-analytics#get-/market/items) endpoints) include the total score and component breakdown:
+Analytics responses ([`GET /market/items/*`](/api-reference/market-analytics#get-/market/items) endpoints) include the total score and component breakdown:
 
 ```json
 {
