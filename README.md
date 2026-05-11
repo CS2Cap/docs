@@ -27,8 +27,6 @@ The site is split into two primary tabs in `docs.json`:
 - `Documentation`: conceptual pages and task guides.
 - `API Reference`: endpoint-specific request and response documentation.
 
-When adding a page, create the `.mdx` file in the relevant folder and add it to the correct navigation group in `docs.json`. Mintlify only exposes pages that are included in the navigation config.
-
 ## API Surface Covered
 
 The reference pages currently document the main public surfaces of the CS2Cap API:
