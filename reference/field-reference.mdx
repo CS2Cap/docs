@@ -53,10 +53,10 @@ These fields identify an item and appear in most responses across the API.
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `item_id` | integer | Internal catalog ID assigned by CS2Cap. It stays stable across providers. Prefer this over `market_hash_name` once you have resolved it. |
+| `item_id` | integer | Internal catalog ID assigned by CS2Cap. It stays stable across providers. Prefer this over `market_hash_name` once you have resolved it. |  |
 | `market_hash_name` | string | Canonical Steam market hash name. Use this when you do not have an `item_id` yet. |
-| `phase` | string | Doppler or Gamma Doppler variant label, for example `Phase 1` or `Emerald`. Returns `null` when phase is not relevant to the item. |
-| `provider` | string | Provider key used by this API, for example `steam`, `buff163`, or `csfloat`. Use provider keys in request parameters, not brand names. |
+| `phase` | string | Doppler or Gamma Doppler variant label, for example `Phase 1` or `Emerald`. Returns `null` when phase is not relevant to the item. |  |
+| `provider` | string | Provider key used by this API, for example `steam`, `buff163`, or `csfloat`. Use provider keys in request parameters, not brand names. |  |
 
 ## Price fields
 
