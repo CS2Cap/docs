@@ -32,7 +32,7 @@ Every tier is backed by the same 38-marketplace data network with 5–10 min fre
 | [`GET /bids`](/api-reference/bids#get-/bids-—-list-bids) — highest buy orders _(11 providers)_ | ✅ | ✅ | ✅ |
 | [`POST /prices/batch`](/api-reference/prices#post-/prices/batch-—-batch-prices-lookup) — multi-item price lookup | ✅ | ✅ | ✅ |
 | [`POST /bids/batch`](/api-reference/bids#post-/bids/batch-—-batch-bids-lookup) — multi-item buy-order lookup | ✅ | ✅ | ✅ |
-| [`GET /prices/candles`](/api-reference/prices#get-/prices/candles-—-price-candles-ohlcv) — 5m, 1h, 1d OHLCV (≤ 365 d) | ⚠️ 1d candles only -- max 30d* | ✅ | ✅ |
+| [`GET /prices/candles`](/api-reference/prices#get-/prices/candles-—-price-candles-ohlcv) — 5m, 1h, 1d OHLCV  (≤ 365 d) | ⚠️ 1d candles only -- max 30d* | ✅ | ✅ |
 | [`POST /prices`](/api-reference/prices#post-/prices-—-stream-full-prices-snapshot) — full prices snapshot (NDJSON stream) | — | ✅ | ✅ |
 | [`POST /bids`](/api-reference/bids#post-/bids-—-stream-full-bids-snapshot) — full bids snapshot (NDJSON stream) | — | ✅ | ✅ |
 | [`GET /prices/history`](/api-reference/prices#get-/prices/history-—-price-history) — per-provider pricing & quantity changes (≤ 35 d) | — | ✅ | ✅ |
@@ -88,7 +88,7 @@ Paid tiers are billed monthly through Stripe via card, or NOWPayments via crypto
 
 - **Upgrades** take effect immediately and are prorated on the current invoice.
 - **Downgrades** take effect at the start of the next billing cycle. Until then, you retain your current tier's access.
-- **Payment failures** keep or return your account to the Free tier until the payment processor resolves the retry. No data is lost.
+- **Payment failures** keeps or returns your account to the Free tier until the payment processor resolves the retry. No data is lost.
 - **Cancellation** can be done at any time through the Stripe customer portal. A cancelled subscription stays active until the end of the current billing cycle, then reverts to Free. Subscriptions paid through cryptocurrencies do not renew automatically and cannot be cancelled before the end of the billing period.
 
 ## FAQ
@@ -103,7 +103,7 @@ Paid tiers are billed monthly through Stripe via card, or NOWPayments via crypto
   </Accordion>
 
   <Accordion title="Is historical data really 365 days?">
-    Yes. Pro and Quant include up to one year of per-item daily OHLCV history through [`GET /prices/candles`](/api-reference/prices#get-/prices/candles-—-price-candles-ohlcv). Granular per-provider history goes back up to 35 days through [`GET /prices/history`](/api-reference/prices#get-/prices/history-—-price-history).
+    Yes. Pro and Quant include up to one year of per-item daily OHLCV history through [`GET /prices/candles`](/api-reference/prices#get-/prices/candles-—-price-candles-ohlcv). Granular per-provider history goes back up to 35 day through [`GET /prices/history`](/api-reference/prices#get-/prices/history-—-price-history).
   </Accordion>
 
   <Accordion title="Do I get all 38 marketplaces on Free?">
