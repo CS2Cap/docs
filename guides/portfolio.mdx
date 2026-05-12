@@ -1,173 +1,71 @@
 ---
-title: "Portfolio Management: Track CS2 Skins Investments"
-description: "Create saved portfolios, import Steam inventories, record buy/sell transactions, and value your CS2 holdings in real time using the CS2Cap Portfolio API."
+title: "Portfolio API: Track and Value Your CS2 Items"
+description: "Create saved portfolios, record buy/sell transactions, import Steam inventory, and value holdings statelessly or against stored portfolios across providers."
 ---
 
-The CS2Cap Portfolio API supports two distinct use cases. For one-off calculations you can pass an item list directly in the request body and receive an instant valuation without storing anything — this is called stateless valuation. For ongoing tracking you can create saved portfolios under your account, import your Steam inventory, record buy and sell transactions in a ledger, and retrieve both live and historical valuations over time. Both modes are available on every tier.
+The Portfolio API supports two complementary use cases: **stateless valuation** for one-off item lists you send in the request body, and **saved portfolios** that persist items and transactions under your account for ongoing tracking and historical analysis. Portfolio item limits are 1,000 items for Free and Starter accounts, 5,000 for Pro, and 10,000 for Quant — the same limit applies regardless of how items were added.
 
-## Portfolio limits by tier
+## Portfolio management
 
-| Limit | Starter | Pro | Quant |
-| --- | :--: | :--: | :--: |
-| Max portfolios | 20 | 50 | 1,000 |
-| Max items per portfolio | 1,000 | 5,000 | 10,000 |
+### POST /portfolio
 
-The item limit applies regardless of how items were added — manually, via Steam import, or via CSV import.
+Creates a new empty portfolio under your account.
 
-## Set up your first portfolio
+**Auth:** API key required
 
-<Steps>
-  <Step title="Create a portfolio">
-    Send a [`POST /portfolio`](/api-reference/portfolio#post-/portfolio) request with a name for your portfolio. The API returns the new portfolio object including its `id`, which you will use in subsequent requests.
-
-    ```json
-    {
-      "name": "Main Inventory"
-    }
-    ```
-
-    Example response:
-
-    ```json
-    {
-      "id": "a3f2c1d0-1234-5678-abcd-ef0123456789",
-      "name": "Main Inventory",
-      "created_at": "2026-04-01T10:00:00Z"
-    }
-    ```
-  </Step>
-  <Step title="Add items to the portfolio">
-    Use [`POST /portfolio/{id}/items`](/api-reference/portfolio#post-/portfolio/id/items) to add items manually. Supply the catalog `item_id`, the quantity you hold, and an optional Doppler `phase` if relevant.
-
-    ```json
-    {
-      "item_id": 12632,
-      "quantity": 2,
-      "phase": null
-    }
-    ```
-
-    Alternatively, import directly from your linked Steam inventory (see [Importing from Steam](#importing-from-steam)) or upload a CSV (see [CSV import/export](#csv-import/export)).
-  </Step>
-  <Step title="Record a transaction">
-    Log every purchase or sale with [`POST /portfolio/{id}/transactions`](/api-reference/portfolio#post-/portfolio/id/transactions). Recording transactions enables historical valuation by rebuilding your holdings day by day from the ledger.
-
-    ```json
-    {
-      "item_id": 12632,
-      "type": "buy",
-      "quantity": 2,
-      "price": 2500,
-      "date": "2026-03-24",
-      "marketplace": "skinport",
-      "currency": "USD"
-    }
-    ```
-  </Step>
-  <Step title="Value your portfolio">
-    Call [`GET /portfolio/{id}/value`](/api-reference/portfolio#get-/portfolio/id/value) to get a live valuation using current indexed prices. You can filter by `currency` and `providers` as query parameters.
-  </Step>
-</Steps>
-
-## Managing portfolios
-
-### Create a portfolio
-
-**Endpoint:** [`POST /portfolio`](/api-reference/portfolio#post-/portfolio)
-
-```json
+```json Request body
 {
   "name": "Main Inventory"
 }
 ```
 
-### List portfolios
+<ParamField body="name" type="string" required>
+  Display name for the portfolio.
+</ParamField>
 
-**Endpoint:** [`GET /portfolio`](/api-reference/portfolio#get-/portfolio)
+---
+
+### GET /portfolio
 
 Returns all saved portfolios for your account.
 
-### Delete a portfolio
+**Auth:** API key required
 
-**Endpoint:** [`DELETE /portfolio/{id}`](/api-reference/portfolio#delete-/portfolio/id)
+---
 
-Permanently deletes the portfolio and all of its saved items and transactions.
+### DELETE /portfolio/:id
 
-## Adding items manually
+Permanently deletes a portfolio and all of its saved items and transactions.
 
-**Endpoint:** [`POST /portfolio/{id}/items`](/api-reference/portfolio#post-/portfolio/id/items)
+**Auth:** API key required
 
-Add one item at a time by `item_id` or `market_hash_name`. Use this route for items that did not come from a Steam import.
+<ParamField path="portfolio_id" type="string" required>
+  UUID of the portfolio to delete.
+</ParamField>
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `item_id` | integer | Catalog item ID. Required if `market_hash_name` is not provided. |
-| `quantity` | integer | Number of units held. |
-| `phase` | string or null | Doppler phase, if applicable. |
+---
 
-To list the items currently stored in a portfolio, call [`GET /portfolio/{id}/items`](/api-reference/portfolio#get-/portfolio/id/items). To remove an entry, call [`DELETE /portfolio/{id}/items/{entry_id}`](/api-reference/portfolio#delete-/portfolio/id/items/entry_id) — note that `entry_id` is the portfolio entry UUID, not the catalog `item_id`.
+## Valuation
 
-## Importing from Steam
+### POST /portfolio/value
 
-**Endpoint:** [`POST /portfolio/{id}/import`](/api-reference/portfolio#post-/portfolio/id/import)
+Values a user-supplied item list using the current best ask across the selected providers. Use this for one-off valuations without creating a saved portfolio.
 
-Imports items from your linked Steam inventory. Omit `asset_ids` to import the full inventory, or provide a specific list to import only those assets.
+**Tiers:** Free, Starter, Pro, Quant · **Rate limit:** Free 20 req/min · Starter 40 req/min · Pro 100 req/min · Quant 300 req/min
 
-```json
-{
-  "asset_ids": ["1234567890", "1234567891"]
-}
-```
+<ParamField body="items" type="array" required>
+  Array of objects, each with `item_id` (integer) and `quantity` (integer). Maximum 100 items per request.
+</ParamField>
 
-- Items already saved under the same Steam asset ID are skipped automatically.
-- Items that cannot be matched to the CS2Cap catalog are returned in the `unresolved` field and are not stored.
+<ParamField body="providers" type="string[]">
+  Optional provider filter. Omit to use all available providers.
+</ParamField>
 
-## CSV import/export
+<ParamField body="currency" type="string" default="USD">
+  Target output currency (ISO 4217).
+</ParamField>
 
-### Import from CSV
-
-**Endpoint:** [`POST /portfolio/{id}/import/csv`](/api-reference/portfolio#post-/portfolio/id/import/csv)
-
-Upload a CSV file to bulk-import transactions or snapshot-style holdings. The format (ledger or snapshot) is detected automatically from the CSV headers. Buy transactions imported from CSV can create missing portfolio items automatically.
-
-### Export to CSV
-
-**Endpoint:** [`GET /portfolio/{id}/export`](/api-reference/portfolio#get-/portfolio/id/export)
-
-Downloads portfolio data as a CSV file. Use the `type` query parameter to choose what to export:
-
-| Value | Description |
-| --- | --- |
-| `transactions` | Full buy/sell ledger (default) |
-| `items` | Current item snapshot |
-
-## Recording transactions
-
-**Endpoint:** [`POST /portfolio/{id}/transactions`](/api-reference/portfolio#post-/portfolio/id/transactions)
-
-Record a buy or sell event against an item in the portfolio. The transaction ledger powers historical valuation.
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `item_id` | integer | Catalog item ID. Required if `market_hash_name` is not provided. |
-| `type` | string | `buy` or `sell`. |
-| `quantity` | integer | Number of units in the transaction. |
-| `price` | integer | Price in minor units (e.g., `2500` = \$25.00). |
-| `date` | string | Transaction date in `YYYY-MM-DD` format. |
-| `marketplace` | string | Marketplace where the trade occurred (e.g., `skinport`). |
-| `currency` | string | ISO 4217 currency code (e.g., `USD`). |
-
-Buy transactions automatically create portfolio items for any item not already tracked. To view the full ledger, call [`GET /portfolio/{id}/transactions`](/api-reference/portfolio#get-/portfolio/id/transactions). To correct a recorded transaction, use [`PATCH /portfolio/{id}/transactions/{transaction_id}`](/api-reference/portfolio#patch-/portfolio/id/transactions/tx_id) — patchable fields include `quantity`, `price`, `date`, `fee_amount`, `fee_percentage`, `marketplace`, `note`, and `currency`. To remove a transaction, call [`DELETE /portfolio/{id}/transactions/{transaction_id}`](/api-reference/portfolio#delete-/portfolio/id/transactions/tx_id).
-
-## Valuing portfolios
-
-### Stateless (ad-hoc) valuation
-
-**Endpoint:** [`POST /portfolio/value`](/api-reference/portfolio#post-/portfolio/value)
-
-Value a list of items without creating a saved portfolio. Pass up to 100 items in the request body.
-
-```json
+```json Request body
 {
   "items": [
     { "item_id": 1, "quantity": 3 }
@@ -177,9 +75,7 @@ Value a list of items without creating a saved portfolio. Pass up to 100 items i
 }
 ```
 
-Example response:
-
-```json
+```json Response example
 {
   "meta": {
     "currency": "USD",
@@ -205,28 +101,353 @@ Example response:
 }
 ```
 
-### Live valuation of a saved portfolio
+<ResponseField name="data.line_items" type="array">
+  Per-item valuation results.
+  <Expandable title="line item properties">
+    <ResponseField name="item_id" type="integer">Catalog item ID.</ResponseField>
+    <ResponseField name="market_hash_name" type="string">Full item name.</ResponseField>
+    <ResponseField name="phase" type="string | null">Phase variant, or `null`.</ResponseField>
+    <ResponseField name="quantity" type="integer">Quantity from the request.</ResponseField>
+    <ResponseField name="best_ask" type="number">Best ask price for a single unit, in the requested currency's minor units.</ResponseField>
+    <ResponseField name="item_value" type="number">`best_ask × quantity`.</ResponseField>
+    <ResponseField name="providers" type="array">Per-provider breakdown when available.</ResponseField>
+  </Expandable>
+</ResponseField>
 
-**Endpoint:** [`GET /portfolio/{id}/value`](/api-reference/portfolio#get-/portfolio/id/value)
+<ResponseField name="data.total_value" type="number">
+  Sum of all `item_value` entries.
+</ResponseField>
 
-Values all items in a saved portfolio using current indexed prices. Accepts optional `currency` and `providers` query parameters. This is a live snapshot — it does not replay historical prices.
+<ResponseField name="data.items_valued" type="integer">
+  Number of items successfully priced.
+</ResponseField>
 
-### Historical portfolio valuation
+<ResponseField name="data.items_not_found" type="array">
+  Item IDs from the request that could not be matched in the catalog.
+</ResponseField>
 
-**Endpoint:** [`GET /portfolio/{id}/history`](/api-reference/portfolio#historical-valuation)
+---
 
-Rebuilds daily portfolio values by replaying the transaction ledger. Holdings are constructed from transactions, not from the portfolio's current saved item list, so the history accurately reflects what you held on each date.
+### GET /portfolio/:id/value
 
-| Parameter | Type | Description |
-| --- | --- | --- |
-| `start_date` | string | Inclusive start date (`YYYY-MM-DD`). |
-| `end_date` | string | Inclusive end date. Defaults to today. |
-| `lookback` | string | Shorthand window such as `30d`. Overrides `start_date`. |
-| `currency` | string | Target currency (ISO 4217). Default: `USD`. |
-| `providers` | string\[\] | Optional provider filter. Repeat to pass multiple values. |
-| `limit` | integer | Maximum daily data points to return. |
-| `cursor` | string | Opaque cursor from the previous page. |
+Values all items currently in a saved portfolio using live market prices.
+
+**Auth:** API key required
+
+<ParamField path="portfolio_id" type="string" required>
+  UUID of the portfolio to value.
+</ParamField>
+
+<ParamField query="currency" type="string" default="USD">
+  Target output currency (ISO 4217).
+</ParamField>
+
+<ParamField query="providers" type="string[]">
+  Optional provider filter. Repeat to pass multiple values.
+</ParamField>
 
 <Note>
-  Historical portfolio valuation is daily only — transactions are stored as calendar dates, not timestamps. The response uses cursor pagination, and `pagination.total = -1` is expected behavior on this endpoint.
+  This is a live valuation based on current indexed prices, not a historical replay.
+</Note>
+
+---
+
+## Import and export
+
+### POST /portfolio/:id/import
+
+Imports items from your linked Steam inventory into a saved portfolio. If you omit `asset_ids`, the full inventory is imported.
+
+**Auth:** API key required + linked Steam account
+
+<ParamField path="portfolio_id" type="string" required>
+  UUID of the destination portfolio.
+</ParamField>
+
+```json Request body (optional asset filter)
+{
+  "asset_ids": ["1234567890", "1234567891"]
+}
+```
+
+<Note>
+  Items already saved under the same Steam asset ID are skipped automatically. Items that cannot be matched to a catalog entry are returned in `unresolved` and are not stored.
+</Note>
+
+---
+
+### POST /portfolio/:id/import/csv
+
+Uploads a CSV file to bulk import transactions or snapshot-style holdings into a portfolio.
+
+**Auth:** API key required
+
+<ParamField path="portfolio_id" type="string" required>
+  UUID of the destination portfolio.
+</ParamField>
+
+<Note>
+  Both ledger and snapshot CSV formats are supported. The format is detected automatically from the CSV headers. Buy transactions imported from CSV can create missing portfolio items automatically.
+</Note>
+
+---
+
+### GET /portfolio/:id/export
+
+Downloads portfolio data as a CSV file.
+
+**Auth:** API key required
+
+<ParamField path="portfolio_id" type="string" required>
+  UUID of the portfolio to export.
+</ParamField>
+
+<ParamField query="type" type="string" default="transactions">
+  Export format. One of: `transactions`, `items`.
+</ParamField>
+
+---
+
+## Portfolio items
+
+### GET /portfolio/:id/items
+
+Returns the items currently stored in a portfolio.
+
+**Auth:** API key required
+
+<ParamField path="portfolio_id" type="string" required>
+  UUID of the portfolio.
+</ParamField>
+
+---
+
+### POST /portfolio/:id/items
+
+Manually adds one item to a portfolio.
+
+**Auth:** API key required
+
+<ParamField path="portfolio_id" type="string" required>
+  UUID of the portfolio.
+</ParamField>
+
+<ParamField body="item_id" type="integer">
+  Catalog item ID. Provide either `item_id` or `market_hash_name`.
+</ParamField>
+
+<ParamField body="quantity" type="integer" required>
+  Number of units to add.
+</ParamField>
+
+<ParamField body="phase" type="string">
+  Phase variant for Doppler/Gamma items, or `null`.
+</ParamField>
+
+```json Request body
+{
+  "item_id": 12632,
+  "quantity": 2,
+  "phase": null
+}
+```
+
+---
+
+### DELETE /portfolio/:id/items/:entry_id
+
+Removes a saved portfolio entry.
+
+**Auth:** API key required
+
+<ParamField path="portfolio_id" type="string" required>
+  UUID of the portfolio.
+</ParamField>
+
+<ParamField path="entry_id" type="string" required>
+  Portfolio entry UUID. This is the UUID assigned to the portfolio entry — it is not the catalog `item_id`.
+</ParamField>
+
+<Note>
+  `entry_id` is the portfolio entry UUID, not the catalog `item_id`. You can retrieve it from `GET /portfolio/:id/items`.
+</Note>
+
+---
+
+## Transactions
+
+### GET /portfolio/:id/transactions
+
+Returns the portfolio's buy/sell ledger, newest first.
+
+**Auth:** API key required
+
+<ParamField path="portfolio_id" type="string" required>
+  UUID of the portfolio.
+</ParamField>
+
+---
+
+### POST /portfolio/:id/transactions
+
+Records a buy or sell transaction for an item in the portfolio.
+
+**Auth:** API key required
+
+<ParamField path="portfolio_id" type="string" required>
+  UUID of the portfolio.
+</ParamField>
+
+<ParamField body="item_id" type="integer">
+  Catalog item ID. Provide either `item_id` or `market_hash_name`.
+</ParamField>
+
+<ParamField body="type" type="string" required>
+  Transaction direction. One of: `buy`, `sell`.
+</ParamField>
+
+<ParamField body="quantity" type="integer" required>
+  Number of units transacted.
+</ParamField>
+
+<ParamField body="price" type="number" required>
+  Price per unit in the specified currency.
+</ParamField>
+
+<ParamField body="date" type="string" required>
+  Transaction date in `YYYY-MM-DD` format.
+</ParamField>
+
+<ParamField body="marketplace" type="string">
+  Marketplace where the transaction occurred (e.g., `skinport`).
+</ParamField>
+
+<ParamField body="currency" type="string" required>
+  Currency for the price (ISO 4217).
+</ParamField>
+
+```json Request body
+{
+  "item_id": 1,
+  "type": "buy",
+  "quantity": 1,
+  "price": 2500,
+  "date": "2026-03-24",
+  "marketplace": "skinport",
+  "currency": "USD"
+}
+```
+
+<Note>
+  Buy transactions can automatically create portfolio items for items not yet tracked in the portfolio.
+</Note>
+
+---
+
+### PATCH /portfolio/:id/transactions/:tx_id
+
+Partially updates an existing transaction.
+
+**Auth:** API key required
+
+<ParamField path="portfolio_id" type="string" required>
+  UUID of the portfolio.
+</ParamField>
+
+<ParamField path="transaction_id" type="string" required>
+  UUID of the transaction to update.
+</ParamField>
+
+<ParamField body="quantity" type="integer">
+  Updated unit count.
+</ParamField>
+
+<ParamField body="price" type="number">
+  Updated price per unit.
+</ParamField>
+
+<ParamField body="date" type="string">
+  Updated date in `YYYY-MM-DD` format.
+</ParamField>
+
+<ParamField body="fee_amount" type="number">
+  Absolute fee paid, in the transaction currency.
+</ParamField>
+
+<ParamField body="fee_percentage" type="number">
+  Fee as a percentage of the transaction total.
+</ParamField>
+
+<ParamField body="marketplace" type="string">
+  Updated marketplace name.
+</ParamField>
+
+<ParamField body="note" type="string">
+  Free-text note for this transaction.
+</ParamField>
+
+<ParamField body="currency" type="string">
+  Updated transaction currency (ISO 4217).
+</ParamField>
+
+---
+
+### DELETE /portfolio/:id/transactions/:tx_id
+
+Permanently deletes a transaction from the portfolio ledger.
+
+**Auth:** API key required
+
+<ParamField path="portfolio_id" type="string" required>
+  UUID of the portfolio.
+</ParamField>
+
+<ParamField path="transaction_id" type="string" required>
+  UUID of the transaction to delete.
+</ParamField>
+
+---
+
+## Historical valuation
+
+### GET /portfolio/:id/history
+
+Rebuilds daily portfolio values from the transaction ledger. Returns a time series of portfolio worth over the selected date range.
+
+**Auth:** API key required
+
+<ParamField path="portfolio_id" type="string" required>
+  UUID of the portfolio.
+</ParamField>
+
+<ParamField query="start_date" type="string">
+  Inclusive start date in `YYYY-MM-DD` format.
+</ParamField>
+
+<ParamField query="end_date" type="string">
+  Inclusive end date in `YYYY-MM-DD` format. Defaults to today.
+</ParamField>
+
+<ParamField query="lookback" type="string">
+  Optional window such as `30d`. When provided, it overrides `start_date`.
+</ParamField>
+
+<ParamField query="currency" type="string" default="USD">
+  Target output currency (ISO 4217).
+</ParamField>
+
+<ParamField query="providers" type="string[]">
+  Optional provider filter. Repeat to pass multiple values.
+</ParamField>
+
+<ParamField query="limit" type="integer">
+  Maximum number of daily data points to return.
+</ParamField>
+
+<ParamField query="cursor" type="string">
+  Opaque cursor from the previous page for cursor-based pagination.
+</ParamField>
+
+<Note>
+  Historical valuation is daily only — transactions are stored as calendar dates, not timestamps. Holdings are rebuilt from the transaction ledger, not from the portfolio's current saved item list. Each day selects the best provider close after FX conversion, with provider carry-forward for days without a price update. `pagination.total` is always `-1` on this cursor endpoint.
 </Note>
