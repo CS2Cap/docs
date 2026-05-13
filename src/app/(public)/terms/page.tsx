@@ -1,4 +1,11 @@
+import type { Metadata } from "next";
 import { FooterSection } from "@/components/FooterSection";
+
+export const metadata: Metadata = {
+  title: "Terms of Service",
+  description: "CS2Cap terms of service. Rules for using our API and website.",
+  alternates: { canonical: "/terms" },
+};
 
 const lastUpdated = "April 18, 2026";
 

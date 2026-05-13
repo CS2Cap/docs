@@ -3,7 +3,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 
 const ROOT_DESCRIPTION =
-  "Free CS2 API for live skin prices, buy orders, sales history, candlestick charts, and market analytics across 39+ marketplaces. One REST integration covers every CS2/CSGO item.";
+  "Free CS2 API for live skin prices, buy orders, and market analytics across 39+ marketplaces. One REST integration.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://cs2cap.com"),
