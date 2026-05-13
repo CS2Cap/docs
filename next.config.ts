@@ -2,7 +2,6 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    loaderFile: "./src/lib/image-loader.ts",
     dangerouslyAllowSVG: true,
     contentDispositionType: "attachment",
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
@@ -12,6 +11,8 @@ const nextConfig: NextConfig = {
         hostname: "cdn.cs2c.app",
       },
     ],
+    minimumCacheTTL: 60 * 60 * 24 * 30,
+    formats: ["image/webp"],
   },
   async rewrites() {
     return [

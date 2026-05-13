@@ -9,7 +9,6 @@ import {
   CreditCard,
   Download,
   ExternalLink,
-  RefreshCw,
   X,
 } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -215,176 +214,154 @@ export default function AccountBillingPage() {
         </Card>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Current plan */}
-        <Card className="border-border/50 bg-card/50">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-base">Current Plan</CardTitle>
-                <CardDescription>Plan and renewal</CardDescription>
-              </div>
-              <Badge
-                variant="outline"
-                className={
-                  overview.has_subscription
-                    ? "border-green-500/20 bg-green-500/10 text-green-400"
-                    : "border-border/50"
-                }
-              >
-                {overview.has_subscription ? "Subscribed" : "No active subscription"}
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-6">
+      {/* Current plan — full width */}
+      <Card className="border-border/50 bg-card/50">
+        <CardHeader>
+          <div className="flex items-center justify-between">
             <div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold text-foreground">
-                  {formatPriceMinor(
-                    overview.current_plan.monthly_price_cents,
-                    overview.current_plan.currency,
-                  )}
-                </span>
-                <span className="text-muted-foreground">/month</span>
-              </div>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {overview.current_plan.display_name}
-                {overview.renews_at
-                  ? ` · Renews ${new Date(overview.renews_at).toLocaleDateString("en-US")}`
-                  : overview.cancels_at
-                    ? ` · Cancels ${new Date(overview.cancels_at).toLocaleDateString("en-US")}`
-                    : ""}
-              </p>
+              <CardTitle className="text-base">Current Plan</CardTitle>
+              <CardDescription>Plan and renewal</CardDescription>
             </div>
-
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              {planFeatureList(currentPlan ?? overview.current_plan).map((feature) => (
-                <li key={feature}>{feature}</li>
-              ))}
-            </ul>
-
-            <div className="flex flex-wrap gap-3">
-              {overview.portal_available ? (
-                <Button variant="outline" onClick={openPortal} disabled={portalLoading}>
-                  {portalLoading ? "Opening..." : "Manage in Portal"}
-                  <ExternalLink className="ml-2 h-4 w-4" />
-                </Button>
-              ) : (
-                <Button variant="outline" asChild>
-                  <a
-                    href="https://docs.cs2cap.com/guides/pricing-plans"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Compare Plans
-                    <ExternalLink className="ml-2 h-4 w-4" aria-label="Opens in new tab" />
-                  </a>
-                </Button>
-              )}
-            </div>
-
-            {/* Plan change feedback */}
-            {changePlanMessage && (
-              <p className="text-sm text-muted-foreground">{changePlanMessage}</p>
-            )}
-            {changePlanError && (
-              <p className="text-sm text-destructive">{changePlanError}</p>
-            )}
-
-            {/* Available plan switches */}
-            {otherPlans.length > 0 && (
-              <div className="space-y-2 pt-2 border-t border-border/50">
-                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
-                  Switch plan
-                </p>
-                {otherPlans.map((plan) => (
-                  <div
-                    key={plan.code}
-                    className="flex items-center justify-between rounded-lg border border-border/40 bg-secondary/10 px-3 py-2"
-                  >
-                    <div>
-                      <p className="text-sm font-medium text-foreground">{plan.display_name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatPriceMinor(plan.monthly_price_cents, plan.currency)}/month
-                      </p>
-                    </div>
-                    {overview.has_subscription && plan.billing_price_monthly_id ? (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setCycleChoice("monthly");
-                          setPaymentMethod("card");
-                          setPendingAction({ plan, mode: "switch" });
-                        }}
-                        disabled={changePlanLoadingCode === plan.code}
-                      >
-                        {changePlanLoadingCode === plan.code ? "Switching…" : `Switch`}
-                        <ArrowUpRight className="ml-1.5 h-3.5 w-3.5" />
-                      </Button>
-                    ) : plan.billing_price_monthly_id ? (
-                      <Button
-                        size="sm"
-                        onClick={() => {
-                          setCycleChoice("monthly");
-                          setPaymentMethod("card");
-                          setPendingAction({ plan, mode: "checkout" });
-                        }}
-                        disabled={checkoutLoadingCode === plan.code}
-                      >
-                        {checkoutLoadingCode === plan.code ? "Redirecting…" : `Choose ${plan.display_name}`}
-                        <ArrowUpRight className="ml-1.5 h-3.5 w-3.5" />
-                      </Button>
-                    ) : null}
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Payment method */}
-        <Card className="border-border/50 bg-card/50">
-          <CardHeader>
-            <div className="flex items-center justify-between">
+            <Badge
+              variant="outline"
+              className={
+                overview.has_subscription
+                  ? "border-green-500/20 bg-green-500/10 text-green-400"
+                  : "border-border/50"
+              }
+            >
+              {overview.has_subscription ? "Subscribed" : "No active subscription"}
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+            {/* Price + features */}
+            <div className="space-y-4">
               <div>
-                <CardTitle className="text-base">Default Payment Method</CardTitle>
-                <CardDescription>Saved card on file</CardDescription>
-              </div>
-              <CreditCard className="h-5 w-5 text-muted-foreground" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            {overview.default_payment_method ? (
-              <div className="rounded-lg border border-border/30 bg-secondary/30 p-4">
-                <p className="font-medium text-foreground">
-                  {overview.default_payment_method.brand?.toUpperCase() ?? "Card"} ending in{" "}
-                  {overview.default_payment_method.last4 ?? "----"}
-                </p>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-bold text-foreground">
+                    {formatPriceMinor(
+                      overview.current_plan.monthly_price_cents,
+                      overview.current_plan.currency,
+                    )}
+                  </span>
+                  <span className="text-muted-foreground">/month</span>
+                </div>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Expires {overview.default_payment_method.exp_month ?? "--"}/
-                  {overview.default_payment_method.exp_year ?? "----"}
+                  {overview.current_plan.display_name}
+                  {overview.renews_at
+                    ? ` · Renews ${new Date(overview.renews_at).toLocaleDateString("en-US")}`
+                    : overview.cancels_at
+                      ? ` · Cancels ${new Date(overview.cancels_at).toLocaleDateString("en-US")}`
+                      : ""}
                 </p>
               </div>
-            ) : (
-              <div className="rounded-lg border border-border/30 bg-secondary/20 p-4 text-sm text-muted-foreground">
-                No payment method on file.
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                {planFeatureList(currentPlan ?? overview.current_plan).map((feature) => (
+                  <li key={feature}>{feature}</li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Stripe portal CTA */}
+            {overview.portal_available && (
+              <div className="shrink-0 rounded-lg border border-border/40 bg-secondary/10 p-4 space-y-2 sm:min-w-[220px]">
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Stripe Customer Portal
+                </p>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Upgrade, downgrade, cancel, or update your payment method.
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={openPortal}
+                  disabled={portalLoading}
+                >
+                  {portalLoading ? "Opening..." : "Manage Subscription"}
+                  <ExternalLink className="ml-2 h-3.5 w-3.5" />
+                </Button>
               </div>
             )}
+          </div>
 
-            <div className="mt-4">
-              <Button
-                variant="outline"
-                onClick={openPortal}
-                disabled={!overview.portal_available || portalLoading}
-              >
-                {portalLoading ? "Opening..." : "Update Billing Details"}
-                <RefreshCw className="ml-2 h-4 w-4" />
+          {/* Plan change feedback */}
+          {changePlanMessage && (
+            <p className="text-sm text-muted-foreground">{changePlanMessage}</p>
+          )}
+          {changePlanError && (
+            <p className="text-sm text-destructive">{changePlanError}</p>
+          )}
+
+          {/* Available plan switches */}
+          {otherPlans.length > 0 && (
+            <div className="space-y-2 pt-2 border-t border-border/50">
+              <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
+                Switch plan
+              </p>
+              {otherPlans.map((plan) => (
+                <div
+                  key={plan.code}
+                  className="flex items-center justify-between rounded-lg border border-border/40 bg-secondary/10 px-3 py-2"
+                >
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{plan.display_name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {formatPriceMinor(plan.monthly_price_cents, plan.currency)}/month
+                    </p>
+                  </div>
+                  {overview.has_subscription && plan.billing_price_monthly_id ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setCycleChoice("monthly");
+                        setPaymentMethod("card");
+                        setPendingAction({ plan, mode: "switch" });
+                      }}
+                      disabled={changePlanLoadingCode === plan.code}
+                    >
+                      {changePlanLoadingCode === plan.code ? "Switching…" : `Switch`}
+                      <ArrowUpRight className="ml-1.5 h-3.5 w-3.5" />
+                    </Button>
+                  ) : plan.billing_price_monthly_id ? (
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        setCycleChoice("monthly");
+                        setPaymentMethod("card");
+                        setPendingAction({ plan, mode: "checkout" });
+                      }}
+                      disabled={checkoutLoadingCode === plan.code}
+                    >
+                      {checkoutLoadingCode === plan.code ? "Redirecting…" : `Choose ${plan.display_name}`}
+                      <ArrowUpRight className="ml-1.5 h-3.5 w-3.5" />
+                    </Button>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Compare plans fallback when portal not available */}
+          {!overview.portal_available && (
+            <div className="flex flex-wrap gap-3">
+              <Button variant="outline" asChild>
+                <a
+                  href="https://docs.cs2cap.com/guides/pricing-plans"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Compare Plans
+                  <ExternalLink className="ml-2 h-4 w-4" aria-label="Opens in new tab" />
+                </a>
               </Button>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Billing history */}
       <Card className="mt-6 border-border/50 bg-card/50">

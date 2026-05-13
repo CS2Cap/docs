@@ -480,7 +480,7 @@ async function FilterControls({
   return (
     <form action="/search" className="space-y-4">
       {/* Preserve query in form submission */}
-      <div className="grid gap-2 md:grid-cols-[1fr_auto]">
+      <div className="flex flex-col gap-2 sm:grid sm:grid-cols-[1fr_auto]">
         <div className="flex items-center gap-3 border-brutal bg-card px-4">
           <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
           <input
@@ -493,7 +493,7 @@ async function FilterControls({
         </div>
         <button
           type="submit"
-          className="border-2 border-primary bg-primary px-6 py-3 font-mono text-sm font-bold tracking-wider text-primary-foreground brutalist-hover"
+          className="w-full border-2 border-primary bg-primary px-6 py-3 font-mono text-sm font-bold tracking-wider text-primary-foreground brutalist-hover sm:w-auto"
         >
           SEARCH
         </button>
@@ -521,7 +521,7 @@ async function FilterControls({
               <select
                 name={field.key}
                 defaultValue={currentValue}
-                className="border-brutal bg-card px-3 py-2 font-mono text-sm text-foreground outline-none"
+                className="w-full border-brutal bg-card px-3 py-2 font-mono text-sm text-foreground outline-none"
               >
                 <option value="">All</option>
                 {options.map((value) => (
@@ -555,9 +555,9 @@ async function FilterControls({
 function FilterControlsFallback() {
   return (
     <div className="space-y-4">
-      <div className="grid gap-2 md:grid-cols-[1fr_auto]">
+      <div className="flex flex-col gap-2 sm:grid sm:grid-cols-[1fr_auto]">
         <div className="h-12 w-full animate-pulse rounded-sm bg-secondary/70" />
-        <div className="h-12 w-full animate-pulse rounded-sm bg-secondary/70 md:w-32" />
+        <div className="h-12 w-full animate-pulse rounded-sm bg-secondary/70 sm:w-32" />
       </div>
       <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         {Array.from({ length: 6 }).map((_, index) => (

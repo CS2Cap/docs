@@ -466,24 +466,35 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                   bidRows.map((row, index) => (
                     <div
                       key={`${row.provider}-${row.highest_bid}`}
-                      className="grid gap-4 border-b border-border px-6 py-4 last:border-0 md:grid-cols-[52px_minmax(180px,1.7fr)_108px_108px] md:items-center"
+                      className="border-b border-border px-4 py-3 last:border-0 md:grid md:grid-cols-[52px_minmax(180px,1.7fr)_108px_108px] md:items-center md:gap-4 md:px-6 md:py-4"
                     >
                       <div className="hidden font-mono text-xs text-muted-foreground md:block">
                         #{index + 1}
                       </div>
-                      <div>
+                      {/* Mobile: provider + highest bid side by side */}
+                      <div className="flex min-w-0 items-center justify-between gap-2 md:contents">
                         <ProviderIdentity
                           provider={getProvider(row.provider, data.providers)}
                           fallback={providerLabel(row.provider, data.providers)}
-                          logoSize={26}
+                          logoSize={22}
                           textClassName="font-mono text-sm font-bold text-foreground"
-                          className="flex min-w-0 flex-1 items-center gap-3"
+                          className="flex min-w-0 flex-1 items-center gap-2"
                         />
+                        <div className="shrink-0 font-mono text-sm font-bold text-success md:hidden">
+                          <Price cents={row.highest_bid} />
+                        </div>
                       </div>
-                      <div className="font-mono text-sm text-muted-foreground md:text-right">
+                      {/* Mobile: bids count */}
+                      <div className="mt-1 md:hidden">
+                        <span className="font-mono text-[10px] text-muted-foreground">
+                          {formatNumber(row.num_bids)} bids
+                        </span>
+                      </div>
+                      {/* Desktop only columns */}
+                      <div className="hidden font-mono text-sm text-muted-foreground md:block md:text-right">
                         {formatNumber(row.num_bids)}
                       </div>
-                      <div className="font-mono text-sm font-bold text-success md:text-right">
+                      <div className="hidden font-mono text-sm font-bold text-success md:block md:text-right">
                         <Price cents={row.highest_bid} />
                       </div>
                     </div>

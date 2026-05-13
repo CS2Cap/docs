@@ -7,6 +7,7 @@ import { Suspense } from "react";
 import { CheckCircle, XCircle, Loader2, Copy, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { webApi } from "@/lib/api";
 
 type State =
@@ -93,18 +94,25 @@ function VerifyEmailContent() {
                     <code className="flex-1 rounded-md bg-secondary/50 px-3 py-2 font-mono text-xs text-foreground break-all">
                       {state.key}
                     </code>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleCopy(state.key!)}
-                      title="Copy key"
-                    >
-                      {copied ? (
-                        <CheckCircle className="h-4 w-4 text-green-400" />
-                      ) : (
-                        <Copy className="h-4 w-4" />
-                      )}
-                    </Button>
+                    <Tooltip open={copied ? true : undefined}>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleCopy(state.key!)}
+                          aria-label="Copy API key"
+                        >
+                          {copied ? (
+                            <CheckCircle className="h-4 w-4 text-green-400" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">
+                        {copied ? "Copied!" : "Copy"}
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
                 </div>
               )}

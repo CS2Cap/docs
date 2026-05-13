@@ -13,7 +13,7 @@ export function HeroSection({
   totalItems: number;
 }) {
   return (
-    <section className="relative min-h-[85vh] flex items-center bg-grid overflow-hidden">
+    <section className="relative min-h-[85vh] flex items-center bg-grid overflow-x-clip">
       {/* Decorative elements */}
       <div className="absolute top-20 right-10 w-64 h-64 border-2 border-primary/10 rotate-12" />
       <div className="absolute bottom-20 left-10 w-48 h-48 border-2 border-primary/5 -rotate-6" />
@@ -35,7 +35,7 @@ export function HeroSection({
             </div>
 
             {/* Main heading */}
-            <h1 className="display-heading mb-6 animate-fade-in-up text-5xl font-black tracking-tighter md:text-7xl lg:text-7xl xl:text-8xl" style={{ animationDelay: "0.1s" }}>
+            <h1 className="display-heading mb-6 animate-fade-in-up text-4xl font-black tracking-tighter sm:text-5xl md:text-7xl lg:text-7xl xl:text-8xl" style={{ animationDelay: "0.1s" }}>
               <span className="text-foreground">CS2 SKIN</span>
               <br />
               <span className="text-gradient-brand glow-text">MARKET</span>
@@ -49,15 +49,15 @@ export function HeroSection({
             </p>
 
             {/* CTA buttons */}
-            <div className="flex flex-wrap gap-4 mb-16 animate-fade-in-up" style={{ animationDelay: "0.3s" }}>
-              <Link href="/api-info" className="bg-primary text-primary-foreground font-mono text-sm font-bold px-8 py-3 border-2 border-primary brutalist-hover tracking-wider inline-block">
+            <div className="flex flex-col gap-3 mb-16 animate-fade-in-up sm:flex-row sm:flex-wrap" style={{ animationDelay: "0.3s" }}>
+              <Link href="/api-info" className="bg-primary text-primary-foreground font-mono text-sm font-bold px-8 py-3 border-2 border-primary brutalist-hover tracking-wider text-center">
                 EXPLORE THE API
               </Link>
               <a
                 href="https://docs.cs2cap.com/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="border-brutal text-foreground font-mono text-sm font-bold px-8 py-3 brutalist-hover tracking-wider hover:border-primary transition-colors inline-flex items-center gap-2"
+                className="border-brutal text-foreground font-mono text-sm font-bold px-8 py-3 brutalist-hover tracking-wider hover:border-primary transition-colors inline-flex items-center justify-center gap-2"
               >
                 VIEW DOCS
                 <ExternalLink className="h-3.5 w-3.5" strokeWidth={2} aria-label="Opens in new tab" />

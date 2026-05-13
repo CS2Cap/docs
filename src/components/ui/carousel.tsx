@@ -88,19 +88,24 @@ const Carousel = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivEl
       setApi(api);
     }, [api, setApi]);
 
-    React.useEffect(() => {
-      if (!api) {
-        return;
-      }
+React.useEffect(() => {
+       if (!api) {
+         return;
+       }
 
-      onSelect(api);
-      api.on("reInit", onSelect);
-      api.on("select", onSelect);
+       const rafId = requestAnimationFrame(() => {
+         onSelect(api);
+       });
 
-      return () => {
-        api?.off("select", onSelect);
-      };
-    }, [api, onSelect]);
+       api.on("reInit", onSelect);
+       api.on("select", onSelect);
+
+       return () => {
+         cancelAnimationFrame(rafId);
+         api.off("reInit", onSelect);
+         api.off("select", onSelect);
+       };
+     }, [api, onSelect]);
 
     return (
       <CarouselContext.Provider

@@ -68,56 +68,78 @@ export function CollapsibleAsksList({
         return (
           <div
             key={`${row.provider}-${row.lowest_ask}-${index}`}
-            className="grid gap-4 border-b border-border px-6 py-4 last:border-0 md:grid-cols-[52px_minmax(180px,1.7fr)_88px_108px_minmax(140px,1fr)_88px_108px] md:items-center"
+            className="border-b border-border px-4 py-3 last:border-0 md:grid md:grid-cols-[52px_minmax(180px,1.7fr)_88px_108px_minmax(140px,1fr)_88px_108px] md:items-center md:gap-4 md:px-6 md:py-4"
           >
+            {/* Desktop: rank */}
             <div className="hidden font-mono text-xs text-muted-foreground md:block">
               #{index + 1}
             </div>
-            <div className="flex min-w-0 items-center">
-              <ProviderIdentity
-                provider={getProvider(row.provider, providers)}
-                fallback={providerLabel(row.provider, providers)}
-                logoSize={26}
-                textClassName="font-mono text-sm font-bold text-foreground"
-                className="flex min-w-0 flex-1 items-center gap-3"
-              />
+
+            {/* Mobile: top row — provider + VIEW button */}
+            <div className="flex min-w-0 items-center justify-between gap-2 md:contents">
+              <div className="flex min-w-0 items-center">
+                <ProviderIdentity
+                  provider={getProvider(row.provider, providers)}
+                  fallback={providerLabel(row.provider, providers)}
+                  logoSize={22}
+                  textClassName="font-mono text-sm font-bold text-foreground"
+                  className="flex min-w-0 flex-1 items-center gap-2"
+                />
+              </div>
+              {/* VIEW button — visible on both mobile and desktop */}
+              <div className="shrink-0 md:order-last md:flex md:justify-end">
+                {link ? (
+                  <a
+                    href={link}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-1.5 border-brutal px-3 py-1.5 font-mono text-[10px] tracking-wider brutalist-hover hover:border-primary"
+                  >
+                    VIEW <ExternalLink className="h-3 w-3" />
+                  </a>
+                ) : (
+                  <span className="font-mono text-xs text-muted-foreground">—</span>
+                )}
+              </div>
             </div>
-            <div className="font-mono text-sm text-muted-foreground md:text-right">
-              {formatNumber(row.quantity)}
+
+            {/* Mobile: second row — price + spread */}
+            <div className="mt-2 grid grid-cols-2 gap-x-4 md:contents">
+              <div className="md:text-right">
+                <div className="font-mono text-[9px] tracking-widest text-muted-foreground md:hidden">PRICE</div>
+                <div className="font-mono text-sm font-bold text-foreground md:text-right">
+                  {formatPrice(row.lowest_ask)}
+                </div>
+              </div>
+              <div className="md:text-right">
+                <div className="font-mono text-[9px] tracking-widest text-muted-foreground md:hidden">VS BEST</div>
+                <div className="font-mono text-xs md:text-right">
+                  {isBest ? (
+                    <span className="text-success">best price</span>
+                  ) : (
+                    <span className="text-muted-foreground">
+                      +{spreadPct.toFixed(2)}%{" "}
+                      <span className="text-muted-foreground/60">
+                        ({formatPrice(row.lowest_ask - bestAsk)})
+                      </span>
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
-            <div className="font-mono text-sm font-bold text-foreground md:text-right">
-              {formatPrice(row.lowest_ask)}
-            </div>
-            <div className="font-mono text-xs md:text-right">
-              {isBest ? (
-                <span className="text-success">— best price</span>
-              ) : (
-                <span className="text-muted-foreground">
-                  +{spreadPct.toFixed(2)}%{" "}
-                  <span className="text-muted-foreground/60">
-                    ({formatPrice(row.lowest_ask - bestAsk)})
-                  </span>
+
+            {/* Mobile: third row — qty + updated */}
+            <div className="mt-1 grid grid-cols-2 gap-x-4 md:contents">
+              <div className="md:text-right">
+                <span className="font-mono text-[10px] text-muted-foreground">
+                  <span className="md:hidden">Qty: </span>{formatNumber(row.quantity)}
                 </span>
-              )}
-            </div>
-            <div className="font-mono text-xs text-muted-foreground md:text-right">
-              {updated ?? "—"}
-            </div>
-            <div className="flex justify-start md:justify-end">
-              {link ? (
-                <a
-                  href={link}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center gap-1.5 border-brutal px-3 py-1.5 font-mono text-[10px] tracking-wider brutalist-hover hover:border-primary"
-                >
-                  VIEW <ExternalLink className="h-3 w-3" />
-                </a>
-              ) : (
-                <span className="font-mono text-xs text-muted-foreground">
-                  Internal only
+              </div>
+              <div className="md:text-right">
+                <span className="font-mono text-[10px] text-muted-foreground">
+                  {updated ?? "—"}
                 </span>
-              )}
+              </div>
             </div>
           </div>
         );

@@ -203,7 +203,7 @@ export async function SeoLandingPage({ config }: { config: SeoPageConfig }) {
       />
       {faqs.length > 0 && <StructuredData data={buildFAQPage(faqs)} />}
       {/* Hero */}
-      <section className="relative overflow-hidden bg-grid py-20 md:py-28">
+      <section className="relative overflow-x-clip bg-grid py-20 md:py-28">
         <div className="absolute top-20 right-20 h-40 w-40 rotate-12 border-2 border-primary/10" />
         <div className="absolute top-1/3 right-1/4 h-2 w-2 animate-pulse-glow bg-primary" />
         <div className="container relative z-10">
@@ -215,7 +215,7 @@ export async function SeoLandingPage({ config }: { config: SeoPageConfig }) {
                   // {config.type.toUpperCase()}
                 </span>
               </div>
-              <h1 className="display-heading mb-6 text-5xl font-black tracking-tighter md:text-7xl animate-fade-in-up-sm" style={{ animationDelay: "0.05s", animationFillMode: "both" }}>
+              <h1 className="display-heading mb-6 text-4xl font-black tracking-tighter sm:text-5xl md:text-7xl animate-fade-in-up-sm" style={{ animationDelay: "0.05s", animationFillMode: "both" }}>
                 {(() => {
                   const words = config.h1.trim().split(/\s+/);
                   if (words.length === 1) {
@@ -234,13 +234,13 @@ export async function SeoLandingPage({ config }: { config: SeoPageConfig }) {
               <p className="mb-8 max-w-lg font-mono text-sm leading-relaxed text-muted-foreground animate-fade-in-up-sm" style={{ animationDelay: "0.15s", animationFillMode: "both" }}>
                 {introText}
               </p>
-              <div className="flex flex-wrap gap-3 animate-fade-in-up-sm" style={{ animationDelay: "0.25s", animationFillMode: "both" }}>
+              <div className="flex flex-col gap-3 animate-fade-in-up-sm sm:flex-row sm:flex-wrap" style={{ animationDelay: "0.25s", animationFillMode: "both" }}>
                 {content?.heroCtaUrl ? (
                   <a
                     href={content.heroCtaUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="border-2 border-primary bg-primary px-8 py-3 font-mono text-sm font-bold tracking-wider text-primary-foreground brutalist-hover inline-flex items-center gap-2"
+                    className="border-2 border-primary bg-primary px-8 py-3 font-mono text-sm font-bold tracking-wider text-primary-foreground brutalist-hover inline-flex items-center justify-center gap-2"
                   >
                     VIEW API REFERENCE
                     <ExternalLink className="h-3.5 w-3.5" strokeWidth={2} aria-label="Opens in new tab" />
@@ -248,14 +248,14 @@ export async function SeoLandingPage({ config }: { config: SeoPageConfig }) {
                 ) : (
                   <Link
                     href="/api-info"
-                    className="border-2 border-primary bg-primary px-8 py-3 font-mono text-sm font-bold tracking-wider text-primary-foreground brutalist-hover"
+                    className="border-2 border-primary bg-primary px-8 py-3 font-mono text-sm font-bold tracking-wider text-primary-foreground brutalist-hover text-center"
                   >
                     VIEW API REFERENCE →
                   </Link>
                 )}
                 <Link
                   href="/login"
-                  className="border-brutal px-8 py-3 font-mono text-sm font-bold tracking-wider text-foreground brutalist-hover hover:border-primary transition-colors"
+                  className="border-brutal px-8 py-3 font-mono text-sm font-bold tracking-wider text-foreground brutalist-hover hover:border-primary transition-colors text-center"
                 >
                   GET ACCESS
                 </Link>
@@ -282,14 +282,14 @@ export async function SeoLandingPage({ config }: { config: SeoPageConfig }) {
 
             {codeExample && (
               <div
-                className="border-brutal bg-card animate-fade-in-up-sm"
+                className="min-w-0 border-brutal bg-card animate-fade-in-up-sm"
                 style={{ animationDelay: "0.3s", animationFillMode: "both" }}
               >
-                <div className="flex items-center gap-2 border-b-2 border-border px-4 py-2">
-                  <div className="h-2 w-2 rounded-full bg-destructive/60" />
-                  <div className="h-2 w-2 rounded-full bg-warning/60" />
-                  <div className="h-2 w-2 rounded-full bg-success/60" />
-                  <span className="ml-2 font-mono text-[10px] text-muted-foreground">
+                <div className="flex min-w-0 items-center gap-2 border-b-2 border-border px-4 py-2">
+                  <div className="h-2 w-2 shrink-0 rounded-full bg-destructive/60" />
+                  <div className="h-2 w-2 shrink-0 rounded-full bg-warning/60" />
+                  <div className="h-2 w-2 shrink-0 rounded-full bg-success/60" />
+                  <span className="ml-2 min-w-0 truncate font-mono text-[10px] text-muted-foreground">
                     {codeExample.method} {codeExample.path}
                   </span>
                 </div>
