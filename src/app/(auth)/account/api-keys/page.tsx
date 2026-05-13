@@ -18,6 +18,7 @@ import {
   Trash2,
   Pencil,
 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Dialog,
   DialogContent,
@@ -338,9 +339,14 @@ export default function AccountApiKeysPage() {
                           <code className="flex-1 px-3 py-2 rounded-md bg-secondary/50 font-mono text-xs text-foreground break-all">
                             {newKey.key}
                           </code>
-                          <Button variant="ghost" size="icon" onClick={() => handleCopy(newKey.key)}>
-                            {copied ? <CheckCircle className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4" />}
-                          </Button>
+                          <Tooltip open={copied ? true : undefined}>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" onClick={() => handleCopy(newKey.key)} aria-label="Copy API key">
+                                {copied ? <CheckCircle className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4" />}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent side="top">{copied ? "Copied!" : "Copy"}</TooltipContent>
+                          </Tooltip>
                         </div>
                       </div>
                     ) : (
@@ -426,9 +432,14 @@ export default function AccountApiKeysPage() {
                       <code className="flex-1 px-3 py-2 rounded-md bg-secondary/50 font-mono text-xs text-foreground break-all">
                         {newKey.key}
                       </code>
-                      <Button variant="ghost" size="icon" onClick={() => handleCopy(newKey.key)}>
-                        {copied ? <CheckCircle className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4" />}
-                      </Button>
+                      <Tooltip open={copied ? true : undefined}>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="icon" onClick={() => handleCopy(newKey.key)} aria-label="Copy API key">
+                            {copied ? <CheckCircle className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4" />}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top">{copied ? "Copied!" : "Copy"}</TooltipContent>
+                      </Tooltip>
                     </div>
                   </div>
                 ) : (
@@ -506,13 +517,18 @@ export default function AccountApiKeysPage() {
                         <code className="flex-1 px-3 py-2 rounded-md bg-secondary/50 font-mono text-xs text-foreground break-all">
                           {newSubKey.key}
                         </code>
-                        <Button variant="ghost" size="icon" onClick={() => handleCopy(newSubKey.key, "new-sub")}>
-                          {copiedId === "new-sub" ? (
-                            <CheckCircle className="h-4 w-4 text-green-400" />
-                          ) : (
-                            <Copy className="h-4 w-4" />
-                          )}
-                        </Button>
+                        <Tooltip open={copiedId === "new-sub" ? true : undefined}>
+                          <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" onClick={() => handleCopy(newSubKey.key, "new-sub")} aria-label="Copy sub-key">
+                              {copiedId === "new-sub" ? (
+                                <CheckCircle className="h-4 w-4 text-green-400" />
+                              ) : (
+                                <Copy className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top">{copiedId === "new-sub" ? "Copied!" : "Copy"}</TooltipContent>
+                        </Tooltip>
                       </div>
                       <DialogFooter>
                         <Button onClick={() => setCreateDialogOpen(false)}>Done</Button>
@@ -695,17 +711,23 @@ export default function AccountApiKeysPage() {
                                   <code className="flex-1 px-3 py-2 rounded-md bg-secondary/50 font-mono text-xs text-foreground break-all">
                                     {newSubKeyReissued.key}
                                   </code>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => handleCopy(newSubKeyReissued.key, sk.id)}
-                                  >
-                                    {copiedId === sk.id ? (
-                                      <CheckCircle className="h-4 w-4 text-green-400" />
-                                    ) : (
-                                      <Copy className="h-4 w-4" />
-                                    )}
-                                  </Button>
+                                  <Tooltip open={copiedId === sk.id ? true : undefined}>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => handleCopy(newSubKeyReissued.key, sk.id)}
+                                        aria-label="Copy sub-key"
+                                      >
+                                        {copiedId === sk.id ? (
+                                          <CheckCircle className="h-4 w-4 text-green-400" />
+                                        ) : (
+                                          <Copy className="h-4 w-4" />
+                                        )}
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top">{copiedId === sk.id ? "Copied!" : "Copy"}</TooltipContent>
+                                  </Tooltip>
                                 </div>
                                 <DialogFooter>
                                   <Button onClick={() => setReissueSubKeyId(null)}>Done</Button>

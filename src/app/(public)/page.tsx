@@ -67,7 +67,7 @@ export default async function HomePage() {
       <HeroSection providerCount={landing.providerCount} totalItems={landing.totalItems} />
 
       {/* API / How it works — moved up from bottom */}
-      <section className="relative overflow-hidden border-t-2 border-border bg-grid py-24">
+      <section className="relative overflow-x-clip border-t-2 border-border bg-grid py-24">
         <div className="container">
           <div className="grid items-center gap-12 lg:grid-cols-2">
             <div>
@@ -104,7 +104,7 @@ export default async function HomePage() {
                 ))}
               </div>
 
-              <div className="flex flex-col gap-3 sm:flex-row">
+              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <Link
                   href="/api-info#endpoints"
                   className="flex items-center justify-center gap-2 border-2 border-primary bg-primary px-8 py-3 font-mono text-sm font-bold tracking-wider text-primary-foreground brutalist-hover"
@@ -120,12 +120,12 @@ export default async function HomePage() {
               </div>
             </div>
 
-            <div className="border-brutal bg-card">
-              <div className="flex items-center gap-2 border-b-2 border-border px-4 py-2">
-                <div className="h-2 w-2 rounded-full bg-destructive/60" />
-                <div className="h-2 w-2 rounded-full bg-warning/60" />
-                <div className="h-2 w-2 rounded-full bg-success/60" />
-                <span className="ml-2 font-mono text-[10px] text-muted-foreground">
+            <div className="min-w-0 border-brutal bg-card">
+              <div className="flex min-w-0 items-center gap-2 border-b-2 border-border px-4 py-2">
+                <div className="h-2 w-2 shrink-0 rounded-full bg-destructive/60" />
+                <div className="h-2 w-2 shrink-0 rounded-full bg-warning/60" />
+                <div className="h-2 w-2 shrink-0 rounded-full bg-success/60" />
+                <span className="ml-2 min-w-0 truncate font-mono text-[10px] text-muted-foreground">
                   GET /v1/prices?item_id={featuredQuote?.item_id ?? "ITEM_ID"}&limit=3
                 </span>
               </div>

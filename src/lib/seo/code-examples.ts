@@ -16,7 +16,7 @@ export interface SeoCodeExample {
 const FEATURE_EXAMPLES: Record<string, SeoCodeExample> = {
   "cs2-price-api": {
     method: "GET",
-    path: "/v1/web/prices?item_id=156&limit=1",
+    path: "/v1/prices?item_id=156&limit=1",
     response: `{
   "meta": {
     "currency": "USD",
@@ -35,7 +35,7 @@ const FEATURE_EXAMPLES: Record<string, SeoCodeExample> = {
   },
   "cs2-buy-order-api": {
     method: "GET",
-    path: "/v1/web/bids?item_id=32&limit=2",
+    path: "/v1/bids?item_id=32&limit=2",
     response: `{
   "meta": {
     "currency": "USD",
@@ -60,7 +60,7 @@ const FEATURE_EXAMPLES: Record<string, SeoCodeExample> = {
   },
   "cs2-sales-api": {
     method: "GET",
-    path: "/v1/web/sales?item_id=156&limit=2",
+    path: "/v1/sales?item_id=156&limit=2",
     response: `{
   "meta": {
     "currency": "USD",
@@ -87,7 +87,7 @@ const FEATURE_EXAMPLES: Record<string, SeoCodeExample> = {
   },
   "cs2-price-history-api": {
     method: "GET",
-    path: "/v1/web/prices/history?item_id=156&limit=2",
+    path: "/v1/prices/history?item_id=156&limit=2",
     response: `{
   "meta": {
     "currency": "USD",
@@ -113,7 +113,7 @@ const FEATURE_EXAMPLES: Record<string, SeoCodeExample> = {
   },
   "cs2-candlestick-api": {
     method: "GET",
-    path: "/v1/web/prices/candles?item_id=156&interval=1h&limit=2",
+    path: "/v1/prices/candles?item_id=156&interval=1h&limit=2",
     response: `{
   "meta": {
     "item_id": 156,
@@ -137,11 +137,11 @@ const FEATURE_EXAMPLES: Record<string, SeoCodeExample> = {
   },
   "cs2-market-analytics-api": {
     method: "GET",
-    path: "/v1/web/market/items/156",
+    path: "/v1/market/items/12632",
     response: `{
   "meta": { "data_source": "live", "freshness_sec": 0 },
   "data": {
-    "item_id": 156,
+    "item_id": 12632,
     "market_hash_name": "AK-47 | Redline (Field-Tested)",
     "summary": {
       "provider_count": 3,
@@ -157,20 +157,19 @@ const FEATURE_EXAMPLES: Record<string, SeoCodeExample> = {
   },
   "cs2-market-arbitrage-api": {
     method: "GET",
-    path: "/v1/web/market/arbitrage?limit=1",
+    path: "/v1/market/arbitrage?providers_buy=c5&providers_sell=csfloat&min_spread_pct=8",
     response: `{
-  "meta": { "data_source": "live", "freshness_sec": 33 },
+  "meta": { "data_source": "live", "freshness_sec": 16 },
   "data": {
     "items": [
       {
-        "item_id": 32,
-        "market_hash_name": "Gut Knife | Doppler (Factory New)",
-        "buy_provider": "buff163",
-        "sell_provider": "steam",
-        "buy_price_usd": "245.00",
-        "sell_price_usd": "285.50",
-        "gross_spread_pct": 16.53,
-        "net_profit_usd": "25.82"
+        "market_hash_name": "AK-47 | X-Ray (Factory New)",
+        "buy_provider": "c5",
+        "buy_price_usd": "3167.91",
+        "sell_provider": "csfloat",
+        "sell_price_usd": "3602.50",
+        "gross_spread_pct": 13.72,
+        "net_profit_usd": "398.56",
       }
     ]
   }
@@ -178,7 +177,7 @@ const FEATURE_EXAMPLES: Record<string, SeoCodeExample> = {
   },
   "cs2-market-indicators-api": {
     method: "GET",
-    path: "/v1/web/market/indicators?item_id=156&interval=1d",
+    path: "/v1/market/indicators?item_id=8474&interval=1d",
     response: `{
   "meta": { "interval": "1d", "data_source": "live" },
   "data": {
@@ -202,7 +201,7 @@ const FEATURE_EXAMPLES: Record<string, SeoCodeExample> = {
   },
   "cs2-item-catalog-api": {
     method: "GET",
-    path: "/v1/web/items?limit=1",
+    path: "/v1/items?limit=1",
     response: `{
   "items": [
     {

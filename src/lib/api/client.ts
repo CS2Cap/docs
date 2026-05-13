@@ -95,6 +95,29 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   return parseApiResponse<T>(response);
 }
 
+/**
+ * Makes a direct browser request to the upstream API, bypassing the Next.js
+ * proxy. Use this for endpoints where the backend must see the real client IP
+ * (e.g. email verification confirm).
+ */
+async function directRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
+  const { method = "GET", body } = options;
+
+  const headers: Record<string, string> = {};
+  if (body !== undefined) {
+    headers["Content-Type"] = "application/json";
+  }
+
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method,
+    credentials: "include",
+    headers,
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+
+  return parseApiResponse<T>(response);
+}
+
 export function getOAuthLoginUrl(provider: "steam" | "google" | "discord"): string {
   return `${API_BASE_URL}/v1/web/auth/${provider}/login`;
 }
@@ -358,7 +381,7 @@ export const webApi = {
   },
 
   confirmVerifyEmail(token: string): Promise<VerifyEmailConfirmResponse> {
-    return request("/v1/account/verify-email/confirm", {
+    return directRequest("/v1/account/verify-email/confirm", {
       method: "POST",
       body: { token },
     });

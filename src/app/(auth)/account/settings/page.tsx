@@ -8,6 +8,7 @@ import {
   Calendar,
   CheckCircle,
   Mail,
+  MailCheck,
   ShieldCheck,
   Trash2,
   Unlink,
@@ -303,7 +304,12 @@ export default function AccountSettingsPage() {
                       {emailLoading ? "Saving…" : "Set Email"}
                     </Button>
                   </div>
-                  {emailMessage && <p className="text-sm text-muted-foreground">{emailMessage}</p>}
+                  {emailMessage && (
+                    <div className="flex items-center gap-2 rounded-md border border-green-500/30 bg-green-500/10 px-3 py-2 text-sm text-green-400">
+                      <MailCheck className="h-4 w-4 shrink-0" />
+                      {emailMessage}
+                    </div>
+                  )}
                   {emailError && <p className="text-sm text-destructive">{emailError}</p>}
                 </div>
               ) : !session.email_verified_at ? (
@@ -323,7 +329,7 @@ export default function AccountSettingsPage() {
                       onClick={handleSendVerify}
                       disabled={sendingVerify}
                     >
-                      {sendingVerify ? "Sending…" : "Send verification email"}
+                      {sendingVerify ? "Sending…" : "Resend verification email"}
                     </Button>
                     <Button
                       variant="ghost"
@@ -338,7 +344,12 @@ export default function AccountSettingsPage() {
                       Change email
                     </Button>
                   </div>
-                  {verifyMessage && <p className="text-sm text-muted-foreground">{verifyMessage}</p>}
+                  {verifyMessage && (
+                    <div className="flex items-center gap-2 rounded-md border border-green-500/30 bg-green-500/10 px-3 py-2 text-sm text-green-400">
+                      <MailCheck className="h-4 w-4 shrink-0" />
+                      {verifyMessage}
+                    </div>
+                  )}
                   {verifyError && <p className="text-sm text-destructive">{verifyError}</p>}
                   {showChangeEmailForm && (
                     <div className="flex gap-2">
