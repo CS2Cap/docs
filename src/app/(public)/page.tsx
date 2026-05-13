@@ -10,14 +10,14 @@ import { StructuredData, buildOrganization, buildWebSite, buildWebApplication } 
 import { buildTickerRows, getLandingPageData } from "@/lib/api/compositions";
 
 const DESC =
-  "Free CS2 API for real-time skin prices, buy orders, sales history, items, and market analytics. Unified REST data feed from Buff163, CSFloat, Skinport, Steam, and 35+ more CS2/CSGO marketplaces.";
+  "Free CS2 API for real-time skin prices, buy orders, and sales history across 39+ marketplaces. Unified REST data feed.";
 
 export const metadata: Metadata = {
-  title: "CS2 API — Free Skin Market & Pricing Data Across 39+ Marketplaces",
+  title: "CS2 API — Free Skin Prices Across 39+ Markets",
   description: DESC,
   alternates: { canonical: "/" },
   openGraph: {
-    title: "CS2 API — Free Skin Market & Pricing Data | CS2Cap",
+    title: "CS2 API — Free Skin Prices | CS2Cap",
     description: DESC,
     url: "https://cs2cap.com",
     siteName: "CS2Cap",
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "CS2 API — Free Skin Market & Pricing Data | CS2Cap",
+    title: "CS2 API — Free Skin Prices | CS2Cap",
     description: DESC,
   },
 };

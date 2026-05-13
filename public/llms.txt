@@ -1,0 +1,33 @@
+# CS2Cap
+
+> Free CS2 API for live skin prices, buy orders, sales history, and market analytics across 39+ marketplaces.
+
+CS2Cap is a unified REST API for Counter-Strike 2 skin market data. Developers use it to build trading bots, analytics dashboards, and price comparison tools. The platform aggregates real-time listings, historical candlesticks, arbitrage signals, and item catalog data from all major CS2 marketplaces.
+
+## Pages
+
+- [/](/): Free CS2 API for skin prices across 39+ marketplaces.
+- [/api-info](/api-info): API reference with endpoints, pricing, SDKs, and integration guide.
+- [/search](/search): Search and browse CS2 items across all supported marketplaces.
+- [/inventory-value](/inventory-value): Calculate your CS2 inventory value using your Steam profile.
+- [/login](/login): Sign in with Steam to access API keys and account features.
+- [/privacy](/privacy): Privacy policy for CS2Cap users.
+- [/terms](/terms): Terms of service for the CS2Cap platform.
+
+## Docs
+
+- [/api-info#endpoints](/api-info#endpoints): Complete REST endpoint reference.
+- [/api-info#pricing](/api-info#pricing): Free and paid API tier pricing.
+
+## Optional
+
+- [/cs2-api](/cs2-api): CS2 API overview and features.
+- [/free-cs2-api](/free-cs2-api): Free tier capabilities and limits.
+- [/cs2-market-api](/cs2-market-api): Market data and analytics API reference.
+- [/cs2-price-api](/cs2-price-api): Real-time and historical price API endpoints.
+- [/cs2-buy-order-api](/cs2-buy-order-api): Buy order and bid data API.
+- [/csgo-api](/csgo-api): CSGO/CS2 legacy API compatibility notes.
+- [/buff163-api](/buff163-api): Buff163 marketplace data via CS2Cap.
+- [/csfloat-api](/csfloat-api): CSFloat marketplace integration.
+- [/skinport-api](/skinport-api): Skinport marketplace pricing API.
+- [/steam-api](/steam-api): Steam market data via CS2Cap.

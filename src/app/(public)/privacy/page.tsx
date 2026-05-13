@@ -1,4 +1,11 @@
+import type { Metadata } from "next";
 import { FooterSection } from "@/components/FooterSection";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy",
+  description: "CS2Cap privacy policy. How we collect, use, and protect your data.",
+  alternates: { canonical: "/privacy" },
+};
 
 const lastUpdated = "April 18, 2026";
 
