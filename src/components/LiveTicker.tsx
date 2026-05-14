@@ -17,13 +17,15 @@ type TickerItem = {
 };
 
 export function LiveTicker({ items }: { items: TickerItem[] }) {
-  const renderItems = (keyPrefix: string) =>
+  const renderItems = (keyPrefix: string, hidden = false) =>
     items.map((item) => (
       <Fragment key={`${keyPrefix}-${item.id}`}>
         <Link
           href={buildItemPath(typeof item.id === "string" ? Number.parseInt(item.id, 10) : item.id, item.name)}
           prefetch={false}
           title={`View ${item.name}`}
+          tabIndex={hidden ? -1 : undefined}
+          aria-hidden={hidden ? true : undefined}
           className="group flex shrink-0 items-center gap-2 px-5 transition-colors hover:bg-secondary/80"
         >
           {item.imageUrl ? (
