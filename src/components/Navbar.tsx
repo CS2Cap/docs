@@ -85,7 +85,7 @@ export function Navbar() {
     <nav className="fixed top-0 left-0 right-0 z-50 border-b-2 border-border bg-background/90 backdrop-blur-sm">
       <div className="container flex h-14 items-center justify-between gap-4">
         <Link href="/" className="flex items-center gap-2 shrink-0">
-          <Image src="/assets/logo.svg" alt="CS2Cap" width={32} height={32} />
+          <Image src="/assets/logo.svg" alt="" width={32} height={32} />
           <span className="font-mono text-lg font-bold tracking-tight">
             CS2<span className="text-gradient-brand">Cap</span>
           </span>
