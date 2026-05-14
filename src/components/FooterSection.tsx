@@ -44,7 +44,7 @@ export function FooterSection({ showApiLink = true }: { showApiLink?: boolean })
         <div className="grid grid-cols-1 md:grid-cols-5 gap-8 mb-12">
           <div className="md:col-span-2">
             <div className="flex items-center gap-3 mb-4">
-              <Image src="/assets/logo.svg" alt="CS2Cap" width={32} height={32} />
+              <Image src="/assets/logo.svg" alt="" width={32} height={32} />
               <span className="font-mono text-lg font-bold">
                 CS2<span className="text-gradient-brand">Cap</span>
               </span>
