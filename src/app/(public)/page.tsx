@@ -64,10 +64,11 @@ export default async function HomePage() {
       <StructuredData data={buildWebSite()} />
       <StructuredData data={buildWebApplication()} />
       <LiveTicker items={tickerItems} />
-      <HeroSection providerCount={landing.providerCount} totalItems={landing.totalItems} />
+      <main id="main-content">
+        <HeroSection providerCount={landing.providerCount} totalItems={landing.totalItems} />
 
-      {/* API / How it works — moved up from bottom */}
-      <section className="relative overflow-x-clip border-t-2 border-border bg-grid py-24">
+        {/* API / How it works — moved up from bottom */}
+        <section className="relative overflow-x-clip border-t-2 border-border bg-grid py-24">
         <div className="container">
           <div className="grid items-center gap-12 lg:grid-cols-2">
             <div>
@@ -178,6 +179,7 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+      </main>
 
       <FooterSection showApiLink={true} />
     </>
