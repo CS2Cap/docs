@@ -44,7 +44,7 @@ export function FooterSection({ showApiLink = true }: { showApiLink?: boolean })
         <div className="grid grid-cols-1 md:grid-cols-5 gap-8 mb-12">
           <div className="md:col-span-2">
             <div className="flex items-center gap-3 mb-4">
-              <Image src="/assets/logo.svg" alt="CS2Cap" width={32} height={32} />
+              <Image src="/assets/logo.svg" alt="" width={32} height={32} />
               <span className="font-mono text-lg font-bold">
                 CS2<span className="text-gradient-brand">Cap</span>
               </span>
@@ -93,7 +93,7 @@ export function FooterSection({ showApiLink = true }: { showApiLink?: boolean })
           </div>
 
           <div>
-            <h4 className="font-mono text-[10px] tracking-widest text-muted-foreground mb-4">GUIDES</h4>
+            <div className="font-mono text-[10px] tracking-widest text-muted-foreground mb-4">GUIDES</div>
             <div className="flex flex-col gap-2">
               <Link href="/cs2-api" className="font-mono text-xs text-foreground hover:text-primary transition-colors">CS2 API</Link>
               <Link href="/cs2-skin-api" className="font-mono text-xs text-foreground hover:text-primary transition-colors">CS2 Skin API</Link>
@@ -102,7 +102,7 @@ export function FooterSection({ showApiLink = true }: { showApiLink?: boolean })
           </div>
 
           <div>
-            <h4 className="font-mono text-[10px] tracking-widest text-muted-foreground mb-4">PLATFORM</h4>
+            <div className="font-mono text-[10px] tracking-widest text-muted-foreground mb-4">PLATFORM</div>
             <div className="flex flex-col gap-2">
               <Link href="/search" className="font-mono text-xs text-foreground hover:text-primary transition-colors">Search</Link>
               <Link href="/dashboard" className="font-mono text-xs text-foreground hover:text-primary transition-colors">Dashboard</Link>
@@ -112,7 +112,7 @@ export function FooterSection({ showApiLink = true }: { showApiLink?: boolean })
           </div>
 
           <div>
-            <h4 className="font-mono text-[10px] tracking-widest text-muted-foreground mb-4">DEVELOPERS</h4>
+            <div className="font-mono text-[10px] tracking-widest text-muted-foreground mb-4">DEVELOPERS</div>
             <div className="flex flex-col gap-2">
               {showApiLink && (
                 <Link href="/api-info" className="font-mono text-xs text-foreground hover:text-primary transition-colors">API</Link>

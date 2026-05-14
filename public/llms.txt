@@ -26,8 +26,8 @@ CS2Cap is a unified REST API for Counter-Strike 2 skin market data. Developers u
 - [/cs2-market-api](/cs2-market-api): Market data and analytics API reference.
 - [/cs2-price-api](/cs2-price-api): Real-time and historical price API endpoints.
 - [/cs2-buy-order-api](/cs2-buy-order-api): Buy order and bid data API.
-- [/csgo-api](/csgo-api): CSGO/CS2 legacy API compatibility notes.
-- [/buff163-api](/buff163-api): Buff163 marketplace data via CS2Cap.
+- [/cs2-sales-api](/cs2-sales-api): Recent sales history API including float, paint seed and stickers details.
+- [/buff163-api](/buff163-api): Buff163 prices, buy orders & price history API.
+- [/youpin-api](/youpin-api): Youpin898 prices, buy orders & sales history API.
 - [/csfloat-api](/csfloat-api): CSFloat marketplace integration.
-- [/skinport-api](/skinport-api): Skinport marketplace pricing API.
 - [/steam-api](/steam-api): Steam market data via CS2Cap.
