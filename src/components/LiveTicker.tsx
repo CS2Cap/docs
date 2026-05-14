@@ -76,7 +76,7 @@ export function LiveTicker({ items }: { items: TickerItem[] }) {
           {renderItems("a")}
         </div>
         <div className="flex shrink-0" aria-hidden="true">
-          {renderItems("b")}
+          {renderItems("b", true)}
         </div>
       </div>
     </div>
