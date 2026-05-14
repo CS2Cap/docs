@@ -93,7 +93,7 @@ export function FooterSection({ showApiLink = true }: { showApiLink?: boolean })
           </div>
 
           <div>
-            <h4 className="font-mono text-[10px] tracking-widest text-muted-foreground mb-4">GUIDES</h4>
+            <div className="font-mono text-[10px] tracking-widest text-muted-foreground mb-4">GUIDES</div>
             <div className="flex flex-col gap-2">
               <Link href="/cs2-api" className="font-mono text-xs text-foreground hover:text-primary transition-colors">CS2 API</Link>
               <Link href="/cs2-skin-api" className="font-mono text-xs text-foreground hover:text-primary transition-colors">CS2 Skin API</Link>
@@ -102,7 +102,7 @@ export function FooterSection({ showApiLink = true }: { showApiLink?: boolean })
           </div>
 
           <div>
-            <h4 className="font-mono text-[10px] tracking-widest text-muted-foreground mb-4">PLATFORM</h4>
+            <div className="font-mono text-[10px] tracking-widest text-muted-foreground mb-4">PLATFORM</div>
             <div className="flex flex-col gap-2">
               <Link href="/search" className="font-mono text-xs text-foreground hover:text-primary transition-colors">Search</Link>
               <Link href="/dashboard" className="font-mono text-xs text-foreground hover:text-primary transition-colors">Dashboard</Link>
@@ -112,7 +112,7 @@ export function FooterSection({ showApiLink = true }: { showApiLink?: boolean })
           </div>
 
           <div>
-            <h4 className="font-mono text-[10px] tracking-widest text-muted-foreground mb-4">DEVELOPERS</h4>
+            <div className="font-mono text-[10px] tracking-widest text-muted-foreground mb-4">DEVELOPERS</div>
             <div className="flex flex-col gap-2">
               {showApiLink && (
                 <Link href="/api-info" className="font-mono text-xs text-foreground hover:text-primary transition-colors">API</Link>
