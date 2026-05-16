@@ -16,6 +16,9 @@ export const metadata: Metadata = {
   title: "CS2 API — Free Skin Prices Across 39+ Markets",
   description: DESC,
   alternates: { canonical: "/" },
+  other: {
+    "impact-site-verification": "ae70ce5b-ea4d-4103-a1c6-742b97475875",
+  },
   openGraph: {
     title: "CS2 API — Free Skin Prices | CS2Cap",
     description: DESC,

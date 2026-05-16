@@ -49,6 +49,7 @@ import type {
   SalesHistoryResponse,
   SubscriptionStatus,
   UsageDashboardResponse,
+  ViewerResponse,
   VerifyEmailConfirmResponse,
   VerifyEmailSendResponse,
   WatchlistResponse,
@@ -123,6 +124,15 @@ export function getOAuthLoginUrl(provider: "steam" | "google" | "discord"): stri
 }
 
 export const webApi = {
+  async getViewer(): Promise<ViewerResponse> {
+    const response = await fetch("/api/viewer", {
+      method: "GET",
+      credentials: "include",
+      cache: "no-store",
+    });
+    return parseApiResponse<ViewerResponse>(response);
+  },
+
   async getSession(): Promise<AccountInfo> {
     try {
       return await request("/v1/web/session");

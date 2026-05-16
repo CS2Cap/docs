@@ -54,14 +54,14 @@ src/
 ### Prerequisites
 
 - Node.js 18+
-- npm
+- pnpm
 
 ### Setup
 
 ```bash
-npm install
-cp .env.local
-npm run dev
+pnpm install
+# Create .env.local with the variables listed below
+pnpm dev
 ```
 
 The app will be available at <http://localhost:3000>.
@@ -70,10 +70,10 @@ The app will be available at <http://localhost:3000>.
 
 | Command | Description |
 | --- | --- |
-| `npm run dev` | Development server |
-| `npm run build` | Production build |
-| `npm start` | Start production server |
-| `npm run lint` | Run ESLint |
+| `pnpm dev` | Development server |
+| `pnpm build` | Production build |
+| `pnpm start` | Start production server |
+| `pnpm lint` | Run ESLint |
 
 ### Environment Variables
 

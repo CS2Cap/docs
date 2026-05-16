@@ -9,14 +9,20 @@ export const contentType = "image/png";
 
 type Params = Promise<{ itemId: string }>;
 
+function formatOgText(value: string) {
+  return value.replace(/^★\s*/, "").replace(/™/g, "").trim();
+}
+
 export default async function Image({ params }: { params: Params }) {
   const { itemId } = await params;
   const parsed = parseItemRouteParam(itemId);
   const data = parsed
-    ? await getItemDetailPageCoreData(parsed.id).catch(() => null)
+    ? await getItemDetailPageCoreData(parsed.id, { anon: true }).catch(() => null)
     : null;
 
-  const itemName = data?.item.market_hash_name ?? "CS2 Skin";
+  const itemName = data?.item.market_hash_name
+    ? formatOgText(data.item.market_hash_name)
+    : "CS2 Skin";
   const wear = data?.item.wear_name ?? null;
   const rarity = data?.item.rarity_name ?? null;
   const collection = data?.item.collection ?? null;
@@ -129,7 +135,6 @@ export default async function Image({ params }: { params: Params }) {
                   fontSize: 52,
                   fontWeight: 900,
                   lineHeight: 1.1,
-                  letterSpacing: -1.5,
                   color: "#f8fafc",
                   marginBottom: 18,
                 }}
@@ -176,7 +181,8 @@ export default async function Image({ params }: { params: Params }) {
                 style={{
                   display: "flex",
                   flexDirection: "column",
-                  flex: 1,
+                  flex: "1 1 0",
+                  minWidth: 0,
                 }}
               >
                 <div
@@ -194,10 +200,9 @@ export default async function Image({ params }: { params: Params }) {
                 <div
                   style={{
                     display: "flex",
-                    fontSize: 56,
+                    fontSize: 46,
                     fontWeight: 900,
                     color: "#34d399",
-                    letterSpacing: -1,
                   }}
                 >
                   {bestAsk ?? "—"}
@@ -207,7 +212,8 @@ export default async function Image({ params }: { params: Params }) {
                 style={{
                   display: "flex",
                   flexDirection: "column",
-                  flex: 1,
+                  flex: "1 1 0",
+                  minWidth: 0,
                 }}
               >
                 <div
@@ -225,10 +231,9 @@ export default async function Image({ params }: { params: Params }) {
                 <div
                   style={{
                     display: "flex",
-                    fontSize: 56,
+                    fontSize: 46,
                     fontWeight: 900,
                     color: "#f8fafc",
-                    letterSpacing: -1,
                   }}
                 >
                   {bestBid ?? "—"}
@@ -238,7 +243,8 @@ export default async function Image({ params }: { params: Params }) {
                 style={{
                   display: "flex",
                   flexDirection: "column",
-                  flex: 1,
+                  flex: "0 0 150px",
+                  minWidth: 0,
                 }}
               >
                 <div

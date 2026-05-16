@@ -536,12 +536,15 @@ function groupSearchResults(items: ItemOut[]): SearchGroup[] {
   return orderedKeys.map((key) => groupsByKey.get(key)!);
 }
 
-export async function getItemDetailPageCoreData(itemId: number) {
+export async function getItemDetailPageCoreData(
+  itemId: number,
+  opts: { anon?: boolean } = {},
+) {
   const [item, providers, prices, bids] = await Promise.all([
-    serverApi.getItemById(itemId),
-    serverApi.getProviders(3600),
-    serverApi.postPrices({ item_ids: [itemId], limit: 50 }),
-    serverApi.postBids({ item_ids: [itemId], limit: 50 }),
+    serverApi.getItemById(itemId, { anon: opts.anon }),
+    serverApi.getProviders(3600, { anon: opts.anon }),
+    serverApi.postPrices({ item_ids: [itemId], limit: 50 }, { anon: opts.anon }),
+    serverApi.postBids({ item_ids: [itemId], limit: 50 }, { anon: opts.anon }),
   ]);
 
   if (!item) {

@@ -339,6 +339,7 @@ export const serverApi = {
   // Bids — served from Blob snapshot; cold-starts fall through to targeted GET.
   async postBids(
     query: { item_ids: number[]; currency?: string; limit?: number },
+    opts: { anon?: boolean } = {},
   ): Promise<BidsResponse | null> {
     const cached = await getCachedBidsSnapshot();
     if (cached) {
@@ -352,6 +353,7 @@ export const serverApi = {
     return serverFetch<BidsResponse>(`/v1/web/bids?${params}`, {
       revalidate: false,
       timeoutMs: 10000,
+      anon: opts.anon,
     });
   },
 
