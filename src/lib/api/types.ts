@@ -551,6 +551,12 @@ export interface AccountPreferences {
   billing_reminder_emails_enabled: boolean;
 }
 
+export interface ViewerResponse {
+  authenticated: boolean;
+  user: AccountInfo | null;
+  preferences: AccountPreferences | null;
+}
+
 export interface APIKeyGetResponse {
   key: APIKeyInfo;
 }
@@ -992,4 +998,3 @@ export interface InventoryValueToolResponse {
   items: InventoryValueResolvedItem[];
   unmatched_items: InventoryValueUnmatchedItem[];
 }
-

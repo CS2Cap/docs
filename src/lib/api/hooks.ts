@@ -14,13 +14,15 @@ import type {
   ChildAPIKeyListResponse,
   PlansResponse,
   UsageDashboardResponse,
+  ViewerResponse,
   WatchlistResponse,
 } from "./types";
 
 export const queryKeys = {
-  session: ["session"] as const,
-  account: ["account"] as const,
-  preferences: ["account-preferences"] as const,
+  viewer: ["viewer"] as const,
+  session: ["viewer"] as const,
+  account: ["viewer"] as const,
+  preferences: ["viewer"] as const,
   apiKey: ["api-key"] as const,
   subKeys: (params: Record<string, unknown>) => ["sub-keys", params] as const,
   watchlist: (params: Record<string, unknown>) => ["watchlist", params] as const,
@@ -31,28 +33,40 @@ export const queryKeys = {
   usage: ["usage"] as const,
 };
 
-export function useSession() {
-  return useQuery<AccountInfo>({
-    queryKey: queryKeys.session,
-    queryFn: () => webApi.getSession(),
+export function useViewer() {
+  return useQuery<ViewerResponse>({
+    queryKey: queryKeys.viewer,
+    queryFn: () => webApi.getViewer(),
     retry: false,
     staleTime: 60_000,
   });
 }
 
 export function useAccount() {
-  return useQuery<AccountInfo>({
+  return useQuery<ViewerResponse, Error, AccountInfo | null>({
     queryKey: queryKeys.account,
-    queryFn: () => webApi.getAccount(),
+    queryFn: () => webApi.getViewer(),
+    select: (viewer) => viewer.user,
+    retry: false,
+    staleTime: 60_000,
+  });
+}
+
+export function useSession() {
+  return useQuery<ViewerResponse, Error, AccountInfo | null>({
+    queryKey: queryKeys.session,
+    queryFn: () => webApi.getViewer(),
+    select: (viewer) => viewer.user,
     retry: false,
     staleTime: 60_000,
   });
 }
 
 export function useAccountPreferences() {
-  return useQuery<AccountPreferences>({
+  return useQuery<ViewerResponse, Error, AccountPreferences | null>({
     queryKey: queryKeys.preferences,
-    queryFn: () => webApi.getAccountPreferences(),
+    queryFn: () => webApi.getViewer(),
+    select: (viewer) => viewer.preferences,
     retry: false,
     staleTime: 60_000,
   });
