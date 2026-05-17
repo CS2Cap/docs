@@ -8,7 +8,7 @@ const ROOT_DESCRIPTION =
 export const metadata: Metadata = {
   metadataBase: new URL("https://cs2cap.com"),
   title: {
-    default: "CS2 API — Free CS2 Skin Market & Pricing Data | CS2Cap",
+    default: "CS2Cap — CS2 Skins Pricing API & Market Data",
     template: "%s | CS2Cap",
   },
   description: ROOT_DESCRIPTION,
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     "Youpin API",
   ],
   openGraph: {
-    title: "CS2 API — Free CS2 Skin Market & Pricing Data | CS2Cap",
+    title: "CS2Cap — CS2 Skins Pricing API & Market Data",
     description: ROOT_DESCRIPTION,
     url: "https://cs2cap.com",
     siteName: "CS2Cap",
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "CS2 API — Free CS2 Skin Market & Pricing Data | CS2Cap",
+    title: "CS2Cap — CS2 Skins Pricing API & Market Data",
     description: ROOT_DESCRIPTION,
   },
   icons: {

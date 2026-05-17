@@ -13,14 +13,14 @@ const DESC =
   "Free CS2 API for real-time skin prices, buy orders, and sales history across 39+ marketplaces. Unified REST data feed.";
 
 export const metadata: Metadata = {
-  title: "CS2 API — Free Skin Prices Across 39+ Markets",
+  title: "CS2Cap — CS2 Skins Pricing API & Market Data",
   description: DESC,
   alternates: { canonical: "/" },
   other: {
     "impact-site-verification": "ae70ce5b-ea4d-4103-a1c6-742b97475875",
   },
   openGraph: {
-    title: "CS2 API — Free Skin Prices | CS2Cap",
+    title: "CS2Cap — CS2 Skins Pricing API & Market Data",
     description: DESC,
     url: "https://cs2cap.com",
     siteName: "CS2Cap",
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "CS2 API — Free Skin Prices | CS2Cap",
+    title: "CS2Cap — CS2 Skins Pricing API & Market Data",
     description: DESC,
   },
 };
