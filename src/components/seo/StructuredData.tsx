@@ -1,6 +1,22 @@
 import type { PlanInfo } from "@/lib/api/types";
 
 /**
+ * Serializes JSON-LD for safe embedding in an inline <script>. `JSON.stringify`
+ * does not escape `<`, so a data value containing `</script>` (or `<!--`) would
+ * break out of the tag. Escaping the HTML-significant characters to their
+ * `\uXXXX` JSON forms keeps the payload valid JSON while making breakout
+ * impossible — the builders below take attacker-influenceable catalog data.
+ */
+function serializeJsonLd(
+  data: Record<string, unknown> | Record<string, unknown>[],
+): string {
+  return JSON.stringify(data)
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e")
+    .replace(/&/g, "\\u0026");
+}
+
+/**
  * Renders a JSON-LD <script> tag for structured data.
  */
 export function StructuredData({
@@ -11,7 +27,7 @@ export function StructuredData({
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+      dangerouslySetInnerHTML={{ __html: serializeJsonLd(data) }}
     />
   );
 }
