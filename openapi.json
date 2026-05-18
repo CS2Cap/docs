@@ -916,7 +916,7 @@
           "Prices"
         ],
         "summary": "Price Candles",
-        "description": "Return composite OHLCV candle data for a single item across all providers.\n\nParameters:\n- Item filter: `item_id` or `market_hash_name` (one is required).\n- Optional filter: `phase`.\n- Time window: `start`/`end` (ISO 8601) or `lookback` (for example `7d` or `7`).\n- `interval`: `5m`, `1h`, or `1d`.\n- `fill`: Include empty buckets with carry-forward prices when `true`.\n- `currency`: Quote currency (default `USD`).\n\nNotes:\n- If both `start` and `lookback` are sent, `lookback` takes precedence.\n  Lookback requests are aligned to completed candle buckets; `1h` lookback\n  windows use a 15-minute freshness buffer before flooring to the hour.\n- Maximum lookback depends on `interval`:\n  `5m` up to 7 days, `1h` up to 30 days, `1d` up to 365 days.\n- Free tiers are additionally capped by their tier restrictions and default\n  to the maximum allowed window when no explicit lookback is supplied.\n\nResponse:\n- `meta`: Item, provider scope, interval, phase, currency, and effective query-window\n  start/end timestamps.\n- `data`: Candle buckets in oldest-to-newest order\n  (`t`, `o`, `h`, `l`, `c`, `v`, `q`, `providers`).\n  `o`/`c` are the lowest effective provider prices, `l` is the minimum provider\n  low, `h` is capped at `median(provider_highs) * 1.5`, `v` is the non-negative depletion\n  flow between buckets, and `q` is the summed close-side inventory at bucket end when\n  available. `providers.o`, `providers.h`, `providers.l`, and `providers.c` identify the\n  provider keys contributing the returned open/high/low/close values. For `1d` requests\n  starting more than 30 days back, `v` falls back to legacy depletion-derived `volume_qty`\n  and `q` is `null`.\n\nRequirements:\n- Valid API key with access to `/v1/prices/candles`.\n- `item_id` or `market_hash_name` is required.\n- `start`/`end` must be valid ISO 8601 timestamps.",
+        "description": "Return composite OHLCV candle data for a single item across all providers.\n\nParameters:\n- Item filter: `item_id` or `market_hash_name` (one is required).\n- Optional filter: `phase`.\n- Time window: `start`/`end` (ISO 8601) or `lookback` (for example `7d` or `7`).\n- `interval`: `5m`, `1h`, or `1d`.\n- `fill`: Include empty buckets with carry-forward prices when `true`.\n- `currency`: Quote currency (default `USD`).\n\nNotes:\n- If `lookback` is sent with `start` or `end`, `lookback` takes precedence.\n  Lookback requests are aligned to completed candle buckets; `1h` lookback\n  windows use a 15-minute freshness buffer before flooring to the hour.\n- Maximum lookback depends on `interval`:\n  `5m` up to 7 days, `1h` up to 30 days, `1d` up to 365 days.\n- Free tiers are additionally capped by their tier restrictions and default\n  to the maximum allowed window when no explicit lookback is supplied.\n\nResponse:\n- `meta`: Item, provider scope, interval, phase, currency, and effective query-window\n  start/end timestamps.\n- `data`: Candle buckets in oldest-to-newest order\n  (`t`, `o`, `h`, `l`, `c`, `v`, `q`, `providers`).\n  `o`/`c` are the lowest effective provider prices, `l` is the minimum provider\n  low, `h` is capped at `median(provider_highs) * 1.5`, `v` is the non-negative depletion\n  flow between buckets, and `q` is the summed close-side inventory at bucket end when\n  available. `providers.o`, `providers.h`, `providers.l`, and `providers.c` identify the\n  provider keys contributing the returned open/high/low/close values. For `1d` requests\n  starting more than 30 days back, `v` falls back to legacy depletion-derived `volume_qty`\n  and `q` is `null`.\n\nRequirements:\n- Valid API key with access to `/v1/prices/candles`.\n- `item_id` or `market_hash_name` is required.\n- `start`/`end` must be valid ISO 8601 timestamps.",
         "operationId": "priceCandles",
         "security": [
           {
@@ -1106,7 +1106,7 @@
                   },
                   "data": [
                     {
-                      "t": 1768906800,
+                      "t": 1768867200,
                       "o": 2508,
                       "h": 2535,
                       "l": 2460,
@@ -1114,12 +1114,14 @@
                       "v": 24,
                       "q": 179,
                       "providers": {
+                        "o": "csfloat",
                         "h": "steam",
-                        "l": "csfloat"
+                        "l": "csfloat",
+                        "c": "csfloat"
                       }
                     },
                     {
-                      "t": 1768910400,
+                      "t": 1768953600,
                       "o": 2522,
                       "h": 2560,
                       "l": 2490,
@@ -1127,8 +1129,10 @@
                       "v": 18,
                       "q": 176,
                       "providers": {
+                        "o": "skinport",
                         "h": "skinport",
-                        "l": "steam"
+                        "l": "steam",
+                        "c": "skinport"
                       }
                     }
                   ]
@@ -16755,7 +16759,7 @@
           "Prices"
         ],
         "summary": "Web Price Candles V1 Web Prices Candles",
-        "description": "Return composite OHLCV candle data for a single item across all providers.\n\nParameters:\n- Item filter: `item_id` or `market_hash_name` (one is required).\n- Optional filter: `phase`.\n- Time window: `start`/`end` (ISO 8601) or `lookback` (for example `7d` or `7`).\n- `interval`: `5m`, `1h`, or `1d`.\n- `fill`: Include empty buckets with carry-forward prices when `true`.\n- `currency`: Quote currency (default `USD`).\n\nNotes:\n- If both `start` and `lookback` are sent, `lookback` takes precedence.\n  Lookback requests are aligned to completed candle buckets; `1h` lookback\n  windows use a 15-minute freshness buffer before flooring to the hour.\n- Maximum lookback depends on `interval`:\n  `5m` up to 7 days, `1h` up to 30 days, `1d` up to 365 days.\n- Free tiers are additionally capped by their tier restrictions and default\n  to the maximum allowed window when no explicit lookback is supplied.\n\nResponse:\n- `meta`: Item, provider scope, interval, phase, currency, and effective query-window\n  start/end timestamps.\n- `data`: Candle buckets in oldest-to-newest order\n  (`t`, `o`, `h`, `l`, `c`, `v`, `q`, `providers`).\n  `o`/`c` are the lowest effective provider prices, `l` is the minimum provider\n  low, `h` is capped at `median(provider_highs) * 1.5`, `v` is the non-negative depletion\n  flow between buckets, and `q` is the summed close-side inventory at bucket end when\n  available. `providers.o`, `providers.h`, `providers.l`, and `providers.c` identify the\n  provider keys contributing the returned open/high/low/close values. For `1d` requests\n  starting more than 30 days back, `v` falls back to legacy depletion-derived `volume_qty`\n  and `q` is `null`.\n\nRequirements:\n- Valid API key with access to `/v1/prices/candles`.\n- `item_id` or `market_hash_name` is required.\n- `start`/`end` must be valid ISO 8601 timestamps.",
+        "description": "Return composite OHLCV candle data for a single item across all providers.\n\nParameters:\n- Item filter: `item_id` or `market_hash_name` (one is required).\n- Optional filter: `phase`.\n- Time window: `start`/`end` (ISO 8601) or `lookback` (for example `7d` or `7`).\n- `interval`: `5m`, `1h`, or `1d`.\n- `fill`: Include empty buckets with carry-forward prices when `true`.\n- `currency`: Quote currency (default `USD`).\n\nNotes:\n- If `lookback` is sent with `start` or `end`, `lookback` takes precedence.\n  Lookback requests are aligned to completed candle buckets; `1h` lookback\n  windows use a 15-minute freshness buffer before flooring to the hour.\n- Maximum lookback depends on `interval`:\n  `5m` up to 7 days, `1h` up to 30 days, `1d` up to 365 days.\n- Free tiers are additionally capped by their tier restrictions and default\n  to the maximum allowed window when no explicit lookback is supplied.\n\nResponse:\n- `meta`: Item, provider scope, interval, phase, currency, and effective query-window\n  start/end timestamps.\n- `data`: Candle buckets in oldest-to-newest order\n  (`t`, `o`, `h`, `l`, `c`, `v`, `q`, `providers`).\n  `o`/`c` are the lowest effective provider prices, `l` is the minimum provider\n  low, `h` is capped at `median(provider_highs) * 1.5`, `v` is the non-negative depletion\n  flow between buckets, and `q` is the summed close-side inventory at bucket end when\n  available. `providers.o`, `providers.h`, `providers.l`, and `providers.c` identify the\n  provider keys contributing the returned open/high/low/close values. For `1d` requests\n  starting more than 30 days back, `v` falls back to legacy depletion-derived `volume_qty`\n  and `q` is `null`.\n\nRequirements:\n- Valid API key with access to `/v1/prices/candles`.\n- `item_id` or `market_hash_name` is required.\n- `start`/`end` must be valid ISO 8601 timestamps.",
         "operationId": "webPriceCandles",
         "security": [],
         "parameters": [
@@ -16941,7 +16945,7 @@
                   },
                   "data": [
                     {
-                      "t": 1768906800,
+                      "t": 1768867200,
                       "o": 2508,
                       "h": 2535,
                       "l": 2460,
@@ -16949,12 +16953,14 @@
                       "v": 24,
                       "q": 179,
                       "providers": {
+                        "o": "csfloat",
                         "h": "steam",
-                        "l": "csfloat"
+                        "l": "csfloat",
+                        "c": "csfloat"
                       }
                     },
                     {
-                      "t": 1768910400,
+                      "t": 1768953600,
                       "o": 2522,
                       "h": 2560,
                       "l": 2490,
@@ -16962,8 +16968,10 @@
                       "v": 18,
                       "q": 176,
                       "providers": {
+                        "o": "skinport",
                         "h": "skinport",
-                        "l": "steam"
+                        "l": "steam",
+                        "c": "skinport"
                       }
                     }
                   ]
@@ -26270,6 +26278,18 @@
             "title": "Description",
             "description": "Human-readable tier description."
           },
+          "tier_image": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tier Image",
+            "description": "URL for the tier's visual identity asset."
+          },
           "is_active": {
             "type": "boolean",
             "title": "Is Active",
@@ -26433,6 +26453,7 @@
           "tier",
           "display_name",
           "description",
+          "tier_image",
           "is_active",
           "is_public",
           "sort_order",
@@ -28375,6 +28396,18 @@
             ],
             "title": "Description",
             "description": "Human-readable tier description."
+          },
+          "tier_image": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tier Image",
+            "description": "URL for the tier's visual identity asset."
           },
           "is_active": {
             "type": "boolean",
@@ -31433,6 +31466,18 @@
             ],
             "title": "Description",
             "description": "Human-readable description of the plan."
+          },
+          "tier_image": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tier Image",
+            "description": "URL for the plan's visual identity asset."
           },
           "monthly_price_cents": {
             "type": "integer",
@@ -34639,6 +34684,18 @@
             ],
             "title": "Description",
             "description": "Human-readable tier description."
+          },
+          "tier_image": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tier Image",
+            "description": "URL for the tier's visual identity asset."
           },
           "is_active": {
             "anyOf": [
