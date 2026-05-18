@@ -20,8 +20,10 @@ const cspReportOnly = [
   "form-action 'self'",
   "worker-src 'self' blob:",
   "manifest-src 'self'",
-  // Trusted Types directive — Report-Only, so this only reports sink violations.
-  "require-trusted-types-for 'script'",
+  // No `require-trusted-types-for`: Next.js 16 / Turbopack do not route their
+  // own bundler & hydration script writes through Trusted Types policies and
+  // expose no config to make them, so the directive cannot be satisfied.
+  // Revisit when Next.js ships native Trusted Types support.
   "report-uri /api/csp-report",
   "report-to csp-endpoint",
 ].join("; ");

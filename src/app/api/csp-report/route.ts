@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getPostHogClient } from "@/lib/posthog-server";
 
 export const runtime = "nodejs";
 
 // Browsers POST CSP violations here (wired via `report-uri` / `report-to` in
 // next.config.ts). No auth — the report beacon is unauthenticated by design.
-// Reports are logged and forwarded to PostHog so they can be queried while the
-// policy runs in Report-Only mode.
+// Reports are written to the server log only. They are intentionally NOT sent
+// to PostHog: Trusted Types reports fire on nearly every page load and would
+// flood product analytics.
 
 const NO_CONTENT = new NextResponse(null, { status: 204 });
 
@@ -75,25 +75,8 @@ export async function POST(request: NextRequest) {
     return NO_CONTENT;
   }
 
-  try {
-    const posthog = getPostHogClient();
-    for (const v of violations) {
-      console.warn(
-        JSON.stringify({ event: "csp.violation", ...v }),
-      );
-      posthog.capture({
-        distinctId: "csp-report",
-        event: "csp_violation",
-        properties: {
-          document_url: v.documentUrl,
-          effective_directive: v.effectiveDirective,
-          blocked_url: v.blockedUrl,
-          disposition: v.disposition,
-        },
-      });
-    }
-  } catch {
-    // Reporting must never throw back to the browser.
+  for (const v of violations) {
+    console.warn(JSON.stringify({ event: "csp.violation", ...v }));
   }
 
   return NO_CONTENT;
