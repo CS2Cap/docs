@@ -11,7 +11,7 @@ CS2Cap offers four API tiers to fit every use case, from quick evaluation to pro
 - **Quant** enables **Advanced Analytics, Arbitrage Scanner + Webhook Support**
 
 <Tip>
-Every tier is backed by the same 38-marketplace data network with 5–10 min freshness and all basic utility endpoints documented [here](/api-reference/catalog).
+Every tier is backed by the same 39-marketplace data network with 5–10 min freshness and all basic utility endpoints documented [here](/api-reference/catalog).
 </Tip>
 
 ## At a glance
@@ -28,7 +28,7 @@ Every tier is backed by the same 38-marketplace data network with 5–10 min fre
 
 | Endpoint | Starter | Pro | Quant |
 | :--- | :-: | :-: | :-: |
-| [`GET /prices`](/api-reference/prices#get-/prices-—-list-prices) — current lowest asks _(38 providers)_ | ✅ | ✅ | ✅ |
+| [`GET /prices`](/api-reference/prices#get-/prices-—-list-prices) — current lowest asks _(39 providers)_ | ✅ | ✅ | ✅ |
 | [`GET /bids`](/api-reference/bids#get-/bids-—-list-bids) — highest buy orders _(11 providers)_ | ✅ | ✅ | ✅ |
 | [`POST /prices/batch`](/api-reference/prices#post-/prices/batch-—-batch-prices-lookup) — multi-item price lookup | ✅ | ✅ | ✅ |
 | [`POST /bids/batch`](/api-reference/bids#post-/bids/batch-—-batch-bids-lookup) — multi-item buy-order lookup | ✅ | ✅ | ✅ |
@@ -76,7 +76,7 @@ Every tier is backed by the same 38-marketplace data network with 5–10 min fre
 
 Every plan — including Free — ships with the full breadth of CS2Cap's data network:
 
-- **38 supported marketplaces**, including BUFF163, Youpin898, C5, CSFloat, Skinport, DMarket, Waxpeer, Bitskins, Haloskins, Market.csgo, Tradeit, and more.
+- **39 supported marketplaces**, including BUFF163, Youpin898, C5, CSFloat, Skinport, DMarket, Waxpeer, Bitskins, Haloskins, Market.csgo, Tradeit, and more.
 - **Doppler phase differentiation** in prices, buy orders, and recent sales whenever the underlying marketplace exposes phase data.
 - **5–10 minute data freshness** across most providers. Prices and bids are served from a pre-built index for fast, consistent responses.
 - **Stable, machine-readable error codes** on every error response.
@@ -106,7 +106,7 @@ Paid tiers are billed monthly through Stripe via card, or NOWPayments via crypto
     Yes. Pro and Quant include up to one year of per-item daily OHLCV history through [`GET /prices/candles`](/api-reference/prices#get-/prices/candles-—-price-candles-ohlcv). Granular per-provider history goes back up to 35 days through [`GET /prices/history`](/api-reference/prices#get-/prices/history-—-price-history).
   </Accordion>
 
-  <Accordion title="Do I get all 38 marketplaces on Free?">
+  <Accordion title="Do I get all 39 marketplaces on Free?">
     You can browse the provider catalog on every tier, but Free is limited to current prices from [`GET /prices`](/api-reference/prices#get-/prices-—-list-prices). Starter adds current bids and 100-item batch lookups, but not sales, history, analytics, listing URLs, or NDJSON snapshots.
   </Accordion>
 
