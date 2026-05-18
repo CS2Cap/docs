@@ -998,3 +998,27 @@ export interface InventoryValueToolResponse {
   items: InventoryValueResolvedItem[];
   unmatched_items: InventoryValueUnmatchedItem[];
 }
+
+export type MarketIndexGroupBy = "item_type" | "weapon_type";
+
+export interface MarketIndexGroup {
+  group: string;
+  marketcap_usd: string;
+  item_count: number;
+  included_count: number;
+  excluded_count: number;
+}
+
+export interface MarketIndexesResponse {
+  meta: {
+    generated_at: string;
+    data_source: "cache" | "live" | "mixed";
+    freshness_sec: number;
+    window: { timeframe: MarketTimeframe };
+    group_by: MarketIndexGroupBy;
+  };
+  data: {
+    total_marketcap_usd: string;
+    groups: MarketIndexGroup[];
+  };
+}

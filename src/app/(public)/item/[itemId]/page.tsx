@@ -8,6 +8,7 @@ import { FooterSection } from "@/components/FooterSection";
 import { ProviderIdentity } from "@/components/ProviderIdentity";
 import { WatchItemButton } from "@/components/WatchItemButton";
 import { CollapsibleAsksList } from "@/components/item/CollapsibleAsksList";
+import { BuyOrdersList } from "@/components/item/BuyOrdersList";
 import {
   StructuredData,
   buildBreadcrumbList,
@@ -44,14 +45,6 @@ type ItemPageProps = {
     itemId: string;
   }>;
 };
-
-function formatNumber(value?: number | null) {
-  if (value == null) {
-    return "N/A";
-  }
-
-  return value.toLocaleString();
-}
 
 const SITE_URL = "https://cs2cap.com";
 
@@ -159,9 +152,8 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
   const askRows = [...(data.prices?.items ?? [])].sort(
     (left, right) => left.lowest_ask - right.lowest_ask,
   );
-  const bidRows = [...(data.bids?.items ?? [])].sort(
-    (left, right) => right.highest_bid - left.highest_bid,
-  );
+  const bidMarketCount =
+    data.buyOrders.reliable.length + data.buyOrders.flagged.length;
   const rarityClass = rarityColor(data.item.rarity_name);
   const rarityHex = normalizeHexColor(data.item.rarity_color);
   const rarityBadgeStyle = rarityHex
@@ -447,7 +439,7 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                     BUY ORDERS
                   </span>
                   <span className="font-mono text-xs text-muted-foreground">
-                    {bidRows.length} markets
+                    {bidMarketCount} markets
                   </span>
                 </div>
 
@@ -458,48 +450,11 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                   <div className="text-right">HIGHEST BID</div>
                 </div>
 
-                {bidRows.length === 0 ? (
-                  <div className="px-6 py-8 font-mono text-sm text-muted-foreground">
-                    No buy orders found across tracked markets.
-                  </div>
-                ) : (
-                  bidRows.map((row, index) => (
-                    <div
-                      key={`${row.provider}-${row.highest_bid}`}
-                      className="border-b border-border px-4 py-3 last:border-0 md:grid md:grid-cols-[52px_minmax(180px,1.7fr)_108px_108px] md:items-center md:gap-4 md:px-6 md:py-4"
-                    >
-                      <div className="hidden font-mono text-xs text-muted-foreground md:block">
-                        #{index + 1}
-                      </div>
-                      {/* Mobile: provider + highest bid side by side */}
-                      <div className="flex min-w-0 items-center justify-between gap-2 md:contents">
-                        <ProviderIdentity
-                          provider={getProvider(row.provider, data.providers)}
-                          fallback={providerLabel(row.provider, data.providers)}
-                          logoSize={22}
-                          textClassName="font-mono text-sm font-bold text-foreground"
-                          className="flex min-w-0 flex-1 items-center gap-2"
-                        />
-                        <div className="shrink-0 font-mono text-sm font-bold text-success md:hidden">
-                          <Price cents={row.highest_bid} />
-                        </div>
-                      </div>
-                      {/* Mobile: bids count */}
-                      <div className="mt-1 md:hidden">
-                        <span className="font-mono text-[10px] text-muted-foreground">
-                          {formatNumber(row.num_bids)} bids
-                        </span>
-                      </div>
-                      {/* Desktop only columns */}
-                      <div className="hidden font-mono text-sm text-muted-foreground md:block md:text-right">
-                        {formatNumber(row.num_bids)}
-                      </div>
-                      <div className="hidden font-mono text-sm font-bold text-success md:block md:text-right">
-                        <Price cents={row.highest_bid} />
-                      </div>
-                    </div>
-                  ))
-                )}
+                <BuyOrdersList
+                  reliable={data.buyOrders.reliable}
+                  flagged={data.buyOrders.flagged}
+                  providers={data.providers}
+                />
               </div>
 
               <Suspense fallback={<ItemPriceHistoryFallback />}>

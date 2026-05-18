@@ -122,6 +122,80 @@ export function getBestBid(items: BuyOrderItem[]): BuyOrderItem | null {
   return [...items].sort((left, right) => right.highest_bid - left.highest_bid)[0] ?? null;
 }
 
+// Providers whose buy-order data is systematically unreliable and must never
+// drive the headline "highest bid". They are still shown, but demoted.
+const UNRELIABLE_BID_PROVIDERS = new Set(["steam"]);
+
+// A bid at or above this multiple of the item's global lowest ask is treated
+// as suspect (likely bad data or a niche item variant).
+const EXCESSIVE_BID_ASK_MULTIPLE = 2;
+
+export type BuyOrderFlag = "unreliable-provider" | "inverted-spread" | "excessive-bid";
+
+export interface ClassifiedBuyOrder extends BuyOrderItem {
+  /** `null` means the bid passed every reliability check. */
+  flag: BuyOrderFlag | null;
+}
+
+/**
+ * Splits buy orders into reliable bids and edge-case bids that should be
+ * soft-hidden. A bid is flagged when any of these hold:
+ *  - it comes from a systematically unreliable provider (e.g. Steam);
+ *  - it exceeds the SAME provider's own lowest ask (inverted spread) — the
+ *    same-provider reference deliberately avoids sidelining genuine
+ *    cross-market arbitrage;
+ *  - it is >= EXCESSIVE_BID_ASK_MULTIPLE x the global lowest ask for the item.
+ */
+export function classifyBuyOrders(
+  bids: BuyOrderItem[],
+  asks: MarketItem[],
+): { reliable: BuyOrderItem[]; flagged: ClassifiedBuyOrder[] } {
+  const lowestAskByProvider = new Map<string, number>();
+  for (const ask of asks) {
+    const current = lowestAskByProvider.get(ask.provider);
+    if (current == null || ask.lowest_ask < current) {
+      lowestAskByProvider.set(ask.provider, ask.lowest_ask);
+    }
+  }
+  const globalLowestAsk = asks.length
+    ? Math.min(...asks.map((ask) => ask.lowest_ask))
+    : null;
+
+  const flagFor = (bid: BuyOrderItem): BuyOrderFlag | null => {
+    if (UNRELIABLE_BID_PROVIDERS.has(bid.provider)) {
+      return "unreliable-provider";
+    }
+    const providerAsk = lowestAskByProvider.get(bid.provider);
+    if (providerAsk != null && bid.highest_bid > providerAsk) {
+      return "inverted-spread";
+    }
+    if (
+      globalLowestAsk != null &&
+      bid.highest_bid >= EXCESSIVE_BID_ASK_MULTIPLE * globalLowestAsk
+    ) {
+      return "excessive-bid";
+    }
+    return null;
+  };
+
+  const byBidDesc = (left: BuyOrderItem, right: BuyOrderItem) =>
+    right.highest_bid - left.highest_bid;
+
+  const reliable: BuyOrderItem[] = [];
+  const flagged: ClassifiedBuyOrder[] = [];
+  for (const bid of bids) {
+    const flag = flagFor(bid);
+    if (flag) {
+      flagged.push({ ...bid, flag });
+    } else {
+      reliable.push(bid);
+    }
+  }
+  reliable.sort(byBidDesc);
+  flagged.sort(byBidDesc);
+  return { reliable, flagged };
+}
+
 export function getCoverageSummary(
   prices: PricesPaginatedResponse | null,
   bids: BidsResponse | null,

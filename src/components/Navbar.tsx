@@ -17,10 +17,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const navItems = [
+  { label: "MARKET CAP", href: "/cs2-market-cap" },
   { label: "SEARCH", href: "/search" },
   { label: "INVENTORY", href: "/inventory-value" },
+  { label: "MARKETS", href: "/marketplaces" },
   { label: "API", href: "/api-info" },
-  { label: "PRICING", href: "/api-info#pricing" },
   { label: "DASHBOARD", href: "/dashboard" },
   { label: "DOCS", href: "https://docs.cs2cap.com/", external: true },
 ];
