@@ -25068,7 +25068,7 @@
           "Admin"
         ],
         "summary": "Admin List Webhook Events",
-        "description": "List processed Stripe webhook events with optional filters.",
+        "description": "List processed billing webhook events with optional filters.",
         "operationId": "adminListWebhookEvents",
         "security": [
           {
@@ -25076,6 +25076,28 @@
           }
         ],
         "parameters": [
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "stripe",
+                    "nowpayments"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by billing provider.",
+              "title": "Provider"
+            },
+            "description": "Filter by billing provider."
+          },
           {
             "name": "event_type",
             "in": "query",
@@ -25089,10 +25111,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Filter by Stripe event type.",
+              "description": "Filter by Stripe event type or NOWPayments status.",
               "title": "Event Type"
             },
-            "description": "Filter by Stripe event type."
+            "description": "Filter by Stripe event type or NOWPayments status."
           },
           {
             "name": "outcome",
@@ -25206,7 +25228,7 @@
           "Admin"
         ],
         "summary": "Admin Get Webhook Event",
-        "description": "Get full details for a single Stripe webhook event including payload.",
+        "description": "Get full details for a single billing webhook event including payload.",
         "operationId": "adminGetWebhookEvent",
         "security": [
           {
@@ -25222,6 +25244,28 @@
               "type": "string",
               "title": "Event Id"
             }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "stripe",
+                    "nowpayments"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Provider to search. Omit to search all providers.",
+              "title": "Provider"
+            },
+            "description": "Provider to search. Omit to search all providers."
           }
         ],
         "responses": {
@@ -25290,7 +25334,7 @@
           "Admin"
         ],
         "summary": "Admin Replay Webhook Event",
-        "description": "Replay a stored Stripe webhook event through the standard handler dispatch.\n\nCreates a new audit-trail row with the replay outcome. The original event\nrecord is preserved unchanged.",
+        "description": "Replay a stored billing webhook event through the standard handler dispatch.\n\nCreates a new audit-trail row with the replay outcome. The original event\nrecord is preserved unchanged.",
         "operationId": "adminReplayWebhookEvent",
         "security": [
           {
@@ -25306,6 +25350,28 @@
               "type": "string",
               "title": "Event Id"
             }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "stripe",
+                    "nowpayments"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Provider to replay. Omit to search all providers.",
+              "title": "Provider"
+            },
+            "description": "Provider to replay. Omit to search all providers."
           }
         ],
         "responses": {
@@ -27039,6 +27105,7 @@
           "csmoney_t",
           "cstrade",
           "dmarket",
+          "dupefi",
           "ecosteam",
           "haloskins",
           "itradegg",
@@ -28061,6 +28128,7 @@
           "c5",
           "csfloat",
           "dmarket",
+          "dupefi",
           "ecosteam",
           "marketcsgo",
           "steam",
@@ -33216,15 +33284,20 @@
       },
       "ReplayResponse": {
         "properties": {
+          "provider": {
+            "type": "string",
+            "title": "Provider",
+            "description": "Billing provider that emitted the webhook event."
+          },
           "event_id": {
             "type": "string",
             "title": "Event Id",
-            "description": "Original Stripe event ID that was replayed."
+            "description": "Original provider event ID that was replayed."
           },
           "event_type": {
             "type": "string",
             "title": "Event Type",
-            "description": "Stripe event type."
+            "description": "Stripe event type or NOWPayments payment status."
           },
           "outcome": {
             "type": "string",
@@ -33246,6 +33319,7 @@
         },
         "type": "object",
         "required": [
+          "provider",
           "event_id",
           "event_type",
           "outcome",
@@ -36237,15 +36311,20 @@
       },
       "WebhookEventDetailResponse": {
         "properties": {
+          "provider": {
+            "type": "string",
+            "title": "Provider",
+            "description": "Billing provider that emitted the webhook event."
+          },
           "event_id": {
             "type": "string",
             "title": "Event Id",
-            "description": "Stripe event ID (evt_...)."
+            "description": "Provider-specific webhook event ID."
           },
           "event_type": {
             "type": "string",
             "title": "Event Type",
-            "description": "Stripe event type."
+            "description": "Stripe event type or NOWPayments payment status."
           },
           "outcome": {
             "type": "string",
@@ -36280,11 +36359,12 @@
             "additionalProperties": true,
             "type": "object",
             "title": "Payload Json",
-            "description": "Full Stripe event payload."
+            "description": "Full provider webhook payload."
           }
         },
         "type": "object",
         "required": [
+          "provider",
           "event_id",
           "event_type",
           "outcome",
@@ -36332,15 +36412,20 @@
       },
       "WebhookEventSummaryResponse": {
         "properties": {
+          "provider": {
+            "type": "string",
+            "title": "Provider",
+            "description": "Billing provider that emitted the webhook event."
+          },
           "event_id": {
             "type": "string",
             "title": "Event Id",
-            "description": "Stripe event ID (evt_...)."
+            "description": "Provider-specific webhook event ID."
           },
           "event_type": {
             "type": "string",
             "title": "Event Type",
-            "description": "Stripe event type."
+            "description": "Stripe event type or NOWPayments payment status."
           },
           "outcome": {
             "type": "string",
@@ -36374,6 +36459,7 @@
         },
         "type": "object",
         "required": [
+          "provider",
           "event_id",
           "event_type",
           "outcome",
