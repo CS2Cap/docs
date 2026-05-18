@@ -9,7 +9,7 @@ The Bids API exposes the highest active buy orders placed across CS2 marketplace
 
 ## GET /bids — List bids
 
-Returns the current highest buy order across buy-order-enabled providers. You can filter by item, phase, provider, and currency.
+Returns the current highest buy order across buy-order-enabled providers. You can filter by item, phase, provider, and currency. Valid filters with no current matches return `200` with an empty `items` array; `503` indicates indexed data is unavailable or inconsistent.
 
 **Tiers:** `starter` · `pro` · `quant`
 

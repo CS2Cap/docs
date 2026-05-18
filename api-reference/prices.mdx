@@ -9,7 +9,7 @@ The Prices API gives you access to the current lowest ask for every CS2 item acr
 
 ## GET /prices — List prices
 
-Returns the current lowest ask across marketplaces. You can filter by item, phase, provider, and currency.
+Returns the current lowest ask across marketplaces. You can filter by item, phase, provider, and currency. Valid filters with no current matches return `200` with an empty `items` array; `503` indicates indexed data is unavailable or inconsistent.
 
 **Tiers:** `free` · `starter` · `pro` · `quant`
 
@@ -312,7 +312,7 @@ Returns composite OHLCV candles across all providers for the resolved item. Supp
 </ParamField>
 
 <ParamField query="lookback" type="string">
-  Duration shorthand such as `7d` or `30`. Overrides `start` when provided. For `interval=1h`, the window ends at the hour boundary after a 15-minute freshness buffer.
+  Duration shorthand such as `7d` or `30`. When sent with `start` or `end`, `lookback` takes precedence and selects a completed candle-bucket window. For `interval=1h`, the window ends at the hour boundary after a 15-minute freshness buffer.
 </ParamField>
 
 <ParamField query="interval" type="string" default="1d">
@@ -324,7 +324,7 @@ Returns composite OHLCV candles across all providers for the resolved item. Supp
 </ParamField>
 
 <ParamField query="currency" type="string" default="USD">
-  Target currency. Accepts 160+ ISO 4217 codes.
+  Target currency. Use `/v1/fx` for the currently supported currency codes. Unsupported codes return `422`; temporary FX-rate unavailability returns `503`.
 </ParamField>
 
 ### Response example
