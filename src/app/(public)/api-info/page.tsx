@@ -54,9 +54,9 @@ function NpmMark({ className }: { className?: string }) {
 }
 
 export const metadata: Metadata = {
-  title: "API Docs — Endpoints, Pricing & Integration | CS2Cap",
+  title: "CS2 API Docs — Endpoints, Pricing & Free Tier",
   description:
-    "Complete CS2Cap API reference. REST endpoints for prices, buy orders, sales, and arbitrage across 39+ CS2 marketplaces.",
+    "The full CS2Cap API reference: REST endpoints for CS2 & CS:GO skin prices, buy orders, sales, and arbitrage across 39+ marketplaces. Free tier included.",
   alternates: { canonical: "/api-info" },
 };
 

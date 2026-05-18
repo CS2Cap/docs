@@ -94,6 +94,7 @@ export default function OgImage() {
                 src={logo}
                 width={64}
                 height={64}
+                alt=""
                 style={{ borderRadius: "12px" }}
               />
             )}

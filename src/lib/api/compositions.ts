@@ -2,6 +2,7 @@ import openapiSpec from "../../../openapi.json";
 import { serverApi } from "./server";
 import { buildQuery } from "./shared";
 import {
+  classifyBuyOrders,
   formatPriceMinor,
   getBestAsk,
   getBestBid,
@@ -551,13 +552,18 @@ export async function getItemDetailPageCoreData(
     return null;
   }
 
+  // Split buy orders into reliable bids and soft-hidden edge cases. The
+  // headline best bid and all derived metadata use the reliable subset only.
+  const buyOrders = classifyBuyOrders(bids?.items ?? [], prices?.items ?? []);
+
   return {
     item,
     providers,
     prices,
     bids,
+    buyOrders,
     bestAsk: getBestAsk(prices?.items ?? []),
-    bestBid: getBestBid(bids?.items ?? []),
+    bestBid: getBestBid(buyOrders.reliable),
     coverage: getCoverageSummary(prices, bids),
   };
 }

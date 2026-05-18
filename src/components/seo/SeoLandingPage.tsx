@@ -23,9 +23,9 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { FooterSection } from "@/components/FooterSection";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import {
   StructuredData,
-  buildBreadcrumbList,
   buildFAQPage,
 } from "@/components/seo/StructuredData";
 import type { SeoPageConfig, SeoDataPoint, SeoUseCase, SeoFaqItem } from "@/lib/seo/landing-pages";
@@ -66,17 +66,19 @@ function findProvider(providers: ProviderInfo[], key: string): ProviderInfo | un
   );
 }
 
-// Deterministic per-slug shuffle so SSR/CSR match.
-function seededShuffle<T>(arr: T[], seed: string): T[] {
+// Deterministic, order-preserving window over `arr`. The start offset is
+// derived from `seed` so different source pages link to different (but stable)
+// neighbours, spreading internal link equity without random shuffling.
+function rotatedSlice<T>(arr: T[], seed: string, count: number): T[] {
+  if (arr.length === 0) return [];
   let h = 2166136261;
   for (let i = 0; i < seed.length; i++) {
     h = Math.imul(h ^ seed.charCodeAt(i), 16777619);
   }
-  const out = arr.slice();
-  for (let i = out.length - 1; i > 0; i--) {
-    h = Math.imul(h ^ (h >>> 13), 1274126177);
-    const j = Math.abs(h) % (i + 1);
-    [out[i], out[j]] = [out[j], out[i]];
+  const offset = Math.abs(h) % arr.length;
+  const out: T[] = [];
+  for (let i = 0; i < Math.min(count, arr.length); i++) {
+    out.push(arr[(offset + i) % arr.length]);
   }
   return out;
 }
@@ -136,20 +138,21 @@ export async function SeoLandingPage({ config }: { config: SeoPageConfig }) {
   // as a bottom CTA for internal linking.
   const generalCtaFeaturePages =
     config.type === "general"
-      ? seededShuffle(getPagesByType("feature"), config.slug + ":f").slice(0, 6)
+      ? rotatedSlice(getPagesByType("feature"), config.slug + ":f", 6)
       : [];
   const generalCtaMarketPages =
     config.type === "general"
-      ? seededShuffle(getPagesByType("market"), config.slug + ":m").slice(0, 8)
+      ? rotatedSlice(getPagesByType("market"), config.slug + ":m", 8)
       : [];
 
-  // For market pages, surface a randomized set of other market pages for internal linking.
+  // For market pages, surface other market pages for internal linking.
   const otherMarketPages =
     config.type === "market"
-      ? seededShuffle(
+      ? rotatedSlice(
           getPagesByType("market").filter((p) => p.slug !== config.slug),
           config.slug + ":om",
-        ).slice(0, 12)
+          12,
+        )
       : [];
 
   // For market pages, fetch live provider health stats for the hero panel.
@@ -193,17 +196,23 @@ export async function SeoLandingPage({ config }: { config: SeoPageConfig }) {
 
   const hasHeroAside = Boolean(heroStats || codeExample);
 
+  const hub =
+    config.type === "market"
+      ? { name: "Marketplaces", href: "/marketplaces" }
+      : { name: "APIs", href: "/apis" };
+
   return (
     <>
-      <StructuredData
-        data={buildBreadcrumbList([
-          { name: "Home", url: "https://cs2cap.com" },
-          { name: config.h1, url: `https://cs2cap.com${config.canonicalPath}` },
-        ])}
+      <Breadcrumbs
+        items={[
+          { name: "Home", href: "/" },
+          hub,
+          { name: config.h1, href: config.canonicalPath },
+        ]}
       />
       {faqs.length > 0 && <StructuredData data={buildFAQPage(faqs)} />}
       {/* Hero */}
-      <section className="relative overflow-x-clip bg-grid py-20 md:py-28">
+      <section className="relative overflow-x-clip bg-grid pb-20 pt-10 md:pb-28 md:pt-12">
         <div className="absolute top-20 right-20 h-40 w-40 rotate-12 border-2 border-primary/10" />
         <div className="absolute top-1/3 right-1/4 h-2 w-2 animate-pulse-glow bg-primary" />
         <div className="container relative z-10">

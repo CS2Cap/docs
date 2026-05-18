@@ -93,11 +93,12 @@ export function FooterSection({ showApiLink = true }: { showApiLink?: boolean })
           </div>
 
           <div>
-            <div className="font-mono text-[10px] tracking-widest text-muted-foreground mb-4">GUIDES</div>
+            <div className="font-mono text-[10px] tracking-widest text-muted-foreground mb-4">EXPLORE</div>
             <div className="flex flex-col gap-2">
-              <Link href="/cs2-api" className="font-mono text-xs text-foreground hover:text-primary transition-colors">CS2 API</Link>
-              <Link href="/cs2-skin-api" className="font-mono text-xs text-foreground hover:text-primary transition-colors">CS2 Skin API</Link>
-              <Link href="/cs2-market-api" className="font-mono text-xs text-foreground hover:text-primary transition-colors">CS2 Market API</Link>
+              <Link href="/cs2-market-cap" className="font-mono text-xs text-foreground hover:text-primary transition-colors">CS2 Market Cap</Link>
+              <Link href="/inventory-value" className="font-mono text-xs text-foreground hover:text-primary transition-colors">Inventory Value</Link>
+              <Link href="/apis" className="font-mono text-xs text-foreground hover:text-primary transition-colors">All APIs</Link>
+              <Link href="/marketplaces" className="font-mono text-xs text-foreground hover:text-primary transition-colors">All Marketplaces</Link>
             </div>
           </div>
 

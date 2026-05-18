@@ -19,6 +19,11 @@ export const metadata: Metadata = {
     },
   },
   keywords: [
+    "CS2 Market Cap",
+    "CS2 Skin Market Cap",
+    "CSGO Market Cap",
+    "CS2 Market Index",
+    "CS2 Market Tracker",
     "CS2 API",
     "CS2 Market API",
     "CS2 Skins API",

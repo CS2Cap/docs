@@ -33,3 +33,7 @@ pnpm-debug.log*
 *.sw?
 .vercel
 .env.local
+.remember/
+.claude/
+next-env.d.ts
+CLAUDE.md

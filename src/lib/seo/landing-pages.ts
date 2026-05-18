@@ -378,9 +378,9 @@ const GENERAL_PAGES: SeoPageConfig[] = [
   {
     slug: "cs2-api",
     type: "general",
-    title: "CS2 API — Real-Time Skin Market Data from 39+ Marketplaces",
+    title: "CS2 API — Free Real-Time Skin Price & Market Data",
     description:
-      "Unified RESTful API for CS2 skin pricing, buy orders, sales history, candlestick charts, and market analytics. One integration for 39+ marketplaces.",
+      "Get real-time CS2 & CS:GO skin prices, buy orders, sales, and charts from one REST API covering 39+ marketplaces. Free tier, no credit card needed.",
     h1: "CS2 API",
     canonicalPath: "/cs2-api",
     includeInSitemap: true,
@@ -389,9 +389,9 @@ const GENERAL_PAGES: SeoPageConfig[] = [
   {
     slug: "cs2-market-api",
     type: "general",
-    title: "CS2 Market API — CS2 & CS:GO Skin Market Data & Pricing",
+    title: "CS2 Market API — Live Skin Market Data & Prices",
     description:
-      "Access CS2 and CS:GO skin market data through one API. Real-time pricing, buy orders, historical data, and analytics from 39+ marketplaces.",
+      "Pull live CS2 & CS:GO skin market data — prices, buy orders, history, and analytics from 39+ marketplaces — through one unified REST API.",
     h1: "CS2 Market API",
     canonicalPath: "/cs2-market-api",
     includeInSitemap: true,
@@ -400,9 +400,9 @@ const GENERAL_PAGES: SeoPageConfig[] = [
   {
     slug: "cs2-skin-api",
     type: "general",
-    title: "CS2 Skin API — Item Catalog & Market Data",
+    title: "CS2 Skin API — Prices & Item Data for Every Skin",
     description:
-      "Complete CS2 skin catalog API with item metadata, pricing, and market analytics across all major marketplaces.",
+      "Look up live prices, buy orders, and metadata for every CS2 & CS:GO skin via one API. Full catalog, 39+ marketplaces, free to start.",
     h1: "CS2 Skin API",
     canonicalPath: "/cs2-skin-api",
     includeInSitemap: true,
@@ -410,9 +410,9 @@ const GENERAL_PAGES: SeoPageConfig[] = [
   {
     slug: "free-cs2-api",
     type: "general",
-    title: "Free CS2 API — Real-Time Skin Market Data with No Credit Card",
+    title: "Free CS2 API — Live Skin Prices, No Credit Card",
     description:
-      "Free tier CS2 API with live skin prices, buy orders, and analytics across 39+ marketplaces. No credit card required to start.",
+      "Start free with the CS2 API: real-time CS2 & CS:GO skin prices, buy orders, and analytics across 39+ marketplaces. No credit card required.",
     h1: "Free CS2 API",
     canonicalPath: "/free-cs2-api",
     includeInSitemap: true,
@@ -421,9 +421,9 @@ const GENERAL_PAGES: SeoPageConfig[] = [
   {
     slug: "cs2-data-api",
     type: "general",
-    title: "CS2 Data API — Skin Market & Pricing Data Feeds",
+    title: "CS2 Data API — Skin Pricing & Market Data Feeds",
     description:
-      "CS2 data API exposing live pricing, buy orders, sales, historical snapshots, candlesticks, and analytics across 39+ marketplaces.",
+      "Stream CS2 & CS:GO skin data — prices, buy orders, sales, candlesticks, and analytics from 39+ marketplaces — through one REST API.",
     h1: "CS2 Data API",
     canonicalPath: "/cs2-data-api",
     includeInSitemap: true,
@@ -434,7 +434,7 @@ const GENERAL_PAGES: SeoPageConfig[] = [
     type: "general",
     title: "CS2 Items API — Full Skin Catalog & Item Database",
     description:
-      "Search and look up every CS2 item through one API. Full Counter-Strike 2 catalog with rarity, wear, collection, and live pricing.",
+      "Search and look up every CS2 & CS:GO item via one API: rarity, wear, collection, images, and live pricing from the full catalog.",
     h1: "CS2 Items API",
     canonicalPath: "/cs2-items-api",
     includeInSitemap: true,
@@ -443,9 +443,9 @@ const GENERAL_PAGES: SeoPageConfig[] = [
   {
     slug: "cs2-skins-api",
     type: "general",
-    title: "CS2 Skins API — Live Pricing for Every Counter-Strike 2 Skin",
+    title: "CS2 Skins API — Live Prices for Every CS2 Skin",
     description:
-      "Live CS2 skin prices, buy orders, sales, and analytics for every Counter-Strike 2 skin via one REST API across 39+ marketplaces.",
+      "Query live prices, buy orders, sales, and analytics for every CS2 & CS:GO skin through one REST API across 39+ marketplaces.",
     h1: "CS2 Skins API",
     canonicalPath: "/cs2-skins-api",
     includeInSitemap: true,
@@ -454,9 +454,9 @@ const GENERAL_PAGES: SeoPageConfig[] = [
   {
     slug: "csgo-api",
     type: "general",
-    title: "CSGO API — CS:GO Skin Market & Pricing Data via CS2Cap",
+    title: "CSGO API — CS:GO & CS2 Skin Prices & Market Data",
     description:
-      "CS:GO skin market data API. Live pricing, buy orders, and historical data for every CS:GO/CS2 item across 39+ marketplaces.",
+      "Free CS:GO / CS2 skin market API: live prices, buy orders, and historical data for every item across 39+ marketplaces. No credit card needed.",
     h1: "CSGO API",
     canonicalPath: "/csgo-api",
     includeInSitemap: true,
@@ -468,9 +468,9 @@ const FEATURE_PAGES: SeoPageConfig[] = [
   {
     slug: "cs2-price-api",
     type: "feature",
-    title: "CS2 Price API — Real-Time Multi-Marketplace Skin Pricing",
+    title: "CS2 Price API — Real-Time Skin Prices, 39+ Markets",
     description:
-      "Retrieve CS2 skin prices from 39+ marketplaces in one request. Lowest ask, listing quantity, batch pricing, and provider filtering.",
+      "Fetch live CS2 & CS:GO skin prices from 39+ marketplaces in one request — lowest ask, listing quantity, batch pricing, and provider filters.",
     h1: "CS2 Price API",
     canonicalPath: "/cs2-price-api",
     includeInSitemap: true,
@@ -479,9 +479,9 @@ const FEATURE_PAGES: SeoPageConfig[] = [
   {
     slug: "cs2-buy-order-api",
     type: "feature",
-    title: "CS2 Buy Order API — Bid & Highest Bid Data Across Markets",
+    title: "CS2 Buy Order API — Live Bids & Highest Bid Data",
     description:
-      "Access CS2 skin buy order data including highest bid and bid count from BUFF163, CSFloat, Steam, YouPin, and other supported providers.",
+      "Get CS2 & CS:GO skin buy order data — highest bid and bid count — from BUFF163, CSFloat, Steam, YouPin, and more in one API call.",
     h1: "CS2 Buy Order API",
     canonicalPath: "/cs2-buy-order-api",
     includeInSitemap: true,
@@ -490,9 +490,9 @@ const FEATURE_PAGES: SeoPageConfig[] = [
   {
     slug: "cs2-sales-api",
     type: "feature",
-    title: "CS2 Sales API — Recent Sale Records",
+    title: "CS2 Sales API — Recent Skin Sale Records & Prices",
     description:
-      "Retrieve recent CS2 skin sale records including price, float, and paint seed data from supported marketplaces.",
+      "Retrieve recent CS2 & CS:GO skin sales — price, float, and paint seed — from supported marketplaces through one REST API.",
     h1: "CS2 Sales API",
     canonicalPath: "/cs2-sales-api",
     includeInSitemap: true,
@@ -506,9 +506,9 @@ const FEATURE_PAGES: SeoPageConfig[] = [
   {
     slug: "cs2-price-history-api",
     type: "feature",
-    title: "CS2 Price History API — Historical Snapshots & Candlestick Charts",
+    title: "CS2 Price History API — Historical Skin Price Data",
     description:
-      "Historical CS2 skin price snapshots and OHLCV candlestick data with intervals from 5 minutes. Filter by provider, item, and time range.",
+      "Get historical CS2 & CS:GO skin price snapshots and OHLCV candles, intervals from 5 minutes. Filter by provider, item, and time range.",
     h1: "CS2 Price History API",
     canonicalPath: "/cs2-price-history-api",
     includeInSitemap: true,
@@ -517,9 +517,9 @@ const FEATURE_PAGES: SeoPageConfig[] = [
   {
     slug: "cs2-candlestick-api",
     type: "feature",
-    title: "CS2 Candlestick API — OHLCV Market Charts",
+    title: "CS2 Candlestick API — OHLCV Skin Price Charts",
     description:
-      "CS2 skin candlestick chart data with open, high, low, close, and volume. Multiple intervals from 5 minutes up.",
+      "Build CS2 & CS:GO skin price charts with OHLCV candlestick data — open, high, low, close, volume — at intervals from 5 minutes up.",
     h1: "CS2 Candlestick API",
     canonicalPath: "/cs2-candlestick-api",
     includeInSitemap: true,
@@ -535,7 +535,7 @@ const FEATURE_PAGES: SeoPageConfig[] = [
     type: "feature",
     title: "CS2 Market Analytics API — Cross-Market Insights",
     description:
-      "CS2 market analytics including spreads, liquidity scores, and cross-marketplace comparisons through a unified API.",
+      "Analyze CS2 & CS:GO skin markets with spreads, liquidity scores, and cross-marketplace comparisons through one unified REST API.",
     h1: "CS2 Market Analytics API",
     canonicalPath: "/cs2-market-analytics-api",
     includeInSitemap: true,
@@ -549,9 +549,9 @@ const FEATURE_PAGES: SeoPageConfig[] = [
   {
     slug: "cs2-market-arbitrage-api",
     type: "feature",
-    title: "CS2 Market Arbitrage API — Price Discrepancies",
+    title: "CS2 Arbitrage API — Cross-Market Skin Price Gaps",
     description:
-      "Detect CS2 skin price discrepancies across marketplaces. Identify arbitrage opportunities with real-time cross-market data.",
+      "Spot CS2 & CS:GO skin price discrepancies across 39+ marketplaces and surface live arbitrage opportunities through one REST API.",
     h1: "CS2 Market Arbitrage API",
     canonicalPath: "/cs2-market-arbitrage-api",
     includeInSitemap: true,
@@ -567,7 +567,7 @@ const FEATURE_PAGES: SeoPageConfig[] = [
     type: "feature",
     title: "CS2 Market Indicators API — Technical Signals",
     description:
-      "Technical market indicators for CS2 skins including price trends, volume analysis, and market signals.",
+      "Get technical market indicators for CS2 & CS:GO skins — price trends, volume analysis, and trading signals — via one REST API.",
     h1: "CS2 Market Indicators API",
     canonicalPath: "/cs2-market-indicators-api",
     includeInSitemap: true,
@@ -581,9 +581,9 @@ const FEATURE_PAGES: SeoPageConfig[] = [
   {
     slug: "cs2-item-catalog-api",
     type: "feature",
-    title: "CS2 Item Catalog API — Full Skin Database",
+    title: "CS2 Item Catalog API — Full Skin Database & Search",
     description:
-      "Complete CS2 item catalog API with metadata, rarity, collections, wear ranges, and search. Browse the full skin database.",
+      "Browse the full CS2 & CS:GO item catalog via one API — metadata, rarity, collections, wear ranges, and forgiving text search.",
     h1: "CS2 Item Catalog API",
     canonicalPath: "/cs2-item-catalog-api",
     includeInSitemap: true,
@@ -608,8 +608,8 @@ function buildMarketPages(): SeoPageConfig[] {
     return {
       slug: `${key}-api`,
       type: "market" as const,
-      title: `${displayName} API — CS2 Market Data via CS2Cap`,
-      description: `Access ${displayName} CS2 skin market data through the CS2Cap unified API. Pricing, buy orders, and historical data from ${displayName} alongside other marketplaces.`,
+      title: `${displayName} API — CS2 & CS:GO Skin Market Data`,
+      description: `Access ${displayName} CS2 & CS:GO skin prices, buy orders, and price history through the CS2Cap API — one integration for ${displayName} and 38 more marketplaces.`,
       h1: `${displayName} API`,
       canonicalPath: `/${key}-api`,
       includeInSitemap: true,

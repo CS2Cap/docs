@@ -24,6 +24,8 @@ import type {
   ItemOut,
   ItemsMetadataResponse,
   ItemsResponse,
+  MarketIndexesResponse,
+  MarketIndexGroupBy,
   MarketItem,
   MarketItemsSnapshotResponse,
   MarketTimeframe,
@@ -392,6 +394,17 @@ export const serverApi = {
     );
     if (fresh) void setCachedMarketItemsSnapshot(timeframe, fresh);
     return fresh;
+  },
+
+  // Market cap indexes — anonymous public web-tier endpoint.
+  getMarketIndexes(
+    groupBy: MarketIndexGroupBy = "item_type",
+    revalidate: number | false = 300,
+  ) {
+    return serverFetch<MarketIndexesResponse>(
+      `/v1/web/market/indexes${buildQuery({ group_by: groupBy })}`,
+      { revalidate, anon: true, timeoutMs: 10000 },
+    );
   },
 
   getBillingPlans(revalidate: number | false = false) {
