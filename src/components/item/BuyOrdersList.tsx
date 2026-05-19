@@ -16,9 +16,9 @@ const ROW_GRID =
 
 const FLAG_TOOLTIP: Record<BuyOrderFlag, string> = {
   "unreliable-provider":
-    "This marketplace's buy-order data is frequently unreliable, so these orders are listed separately and never set the headline highest bid.",
+    "As Steam balance is not equal to real money (USD:STEAM = ~70%), Steam's buy orders often have an inflated value and are excluded from the main list.",
   "inverted-spread":
-    "This bid is higher than this marketplace's own lowest ask — likely tied to a niche item variant rather than this exact item.",
+    "This bid is higher than this marketplace's own lowest ask; likely due to a niche item variant (e.g. low float range) rather than this exact item.",
   "excessive-bid":
     "This bid is more than double the lowest ask across all markets — likely bad or niche-variant data.",
 };
@@ -137,7 +137,7 @@ export function BuyOrdersList({
         <>
           <div className="flex items-center gap-2 border-y-2 border-dashed border-amber-500/40 bg-amber-500/5 px-6 py-2 font-mono text-[10px] tracking-widest text-amber-500/90">
             <TriangleAlert className="h-3 w-3 shrink-0" />
-            POTENTIALLY UNRELIABLE — EXCLUDED FROM HIGHEST BID
+            EXCLUDED FROM OTHER BIDS
           </div>
           {flagged.map((row, index) => (
             <BuyOrderRow

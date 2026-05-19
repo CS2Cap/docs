@@ -28,8 +28,6 @@ import {
   slugifyMarketHashName,
 } from "@/lib/seo/itemSlug";
 import {
-  ItemConditionVariants,
-  ItemConditionVariantsFallback,
   ItemMarketInsightsFallback,
   ItemMarketInsightsSection,
   ItemPriceHistoryFallback,
@@ -39,6 +37,12 @@ import {
   ItemRelatedItemsFallback,
   ItemRelatedItemsSection,
 } from "./ItemDetailDeferredSections";
+import { ItemCasesSection } from "@/components/item/ItemCasesSection";
+import {
+  ItemConditionVariantTabs,
+  ItemConditionVariantTabsFallback,
+} from "@/components/item/ItemConditionVariantTabs";
+import { ItemMarketDistribution } from "@/components/item/ItemMarketDistribution";
 
 type ItemPageProps = {
   params: Promise<{
@@ -189,6 +193,7 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
   const productDescription = productDescriptionParts.join(" ") + ".";
   const highestAskCents =
     askRows.length > 0 ? askRows[askRows.length - 1].lowest_ask : undefined;
+  const lowestAskCents = askRows.length > 0 ? askRows[0].lowest_ask : undefined;
 
   return (
     <>
@@ -264,6 +269,23 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                   {data.item.wear_name ? (
                     <div className="mt-0.5 font-mono text-[10px] tracking-wider text-muted-foreground">
                       {data.item.wear_name}
+                    </div>
+                  ) : null}
+
+                  {askRows.length > 0 ? (
+                    <div className="mt-4">
+                      <div className="font-mono text-[9px] tracking-widest text-muted-foreground">
+                        PRICE RANGE
+                      </div>
+                      <div className="mt-0.5 font-mono text-lg font-bold">
+                        <span className="text-success">
+                          <Price cents={lowestAskCents} />
+                        </span>
+                        <span className="px-1.5 text-muted-foreground">—</span>
+                        <span className="text-foreground">
+                          <Price cents={highestAskCents} />
+                        </span>
+                      </div>
                     </div>
                   ) : null}
 
@@ -375,9 +397,7 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                 </div>
               </div>
 
-              <Suspense fallback={<ItemConditionVariantsFallback />}>
-                <ItemConditionVariants item={data.item} currentItemId={numericItemId} />
-              </Suspense>
+              <ItemMarketDistribution rows={askRows} providers={data.providers} />
 
               <Link
                 href="/cs2-api"
@@ -410,6 +430,13 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
             </div>
 
             <div className="space-y-6 lg:col-span-8 xl:col-span-9">
+              <Suspense fallback={<ItemConditionVariantTabsFallback />}>
+                <ItemConditionVariantTabs
+                  item={data.item}
+                  currentItemId={numericItemId}
+                />
+              </Suspense>
+
               <div className="border-brutal bg-card">
                 <div className="flex items-center justify-between border-b-2 border-border px-6 py-4">
                   <span className="font-mono text-sm tracking-widest text-primary">
@@ -423,9 +450,9 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                 <div className="hidden grid-cols-[52px_minmax(180px,1.7fr)_88px_108px_minmax(140px,1fr)_88px_108px] gap-4 border-b border-border px-6 py-3 font-mono text-[10px] tracking-widest text-muted-foreground md:grid">
                   <div>#</div>
                   <div>PROVIDER</div>
-                  <div className="text-right">QTY</div>
                   <div className="text-right">PRICE</div>
                   <div className="text-right">VS BEST</div>
+                  <div className="text-right">QTY</div>
                   <div className="text-right">UPDATED</div>
                   <div />
                 </div>
@@ -467,6 +494,8 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                   listingProvidersCount={data.coverage.askProviders}
                 />
               </Suspense>
+
+              <ItemCasesSection item={data.item} />
 
               <Suspense fallback={<ItemRecentSalesFallback />}>
                 <ItemRecentSalesSection itemId={numericItemId} providers={data.providers} />
