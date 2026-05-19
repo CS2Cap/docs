@@ -22,7 +22,7 @@
           "Prices"
         ],
         "summary": "List Prices",
-        "description": "Return current lowest ask listings.\n\nParameters:\n- `item_id`: Exact item ID (recommended when known).\n- `market_hash_name`: Exact market name.\n- `phase`: Optional Doppler phase filter.\n- `providers`: Optional provider-key enum list (repeat `providers` to pass multiple values).\n- `currency`: Quote currency for prices (default `USD`).\n- `limit`, `offset`: Offset pagination controls.\n\nBehavior:\n- If no filters are provided, returns a broad paginated listing.\n- If `market_hash_name` is Doppler and `phase` is omitted, results aggregate across phases per provider.\n- If `market_hash_name` and `phase` are both provided, only that exact phase is returned.\n- If the item resolves in the catalog but none of the queried providers currently has a\n  listing, returns `200` with an empty `items` array.\n\nResponse:\n- `meta`: Applied filters, requested providers, returned providers, currency.\n- `items`: Per-provider lowest ask entries.\n- `pagination`: `limit`, `offset`, `total`, `has_next`, `has_prev`.\n\nRequirements:\n- Valid API key with access to `/v1/prices`.\n- `limit` is capped by your tier.",
+        "description": "Return current lowest ask listings.\n\nParameters:\n- `item_id`: Exact item ID (recommended when known).\n- `market_hash_name`: Exact market name.\n- `phase`: Optional Doppler phase filter.\n- `providers`: Optional provider-key enum list (repeat `providers` to pass multiple values).\n- `currency`: Quote currency for prices (default `USD`).\n- `limit`, `offset`: Offset pagination controls.\n\nBehavior:\n- If no filters are provided, returns a broad paginated listing.\n- If `market_hash_name` is Doppler and `phase` is omitted, results aggregate across phases per provider.\n- If `market_hash_name` and `phase` are both provided, only that exact phase is returned.\n- If the item exists in the catalog but none of the queried providers currently has a\n  listing, returns `200` with an empty `items` array.\n\nResponse:\n- `meta`: Applied filters, requested providers, returned providers, currency.\n- `items`: Per-provider lowest ask entries.\n- `pagination`: `limit`, `offset`, `total`, `has_next`, `has_prev`.\n\nRequirements:\n- Valid API key with access to `/v1/prices`.\n- `limit` is capped by your tier.",
         "operationId": "listPrices",
         "security": [
           {
@@ -361,7 +361,7 @@
           "Prices"
         ],
         "summary": "Stream Full Prices Snapshot",
-        "description": "Return the full live prices snapshot as an NDJSON stream.\n\nBehavior:\n- pro and quant tiers only\n- requires a real `sk_*` API key; session JWTs are not accepted\n- optional `providers` filter; omit to stream all providers\n- fixed USD output\n- `lowest_ask` values are returned in USD minor units\n- one JSON object per line using the `MarketItem` field set\n- the live indexed Redis cache is streamed in bounded chunks without request-scoped Redis copies\n- per-API-key cooldown of 5 minutes for this POST operation",
+        "description": "Return the full live prices snapshot as an NDJSON stream.\n\nBehavior:\n- pro and quant tiers only\n- requires an API key (not a session token)\n- optional `providers` filter; omit to stream all providers\n- fixed USD output\n- `lowest_ask` values are returned in USD minor units\n- one JSON object per line using the `MarketItem` field set\n- per-API-key cooldown of 5 minutes for this POST operation",
         "operationId": "streamFullPricesSnapshot",
         "security": [
           {
@@ -916,7 +916,7 @@
           "Prices"
         ],
         "summary": "Price Candles",
-        "description": "Return composite OHLCV candle data for a single item across all providers.\n\nParameters:\n- Item filter: `item_id` or `market_hash_name` (one is required).\n- Optional filter: `phase`.\n- Time window: `start`/`end` (ISO 8601) or `lookback` (for example `7d` or `7`).\n- `interval`: `5m`, `1h`, or `1d`.\n- `fill`: Include empty buckets with carry-forward prices when `true`.\n- `currency`: Quote currency (default `USD`).\n\nNotes:\n- If `lookback` is sent with `start` or `end`, `lookback` takes precedence.\n  Lookback requests are aligned to completed candle buckets; `1h` lookback\n  windows use a 15-minute freshness buffer before flooring to the hour.\n- Maximum lookback depends on `interval`:\n  `5m` up to 7 days, `1h` up to 30 days, `1d` up to 365 days.\n- Free tiers are additionally capped by their tier restrictions and default\n  to the maximum allowed window when no explicit lookback is supplied.\n\nResponse:\n- `meta`: Item, provider scope, interval, phase, currency, and effective query-window\n  start/end timestamps.\n- `data`: Candle buckets in oldest-to-newest order\n  (`t`, `o`, `h`, `l`, `c`, `v`, `q`, `providers`).\n  `o`/`c` are the lowest effective provider prices, `l` is the minimum provider\n  low, `h` is capped at `median(provider_highs) * 1.5`, `v` is the non-negative depletion\n  flow between buckets, and `q` is the summed close-side inventory at bucket end when\n  available. `providers.o`, `providers.h`, `providers.l`, and `providers.c` identify the\n  provider keys contributing the returned open/high/low/close values. For `1d` requests\n  starting more than 30 days back, `v` falls back to legacy depletion-derived `volume_qty`\n  and `q` is `null`.\n\nRequirements:\n- Valid API key with access to `/v1/prices/candles`.\n- `item_id` or `market_hash_name` is required.\n- `start`/`end` must be valid ISO 8601 timestamps.",
+        "description": "Return composite OHLCV candle data for a single item across all providers.\n\nParameters:\n- Item filter: `item_id` or `market_hash_name` (one is required).\n- Optional filter: `phase`.\n- Time window: `start`/`end` (ISO 8601) or `lookback` (for example `7d` or `7`).\n- `interval`: `5m`, `1h`, or `1d`.\n- `fill`: Include empty buckets with carry-forward prices when `true`.\n- `currency`: Quote currency (default `USD`).\n\nNotes:\n- If `lookback` is sent with `start` or `end`, `lookback` takes precedence.\n  Lookback requests are aligned to completed candle buckets; `1h` lookback\n  windows use a 15-minute freshness buffer before flooring to the hour.\n- Maximum lookback depends on `interval`:\n  `5m` up to 7 days, `1h` up to 30 days, `1d` up to 365 days.\n- Free tiers are additionally capped by their tier restrictions and default\n  to the maximum allowed window when no explicit lookback is supplied.\n\nResponse:\n- `meta`: Item, provider scope, interval, phase, currency, and effective query-window\n  start/end timestamps.\n- `data`: Candle buckets in oldest-to-newest order\n  (`t`, `o`, `h`, `l`, `c`, `v`, `q`, `providers`).\n  `o`/`c` are the best ask prices at the start/end of the bucket, `l` is the\n  lowest ask, `h` is the highest ask (capped to reduce the impact of outliers), `v`\n  is the estimated trade volume derived from inventory changes, and `q` is the total\n  active listings at bucket end when available. `providers.o`, `providers.h`,\n  `providers.l`, and `providers.c` identify the provider keys contributing the\n  returned open/high/low/close values. For `1d` requests starting more than 30 days\n  back, `v` uses an alternate volume estimate and `q` is `null`.\n\nRequirements:\n- Valid API key with access to `/v1/prices/candles`.\n- `item_id` or `market_hash_name` is required.\n- `start`/`end` must be valid ISO 8601 timestamps.",
         "operationId": "priceCandles",
         "security": [
           {
@@ -1874,7 +1874,7 @@
           "Bids"
         ],
         "summary": "Stream Full Bids Snapshot",
-        "description": "Return the full live bids snapshot as an NDJSON stream.\n\nBehavior:\n- pro and quant tiers only\n- requires a real `sk_*` API key; session JWTs are not accepted\n- optional `providers` filter; omit to stream all providers\n- fixed USD output\n- `highest_bid` values are returned in USD minor units\n- one JSON object per line using the `BuyOrderItem` field set\n- the live indexed Redis cache is streamed in bounded chunks without request-scoped Redis copies\n- per-API-key cooldown of 5 minutes for this POST operation",
+        "description": "Return the full live bids snapshot as an NDJSON stream.\n\nBehavior:\n- pro and quant tiers only\n- requires an API key (not a session token)\n- optional `providers` filter; omit to stream all providers\n- fixed USD output\n- `highest_bid` values are returned in USD minor units\n- one JSON object per line using the `BuyOrderItem` field set\n- per-API-key cooldown of 5 minutes for this POST operation",
         "operationId": "streamFullBidsSnapshot",
         "security": [
           {
@@ -11099,7 +11099,7 @@
           "Market Intelligence"
         ],
         "summary": "Get Market Cap Indexes",
-        "description": "Aggregate the cached 24h market snapshot into category-level indexes.\n\nSupports grouping by `item_type` or `weapon_type`.\nItems are excluded from market cap totals when bid/ask/marketcap data is incomplete or spread exceeds the internal spread threshold.\n\nResponse:\n- no pagination\n- groups sorted by `marketcap_usd desc`\n- totals computed from the same filtered item set\n\nTier: Quant-only.",
+        "description": "Aggregate the cached 24h market snapshot into category-level indexes.\n\nSupports grouping by `item_type` or `weapon_type`.\nItems are excluded from market cap totals when bid/ask/marketcap data is incomplete or spread exceeds the minimum threshold.\n\nResponse:\n- no pagination\n- groups sorted by `marketcap_usd desc`\n- totals computed from the same filtered item set\n\nTier: Quant-only.",
         "operationId": "getMarketCapIndexes",
         "security": [
           {
@@ -16090,7 +16090,7 @@
           "Prices"
         ],
         "summary": "Web List Prices V1 Web Prices",
-        "description": "Return current lowest ask listings.\n\nParameters:\n- `item_id`: Exact item ID (recommended when known).\n- `market_hash_name`: Exact market name.\n- `phase`: Optional Doppler phase filter.\n- `providers`: Optional provider-key enum list (repeat `providers` to pass multiple values).\n- `currency`: Quote currency for prices (default `USD`).\n- `limit`, `offset`: Offset pagination controls.\n\nBehavior:\n- If no filters are provided, returns a broad paginated listing.\n- If `market_hash_name` is Doppler and `phase` is omitted, results aggregate across phases per provider.\n- If `market_hash_name` and `phase` are both provided, only that exact phase is returned.\n- If the item resolves in the catalog but none of the queried providers currently has a\n  listing, returns `200` with an empty `items` array.\n\nResponse:\n- `meta`: Applied filters, requested providers, returned providers, currency.\n- `items`: Per-provider lowest ask entries.\n- `pagination`: `limit`, `offset`, `total`, `has_next`, `has_prev`.\n\nRequirements:\n- Valid API key with access to `/v1/prices`.\n- `limit` is capped by your tier.",
+        "description": "Return current lowest ask listings.\n\nParameters:\n- `item_id`: Exact item ID (recommended when known).\n- `market_hash_name`: Exact market name.\n- `phase`: Optional Doppler phase filter.\n- `providers`: Optional provider-key enum list (repeat `providers` to pass multiple values).\n- `currency`: Quote currency for prices (default `USD`).\n- `limit`, `offset`: Offset pagination controls.\n\nBehavior:\n- If no filters are provided, returns a broad paginated listing.\n- If `market_hash_name` is Doppler and `phase` is omitted, results aggregate across phases per provider.\n- If `market_hash_name` and `phase` are both provided, only that exact phase is returned.\n- If the item exists in the catalog but none of the queried providers currently has a\n  listing, returns `200` with an empty `items` array.\n\nResponse:\n- `meta`: Applied filters, requested providers, returned providers, currency.\n- `items`: Per-provider lowest ask entries.\n- `pagination`: `limit`, `offset`, `total`, `has_next`, `has_prev`.\n\nRequirements:\n- Valid API key with access to `/v1/prices`.\n- `limit` is capped by your tier.",
         "operationId": "webListPrices",
         "security": [],
         "parameters": [
@@ -16759,7 +16759,7 @@
           "Prices"
         ],
         "summary": "Web Price Candles V1 Web Prices Candles",
-        "description": "Return composite OHLCV candle data for a single item across all providers.\n\nParameters:\n- Item filter: `item_id` or `market_hash_name` (one is required).\n- Optional filter: `phase`.\n- Time window: `start`/`end` (ISO 8601) or `lookback` (for example `7d` or `7`).\n- `interval`: `5m`, `1h`, or `1d`.\n- `fill`: Include empty buckets with carry-forward prices when `true`.\n- `currency`: Quote currency (default `USD`).\n\nNotes:\n- If `lookback` is sent with `start` or `end`, `lookback` takes precedence.\n  Lookback requests are aligned to completed candle buckets; `1h` lookback\n  windows use a 15-minute freshness buffer before flooring to the hour.\n- Maximum lookback depends on `interval`:\n  `5m` up to 7 days, `1h` up to 30 days, `1d` up to 365 days.\n- Free tiers are additionally capped by their tier restrictions and default\n  to the maximum allowed window when no explicit lookback is supplied.\n\nResponse:\n- `meta`: Item, provider scope, interval, phase, currency, and effective query-window\n  start/end timestamps.\n- `data`: Candle buckets in oldest-to-newest order\n  (`t`, `o`, `h`, `l`, `c`, `v`, `q`, `providers`).\n  `o`/`c` are the lowest effective provider prices, `l` is the minimum provider\n  low, `h` is capped at `median(provider_highs) * 1.5`, `v` is the non-negative depletion\n  flow between buckets, and `q` is the summed close-side inventory at bucket end when\n  available. `providers.o`, `providers.h`, `providers.l`, and `providers.c` identify the\n  provider keys contributing the returned open/high/low/close values. For `1d` requests\n  starting more than 30 days back, `v` falls back to legacy depletion-derived `volume_qty`\n  and `q` is `null`.\n\nRequirements:\n- Valid API key with access to `/v1/prices/candles`.\n- `item_id` or `market_hash_name` is required.\n- `start`/`end` must be valid ISO 8601 timestamps.",
+        "description": "Return composite OHLCV candle data for a single item across all providers.\n\nParameters:\n- Item filter: `item_id` or `market_hash_name` (one is required).\n- Optional filter: `phase`.\n- Time window: `start`/`end` (ISO 8601) or `lookback` (for example `7d` or `7`).\n- `interval`: `5m`, `1h`, or `1d`.\n- `fill`: Include empty buckets with carry-forward prices when `true`.\n- `currency`: Quote currency (default `USD`).\n\nNotes:\n- If `lookback` is sent with `start` or `end`, `lookback` takes precedence.\n  Lookback requests are aligned to completed candle buckets; `1h` lookback\n  windows use a 15-minute freshness buffer before flooring to the hour.\n- Maximum lookback depends on `interval`:\n  `5m` up to 7 days, `1h` up to 30 days, `1d` up to 365 days.\n- Free tiers are additionally capped by their tier restrictions and default\n  to the maximum allowed window when no explicit lookback is supplied.\n\nResponse:\n- `meta`: Item, provider scope, interval, phase, currency, and effective query-window\n  start/end timestamps.\n- `data`: Candle buckets in oldest-to-newest order\n  (`t`, `o`, `h`, `l`, `c`, `v`, `q`, `providers`).\n  `o`/`c` are the best ask prices at the start/end of the bucket, `l` is the\n  lowest ask, `h` is the highest ask (capped to reduce the impact of outliers), `v`\n  is the estimated trade volume derived from inventory changes, and `q` is the total\n  active listings at bucket end when available. `providers.o`, `providers.h`,\n  `providers.l`, and `providers.c` identify the provider keys contributing the\n  returned open/high/low/close values. For `1d` requests starting more than 30 days\n  back, `v` uses an alternate volume estimate and `q` is `null`.\n\nRequirements:\n- Valid API key with access to `/v1/prices/candles`.\n- `item_id` or `market_hash_name` is required.\n- `start`/`end` must be valid ISO 8601 timestamps.",
         "operationId": "webPriceCandles",
         "security": [],
         "parameters": [
@@ -18549,7 +18549,7 @@
           "Market Intelligence"
         ],
         "summary": "Get Market Cap Indexes",
-        "description": "Aggregate the cached 24h market snapshot into category-level indexes.\n\nSupports grouping by `item_type` or `weapon_type`.\nItems are excluded from market cap totals when bid/ask/marketcap data is incomplete or spread exceeds the internal spread threshold.\n\nResponse:\n- no pagination\n- groups sorted by `marketcap_usd desc`\n- totals computed from the same filtered item set\n\nTier: Quant-only.",
+        "description": "Aggregate the cached 24h market snapshot into category-level indexes.\n\nSupports grouping by `item_type` or `weapon_type`.\nItems are excluded from market cap totals when bid/ask/marketcap data is incomplete or spread exceeds the minimum threshold.\n\nResponse:\n- no pagination\n- groups sorted by `marketcap_usd desc`\n- totals computed from the same filtered item set\n\nTier: Quant-only.",
         "operationId": "webGetMarketCapIndexes",
         "security": [],
         "parameters": [
@@ -31148,7 +31148,7 @@
               }
             ],
             "title": "Stability Score",
-            "description": "Price stability component score (0-20): observation density and inverse coefficient of variation of hourly close."
+            "description": "Price stability component score (0-20): measures how consistently the item is observed and how stable its price has been over the last 24 hours."
           },
           "external_score": {
             "anyOf": [
@@ -32494,7 +32494,7 @@
           "v": {
             "type": "integer",
             "title": "V",
-            "description": "Non-negative depletion flow proxy for the bucket, computed from decreases in provider close-side inventory between consecutive buckets. This is not transaction volume."
+            "description": "Estimated trade volume for the bucket, derived from inventory changes rather than reported sale counts, not transaction volume."
           },
           "q": {
             "anyOf": [
@@ -32506,7 +32506,7 @@
               }
             ],
             "title": "Q",
-            "description": "Summed effective close-side inventory across providers at the end of the bucket. Null when close-side inventory is unavailable for that timeframe."
+            "description": "Total number of active listings at the end of the bucket. Null for older 1d windows."
           },
           "providers": {
             "$ref": "#/components/schemas/Providers",
