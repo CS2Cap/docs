@@ -1,8 +1,4 @@
-import {
-  getSiblingVariants,
-  getVariantKindLabel,
-  getVariantWearLabel,
-} from "@/lib/api";
+import { getSiblingVariants, getVariantKindLabel } from "@/lib/api";
 import { serverApi } from "@/lib/api/server";
 import { buildQuery } from "@/lib/api/shared";
 import { buildItemPath } from "@/lib/seo/itemSlug";
@@ -13,6 +9,26 @@ import {
   type PhaseGroup,
   type WearTab,
 } from "./ConditionVariantTabsView";
+
+const WEAR_ORDER = [
+  "Factory New",
+  "Minimal Wear",
+  "Field-Tested",
+  "Well-Worn",
+  "Battle-Scarred",
+];
+
+function ConditionVariantsEmpty() {
+  return (
+    <div className="border-brutal bg-card">
+      <div className="border-b-2 border-border px-6 py-4">
+        <span className="font-mono text-sm tracking-widest text-primary">
+          CONDITION VARIANTS
+        </span>
+      </div>
+    </div>
+  );
+}
 
 export function ItemConditionVariantTabsFallback() {
   return (
@@ -44,7 +60,7 @@ export async function ItemConditionVariantTabs({
   currentItemId: number;
 }) {
   if (!item.base_name || !item.skin_name) {
-    return null;
+    return <ConditionVariantsEmpty />;
   }
 
   const siblingItems = await serverApi.getItems(
@@ -62,7 +78,7 @@ export async function ItemConditionVariantTabs({
       .filter((candidate): candidate is number => typeof candidate === "number") ?? [];
 
   if (siblingItemIds.length === 0) {
-    return null;
+    return <ConditionVariantsEmpty />;
   }
 
   const siblingPrices = await serverApi.postPrices({
@@ -88,37 +104,67 @@ export async function ItemConditionVariantTabs({
   );
 
   if (siblingVariants.length === 0) {
-    return null;
+    return <ConditionVariantsEmpty />;
   }
 
-  // siblingVariants is pre-sorted by kind -> phase -> wear.
-  const kindMap = new Map<string, Map<string, WearTab[]>>();
+  // siblingVariants is pre-sorted by kind -> phase -> wear. Only variants with a
+  // recognized wear are kept; everything else falls through to the empty strip.
+  const kindMap = new Map<string, Map<string, Map<string, WearTab>>>();
   for (const variant of siblingVariants) {
     const itemId = variant.item.item_id;
     if (typeof itemId !== "number") {
       continue;
     }
 
+    const wearName = variant.item.wear_name ?? "";
+    if (!WEAR_ORDER.includes(wearName)) {
+      continue;
+    }
+
     const kindLabel = getVariantKindLabel(variant.item);
     const phaseKey = variant.item.phase ?? "";
 
-    const phaseMap = kindMap.get(kindLabel) ?? new Map<string, WearTab[]>();
-    const wears = phaseMap.get(phaseKey) ?? [];
-    wears.push({
+    const phaseMap = kindMap.get(kindLabel) ?? new Map<string, Map<string, WearTab>>();
+    const wearMap = phaseMap.get(phaseKey) ?? new Map<string, WearTab>();
+    wearMap.set(wearName, {
       itemId,
-      wearLabel: variant.item.wear_name ?? getVariantWearLabel(variant.item),
+      wearLabel: wearName,
       bestAsk: variant.bestAsk,
       isCurrent: itemId === currentItemId,
       href: buildItemPath(itemId, variant.item.market_hash_name),
+      available: true,
     });
-    phaseMap.set(phaseKey, wears);
+    phaseMap.set(phaseKey, wearMap);
     kindMap.set(kindLabel, phaseMap);
   }
 
   const kinds: KindGroup[] = [];
   for (const [kindLabel, phaseMap] of kindMap) {
+    // Wears the item actually ships in (union across phases, FN -> BS order).
+    // A Doppler only has FN/MW, a standard skin has all five.
+    const present = new Set<string>();
+    for (const wearMap of phaseMap.values()) {
+      for (const wearName of wearMap.keys()) {
+        present.add(wearName);
+      }
+    }
+    const kindWears = WEAR_ORDER.filter((wearName) => present.has(wearName));
+
     const phaseGroups: PhaseGroup[] = [];
-    for (const [phaseKey, wears] of phaseMap) {
+    for (const [phaseKey, wearMap] of phaseMap) {
+      // Every phase row uses the same wear columns; a phase missing one
+      // (e.g. a rare phase that has no MW) renders that slot as disabled.
+      const wears: WearTab[] = kindWears.map(
+        (wearName) =>
+          wearMap.get(wearName) ?? {
+            itemId: -1,
+            wearLabel: wearName,
+            bestAsk: null,
+            isCurrent: false,
+            href: "",
+            available: false,
+          },
+      );
       phaseGroups.push({
         phaseLabel: phaseKey || null,
         wears,
@@ -128,7 +174,7 @@ export async function ItemConditionVariantTabs({
   }
 
   if (kinds.length === 0) {
-    return null;
+    return <ConditionVariantsEmpty />;
   }
 
   const initialKind = getVariantKindLabel(item);

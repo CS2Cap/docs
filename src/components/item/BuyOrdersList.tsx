@@ -46,7 +46,7 @@ function BuyOrderRow({
   return (
     <div
       className={`border-b border-border px-4 py-3 last:border-0 ${ROW_GRID} ${
-        flag ? "bg-amber-500/[0.03]" : ""
+        flag ? "bg-amber-500/3" : ""
       }`}
     >
       <div className="hidden font-mono text-xs text-muted-foreground md:block">
