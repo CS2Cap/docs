@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css"></head>
+<body style="overflow:hidden;">
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px;">
+    <div>
+      <div class="t-label-xs" style="margin-bottom:10px;">HAIRLINE GRID — 1px gap over border bg</div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:1px; background:var(--line); border:2px solid var(--line);">
+        <div style="background:var(--surface); padding:14px;">
+          <div class="t-num-lg" style="font-size:20px;">$4,231</div>
+          <div class="t-label-xs">VALUE</div>
+        </div>
+        <div style="background:var(--surface); padding:14px;">
+          <div class="t-num-lg" style="font-size:20px;">+12%</div>
+          <div class="t-label-xs">24H</div>
+        </div>
+        <div style="background:var(--surface); padding:14px;">
+          <div class="t-num-lg" style="font-size:20px;">342</div>
+          <div class="t-label-xs">ITEMS</div>
+        </div>
+      </div>
+      <div class="t-code" style="margin-top:8px;">.hairline-grid · gap:1px · bg:border · children bg:card</div>
+    </div>
+    <div>
+      <div class="t-label-xs" style="margin-bottom:10px;">GRID BACKGROUND — 40px lines</div>
+      <div class="bg-grid" style="height:130px; border:2px solid var(--line); position:relative;">
+        <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center;">
+          <div class="t-label-sm" style="color:var(--brand);">SECTION SURFACE</div>
+        </div>
+      </div>
+      <div class="t-code" style="margin-top:8px;">.bg-grid · 40px lines · border @ 30% alpha · marketing sections</div>
+    </div>
+  </div>
+</body></html>

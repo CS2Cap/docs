@@ -1,0 +1,513 @@
+[
+    {
+        "tier": "free",
+        "display_name": "Free",
+        "description": "Basic access to core endpoints with rate limits",
+        "tier_image": "https://cdn.cs2c.app/assets/free-tier.png",
+        "is_active": true,
+        "is_public": true,
+        "sort_order": 0,
+        "monthly_price_cents": 0,
+        "currency": "USD",
+        "quota_requests_per_month": 1000,
+        "rate_requests_per_minute": 20,
+        "limit_param_cap": 100,
+        "support_level": "none",
+        "support_sla_hours": null,
+        "billing_provider": null,
+        "billing_price_monthly_id": null,
+        "billing_price_quarterly_id": null,
+        "billing_offers": [],
+        "can_access_analytics": false,
+        "can_access_webhooks": false,
+        "can_access_listing_urls": false,
+        "can_access_bulk_snapshots": false,
+        "max_providers": null,
+        "features_json": {
+            "feature_flags": {
+                "alert_access": false,
+                "webhook_access": false,
+                "analytics_access": false,
+                "watchlist_access": true,
+                "listing_url_access": false,
+                "bulk_snapshot_access": false
+            },
+            "endpoints": {
+                "/v1/fx": {
+                    "allowed": true
+                },
+                "/v1/items": {
+                    "allowed": true
+                },
+                "/v1/prices": {
+                    "allowed": true
+                },
+                "/v1/portfolio": {
+                    "allowed": true
+                },
+                "/v1/providers": {
+                    "allowed": true
+                },
+                "/v1/prices/candles": {
+                    "allowed": true,
+                    "restrictions": {
+                        "fill": [
+                            "none"
+                        ],
+                        "interval": [
+                            "1d"
+                        ],
+                        "time_params": "lookback_only",
+                        "max_lookback_days": 30
+                    }
+                },
+                "/v1/inventory/steam": {
+                    "allowed": true
+                },
+                "/v1/portfolio/value": {
+                    "allowed": true
+                }
+            }
+        },
+        "limits_json": {
+            "max_portfolios": 20,
+            "max_active_alerts": 0,
+            "max_child_api_keys": 0,
+            "max_portfolio_items": 1000,
+            "max_watchlist_items": 50,
+            "max_webhook_destinations": 0
+        },
+        "created_at": "2026-02-23T23:06:20.583920Z",
+        "updated_at": "2026-02-23T23:06:20.583920Z"
+    },
+    {
+        "tier": "starter",
+        "display_name": "Starter",
+        "description": "Serious hobbyist access to current prices, bids, and batch lookups",
+        "tier_image": "https://cdn.cs2c.app/assets/starter-tier.png",
+        "is_active": true,
+        "is_public": true,
+        "sort_order": 1,
+        "monthly_price_cents": 1900,
+        "currency": "USD",
+        "quota_requests_per_month": 50000,
+        "rate_requests_per_minute": 40,
+        "limit_param_cap": 1000,
+        "support_level": "basic",
+        "support_sla_hours": null,
+        "billing_provider": "stripe",
+        "billing_price_monthly_id": "price_1TUAUaFSAnkwsIODjvAV6zTI",
+        "billing_price_quarterly_id": "price_1TUAUaFSAnkwsIODAIIqdCcr",
+        "billing_offers": [
+            {
+                "provider": "nowpayments",
+                "billing_interval": "monthly",
+                "amount_cents": 1900,
+                "currency": "USD",
+                "provider_price_id": null,
+                "is_active": true,
+                "metadata_json": {}
+            },
+            {
+                "provider": "nowpayments",
+                "billing_interval": "quarterly",
+                "amount_cents": 4788,
+                "currency": "USD",
+                "provider_price_id": null,
+                "is_active": true,
+                "metadata_json": {}
+            },
+            {
+                "provider": "stripe",
+                "billing_interval": "monthly",
+                "amount_cents": 1900,
+                "currency": "USD",
+                "provider_price_id": "price_1TUAUaFSAnkwsIODjvAV6zTI",
+                "is_active": true,
+                "metadata_json": {}
+            },
+            {
+                "provider": "stripe",
+                "billing_interval": "quarterly",
+                "amount_cents": 4788,
+                "currency": "USD",
+                "provider_price_id": "price_1TUAUaFSAnkwsIODAIIqdCcr",
+                "is_active": true,
+                "metadata_json": {}
+            }
+        ],
+        "can_access_analytics": false,
+        "can_access_webhooks": false,
+        "can_access_listing_urls": false,
+        "can_access_bulk_snapshots": false,
+        "max_providers": null,
+        "features_json": {
+            "feature_flags": {
+                "webhook_access": false,
+                "analytics_access": false,
+                "listing_url_access": false,
+                "bulk_snapshot_access": false
+            },
+            "endpoints": {
+                "/v1/fx": {
+                    "allowed": true
+                },
+                "/v1/bids": {
+                    "allowed": true
+                },
+                "/v1/items": {
+                    "allowed": true
+                },
+                "/v1/prices": {
+                    "allowed": true
+                },
+                "/v1/providers": {
+                    "allowed": true
+                },
+                "/v1/bids/batch": {
+                    "allowed": true
+                },
+                "/v1/prices/batch": {
+                    "allowed": true
+                },
+                "/v1/prices/candles": {
+                    "allowed": true,
+                    "restrictions": {
+                        "fill": [
+                            "none"
+                        ],
+                        "interval": [
+                            "1d"
+                        ],
+                        "time_params": "lookback_only",
+                        "max_lookback_days": 30
+                    }
+                }
+            }
+        },
+        "limits_json": {
+            "max_portfolios": 20,
+            "max_child_api_keys": 0,
+            "max_portfolio_items": 1000,
+            "max_webhook_destinations": 0
+        },
+        "created_at": "2026-05-06T21:51:37.802071Z",
+        "updated_at": "2026-05-06T21:51:37.802071Z"
+    },
+    {
+        "tier": "pro",
+        "display_name": "Pro",
+        "description": "Full access to market data",
+        "tier_image": "https://cdn.cs2c.app/assets/pro-tier.png",
+        "is_active": true,
+        "is_public": true,
+        "sort_order": 2,
+        "monthly_price_cents": 7900,
+        "currency": "USD",
+        "quota_requests_per_month": 500000,
+        "rate_requests_per_minute": 100,
+        "limit_param_cap": 1000,
+        "support_level": "basic",
+        "support_sla_hours": null,
+        "billing_provider": "stripe",
+        "billing_price_monthly_id": "price_1T9palFSAnkwsIODGjz4uSYj",
+        "billing_price_quarterly_id": "price_1TKKnWFSAnkwsIODIIifwHPE",
+        "billing_offers": [
+            {
+                "provider": "nowpayments",
+                "billing_interval": "monthly",
+                "amount_cents": 7900,
+                "currency": "USD",
+                "provider_price_id": null,
+                "is_active": true,
+                "metadata_json": {}
+            },
+            {
+                "provider": "nowpayments",
+                "billing_interval": "quarterly",
+                "amount_cents": 19908,
+                "currency": "USD",
+                "provider_price_id": null,
+                "is_active": true,
+                "metadata_json": {}
+            },
+            {
+                "provider": "stripe",
+                "billing_interval": "monthly",
+                "amount_cents": 7900,
+                "currency": "USD",
+                "provider_price_id": "price_1T9palFSAnkwsIODGjz4uSYj",
+                "is_active": true,
+                "metadata_json": {}
+            },
+            {
+                "provider": "stripe",
+                "billing_interval": "quarterly",
+                "amount_cents": 23700,
+                "currency": "USD",
+                "provider_price_id": "price_1TKKnWFSAnkwsIODIIifwHPE",
+                "is_active": true,
+                "metadata_json": {}
+            }
+        ],
+        "can_access_analytics": false,
+        "can_access_webhooks": false,
+        "can_access_listing_urls": true,
+        "can_access_bulk_snapshots": true,
+        "max_providers": null,
+        "features_json": {
+            "feature_flags": {
+                "alert_access": true,
+                "webhook_access": false,
+                "analytics_access": false,
+                "watchlist_access": true,
+                "listing_url_access": true,
+                "bulk_snapshot_access": true
+            },
+            "endpoints": {
+                "/v1/fx": {
+                    "allowed": true
+                },
+                "/v1/bids": {
+                    "allowed": true
+                },
+                "/v1/items": {
+                    "allowed": true
+                },
+                "/v1/sales": {
+                    "allowed": true
+                },
+                "/v1/prices": {
+                    "allowed": true
+                },
+                "/v1/portfolio": {
+                    "allowed": true
+                },
+                "/v1/providers": {
+                    "allowed": true
+                },
+                "/v1/bids/batch": {
+                    "allowed": true
+                },
+                "/v1/market/items": {
+                    "allowed": true
+                },
+                "/v1/prices/batch": {
+                    "allowed": true
+                },
+                "/v1/prices/candles": {
+                    "allowed": true
+                },
+                "/v1/prices/history": {
+                    "allowed": true
+                },
+                "/v1/inventory/steam": {
+                    "allowed": true
+                },
+                "/v1/portfolio/value": {
+                    "allowed": true
+                }
+            }
+        },
+        "limits_json": {
+            "max_portfolios": 50,
+            "max_active_alerts": 25,
+            "max_child_api_keys": 0,
+            "max_portfolio_items": 5000,
+            "max_watchlist_items": 250,
+            "max_webhook_destinations": 0
+        },
+        "created_at": "2026-02-23T23:06:20.583920Z",
+        "updated_at": "2026-02-23T23:06:20.583920Z"
+    },
+    {
+        "tier": "quant",
+        "display_name": "Quant",
+        "description": "Full access with advanced analytics and priority support",
+        "tier_image": "https://cdn.cs2c.app/assets/quant-tier.png",
+        "is_active": true,
+        "is_public": true,
+        "sort_order": 3,
+        "monthly_price_cents": 17900,
+        "currency": "USD",
+        "quota_requests_per_month": 1000000,
+        "rate_requests_per_minute": 300,
+        "limit_param_cap": 1000,
+        "support_level": "priority",
+        "support_sla_hours": 24,
+        "billing_provider": "stripe",
+        "billing_price_monthly_id": "price_1T9pN0FSAnkwsIOD6e5cGut3",
+        "billing_price_quarterly_id": "price_1TKKoNFSAnkwsIODEO1Tt3zg",
+        "billing_offers": [
+            {
+                "provider": "nowpayments",
+                "billing_interval": "monthly",
+                "amount_cents": 17900,
+                "currency": "USD",
+                "provider_price_id": null,
+                "is_active": true,
+                "metadata_json": {}
+            },
+            {
+                "provider": "nowpayments",
+                "billing_interval": "quarterly",
+                "amount_cents": 45108,
+                "currency": "USD",
+                "provider_price_id": null,
+                "is_active": true,
+                "metadata_json": {}
+            },
+            {
+                "provider": "stripe",
+                "billing_interval": "monthly",
+                "amount_cents": 17900,
+                "currency": "USD",
+                "provider_price_id": "price_1T9pN0FSAnkwsIOD6e5cGut3",
+                "is_active": true,
+                "metadata_json": {}
+            },
+            {
+                "provider": "stripe",
+                "billing_interval": "quarterly",
+                "amount_cents": 53700,
+                "currency": "USD",
+                "provider_price_id": "price_1TKKoNFSAnkwsIODEO1Tt3zg",
+                "is_active": true,
+                "metadata_json": {}
+            }
+        ],
+        "can_access_analytics": true,
+        "can_access_webhooks": true,
+        "can_access_listing_urls": true,
+        "can_access_bulk_snapshots": true,
+        "max_providers": null,
+        "features_json": {
+            "feature_flags": {
+                "alert_access": true,
+                "webhook_access": true,
+                "analytics_access": true,
+                "watchlist_access": true,
+                "listing_url_access": true,
+                "bulk_snapshot_access": true
+            },
+            "endpoints": {
+                "/v1/fx": {
+                    "allowed": true
+                },
+                "/v1/bids": {
+                    "allowed": true
+                },
+                "/v1/items": {
+                    "allowed": true
+                },
+                "/v1/sales": {
+                    "allowed": true
+                },
+                "/v1/prices": {
+                    "allowed": true
+                },
+                "/v1/portfolio": {
+                    "allowed": true
+                },
+                "/v1/providers": {
+                    "allowed": true
+                },
+                "/v1/bids/batch": {
+                    "allowed": true
+                },
+                "/v1/market/items": {
+                    "allowed": true
+                },
+                "/v1/prices/batch": {
+                    "allowed": true
+                },
+                "/v1/market/indexes": {
+                    "allowed": true
+                },
+                "/v1/prices/candles": {
+                    "allowed": true
+                },
+                "/v1/prices/history": {
+                    "allowed": true
+                },
+                "/v1/inventory/steam": {
+                    "allowed": true
+                },
+                "/v1/portfolio/value": {
+                    "allowed": true
+                },
+                "/v1/market/arbitrage": {
+                    "allowed": true
+                },
+                "/v1/market/indicators": {
+                    "allowed": true
+                }
+            }
+        },
+        "limits_json": {
+            "max_portfolios": 1000,
+            "max_active_alerts": 200,
+            "max_child_api_keys": 25,
+            "max_portfolio_items": 10000,
+            "max_watchlist_items": 1000,
+            "max_webhook_destinations": 5
+        },
+        "created_at": "2026-02-23T23:06:20.583920Z",
+        "updated_at": "2026-02-23T23:06:20.583920Z"
+    },
+    {
+        "tier": "internal_public_tool",
+        "display_name": "Internal Public Tool",
+        "description": "Internal service tier for cs2cap.com public inventory valuation tool.",
+        "tier_image": null,
+        "is_active": true,
+        "is_public": false,
+        "sort_order": 999,
+        "monthly_price_cents": 0,
+        "currency": "USD",
+        "quota_requests_per_month": 1000000,
+        "rate_requests_per_minute": 300,
+        "limit_param_cap": 1000,
+        "support_level": "none",
+        "support_sla_hours": null,
+        "billing_provider": null,
+        "billing_price_monthly_id": null,
+        "billing_price_quarterly_id": null,
+        "billing_offers": [],
+        "can_access_analytics": false,
+        "can_access_webhooks": false,
+        "can_access_listing_urls": false,
+        "can_access_bulk_snapshots": false,
+        "max_providers": null,
+        "features_json": {
+            "feature_flags": {
+                "webhook_access": false,
+                "analytics_access": false,
+                "listing_url_access": false,
+                "bulk_snapshot_access": false
+            },
+            "endpoints": {
+                "/v1/items": {
+                    "allowed": true
+                },
+                "/v1/inventory/steam": {
+                    "allowed": true
+                },
+                "/v1/portfolio/value": {
+                    "allowed": true
+                }
+            }
+        },
+        "limits_json": {
+            "max_providers": null,
+            "max_portfolios": 999,
+            "max_active_alerts": 0,
+            "max_child_api_keys": 0,
+            "max_portfolio_items": 9999,
+            "max_watchlist_items": 0,
+            "max_webhook_destinations": 0
+        },
+        "created_at": "2026-05-01T21:19:04.752576Z",
+        "updated_at": "2026-05-01T21:57:31.909391Z"
+    }
+]

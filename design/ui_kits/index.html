@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CS2Cap · UI Kit</title>
+  <link rel="icon" type="image/x-icon" href="../../assets/favicon.ico">
+  <link rel="stylesheet" href="../../colors_and_type.css">
+  <style>
+    html, body { margin: 0; padding: 0; min-height: 100%; }
+    body { background: var(--bg); color: var(--fg); font-family: var(--font-sans); }
+    * { box-sizing: border-box; }
+    a, button { color: inherit; }
+    a { -webkit-tap-highlight-color: transparent; }
+    button:focus, a:focus, input:focus { outline: none; }
+    button:focus-visible, a:focus-visible, input:focus-visible {
+      outline: 2px solid var(--brand); outline-offset: 2px;
+    }
+    /* Custom scrollbar on dark surfaces */
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-thumb { background: hsl(217 40% 20%); }
+    ::-webkit-scrollbar-thumb:hover { background: hsl(217 90% 40%); }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+  </style>
+</head>
+<body>
+  <div id="app" data-screen-label="00 Loading"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script type="text/babel" src="components/Icons.jsx"></script>
+  <script type="text/babel" src="components/Primitives.jsx"></script>
+  <script type="text/babel" src="components/LiveTicker.jsx"></script>
+  <script type="text/babel" src="components/Navbar.jsx"></script>
+  <script type="text/babel" src="components/Footer.jsx"></script>
+  <script type="text/babel" src="screens/Home.jsx"></script>
+  <script type="text/babel" src="screens/Pricing.jsx"></script>
+  <script type="text/babel" src="screens/Item.jsx"></script>
+  <script type="text/babel" src="screens/Dashboard.jsx"></script>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const SCREENS = {
+      home:      { label: "Home",      Component: HomeScreen,      framedFooter: true },
+      pricing:   { label: "Pricing",   Component: PricingScreen,   framedFooter: true },
+      item:      { label: "Item",      Component: ItemScreen,      framedFooter: true },
+      dashboard: { label: "Dashboard", Component: DashboardScreen, framedFooter: true },
+    };
+
+    function readHash() {
+      const h = (window.location.hash || "").replace(/^#/, "");
+      return SCREENS[h] ? h : "home";
+    }
+
+    function App() {
+      const [screen, setScreen] = useState(readHash());
+
+      useEffect(() => {
+        const onHash = () => setScreen(readHash());
+        window.addEventListener("hashchange", onHash);
+        return () => window.removeEventListener("hashchange", onHash);
+      }, []);
+
+      // Some "screens" in the nav are conceptual (search, api, watchlist, etc.) — for
+      // the prototype, route unknown destinations to home (or dashboard for authed routes).
+      const navigate = (to) => {
+        const targetScreen = SCREENS[to] ? to
+          : ["search", "api", "watchlist", "alerts", "account", "billing", "settings", "api-keys", "usage", "inventory"].includes(to) ? "dashboard"
+          : ["buff163", "doppler", "history", "contact", "terms", "privacy", "sale"].includes(to) ? "home"
+          : "home";
+        window.location.hash = "#" + targetScreen;
+        setScreen(targetScreen);
+        // Scroll back to top so the new page starts fresh
+        requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "instant" }));
+      };
+
+      const config = SCREENS[screen];
+      const ScreenComponent = config.Component;
+
+      return (
+        <div data-screen-label={"0" + (Object.keys(SCREENS).indexOf(screen) + 1) + " " + config.label}>
+          <Navbar screen={screen} onNavigate={navigate} authed={true} />
+          <ScreenComponent onNavigate={navigate} />
+          <Footer onNavigate={navigate} />
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("app")).render(<App />);
+  </script>
+</body>
+</html>
