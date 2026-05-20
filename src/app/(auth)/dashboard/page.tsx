@@ -69,28 +69,36 @@ export default function DashboardPage() {
 
   return (
     <div className="p-6 lg:p-8">
-      <div className="mb-8">
-        <div className="font-mono text-xs tracking-widest text-primary mb-2">// DASHBOARD</div>
-        <h1 className="text-3xl font-black tracking-tighter">OVERVIEW</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Welcome back, {displayName}.
-        </p>
-        <div className="mt-4">
+      <div className="mb-10">
+        <div className="font-mono text-xs tracking-widest text-primary mb-3">// DASHBOARD</div>
+        <h1 className="display-heading text-4xl font-black leading-[0.96] tracking-tighter md:text-5xl lg:text-6xl">
+          WELCOME BACK,
+          <br />
+          <span className="text-gradient-brand">{displayName.toUpperCase()}</span>
+          <span className="text-primary">.</span>
+        </h1>
+        <div className="mt-6">
           <EmailVerificationBanner />
         </div>
       </div>
 
-      <div className="mb-8 grid gap-4 md:grid-cols-3">
+      <div className="mb-10 grid gap-4 md:grid-cols-3">
         {stats.map((stat) => (
           <Card key={stat.label} className="border-border/50 bg-card/50">
             <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">{stat.label}</p>
-                  <p className="text-2xl font-bold text-foreground">{stat.value}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">{stat.detail}</p>
+              <div className="flex items-center justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+                    {stat.label}
+                  </p>
+                  <p className="mt-2 font-mono text-3xl font-black tracking-tight text-foreground md:text-4xl">
+                    {stat.value}
+                  </p>
+                  <p className="mt-1.5 font-mono text-[11px] text-muted-foreground">
+                    {stat.detail}
+                  </p>
                 </div>
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10">
                   <stat.icon className="h-6 w-6 text-primary" />
                 </div>
               </div>
@@ -180,21 +188,27 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 sm:grid-cols-3">
-              <div className="rounded-lg border border-border/50 bg-secondary/20 p-4">
-                <p className="text-sm text-muted-foreground">Used</p>
-                <p className="text-2xl font-bold text-foreground">
+              <div className="rounded-lg border border-border/50 bg-secondary/20 p-5">
+                <p className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+                  Used
+                </p>
+                <p className="mt-2 font-mono text-3xl font-black text-foreground">
                   {session.usage.requests_this_month.toLocaleString()}
                 </p>
               </div>
-              <div className="rounded-lg border border-border/50 bg-secondary/20 p-4">
-                <p className="text-sm text-muted-foreground">Limit</p>
-                <p className="text-2xl font-bold text-foreground">
+              <div className="rounded-lg border border-border/50 bg-secondary/20 p-5">
+                <p className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+                  Limit
+                </p>
+                <p className="mt-2 font-mono text-3xl font-black text-foreground">
                   {session.usage.requests_limit.toLocaleString()}
                 </p>
               </div>
-              <div className="rounded-lg border border-border/50 bg-secondary/20 p-4">
-                <p className="text-sm text-muted-foreground">Resets</p>
-                <p className="text-2xl font-bold text-foreground">
+              <div className="rounded-lg border border-border/50 bg-secondary/20 p-5">
+                <p className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+                  Resets
+                </p>
+                <p className="mt-2 font-mono text-3xl font-black text-foreground">
                   {new Date(session.usage.reset_date).toLocaleDateString("en-US", {
                     month: "short",
                     day: "numeric",

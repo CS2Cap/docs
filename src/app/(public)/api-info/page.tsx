@@ -19,10 +19,8 @@ import {
   Gauge,
   BookOpen,
   Braces,
-  CheckCircle2,
 } from "lucide-react";
 import { FooterSection } from "@/components/FooterSection";
-import { PricingPlans } from "@/components/PricingPlans";
 import { StructuredData, buildBreadcrumbList, buildSoftwareApplication } from "@/components/seo/StructuredData";
 import { getApiInfoPageData } from "@/lib/api/compositions";
 import { serverApi } from "@/lib/api/server";
@@ -388,46 +386,30 @@ export default async function ApiPage() {
 
       <section id="pricing" className="border-t-2 border-border bg-grid py-16">
         <div className="container">
-          <div className="mb-12 text-center">
+          <div className="mx-auto max-w-3xl border-2 border-dashed border-border bg-card/50 px-6 py-8 text-center md:px-10 md:py-10">
             <div className="mb-2 font-mono text-xs tracking-widest text-primary">// PRICING</div>
-            <h2 className="mb-4 text-3xl font-black tracking-tighter md:text-5xl">
-              LIVE <span className="text-primary">PLANS</span>
+            <h2 className="mb-3 text-2xl font-black tracking-tighter md:text-4xl">
+              FREE TIER INCLUDED. <span className="text-primary">PAID PLANS START AT $19.</span>
             </h2>
-            <p className="mx-auto max-w-lg font-mono text-sm text-muted-foreground">Pick a tier. Start building.</p>
-          </div>
-
-          {paidPlans.length ? (
-            <>
-              <PricingPlans plans={paidPlans} />
-              <div className="mx-auto mt-10 max-w-3xl">
-                <div className="flex flex-col items-center gap-4 border-2 border-dashed border-border bg-card/50 px-6 py-6 text-center md:flex-row md:justify-between md:px-8 md:text-left">
-                  <div className="flex items-center gap-3">
-                    <CheckCircle2 className="h-5 w-5 shrink-0 text-success" strokeWidth={2} />
-                    <div>
-                      <div className="font-mono text-xs font-bold tracking-wider text-foreground">
-                        FREE TIER INCLUDED
-                      </div>
-                      <div className="mt-0.5 font-mono text-[11px] text-muted-foreground">
-                        API access is free. No credit card required to start building.
-                      </div>
-                    </div>
-                  </div>
-                  <Link
-                    href="/login"
-                    className="shrink-0 border-brutal px-5 py-2.5 font-mono text-[11px] font-bold tracking-wider text-foreground brutalist-hover hover:border-primary transition-colors"
-                  >
-                    GET STARTED FREE →
-                  </Link>
-                </div>
-              </div>
-            </>
-          ) : (
-            <div className="mx-auto max-w-2xl border-brutal bg-card p-8 text-center">
-              <div className="font-mono text-sm text-muted-foreground">
-                Sign in to see available plans and your current tier.
-              </div>
+            <p className="mx-auto mb-6 max-w-lg font-mono text-sm leading-relaxed text-muted-foreground">
+              Full plan comparison, feature matrix, and billing FAQ live on the
+              dedicated pricing page.
+            </p>
+            <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Link
+                href="/pricing"
+                className="border-brutal-accent bg-primary px-6 py-3 font-mono text-xs font-bold tracking-wider text-primary-foreground brutalist-hover"
+              >
+                COMPARE PLANS →
+              </Link>
+              <Link
+                href="/login"
+                className="border-brutal px-6 py-3 font-mono text-xs font-bold tracking-wider text-foreground brutalist-hover hover:border-primary transition-colors"
+              >
+                GET STARTED FREE
+              </Link>
             </div>
-          )}
+          </div>
         </div>
       </section>
 

@@ -1,9 +1,12 @@
+import Link from "next/link";
+import { cookies } from "next/headers";
 import { ItemPriceHistoryChart } from "@/components/ItemPriceHistoryChart";
 import { ProviderIdentity } from "@/components/ProviderIdentity";
 import { SimilarItemsGrid, type SimilarItem } from "@/components/item/SimilarItemsGrid";
 import { formatCompact, getProvider, providerLabel } from "@/lib/api";
 import { Price } from "@/components/Price";
 import { serverApi } from "@/lib/api/server";
+import { WEB_AUTH_TOKEN_COOKIE_NAME, WEB_SESSION_COOKIE_NAME } from "@/lib/api/config";
 import { buildQuery } from "@/lib/api/shared";
 import { buildItemPath } from "@/lib/seo/itemSlug";
 import type { ItemOut, MarketItem, PriceCandlesPage, ProviderInfo } from "@/lib/api/types";
@@ -200,6 +203,27 @@ export async function ItemRecentSalesSection({
   itemId: number;
   providers: ProviderInfo[];
 }) {
+  const cookieStore = await cookies();
+  const isAuthenticated =
+    cookieStore.has(WEB_SESSION_COOKIE_NAME) || cookieStore.has(WEB_AUTH_TOKEN_COOKIE_NAME);
+
+  if (!isAuthenticated) {
+    return (
+      <div className="border-brutal bg-card">
+        <div className="flex items-center justify-between border-b-2 border-border px-4 py-3">
+          <span className="font-mono text-xs tracking-widest text-primary">RECENT SALES</span>
+          <span className="font-mono text-[10px] text-muted-foreground">Sign in required</span>
+        </div>
+        <div className="px-4 py-8 font-mono text-sm text-muted-foreground">
+          <Link href="/login" className="text-primary underline-offset-2 hover:underline">
+            Sign in
+          </Link>{" "}
+          to view recent sales for this item.
+        </div>
+      </div>
+    );
+  }
+
   const sales = await serverApi.getSales(`/v1/web/sales?item_id=${itemId}&limit=10`, 600);
 
   return (

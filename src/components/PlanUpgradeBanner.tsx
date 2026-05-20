@@ -55,7 +55,7 @@ export function PlanUpgradeBanner() {
       </span>
       <div className="ml-auto flex items-center gap-1.5">
         <Link
-          href="/api-info#pricing"
+          href="/pricing"
           className="font-mono text-[10px] font-bold tracking-wider text-muted-foreground hover:text-foreground transition-colors"
         >
           PLANS

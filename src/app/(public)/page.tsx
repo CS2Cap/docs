@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { Code2, Globe, ArrowRight, Zap } from "lucide-react";
 import { LiveTicker } from "@/components/LiveTicker";
 import { HeroSection } from "@/components/HeroSection";
-import { FeaturesGrid } from "@/components/FeaturesGrid";
+import { Top3FeaturesSection } from "@/components/Top3FeaturesSection";
 import { MarketplacesSection } from "@/components/MarketplacesSection";
 import { FooterSection } from "@/components/FooterSection";
 import { StructuredData, buildOrganization, buildWebSite, buildWebApplication } from "@/components/seo/StructuredData";
@@ -71,51 +71,7 @@ export default async function HomePage() {
       <main id="main-content">
         <HeroSection providerCount={landing.providerCount} totalItems={landing.totalItems} />
 
-        {/* Market cap — explains the brand and routes consumer traffic */}
-        <section className="border-t-2 border-border py-16">
-          <div className="container">
-            <div className="grid items-center gap-8 lg:grid-cols-2">
-              <div>
-                <div className="mb-4 font-mono text-xs tracking-widest text-primary">
-                  // CS2 MARKET CAP
-                </div>
-                <h2 className="display-heading mb-4 text-3xl font-black tracking-tighter md:text-4xl">
-                  THE NAME IS THE{" "}
-                  <span className="text-gradient-brand">MARKET CAP</span>
-                </h2>
-                <p className="mb-6 max-w-md font-mono text-sm leading-relaxed text-muted-foreground">
-                  CS2Cap is short for CS2 Market Cap. We track the total market
-                  capitalization of every Counter-Strike 2 and CS:GO skin —
-                  indexed live across 39+ marketplaces — with a category-by-category
-                  breakdown of where the value sits.
-                </p>
-                <Link
-                  href="/cs2-market-cap"
-                  className="inline-flex items-center gap-2 border-2 border-primary bg-primary px-8 py-3 font-mono text-sm font-bold tracking-wider text-primary-foreground brutalist-hover"
-                >
-                  VIEW LIVE MARKET CAP <ArrowRight className="h-4 w-4" />
-                </Link>
-              </div>
-              <div className="grid grid-cols-2 gap-px bg-border">
-                {[
-                  { label: "CS2 SKIN MARKET CAP", value: "Live total" },
-                  { label: "CATEGORY INDEX", value: "By type & weapon" },
-                  { label: "MARKETPLACES INDEXED", value: `${landing.providerCount}+` },
-                  { label: "PRICE BASIS", value: "24h snapshot" },
-                ].map((stat) => (
-                  <div key={stat.label} className="bg-card p-5 md:p-6">
-                    <div className="font-mono text-lg font-bold text-foreground">
-                      {stat.value}
-                    </div>
-                    <div className="mt-1 font-mono text-[10px] tracking-widest text-muted-foreground">
-                      {stat.label}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
+        <Top3FeaturesSection />
 
         {/* API / How it works — moved up from bottom */}
         <section className="relative overflow-x-clip border-t-2 border-border bg-grid py-24">
@@ -163,7 +119,7 @@ export default async function HomePage() {
                   SEE ENDPOINTS <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
-                  href="/api-info#pricing"
+                  href="/pricing"
                   className="border-brutal px-8 py-3 text-center font-mono text-sm font-bold tracking-wider text-foreground brutalist-hover hover:border-primary transition-colors"
                 >
                   VIEW PRICING
@@ -203,7 +159,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <FeaturesGrid />
       <MarketplacesSection providers={landing.providers} />
 
       {/* Compact SEO link module */}

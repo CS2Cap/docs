@@ -152,7 +152,7 @@ export function buildSoftwareApplication(plans: PlanInfo[]) {
       price: (plan.monthly_price_cents / 100).toFixed(2),
       priceCurrency: plan.currency || "USD",
       category: "Subscription",
-      url: `${SITE_URL}/api-info#pricing`,
+      url: `${SITE_URL}/pricing`,
       priceSpecification: {
         "@type": "UnitPriceSpecification",
         price: (plan.monthly_price_cents / 100).toFixed(2),

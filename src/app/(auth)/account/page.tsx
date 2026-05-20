@@ -153,7 +153,7 @@ export default function AccountPage() {
               </Button>
               {account.upgrade_options.length > 0 && (
                 <Button asChild>
-                  <Link href="/api-info#pricing">Upgrade</Link>
+                  <Link href="/pricing">Upgrade</Link>
                 </Button>
               )}
             </div>

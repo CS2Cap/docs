@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ChevronDown, ExternalLink } from "lucide-react";
 import { ProviderIdentity } from "@/components/ProviderIdentity";
 import { getProvider, providerLabel } from "@/lib/api";
@@ -28,6 +28,29 @@ function formatRelativeTime(value?: string | null) {
   if (hr < 24) return `${hr}h ago`;
   const day = Math.floor(hr / 24);
   return `${day}d ago`;
+}
+
+function useRelativeTime(value?: string | null) {
+  const [label, setLabel] = useState<string | null>(null);
+  useEffect(() => {
+    const compute = () => setLabel(formatRelativeTime(value));
+    compute();
+    const id = setInterval(compute, 30_000);
+    return () => clearInterval(id);
+  }, [value]);
+  return label;
+}
+
+function RelativeTime({ value }: { value?: string | null }) {
+  const label = useRelativeTime(value);
+  return (
+    <span
+      suppressHydrationWarning
+      className="font-mono text-[10px] text-muted-foreground"
+    >
+      {label ?? "—"}
+    </span>
+  );
 }
 
 export function CollapsibleAsksList({
@@ -60,7 +83,6 @@ export function CollapsibleAsksList({
     <>
       {visibleRows.map((row, index) => {
         const link = row.link || row.url;
-        const updated = formatRelativeTime(row.last_updated ?? row.timestamp);
         const spreadPct =
           bestAsk > 0 ? ((row.lowest_ask - bestAsk) / bestAsk) * 100 : 0;
         const isBest = row.lowest_ask === bestAsk;
@@ -136,9 +158,7 @@ export function CollapsibleAsksList({
                 </span>
               </div>
               <div className="md:text-right">
-                <span className="font-mono text-[10px] text-muted-foreground">
-                  {updated ?? "—"}
-                </span>
+                <RelativeTime value={row.last_updated ?? row.timestamp} />
               </div>
             </div>
           </div>

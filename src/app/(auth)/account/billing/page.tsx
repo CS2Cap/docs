@@ -84,7 +84,7 @@ export default function AccountBillingPage() {
       const response = await webApi.createCheckout({
         price_id: priceId,
         success_url: `${window.location.origin}/account/billing`,
-        cancel_url: `${window.location.origin}/api-info#pricing`,
+        cancel_url: `${window.location.origin}/pricing`,
       });
       window.location.href = response.checkout_url;
     } finally {
@@ -107,7 +107,7 @@ export default function AccountBillingPage() {
         tier_code: tierCode,
         billing_interval: interval,
         success_url: `${window.location.origin}/account/billing`,
-        cancel_url: `${window.location.origin}/api-info#pricing`,
+        cancel_url: `${window.location.origin}/pricing`,
       });
       window.location.href = response.checkout_url;
     } finally {
@@ -266,7 +266,7 @@ export default function AccountBillingPage() {
 
             {/* Stripe portal CTA */}
             {overview.portal_available && (
-              <div className="shrink-0 rounded-lg border border-border/40 bg-secondary/10 p-4 space-y-2 sm:min-w-[220px]">
+              <div className="shrink-0 rounded-lg border border-border/40 bg-secondary/10 p-4 space-y-2 sm:min-w-55">
                 <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Stripe Customer Portal
                 </p>

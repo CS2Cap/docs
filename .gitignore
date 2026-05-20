@@ -24,13 +24,6 @@ pnpm-debug.log*
 # Editor
 .vscode/*
 !.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
 .vercel
 .env.local
 .remember/

@@ -127,7 +127,7 @@ function captureNavigationIntent(event: MouseEvent) {
   const label = link.textContent?.trim().replace(/\s+/g, " ").slice(0, 120) || undefined;
   const target = `${url.pathname}${url.hash}`;
 
-  if (target === "/api-info#pricing" || label?.toLowerCase().includes("pricing")) {
+  if (target === "/pricing" || target === "/api-info#pricing" || label?.toLowerCase().includes("pricing")) {
     posthog.capture("pricing_clicked", { href: target, label });
     return;
   }
