@@ -26043,9 +26043,16 @@
             "description": "Maximum saved watchlist items allowed."
           },
           "max_active_alerts": {
-            "type": "integer",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Max Active Alerts",
-            "description": "Maximum enabled alerts allowed."
+            "description": "Maximum enabled alerts allowed; null means unlimited."
           },
           "max_webhook_destinations": {
             "type": "integer",
@@ -26072,7 +26079,6 @@
         "type": "object",
         "required": [
           "max_watchlist_items",
-          "max_active_alerts",
           "max_webhook_destinations",
           "max_portfolios",
           "max_portfolio_items"
