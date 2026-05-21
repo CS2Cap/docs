@@ -22327,6 +22327,365 @@
         ]
       }
     },
+    "/v1/web/search": {
+      "get": {
+        "tags": [
+          "Web"
+        ],
+        "summary": "Search Web Market Items",
+        "description": "Return a dashboard-shaped, first-party search payload for the web search page. Rows are flat catalog variants enriched with cached market metrics, dynamic facets, price histogram buckets, and optional authenticated watch-state.",
+        "operationId": "webSearchWebMarketItems",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Search by item name or catalog metadata substring.",
+              "title": "Q"
+            },
+            "description": "Search by item name or catalog metadata substring."
+          },
+          {
+            "name": "item_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by one or more item type values.",
+              "title": "Item Type"
+            },
+            "description": "Filter by one or more item type values."
+          },
+          {
+            "name": "weapon_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by one or more weapon type values.",
+              "title": "Weapon Type"
+            },
+            "description": "Filter by one or more weapon type values."
+          },
+          {
+            "name": "rarity_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by one or more rarity values.",
+              "title": "Rarity Name"
+            },
+            "description": "Filter by one or more rarity values."
+          },
+          {
+            "name": "wear_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by one or more wear values.",
+              "title": "Wear Name"
+            },
+            "description": "Filter by one or more wear values."
+          },
+          {
+            "name": "phase",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by one or more phase values.",
+              "title": "Phase"
+            },
+            "description": "Filter by one or more phase values."
+          },
+          {
+            "name": "collection",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by one or more collection values.",
+              "title": "Collection"
+            },
+            "description": "Filter by one or more collection values."
+          },
+          {
+            "name": "is_stattrak",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter to StatTrak or non-StatTrak items.",
+              "title": "Is Stattrak"
+            },
+            "description": "Filter to StatTrak or non-StatTrak items."
+          },
+          {
+            "name": "is_souvenir",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter to Souvenir or non-Souvenir items.",
+              "title": "Is Souvenir"
+            },
+            "description": "Filter to Souvenir or non-Souvenir items."
+          },
+          {
+            "name": "min_price_usd",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0.0
+                },
+                {
+                  "type": "string",
+                  "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Minimum best ask in USD major units.",
+              "title": "Min Price Usd"
+            },
+            "description": "Minimum best ask in USD major units."
+          },
+          {
+            "name": "max_price_usd",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0.0
+                },
+                {
+                  "type": "string",
+                  "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Maximum best ask in USD major units.",
+              "title": "Max Price Usd"
+            },
+            "description": "Maximum best ask in USD major units."
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "rank",
+                "name",
+                "best_ask_usd",
+                "best_bid_usd",
+                "spread_pct",
+                "price_rate_24h",
+                "price_rate_7d",
+                "sales_1d",
+                "provider_count",
+                "marketcap"
+              ],
+              "type": "string",
+              "description": "Sort key for search results.",
+              "default": "rank",
+              "title": "Sort"
+            },
+            "description": "Sort key for search results."
+          },
+          {
+            "name": "direction",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string",
+              "description": "Sort direction for search results.",
+              "default": "asc",
+              "title": "Direction"
+            },
+            "description": "Sort direction for search results."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "description": "Items per page.",
+              "default": 24,
+              "title": "Limit"
+            },
+            "description": "Items per page."
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Number of matching rows to skip.",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Number of matching rows to skip."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebSearchResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "RATE_LIMIT_EXCEEDED",
+                  "detail": "Too Many Requests"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying when present.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed. The detail list contains field-specific validation errors.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Tier": {
+                "description": "Authenticated caller tier code when available.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
     "/v1/web/session": {
       "get": {
         "tags": [
@@ -35833,6 +36192,637 @@
         ],
         "title": "WatchlistResponse",
         "description": "Paginated watchlist response."
+      },
+      "WebSearchAppliedFilters": {
+        "properties": {
+          "item_type": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Item Type",
+            "description": "Item type filter values."
+          },
+          "weapon_type": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Weapon Type",
+            "description": "Weapon type filter values."
+          },
+          "rarity_name": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Rarity Name",
+            "description": "Rarity filter values."
+          },
+          "wear_name": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Wear Name",
+            "description": "Wear filter values."
+          },
+          "phase": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Phase",
+            "description": "Phase filter values."
+          },
+          "collection": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Collection",
+            "description": "Collection filter values."
+          },
+          "is_stattrak": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Stattrak",
+            "description": "Whether StatTrak-only filtering is active."
+          },
+          "is_souvenir": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Souvenir",
+            "description": "Whether Souvenir-only filtering is active."
+          },
+          "min_price_usd": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Price Usd",
+            "description": "Minimum best ask in USD major units."
+          },
+          "max_price_usd": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Price Usd",
+            "description": "Maximum best ask in USD major units."
+          }
+        },
+        "type": "object",
+        "required": [
+          "item_type",
+          "weapon_type",
+          "rarity_name",
+          "wear_name",
+          "phase",
+          "collection"
+        ],
+        "title": "WebSearchAppliedFilters",
+        "description": "Effective filters applied to a web search request."
+      },
+      "WebSearchFacetBucket": {
+        "properties": {
+          "value": {
+            "type": "string",
+            "title": "Value",
+            "description": "Facet value."
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Count",
+            "description": "Matching item count for this value."
+          }
+        },
+        "type": "object",
+        "required": [
+          "value",
+          "count"
+        ],
+        "title": "WebSearchFacetBucket",
+        "description": "One dynamic facet bucket."
+      },
+      "WebSearchFacets": {
+        "properties": {
+          "item_type": {
+            "items": {
+              "$ref": "#/components/schemas/WebSearchFacetBucket"
+            },
+            "type": "array",
+            "title": "Item Type",
+            "description": "Item type facet buckets."
+          },
+          "weapon_type": {
+            "items": {
+              "$ref": "#/components/schemas/WebSearchFacetBucket"
+            },
+            "type": "array",
+            "title": "Weapon Type",
+            "description": "Weapon type facet buckets."
+          },
+          "rarity_name": {
+            "items": {
+              "$ref": "#/components/schemas/WebSearchFacetBucket"
+            },
+            "type": "array",
+            "title": "Rarity Name",
+            "description": "Rarity facet buckets."
+          },
+          "wear_name": {
+            "items": {
+              "$ref": "#/components/schemas/WebSearchFacetBucket"
+            },
+            "type": "array",
+            "title": "Wear Name",
+            "description": "Wear facet buckets."
+          },
+          "phase": {
+            "items": {
+              "$ref": "#/components/schemas/WebSearchFacetBucket"
+            },
+            "type": "array",
+            "title": "Phase",
+            "description": "Phase facet buckets."
+          },
+          "collection": {
+            "items": {
+              "$ref": "#/components/schemas/WebSearchFacetBucket"
+            },
+            "type": "array",
+            "title": "Collection",
+            "description": "Collection facet buckets."
+          }
+        },
+        "type": "object",
+        "required": [
+          "item_type",
+          "weapon_type",
+          "rarity_name",
+          "wear_name",
+          "phase",
+          "collection"
+        ],
+        "title": "WebSearchFacets",
+        "description": "Dynamic facet counts for the web search sidebar."
+      },
+      "WebSearchItem": {
+        "properties": {
+          "item_id": {
+            "type": "integer",
+            "title": "Item Id",
+            "description": "Normalized catalog item ID used by this API."
+          },
+          "market_hash_name": {
+            "type": "string",
+            "title": "Market Hash Name",
+            "description": "Canonical Steam market hash name for the item."
+          },
+          "phase": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phase",
+            "description": "Phased finish/variant label when applicable."
+          },
+          "image_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Url",
+            "description": "Image URL for item artwork/icon."
+          },
+          "item_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Item Type",
+            "description": "Top-level catalog item class."
+          },
+          "item_subtype": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Item Subtype",
+            "description": "Catalog item sub-classification."
+          },
+          "weapon_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weapon Type",
+            "description": "Weapon classification."
+          },
+          "base_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Name",
+            "description": "Base item name."
+          },
+          "skin_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Skin Name",
+            "description": "Skin or finish name."
+          },
+          "wear_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Wear Name",
+            "description": "Exterior or wear bucket."
+          },
+          "rarity_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rarity Name",
+            "description": "Human-readable rarity tier."
+          },
+          "collection": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Collection",
+            "description": "Collection name."
+          },
+          "is_stattrak": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Stattrak",
+            "description": "Whether this is a StatTrak item."
+          },
+          "is_souvenir": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Souvenir",
+            "description": "Whether this is a Souvenir item."
+          },
+          "best_ask_usd": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Best Ask Usd",
+            "description": "Best ask price in USD major units."
+          },
+          "best_bid_usd": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Best Bid Usd",
+            "description": "Best bid price in USD major units."
+          },
+          "avg_spread_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Spread Pct",
+            "description": "Average spread percentage."
+          },
+          "price_rate_24h": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Rate 24H",
+            "description": "Percentage price change over the last 24 hours."
+          },
+          "price_rate_7d": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Rate 7D",
+            "description": "Percentage price change over the last 7 days."
+          },
+          "sales_1d": {
+            "type": "integer",
+            "title": "Sales 1D",
+            "description": "Depletion activity volume over the last 24 hours."
+          },
+          "sales_7d": {
+            "type": "integer",
+            "title": "Sales 7D",
+            "description": "Depletion activity volume over the last 7 days."
+          },
+          "provider_count": {
+            "type": "integer",
+            "title": "Provider Count",
+            "description": "Providers with active listing coverage."
+          },
+          "marketcap": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Marketcap",
+            "description": "Estimated market cap in USD major units."
+          },
+          "rank": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rank",
+            "description": "Descending market cap rank."
+          },
+          "is_watchlisted": {
+            "type": "boolean",
+            "title": "Is Watchlisted",
+            "description": "Whether the current authenticated web user has saved this item."
+          }
+        },
+        "type": "object",
+        "required": [
+          "item_id",
+          "market_hash_name",
+          "sales_1d",
+          "sales_7d",
+          "provider_count",
+          "is_watchlisted"
+        ],
+        "title": "WebSearchItem",
+        "description": "Flat item variant row for the redesigned web search page."
+      },
+      "WebSearchMeta": {
+        "properties": {
+          "generated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Generated At",
+            "description": "ISO 8601 UTC timestamp when the market snapshot was generated."
+          },
+          "data_source": {
+            "type": "string",
+            "enum": [
+              "cache",
+              "live",
+              "mixed"
+            ],
+            "title": "Data Source",
+            "description": "Primary data source used for search."
+          },
+          "freshness_sec": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Freshness Sec",
+            "description": "Estimated freshness of source data in seconds."
+          },
+          "query": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Query",
+            "description": "Normalized text query."
+          },
+          "filters": {
+            "$ref": "#/components/schemas/WebSearchAppliedFilters",
+            "description": "Effective filters."
+          },
+          "sort": {
+            "type": "string",
+            "enum": [
+              "rank",
+              "name",
+              "best_ask_usd",
+              "best_bid_usd",
+              "spread_pct",
+              "price_rate_24h",
+              "price_rate_7d",
+              "sales_1d",
+              "provider_count",
+              "marketcap"
+            ],
+            "title": "Sort",
+            "description": "Sort key used for returned rows."
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "title": "Direction",
+            "description": "Sort direction used for returned rows."
+          }
+        },
+        "type": "object",
+        "required": [
+          "generated_at",
+          "data_source",
+          "freshness_sec",
+          "filters",
+          "sort",
+          "direction"
+        ],
+        "title": "WebSearchMeta",
+        "description": "Metadata for first-party web search responses."
+      },
+      "WebSearchPriceHistogramBucket": {
+        "properties": {
+          "min_price_usd": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Min Price Usd",
+            "description": "Inclusive lower bound in USD major units."
+          },
+          "max_price_usd": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Price Usd",
+            "description": "Exclusive upper bound in USD major units, or null for open-ended."
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Count",
+            "description": "Matching item count in this price bucket."
+          }
+        },
+        "type": "object",
+        "required": [
+          "min_price_usd",
+          "count"
+        ],
+        "title": "WebSearchPriceHistogramBucket",
+        "description": "One price histogram bucket."
+      },
+      "WebSearchResponse": {
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/WebSearchMeta",
+            "description": "Search response metadata."
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/WebSearchItem"
+            },
+            "type": "array",
+            "title": "Items",
+            "description": "Flat item variant rows."
+          },
+          "facets": {
+            "$ref": "#/components/schemas/WebSearchFacets",
+            "description": "Dynamic sidebar facet counts."
+          },
+          "price_histogram": {
+            "items": {
+              "$ref": "#/components/schemas/WebSearchPriceHistogramBucket"
+            },
+            "type": "array",
+            "title": "Price Histogram",
+            "description": "Price distribution buckets for the active non-price filters."
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/PaginationMeta",
+            "description": "Offset pagination metadata."
+          }
+        },
+        "type": "object",
+        "required": [
+          "meta",
+          "items",
+          "facets",
+          "price_histogram",
+          "pagination"
+        ],
+        "title": "WebSearchResponse",
+        "description": "Response envelope for first-party web search."
       },
       "WebSessionLogoutResponse": {
         "properties": {
