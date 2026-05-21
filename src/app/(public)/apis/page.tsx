@@ -27,17 +27,19 @@ export const metadata: Metadata = {
 };
 
 type EndpointMethod = "GET" | "POST" | "PATCH" | "DELETE";
+type EndpointTier = "free" | "starter" | "pro" | "quant";
 
 interface EndpointEntry {
   method: EndpointMethod;
   path: string;
   summary: string;
-  auth?: "public" | "key" | "session";
+  tier: EndpointTier;
 }
 
 interface EndpointGroup {
   heading: string;
   blurb: string;
+  docsUrl: string;
   endpoints: EndpointEntry[];
 }
 
@@ -45,129 +47,138 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
   {
     heading: "PRICES",
     blurb: "Live ask data, batch lookup, and historical price series across every supported marketplace.",
+    docsUrl: "https://docs.cs2cap.com/api-reference/prices",
     endpoints: [
-      { method: "GET", path: "/v1/prices", summary: "Lowest ask and quantity per provider for one or more items.", auth: "key" },
-      { method: "POST", path: "/v1/prices", summary: "Same data as GET — useful when query strings would overflow." },
-      { method: "POST", path: "/v1/prices/batch", summary: "Bulk prices for up to several hundred items in one call. Cheapest way to fetch a portfolio." },
-      { method: "GET", path: "/v1/prices/history", summary: "Historical price snapshots over a time range." },
-      { method: "GET", path: "/v1/prices/candles", summary: "OHLCV candlestick data with intervals from 5m up to 1d." },
+      { method: "GET", path: "/v1/prices", summary: "Lowest ask and quantity per provider.", tier: "free" },
+      { method: "POST", path: "/v1/prices", summary: "Stream the entire price feed in one request. Rate limited every 5 minutes. [LARGE RESPONSE]", tier: "pro" },
+      { method: "POST", path: "/v1/prices/batch", summary: "Bulk prices for up to 100 items in one call.", tier: "starter" },
+      { method: "GET", path: "/v1/prices/history", summary: "Historical price snapshots over a time range.", tier: "pro" },
+      { method: "GET", path: "/v1/prices/candles", summary: "OHLCV candlestick data with intervals from 5m up to 1d.", tier: "free" },
     ],
   },
   {
     heading: "BUY ORDERS",
     blurb: "Highest bids and order book depth from the 11 marketplaces that expose buy-order data.",
+    docsUrl: "https://docs.cs2cap.com/api-reference/bids",
     endpoints: [
-      { method: "GET", path: "/v1/bids", summary: "Highest bid and bid count per provider." },
-      { method: "POST", path: "/v1/bids", summary: "POST variant for long item-id lists." },
-      { method: "POST", path: "/v1/bids/batch", summary: "Bulk bid lookup for many items." },
+      { method: "GET", path: "/v1/bids", summary: "Highest buy order and bid count per provider.", tier: "starter" },
+      { method: "POST", path: "/v1/bids", summary: "Stream the entire buy orders feed in one request. Rate limited every 5 minutes. [LARGE RESPONSE]", tier: "pro" },
+      { method: "POST", path: "/v1/bids/batch", summary: "Bulk bid lookup for many items.", tier: "starter" },
     ],
   },
   {
     heading: "SALES",
     blurb: "Recent completed sales — price, float, paint seed where available.",
+    docsUrl: "https://docs.cs2cap.com/api-reference/sales",
     endpoints: [
-      { method: "GET", path: "/v1/sales", summary: "Recent sale records filtered by item, provider, or time window." },
-    ],
+        { method: "GET", path: "/v1/sales", summary: "Recent sales records for an item including timestamp, float value, paint seed, stickers/charms, and inspect link.", tier: "pro" },
+      ],
   },
   {
     heading: "MARKET ANALYTICS",
     blurb: "Cross-marketplace spreads, arbitrage, liquidity, volume, indexes, and momentum indicators.",
+    docsUrl: "https://docs.cs2cap.com/api-reference/market-analytics",
     endpoints: [
-      { method: "GET", path: "/v1/market/arbitrage", summary: "Profitable price gaps across providers after fees." },
-      { method: "GET", path: "/v1/market/indexes", summary: "Aggregate market indexes and basket prices." },
-      { method: "GET", path: "/v1/market/items", summary: "Per-item analytics summary across providers (liquidity, spread, 24h volume)." },
-      { method: "GET", path: "/v1/market/items/{item_id}", summary: "Same analytics scoped to a single item." },
-      { method: "GET", path: "/v1/market/indicators", summary: "Technical indicators (RSI, MA, volatility) computed on price series." },
+      { method: "GET", path: "/v1/market/arbitrage", summary: "Profitable price gaps across providers after fees.", tier: "quant" },
+      { method: "GET", path: "/v1/market/indexes", summary: "Aggregate market indexes and basket prices.", tier: "quant" },
+      { method: "GET", path: "/v1/market/items", summary: "Per-item analytics summary across providers (liquidity, spread, 24h volume).", tier: "pro" },
+      { method: "GET", path: "/v1/market/items/{item_id}", summary: "Same analytics scoped to a single item.", tier: "pro" },
+      { method: "GET", path: "/v1/market/indicators", summary: "Technical indicators (RSI, MA, volatility) computed on price series.", tier: "quant" },
     ],
   },
   {
     heading: "ITEMS",
     blurb: "Full CS2 / CS:GO item catalog with metadata, wear, rarity, and collection.",
+    docsUrl: "https://docs.cs2cap.com/api-reference/catalog",
     endpoints: [
-      { method: "GET", path: "/v1/items", summary: "Paginated item list with filters by collection, weapon, wear, rarity." },
-      { method: "GET", path: "/v1/items/metadata", summary: "Schema metadata: collections, weapons, wear bands, rarities." },
+      { method: "GET", path: "/v1/items", summary: "Paginated item list with filters by collection, weapon, wear, rarity.", tier: "free" },
+      { method: "GET", path: "/v1/items/metadata", summary: "Schema metadata: collections, weapons, wear bands, rarities.", tier: "free" },
     ],
   },
   {
     heading: "PROVIDERS",
     blurb: "The marketplaces CS2Cap aggregates — fees, currency, supported features.",
+    docsUrl: "https://docs.cs2cap.com/reference/providers",
     endpoints: [
-      { method: "GET", path: "/v1/providers", summary: "List every supported marketplace with metadata and capabilities." },
+      { method: "GET", path: "/v1/providers", summary: "List every supported marketplace with metadata and capabilities.", tier: "free" },
     ],
   },
   {
     heading: "FX",
     blurb: "Foreign-exchange rates we use to normalize prices into a common currency.",
+    docsUrl: "https://docs.cs2cap.com/fx-currencies.json",
     endpoints: [
-      { method: "GET", path: "/v1/fx", summary: "Current FX rates for every currency CS2Cap quotes." },
+      { method: "GET", path: "/v1/fx", summary: "Current FX rates for every currency CS2Cap quotes.", tier: "free" },
     ],
   },
   {
     heading: "INVENTORY",
     blurb: "Steam inventory lookups for portfolio valuation flows.",
+    docsUrl: "https://docs.cs2cap.com/api-reference/inventory",
     endpoints: [
-      { method: "GET", path: "/v1/inventory/steam", summary: "Fetch a public Steam inventory by Steam ID." },
-      { method: "GET", path: "/v1/inventory/steam/lookup", summary: "Resolve a vanity URL or profile link to a Steam ID." },
+      { method: "GET", path: "/v1/inventory/steam", summary: "Fetch a public Steam inventory by Steam ID.", tier: "free" },
+      { method: "GET", path: "/v1/inventory/steam/lookup", summary: "Resolve a vanity URL or profile link to a Steam ID.", tier: "free" },
     ],
   },
   {
     heading: "PORTFOLIO",
     blurb: "Authenticated portfolios — track holdings, value over time, and transaction history.",
+    docsUrl: "https://docs.cs2cap.com/api-reference/portfolio",
     endpoints: [
-      { method: "GET", path: "/v1/portfolio", summary: "List portfolios for the authenticated account.", auth: "key" },
-      { method: "POST", path: "/v1/portfolio", summary: "Create a portfolio.", auth: "key" },
-      { method: "DELETE", path: "/v1/portfolio/{id}", summary: "Delete a portfolio.", auth: "key" },
-      { method: "POST", path: "/v1/portfolio/{id}/import", summary: "Bulk import items from a Steam inventory or CSV.", auth: "key" },
-      { method: "GET", path: "/v1/portfolio/{id}/items", summary: "List items currently held in a portfolio.", auth: "key" },
-      { method: "POST", path: "/v1/portfolio/{id}/items", summary: "Add an item to a portfolio.", auth: "key" },
-      { method: "DELETE", path: "/v1/portfolio/{id}/items/{item_id}", summary: "Remove an item from a portfolio.", auth: "key" },
-      { method: "GET", path: "/v1/portfolio/{id}/history", summary: "Value-over-time series for a portfolio.", auth: "key" },
-      { method: "GET", path: "/v1/portfolio/{id}/value", summary: "Current valuation snapshot for a portfolio.", auth: "key" },
-      { method: "POST", path: "/v1/portfolio/value", summary: "Value an arbitrary basket of items without persisting it.", auth: "key" },
-      { method: "GET", path: "/v1/portfolio/{id}/transactions", summary: "Transaction log for a portfolio.", auth: "key" },
-      { method: "POST", path: "/v1/portfolio/{id}/transactions", summary: "Record a transaction.", auth: "key" },
-      { method: "PATCH", path: "/v1/portfolio/{id}/transactions/{tx_id}", summary: "Edit a transaction.", auth: "key" },
-      { method: "DELETE", path: "/v1/portfolio/{id}/transactions/{tx_id}", summary: "Delete a transaction.", auth: "key" },
+      { method: "GET", path: "/v1/portfolio", summary: "List portfolios for the authenticated account.", tier: "free" },
+      { method: "POST", path: "/v1/portfolio", summary: "Create a portfolio.", tier: "free" },
+      { method: "DELETE", path: "/v1/portfolio/{id}", summary: "Delete a portfolio.", tier: "free" },
+      { method: "POST", path: "/v1/portfolio/{id}/import", summary: "Bulk import items from a Steam inventory or CSV.", tier: "free" },
+      { method: "GET", path: "/v1/portfolio/{id}/items", summary: "List items currently held in a portfolio.", tier: "free" },
+      { method: "POST", path: "/v1/portfolio/{id}/items", summary: "Add an item to a portfolio.", tier: "free" },
+      { method: "DELETE", path: "/v1/portfolio/{id}/items/{item_id}", summary: "Remove an item from a portfolio.", tier: "free" },
+      { method: "GET", path: "/v1/portfolio/{id}/history", summary: "Value-over-time series for a portfolio.", tier: "free" },
+      { method: "GET", path: "/v1/portfolio/{id}/value", summary: "Current valuation snapshot for a portfolio.", tier: "free" },
+      { method: "POST", path: "/v1/portfolio/value", summary: "Value an arbitrary basket of items without persisting it.", tier: "free" },
+      { method: "GET", path: "/v1/portfolio/{id}/transactions", summary: "Transaction log for a portfolio.", tier: "free" },
+      { method: "POST", path: "/v1/portfolio/{id}/transactions", summary: "Record a transaction.", tier: "free" },
+      { method: "PATCH", path: "/v1/portfolio/{id}/transactions/{tx_id}", summary: "Edit a transaction.", tier: "free" },
+      { method: "DELETE", path: "/v1/portfolio/{id}/transactions/{tx_id}", summary: "Delete a transaction.", tier: "free" },
     ],
   },
   {
-    heading: "ACCOUNT — WATCHLIST & ALERTS",
-    blurb: "Per-user watchlist and price-alert primitives.",
+    heading: "ACCOUNT — ALERTS",
+    blurb: "Per-user price-alert primitives.",
+    docsUrl: "https://docs.cs2cap.com/api-reference/alerts",
     endpoints: [
-      { method: "GET", path: "/v1/account/watchlist", summary: "List items the account is watching.", auth: "key" },
-      { method: "POST", path: "/v1/account/watchlist", summary: "Add an item to the watchlist.", auth: "key" },
-      { method: "DELETE", path: "/v1/account/watchlist/{item_id}", summary: "Remove an item from the watchlist.", auth: "key" },
-      { method: "GET", path: "/v1/account/alerts", summary: "List configured price alerts.", auth: "key" },
-      { method: "POST", path: "/v1/account/alerts", summary: "Create a price alert.", auth: "key" },
-      { method: "POST", path: "/v1/account/alerts/batch", summary: "Create many alerts in one call.", auth: "key" },
-      { method: "PATCH", path: "/v1/account/alerts/{id}", summary: "Edit an existing alert.", auth: "key" },
-      { method: "DELETE", path: "/v1/account/alerts/{id}", summary: "Delete an alert.", auth: "key" },
-      { method: "GET", path: "/v1/account/alerts/events", summary: "Recent alert-trigger events.", auth: "key" },
+      { method: "GET", path: "/v1/account/alerts", summary: "List configured price alerts.", tier: "pro" },
+      { method: "POST", path: "/v1/account/alerts", summary: "Create a price alert.", tier: "pro" },
+      { method: "POST", path: "/v1/account/alerts/batch", summary: "Create many alerts in one call.", tier: "pro" },
+      { method: "PATCH", path: "/v1/account/alerts/{id}", summary: "Edit an existing alert.", tier: "pro" },
+      { method: "DELETE", path: "/v1/account/alerts/{id}", summary: "Delete an alert.", tier: "pro" },
+      { method: "GET", path: "/v1/account/alerts/events", summary: "Recent alert-trigger events.", tier: "pro" },
     ],
   },
   {
     heading: "ACCOUNT — WEBHOOKS",
     blurb: "Outbound webhooks for alert and account events with rotation + delivery logs.",
+    docsUrl: "https://docs.cs2cap.com/api-reference/webhooks",
     endpoints: [
-      { method: "GET", path: "/v1/account/webhooks", summary: "List configured webhook endpoints.", auth: "key" },
-      { method: "POST", path: "/v1/account/webhooks", summary: "Register a webhook endpoint.", auth: "key" },
-      { method: "PATCH", path: "/v1/account/webhooks/{id}", summary: "Update a webhook endpoint.", auth: "key" },
-      { method: "DELETE", path: "/v1/account/webhooks/{id}", summary: "Remove a webhook endpoint.", auth: "key" },
-      { method: "POST", path: "/v1/account/webhooks/{id}/rotate-secret", summary: "Rotate the signing secret.", auth: "key" },
-      { method: "GET", path: "/v1/account/webhooks/deliveries", summary: "Recent webhook delivery attempts.", auth: "key" },
-      { method: "GET", path: "/v1/account/webhooks/deliveries/{id}", summary: "Single delivery attempt with payload + response.", auth: "key" },
+      { method: "GET", path: "/v1/account/webhooks", summary: "List configured webhook endpoints.", tier: "quant" },
+      { method: "POST", path: "/v1/account/webhooks", summary: "Register a webhook endpoint.", tier: "quant" },
+      { method: "PATCH", path: "/v1/account/webhooks/{id}", summary: "Update a webhook endpoint.", tier: "quant" },
+      { method: "DELETE", path: "/v1/account/webhooks/{id}", summary: "Remove a webhook endpoint.", tier: "quant" },
+      { method: "POST", path: "/v1/account/webhooks/{id}/rotate-secret", summary: "Rotate the signing secret.", tier: "quant" },
+      { method: "GET", path: "/v1/account/webhooks/deliveries", summary: "Recent webhook delivery attempts.", tier: "quant" },
+      { method: "GET", path: "/v1/account/webhooks/deliveries/{id}", summary: "Single delivery attempt with payload + response.", tier: "quant" },
     ],
   },
   {
     heading: "ACCOUNT — SUB-KEYS",
     blurb: "Issue scoped API keys — useful for multiple environments or delegated access.",
+    docsUrl: "https://docs.cs2cap.com/api-reference/sub-keys",
     endpoints: [
-      { method: "GET", path: "/v1/account/sub-keys", summary: "List sub-keys on the account.", auth: "key" },
-      { method: "POST", path: "/v1/account/sub-keys", summary: "Create a sub-key.", auth: "key" },
-      { method: "GET", path: "/v1/account/sub-keys/{id}", summary: "Inspect a single sub-key.", auth: "key" },
-      { method: "PATCH", path: "/v1/account/sub-keys/{id}", summary: "Update a sub-key (label, scopes).", auth: "key" },
-      { method: "DELETE", path: "/v1/account/sub-keys/{id}", summary: "Revoke a sub-key.", auth: "key" },
-      { method: "POST", path: "/v1/account/sub-keys/{id}/reissue", summary: "Reissue a sub-key's secret.", auth: "key" },
+      { method: "GET", path: "/v1/account/sub-keys", summary: "List sub-keys on the account.", tier: "quant" },
+      { method: "POST", path: "/v1/account/sub-keys", summary: "Create a sub-key.", tier: "quant" },
+      { method: "GET", path: "/v1/account/sub-keys/{id}", summary: "Inspect a single sub-key.", tier: "quant" },
+      { method: "PATCH", path: "/v1/account/sub-keys/{id}", summary: "Update a sub-key (label, scopes).", tier: "quant" },
+      { method: "DELETE", path: "/v1/account/sub-keys/{id}", summary: "Revoke a sub-key.", tier: "quant" },
+      { method: "POST", path: "/v1/account/sub-keys/{id}/reissue", summary: "Reissue a sub-key's secret.", tier: "quant" },
     ],
   },
 ];
@@ -182,6 +193,26 @@ function methodClasses(method: EndpointMethod): string {
       return "bg-warning/10 text-warning border-warning/30";
     case "DELETE":
       return "bg-destructive/10 text-destructive border-destructive/30";
+  }
+}
+
+const TIER_LABEL: Record<EndpointTier, string> = {
+  free: "FREE",
+  starter: "STARTER",
+  pro: "PRO",
+  quant: "QUANT",
+};
+
+function tierClasses(tier: EndpointTier): string {
+  switch (tier) {
+    case "free":
+      return "text-muted-foreground";
+    case "starter":
+      return "text-success";
+    case "pro":
+      return "text-primary";
+    case "quant":
+      return "text-warning";
   }
 }
 
@@ -208,18 +239,25 @@ export default function ApisDirectoryPage() {
             <p className="max-w-2xl font-sans text-base leading-relaxed text-muted-foreground">
               Every endpoint in the CS2Cap API, grouped by domain. {totalEndpoints} routes across{" "}
               {ENDPOINT_GROUPS.length} categories. Full schemas, parameters, and examples live in the{" "}
-              <Link href="/api-info" className="text-primary underline-offset-2 hover:underline">
+              <a
+                href="https://docs.cs2cap.com/introduction"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary underline-offset-2 hover:underline"
+              >
                 API docs
-              </Link>
+              </a>
               .
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                href="/api-info"
+              <a
+                href="https://docs.cs2cap.com/introduction"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 border-2 border-primary bg-primary px-4 py-2 font-mono text-xs font-bold tracking-widest text-primary-foreground hover:bg-primary/90"
               >
                 READ THE DOCS <ArrowRight className="h-3 w-3" />
-              </Link>
+              </a>
               <Link
                 href="/pricing"
                 className="inline-flex items-center gap-2 border-2 border-border bg-card px-4 py-2 font-mono text-xs font-bold tracking-widest text-foreground hover:bg-secondary"
@@ -236,9 +274,19 @@ export default function ApisDirectoryPage() {
             className="border-t-2 border-border py-12 md:py-16"
           >
             <div className="container">
-              <div className="mb-2 font-mono text-xs font-bold tracking-widest text-primary">
-                {group.heading}{" "}
-                <span className="text-muted-foreground">({group.endpoints.length})</span>
+              <div className="mb-2 flex flex-wrap items-center gap-3 font-mono text-xs font-bold tracking-widest text-primary">
+                <span>
+                  {group.heading}{" "}
+                  <span className="text-muted-foreground">({group.endpoints.length})</span>
+                </span>
+                <a
+                  href={group.docsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 border border-primary/40 bg-primary/10 px-2.5 py-1 text-[11px] tracking-widest text-primary hover:border-primary hover:bg-primary/20"
+                >
+                  VIEW DOCS <ArrowRight className="h-3 w-3" />
+                </a>
               </div>
               <p className="mb-6 max-w-2xl font-sans text-sm text-muted-foreground">
                 {group.blurb}
@@ -260,8 +308,10 @@ export default function ApisDirectoryPage() {
                     <p className="font-sans text-sm text-muted-foreground">
                       {ep.summary}
                     </p>
-                    <span className="font-mono text-[10px] tracking-widest text-muted-foreground md:text-right">
-                      {ep.auth === "key" ? "API KEY" : "PUBLIC"}
+                    <span
+                      className={`font-mono text-[10px] font-bold tracking-widest md:text-right ${tierClasses(ep.tier)}`}
+                    >
+                      {TIER_LABEL[ep.tier]}
                     </span>
                   </div>
                 ))}

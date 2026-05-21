@@ -44,7 +44,7 @@ const SECTIONS: Section[] = [
       ["Child API keys", ["0", "0", "0", "25"]],
       ["Webhook destinations", ["0", "0", "0", "5"]],
       ["Bulk snapshots", [false, false, true, true]],
-      ["Listing URLs", [false, false, true, true]],
+      ["Raw listings URLs", [false, false, true, true]],
     ],
   },
   {
