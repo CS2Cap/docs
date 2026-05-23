@@ -22686,6 +22686,70 @@
         "security": []
       }
     },
+    "/v1/web/market/overview": {
+      "get": {
+        "tags": [
+          "Web"
+        ],
+        "summary": "Get Web Market Cap Overview",
+        "description": "Return the first-party cached Market Cap dashboard payload for the web app. Includes summary metrics, history ranges, category rows, movers, most valuable items, and marketplace activity breakdowns.",
+        "operationId": "webGetWebMarketCapOverview",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketOverviewResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded.",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying when present.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "RATE_LIMIT_EXCEEDED",
+                  "detail": "Too Many Requests"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed. The detail list contains field-specific validation errors.",
+            "headers": {
+              "X-RateLimit-Tier": {
+                "description": "Authenticated caller tier code when available.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
     "/v1/web/session": {
       "get": {
         "tags": [
@@ -31672,6 +31736,551 @@
         ],
         "title": "MarketMeta",
         "description": "Shared metadata for redesigned market endpoints."
+      },
+      "MarketOverviewCategories": {
+        "properties": {
+          "item_type": {
+            "items": {
+              "$ref": "#/components/schemas/MarketOverviewCategoryRow"
+            },
+            "type": "array",
+            "title": "Item Type",
+            "description": "Item type rows."
+          },
+          "weapon_type": {
+            "items": {
+              "$ref": "#/components/schemas/MarketOverviewCategoryRow"
+            },
+            "type": "array",
+            "title": "Weapon Type",
+            "description": "Weapon type rows."
+          }
+        },
+        "type": "object",
+        "required": [
+          "item_type",
+          "weapon_type"
+        ],
+        "title": "MarketOverviewCategories",
+        "description": "Category tables keyed by grouping dimension."
+      },
+      "MarketOverviewCategoryRow": {
+        "properties": {
+          "group": {
+            "type": "string",
+            "title": "Group",
+            "description": "Category label."
+          },
+          "marketcap_usd": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Marketcap Usd",
+            "description": "Money amount as a decimal string in USD major units (for example \"25.82\")."
+          },
+          "share_pct": {
+            "type": "number",
+            "title": "Share Pct",
+            "description": "Share of total market cap."
+          },
+          "item_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Item Count",
+            "description": "Snapshot items in this group."
+          },
+          "included_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Included Count",
+            "description": "Included items in this group."
+          },
+          "excluded_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Excluded Count",
+            "description": "Excluded items in this group."
+          },
+          "change_24h_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change 24H Pct",
+            "description": "Group market cap percentage change over the last 24 hours."
+          },
+          "volume_24h_usd": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Volume 24H Usd",
+            "description": "Estimated 24h activity value for the group in USD major units."
+          }
+        },
+        "type": "object",
+        "required": [
+          "group",
+          "marketcap_usd",
+          "share_pct",
+          "item_count",
+          "included_count",
+          "excluded_count",
+          "volume_24h_usd"
+        ],
+        "title": "MarketOverviewCategoryRow",
+        "description": "One category/weapon row for the Market Cap page."
+      },
+      "MarketOverviewHistoryPoint": {
+        "properties": {
+          "t": {
+            "type": "string",
+            "format": "date-time",
+            "title": "T",
+            "description": "History point timestamp."
+          },
+          "marketcap_usd": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Marketcap Usd",
+            "description": "Money amount as a decimal string in USD major units (for example \"25.82\")."
+          }
+        },
+        "type": "object",
+        "required": [
+          "t",
+          "marketcap_usd"
+        ],
+        "title": "MarketOverviewHistoryPoint",
+        "description": "One market cap history point."
+      },
+      "MarketOverviewItem": {
+        "properties": {
+          "item_id": {
+            "type": "integer",
+            "title": "Item Id",
+            "description": "Normalized catalog item ID."
+          },
+          "market_hash_name": {
+            "type": "string",
+            "title": "Market Hash Name",
+            "description": "Canonical Steam market hash name."
+          },
+          "phase": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phase",
+            "description": "Phase label when applicable."
+          },
+          "image_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Url",
+            "description": "Item image URL."
+          },
+          "item_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Item Type",
+            "description": "Catalog item type."
+          },
+          "weapon_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weapon Type",
+            "description": "Weapon classification."
+          },
+          "wear_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Wear Name",
+            "description": "Wear bucket."
+          },
+          "best_ask_usd": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Best Ask Usd",
+            "description": "Best ask in USD major units."
+          },
+          "best_bid_usd": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Best Bid Usd",
+            "description": "Best bid in USD major units."
+          },
+          "marketcap_usd": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Marketcap Usd",
+            "description": "Item market cap in USD major units."
+          },
+          "supply": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Supply",
+            "description": "Effective supply."
+          },
+          "rank": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rank",
+            "description": "Market cap rank."
+          },
+          "price_rate_24h": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Rate 24H",
+            "description": "Item price percentage change over the last 24 hours."
+          },
+          "sales_1d": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Sales 1D",
+            "description": "24h depletion/activity count."
+          },
+          "provider_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Provider Count",
+            "description": "Providers with active coverage."
+          }
+        },
+        "type": "object",
+        "required": [
+          "item_id",
+          "market_hash_name",
+          "sales_1d",
+          "provider_count"
+        ],
+        "title": "MarketOverviewItem",
+        "description": "Item row used for movers and most valuable panels."
+      },
+      "MarketOverviewMarketplace": {
+        "properties": {
+          "provider": {
+            "type": "string",
+            "title": "Provider",
+            "description": "Provider key."
+          },
+          "activity_24h": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Activity 24H",
+            "description": "24h depletion/activity count."
+          },
+          "volume_24h_usd": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Volume 24H Usd",
+            "description": "24h depletion/activity value in USD major units."
+          },
+          "share_pct": {
+            "type": "number",
+            "title": "Share Pct",
+            "description": "Share of total 24h activity value."
+          }
+        },
+        "type": "object",
+        "required": [
+          "provider",
+          "activity_24h",
+          "volume_24h_usd",
+          "share_pct"
+        ],
+        "title": "MarketOverviewMarketplace",
+        "description": "Marketplace activity-value share row."
+      },
+      "MarketOverviewMeta": {
+        "properties": {
+          "generated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Generated At",
+            "description": "ISO 8601 UTC timestamp when the current market snapshot was generated."
+          },
+          "data_source": {
+            "type": "string",
+            "enum": [
+              "cache",
+              "live",
+              "mixed"
+            ],
+            "title": "Data Source",
+            "description": "Primary data source used for the payload."
+          },
+          "freshness_sec": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Freshness Sec",
+            "description": "Estimated freshness of source data in seconds."
+          }
+        },
+        "type": "object",
+        "required": [
+          "generated_at",
+          "data_source",
+          "freshness_sec"
+        ],
+        "title": "MarketOverviewMeta",
+        "description": "Metadata for the first-party market cap overview page."
+      },
+      "MarketOverviewResponse": {
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/MarketOverviewMeta",
+            "description": "Overview metadata."
+          },
+          "summary": {
+            "$ref": "#/components/schemas/MarketOverviewSummary",
+            "description": "Top-line market cap metrics."
+          },
+          "history": {
+            "additionalProperties": {
+              "items": {
+                "$ref": "#/components/schemas/MarketOverviewHistoryPoint"
+              },
+              "type": "array"
+            },
+            "propertyNames": {
+              "enum": [
+                "24h",
+                "7d",
+                "30d",
+                "90d",
+                "all"
+              ]
+            },
+            "type": "object",
+            "title": "History",
+            "description": "Market cap history ranges."
+          },
+          "categories": {
+            "$ref": "#/components/schemas/MarketOverviewCategories",
+            "description": "Category breakdowns."
+          },
+          "top_movers": {
+            "$ref": "#/components/schemas/MarketOverviewTopMovers",
+            "description": "Top 24h gainers and losers."
+          },
+          "most_valuable": {
+            "items": {
+              "$ref": "#/components/schemas/MarketOverviewItem"
+            },
+            "type": "array",
+            "title": "Most Valuable",
+            "description": "Top items by market cap."
+          },
+          "marketplaces": {
+            "items": {
+              "$ref": "#/components/schemas/MarketOverviewMarketplace"
+            },
+            "type": "array",
+            "title": "Marketplaces",
+            "description": "Provider activity-value breakdown."
+          }
+        },
+        "type": "object",
+        "required": [
+          "meta",
+          "summary",
+          "history",
+          "categories",
+          "top_movers",
+          "most_valuable",
+          "marketplaces"
+        ],
+        "title": "MarketOverviewResponse",
+        "description": "First-party web Market Cap overview payload."
+      },
+      "MarketOverviewSummary": {
+        "properties": {
+          "total_marketcap_usd": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Total Marketcap Usd",
+            "description": "Money amount as a decimal string in USD major units (for example \"25.82\")."
+          },
+          "change_24h_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change 24H Pct",
+            "description": "Market cap percentage change over the last 24 hours."
+          },
+          "change_7d_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change 7D Pct",
+            "description": "Market cap percentage change over the last 7 days."
+          },
+          "change_30d_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change 30D Pct",
+            "description": "Market cap percentage change over the last 30 days."
+          },
+          "items_tracked": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Items Tracked",
+            "description": "Current market snapshot item count."
+          },
+          "included_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Included Count",
+            "description": "Items included in market cap totals."
+          },
+          "excluded_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Excluded Count",
+            "description": "Items excluded from market cap totals."
+          },
+          "excluded_pct": {
+            "type": "number",
+            "title": "Excluded Pct",
+            "description": "Excluded item percentage."
+          },
+          "volume_24h_usd": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Volume 24H Usd",
+            "description": "24h depletion/activity value in USD major units."
+          },
+          "marketplace_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Marketplace Count",
+            "description": "Providers contributing 24h activity value rows."
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_marketcap_usd",
+          "items_tracked",
+          "included_count",
+          "excluded_count",
+          "excluded_pct",
+          "volume_24h_usd",
+          "marketplace_count"
+        ],
+        "title": "MarketOverviewSummary",
+        "description": "Top-line Market Cap page metrics."
+      },
+      "MarketOverviewTopMovers": {
+        "properties": {
+          "gainers_24h": {
+            "items": {
+              "$ref": "#/components/schemas/MarketOverviewItem"
+            },
+            "type": "array",
+            "title": "Gainers 24H",
+            "description": "Top positive 24h movers."
+          },
+          "losers_24h": {
+            "items": {
+              "$ref": "#/components/schemas/MarketOverviewItem"
+            },
+            "type": "array",
+            "title": "Losers 24H",
+            "description": "Top negative 24h movers."
+          }
+        },
+        "type": "object",
+        "required": [
+          "gainers_24h",
+          "losers_24h"
+        ],
+        "title": "MarketOverviewTopMovers",
+        "description": "Top 24h gainers and losers."
       },
       "MarketTimeWindowMeta": {
         "properties": {
