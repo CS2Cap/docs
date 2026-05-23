@@ -141,7 +141,7 @@ export default function OgImage() {
             }}
           >
             <span>Live prices, buy orders &amp; sales history across&nbsp;</span>
-            <span style={{ color: "#e2e8f0", fontWeight: 600 }}>39+ marketplaces</span>
+            <span style={{ color: "#e2e8f0", fontWeight: 600 }}>40+ marketplaces</span>
             <span>. Free REST API.</span>
           </div>
 

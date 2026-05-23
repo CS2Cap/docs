@@ -444,6 +444,99 @@ export interface MarketItemsSnapshotResponse {
   };
 }
 
+export type WebSearchSort =
+  | "rank"
+  | "name"
+  | "best_ask_usd"
+  | "best_bid_usd"
+  | "spread_pct"
+  | "price_rate_24h"
+  | "price_rate_7d"
+  | "sales_1d"
+  | "provider_count"
+  | "marketcap";
+
+export type WebSearchDirection = "asc" | "desc";
+
+export interface WebSearchAppliedFilters {
+  item_type: string[];
+  weapon_type: string[];
+  rarity_name: string[];
+  wear_name: string[];
+  phase: string[];
+  collection: string[];
+  is_stattrak?: boolean | null;
+  is_souvenir?: boolean | null;
+  min_price_usd?: string | null;
+  max_price_usd?: string | null;
+}
+
+export interface WebSearchMeta {
+  generated_at: string;
+  data_source: "cache" | "live" | string;
+  freshness_sec: number;
+  query?: string | null;
+  filters: WebSearchAppliedFilters;
+  sort: WebSearchSort;
+  direction: WebSearchDirection;
+}
+
+export interface WebSearchItem {
+  item_id: number;
+  market_hash_name: string;
+  phase?: string | null;
+  image_url?: string | null;
+  item_type?: string | null;
+  item_subtype?: string | null;
+  weapon_type?: string | null;
+  base_name?: string | null;
+  skin_name?: string | null;
+  wear_name?: string | null;
+  rarity_name?: string | null;
+  collection?: string | null;
+  is_stattrak?: boolean | null;
+  is_souvenir?: boolean | null;
+  best_ask_usd?: string | null;
+  best_bid_usd?: string | null;
+  avg_spread_pct?: number | null;
+  price_rate_24h?: number | null;
+  price_rate_7d?: number | null;
+  sales_1d: number;
+  sales_7d: number;
+  provider_count: number;
+  marketcap?: string | null;
+  rank?: number | null;
+  is_watchlisted: boolean;
+}
+
+export interface WebSearchFacetBucket {
+  value: string;
+  count: number;
+}
+
+export interface WebSearchFacets {
+  item_type: WebSearchFacetBucket[];
+  weapon_type: WebSearchFacetBucket[];
+  rarity_name: WebSearchFacetBucket[];
+  wear_name: WebSearchFacetBucket[];
+  phase: WebSearchFacetBucket[];
+  collection: WebSearchFacetBucket[];
+}
+
+export interface WebSearchPriceHistogramBucket {
+  min_price_usd: string;
+  max_price_usd?: string | null;
+  count: number;
+}
+
+export interface WebSearchResponse {
+  meta: WebSearchMeta;
+  items: WebSearchItem[];
+  facets: WebSearchFacets;
+  price_histogram: WebSearchPriceHistogramBucket[];
+  pagination: PaginationMeta;
+}
+
 export interface TierInfo {
   tier_id: string;
   code: string;

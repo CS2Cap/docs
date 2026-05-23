@@ -22,7 +22,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "Which marketplaces have buy orders?",
-    a: "BUFF163, Youpin898, Buff Market, C5GAME, CSFloat, DMarket, ECOSteam, Market.CSGO, Steam, WAXPEER, white.market and Dupe.fi — that's 12 of the 39 supported markets.",
+    a: "BUFF163, Youpin898, Buff Market, C5GAME, CSFloat, DMarket, ECOSteam, Market.CSGO, Steam, WAXPEER, white.market and Dupe.fi — that's 12 of the 40 supported markets.",
   },
   {
     q: "Do you offer refunds?",

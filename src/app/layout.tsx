@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 const ROOT_DESCRIPTION =
-  "Free CS2 market API for live skin prices, buy orders, and historical data across 39+ marketplaces (Buff163, Youpin, etc).";
+  "Free CS2 market API for live skin prices, buy orders, and historical data across 40+ marketplaces (Buff163, Youpin, etc).";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://cs2cap.com"),

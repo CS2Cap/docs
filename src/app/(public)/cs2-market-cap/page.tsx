@@ -9,7 +9,7 @@ import { MarketCapView } from "./MarketCapView";
 
 const TITLE = "CS2 Skin Market Cap — Live Total Value & Category Index";
 const DESCRIPTION =
-  "Live CS2 / CS:GO skin market cap. Track the total market capitalization of Counter-Strike 2 skins and a category-by-category market index across 39+ marketplaces.";
+  "Live CS2 / CS:GO skin market cap. Track the total market capitalization of Counter-Strike 2 skins and a category-by-category market index across 40+ marketplaces.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
 const FAQS = [
   {
     q: "What is the CS2 skin market cap?",
-    a: "The CS2 skin market cap is the total market capitalization of all tracked Counter-Strike 2 skins — the sum of each item's price multiplied by its effective supply. CS2Cap aggregates pricing from 39+ marketplaces to compute a single total and a per-category breakdown.",
+    a: "The CS2 skin market cap is the total market capitalization of all tracked Counter-Strike 2 skins — the sum of each item's price multiplied by its effective supply. CS2Cap aggregates pricing from 40+ marketplaces to compute a single total and a per-category breakdown.",
   },
   {
     q: "How is the market cap calculated?",
@@ -60,7 +60,7 @@ const FAQS = [
   },
   {
     q: "Can I access the market cap data via API?",
-    a: "Yes. The same market index data is available through the CS2Cap API, alongside prices, buy orders, sales history, and candlestick charts across 39+ marketplaces.",
+    a: "Yes. The same market index data is available through the CS2Cap API, alongside prices, buy orders, sales history, and candlestick charts across 40+ marketplaces.",
   },
 ];
 
@@ -118,7 +118,7 @@ export default async function CS2MarketCapPage() {
             </h1>
             <p className="mb-10 max-w-xl font-mono text-sm leading-relaxed text-muted-foreground">
               The total market capitalization of Counter-Strike 2 skins, indexed
-              live across 39+ marketplaces — with a category-by-category
+              live across 40+ marketplaces — with a category-by-category
               breakdown of where the value sits.
             </p>
 
@@ -186,7 +186,7 @@ export default async function CS2MarketCapPage() {
               </p>
               <p>
                 CS2Cap computes this figure from a rolling 24-hour market
-                snapshot. Each item is valued against an index built from 39+
+                snapshot. Each item is valued against an index built from 40+
                 marketplaces rather than a single store, so the total is not
                 distorted by one platform&apos;s outlier listings. An item is
                 excluded from the total when its price, bid, or market-cap data

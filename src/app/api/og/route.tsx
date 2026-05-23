@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
   const headline = page?.h1 ?? "CS2 API";
   const description =
     page?.description ??
-    "Real-time CS2 skin market data, prices, and analytics across 39+ marketplaces.";
+    "Real-time CS2 skin market data, prices, and analytics across 40+ marketplaces.";
 
   return new ImageResponse(
     (
@@ -103,7 +103,7 @@ export async function GET(request: NextRequest) {
         >
           <div style={{ display: "flex" }}>cs2cap.com</div>
           <div style={{ display: "flex", color: "#60a5fa" }}>
-            Free tier · 39+ markets · REST + Webhooks
+            Free tier · 40+ markets · REST + Webhooks
           </div>
         </div>
       </div>

@@ -54,7 +54,7 @@ function NpmMark({ className }: { className?: string }) {
 export const metadata: Metadata = {
   title: "CS2 API Docs — Endpoints, Pricing & Free Tier",
   description:
-    "The full CS2Cap API reference: REST endpoints for CS2 & CS:GO skin prices, buy orders, sales, and arbitrage across 39+ marketplaces. Free tier included.",
+    "The full CS2Cap API reference: REST endpoints for CS2 & CS:GO skin prices, buy orders, sales, and arbitrage across 40+ marketplaces. Free tier included.",
   alternates: { canonical: "/api-info" },
 };
 
@@ -72,7 +72,7 @@ const useCases = [
   {
     icon: Globe,
     title: "COMPARISON TOOLS",
-    desc: "Show users the best deals across 39 marketplaces in your app or extension.",
+    desc: "Show users the best deals across 40 marketplaces in your app or extension.",
   },
   {
     icon: Braces,

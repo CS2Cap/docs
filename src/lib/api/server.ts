@@ -37,6 +37,9 @@ import type {
   ProvidersResponse,
   SalesHistoryResponse,
   SubscriptionStatus,
+  WebSearchDirection,
+  WebSearchResponse,
+  WebSearchSort,
 } from "./types";
 
 interface ServerFetchOptions {
@@ -280,6 +283,34 @@ export const serverApi = {
     return serverFetch<ItemsMetadataResponse>("/v1/web/items/metadata", {
       revalidate,
       anon: opts.anon,
+    });
+  },
+
+  getSearch(
+    params: {
+      q?: string;
+      item_type?: string[];
+      weapon_type?: string[];
+      rarity_name?: string[];
+      wear_name?: string[];
+      phase?: string[];
+      collection?: string[];
+      is_stattrak?: boolean;
+      is_souvenir?: boolean;
+      min_price_usd?: string;
+      max_price_usd?: string;
+      sort?: WebSearchSort;
+      direction?: WebSearchDirection;
+      limit?: number;
+      offset?: number;
+    } = {},
+    revalidate: number | false = 30,
+    opts: { anon?: boolean } = {},
+  ) {
+    return serverFetch<WebSearchResponse>(`/v1/web/search${buildQuery(params)}`, {
+      revalidate,
+      anon: opts.anon,
+      timeoutMs: 10000,
     });
   },
 

@@ -54,6 +54,9 @@ import type {
   VerifyEmailSendResponse,
   WatchlistResponse,
   WebSessionLogoutResponse,
+  WebSearchDirection,
+  WebSearchResponse,
+  WebSearchSort,
 } from "./types";
 
 interface RequestOptions {
@@ -198,6 +201,28 @@ export const webApi = {
 
   getItemsMetadata(): Promise<ItemsMetadataResponse> {
     return request("/v1/web/items/metadata");
+  },
+
+  getSearch(
+    params: {
+      q?: string;
+      item_type?: string[];
+      weapon_type?: string[];
+      rarity_name?: string[];
+      wear_name?: string[];
+      phase?: string[];
+      collection?: string[];
+      is_stattrak?: boolean;
+      is_souvenir?: boolean;
+      min_price_usd?: string;
+      max_price_usd?: string;
+      sort?: WebSearchSort;
+      direction?: WebSearchDirection;
+      limit?: number;
+      offset?: number;
+    } = {},
+  ): Promise<WebSearchResponse> {
+    return request(`/v1/web/search${buildQuery(params)}`);
   },
 
   getProviders(params: { provider?: string } = {}): Promise<ProviderInfo[]> {

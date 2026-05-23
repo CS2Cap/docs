@@ -1,6 +1,5 @@
 import openapiSpec from "../../../openapi.json";
 import { serverApi } from "./server";
-import { buildQuery } from "./shared";
 import {
   classifyBuyOrders,
   formatPriceMinor,
@@ -12,10 +11,11 @@ import {
 } from "./view-models";
 import type {
   ItemOut,
-  ItemsResponse,
   MarketItem,
-  PaginationMeta,
   ProviderInfo,
+  WebSearchDirection,
+  WebSearchResponse,
+  WebSearchSort,
 } from "./types";
 
 type OpenApiOperation = {
@@ -28,20 +28,6 @@ type OpenApiOperation = {
 
 
 const SEARCH_PAGE_SIZE = 24;
-// Matches SEARCH_GROUP_MAX_SCAN + the backend's endpoint_max, so a broad
-// filter (e.g. item_type=knife) gets the whole scan in one hop instead of
-// 5 serial paginated roundtrips. The loop below still handles tier caps
-// if a lower-tier caller can't receive the full page.
-const SEARCH_GROUP_FETCH_LIMIT = 1000;
-const SEARCH_GROUP_MAX_SCAN = 1000;
-const WEAR_ORDER: Record<string, number> = {
-  "Factory New": 0,
-  "Minimal Wear": 1,
-  "Field-Tested": 2,
-  "Well-Worn": 3,
-  "Battle-Scarred": 4,
-};
-const WEAR_SUFFIX_PATTERN = /\s*\((Factory New|Minimal Wear|Field-Tested|Well-Worn|Battle-Scarred)\)\s*$/;
 const LANDING_TICKER_ITEM_IDS = [
   9879,
   12199,
@@ -62,19 +48,6 @@ const TICKER_WEAR_ABBREVIATIONS: Record<string, string> = {
   "(Well-Worn)": "WW",
   "(Battle-Scarred)": "BS",
 };
-const FORGIVING_SEARCH_STOPWORDS = new Set([
-  "factory",
-  "new",
-  "minimal",
-  "wear",
-  "field",
-  "tested",
-  "well",
-  "battle",
-  "scarred",
-  "stattrak",
-  "souvenir",
-]);
 
 function uniqByItemId<T extends { item_id?: number; market_hash_name: string }>(items: T[]): T[] {
   const seen = new Set<number>();
@@ -146,123 +119,6 @@ function formatTickerItemName(name: string): string {
   return name;
 }
 
-function normalizeSearchValue(value: string): string {
-  return value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, " ")
-    .trim()
-    .replace(/\s+/g, " ");
-}
-
-function buildMissingSeparatorVariants(query: string): string[] {
-  const parts = query.trim().split(/\s+/).filter(Boolean);
-  const variants: string[] = [];
-
-  for (let index = 1; index < parts.length; index += 1) {
-    variants.push(`${parts.slice(0, index).join(" ")} | ${parts.slice(index).join(" ")}`);
-  }
-
-  return variants;
-}
-
-function buildItemSearchHaystack(item: ItemOut): string {
-  return normalizeSearchValue(
-    [
-      item.market_hash_name,
-      item.base_name,
-      item.skin_name,
-      item.wear_name,
-      item.collection,
-    ]
-      .filter(Boolean)
-      .join(" "),
-  );
-}
-
-function matchesForgivingSearch(item: ItemOut, query: string): boolean {
-  const normalizedQuery = normalizeSearchValue(query);
-  if (!normalizedQuery) {
-    return true;
-  }
-
-  const haystack = buildItemSearchHaystack(item);
-  if (haystack.includes(normalizedQuery)) {
-    return true;
-  }
-
-  const tokens = normalizedQuery.split(" ").filter(Boolean);
-  return tokens.every((token) => haystack.includes(token));
-}
-
-function paginateItems(items: ItemOut[], limit: number, offset: number): ItemsResponse {
-  const pagination: PaginationMeta = {
-    limit,
-    offset,
-    total: items.length,
-    has_next: offset + limit < items.length,
-    has_prev: offset > 0,
-  };
-
-  return {
-    items: items.slice(offset, offset + limit),
-    pagination,
-  };
-}
-
-async function getForgivingSearchItems(input: {
-  q: string;
-  itemSubtype?: string;
-  limit: number;
-  offset: number;
-}): Promise<ItemsResponse | null> {
-  const { q, itemSubtype, limit, offset } = input;
-
-  if (!q || q.includes("|")) {
-    return null;
-  }
-
-  for (const variant of buildMissingSeparatorVariants(q)) {
-    const response = await serverApi.getItems(
-      buildQuery({
-        q: variant,
-        item_subtype: itemSubtype,
-        limit,
-        offset,
-      }),
-      60,
-    );
-
-    if ((response?.items.length ?? 0) > 0) {
-      return response;
-    }
-  }
-
-  const candidateTokens = [...new Set(normalizeSearchValue(q).split(" ").filter(Boolean))]
-    .filter((token) => token.length >= 2 && !FORGIVING_SEARCH_STOPWORDS.has(token))
-    .sort((left, right) => right.length - left.length);
-
-  for (const token of candidateTokens) {
-    const response = await serverApi.getItems(
-      buildQuery({
-        q: token,
-        item_subtype: itemSubtype,
-      }),
-      60,
-    );
-
-    if ((response?.items.length ?? 0) === 0) {
-      continue;
-    }
-
-    const matches = response.items.filter((item) => matchesForgivingSearch(item, q));
-    if (matches.length > 0) {
-      return paginateItems(matches, limit, offset);
-    }
-  }
-
-  return null;
-}
-
 export async function getLandingPageData() {
   // anon: true — landing data is identical for every visitor (catalog, ticker,
   // provider list). Reading cookies via `cookies()` would force the route into
@@ -295,246 +151,84 @@ export async function getLandingPageData() {
 
 export type SearchFilterValues = {
   item_type?: string;
-  item_subtype?: string;
   weapon_type?: string;
   wear_name?: string;
   rarity_name?: string;
   collection?: string;
+  phase?: string;
+  min_price_usd?: string;
+  max_price_usd?: string;
+  sort?: WebSearchSort;
+  direction?: WebSearchDirection;
 };
 
 export async function getSearchPageData(input: {
   q?: string;
   page?: number;
   filters?: SearchFilterValues;
-}) {
+}): Promise<WebSearchResponse> {
   const { q = "", page = 1, filters = {} } = input;
   const limit = SEARCH_PAGE_SIZE;
   const currentPage = Math.max(page, 1);
   const offset = (currentPage - 1) * limit;
 
-  const baseQueryParams = {
-    q: q || undefined,
-    item_type: filters.item_type || undefined,
-    item_subtype: filters.item_subtype || undefined,
-    weapon_type: filters.weapon_type || undefined,
-    wear_name: filters.wear_name || undefined,
-    rarity_name: filters.rarity_name || undefined,
-    collection: filters.collection || undefined,
-  };
-
-  // When the user explicitly filters by wear, skip grouping — they asked for a specific variant.
-  const shouldGroup = !filters.wear_name;
-
-  const [metadata, marketSnapshot] = await Promise.all([
-    serverApi.getItemsMetadata(86400),
-    serverApi.getMarketItemsSnapshot({ timeframe: "24h" }),
-  ]);
-
-  const snapshotItemsById = new Map(
-    (marketSnapshot?.data.items ?? []).map((snapshotItem) => [snapshotItem.item_id, snapshotItem]),
+  const response = await serverApi.getSearch(
+    {
+      q: q || undefined,
+      item_type: filters.item_type ? [filters.item_type] : undefined,
+      weapon_type: filters.weapon_type ? [filters.weapon_type] : undefined,
+      wear_name: filters.wear_name ? [filters.wear_name] : undefined,
+      rarity_name: filters.rarity_name ? [filters.rarity_name] : undefined,
+      collection: filters.collection ? [filters.collection] : undefined,
+      phase: filters.phase ? [filters.phase] : undefined,
+      min_price_usd: filters.min_price_usd || undefined,
+      max_price_usd: filters.max_price_usd || undefined,
+      sort: filters.sort || "rank",
+      direction: filters.direction || "asc",
+      limit,
+      offset,
+    },
+    30,
+    { anon: true },
   );
-  const snapshotGeneratedAt = marketSnapshot?.meta.generated_at ?? null;
 
-  if (!shouldGroup) {
-    // Flat path — preserve previous behaviour
-    const itemsResponseRaw = await serverApi.getItems(
-      buildQuery({ ...baseQueryParams, limit, offset }),
-      60,
-    );
-
-    const itemsResponse =
-      (itemsResponseRaw?.items.length ?? 0) > 0 || !q
-        ? itemsResponseRaw
-        : await getForgivingSearchItems({
-            q,
-            itemSubtype: filters.item_subtype,
-            limit,
-            offset,
-          });
-
-    const results = (itemsResponse?.items ?? []).map((item) => {
-      const snapshotItem = item.item_id ? snapshotItemsById.get(item.item_id) : undefined;
-      const summary = snapshotItem?.summary;
-
-      return {
-        item,
-        priceUsd: summary?.best_ask_usd ?? null,
-        priceChange24hPct: summary?.price_rate_24h ?? null,
-        volume24h: summary?.total_volume_24h ?? null,
-        metricsAsOf: summary?.liquidity_last_updated ?? snapshotGeneratedAt,
-        displayName: item.market_hash_name,
-        variantCount: 1,
-        wearsAvailable: item.wear_name ? [item.wear_name] : [],
-      };
-    });
-
-    return {
-      metadata,
-      filters,
-      query: q,
-      pagination: itemsResponse?.pagination ?? null,
-      results,
-      grouped: false as const,
-      scanCapped: false,
-    };
-  }
-
-  // Grouped path — over-fetch, group by skin family, then paginate the groups.
-  const scanned: ItemOut[] = [];
-  let scanOffset = 0;
-  let scanCapped = false;
-  let lastResponseHadNext = false;
-
-  while (scanned.length < SEARCH_GROUP_MAX_SCAN) {
-    const remaining = SEARCH_GROUP_MAX_SCAN - scanned.length;
-    const fetchLimit = Math.min(SEARCH_GROUP_FETCH_LIMIT, remaining);
-    const response = await serverApi.getItems(
-      buildQuery({ ...baseQueryParams, limit: fetchLimit, offset: scanOffset }),
-      60,
-    );
-
-    if (!response || response.items.length === 0) {
-      break;
-    }
-
-    scanned.push(...response.items);
-    scanOffset += response.items.length;
-    lastResponseHadNext = response.pagination?.has_next ?? false;
-
-    if (!lastResponseHadNext) {
-      break;
-    }
-
-    if (scanned.length >= SEARCH_GROUP_MAX_SCAN) {
-      scanCapped = true;
-      break;
-    }
-  }
-
-  // Forgiving-search fallback when nothing came back at all.
-  let usedFallback = false;
-  if (scanned.length === 0 && q) {
-    const fallback = await getForgivingSearchItems({
-      q,
-      itemSubtype: filters.item_subtype,
-      limit: SEARCH_GROUP_FETCH_LIMIT,
-      offset: 0,
-    });
-    if (fallback?.items.length) {
-      scanned.push(...fallback.items);
-      usedFallback = true;
-    }
-  }
-
-  const groups = groupSearchResults(scanned);
-  const totalGroups = groups.length;
-  const pagedGroups = groups.slice(offset, offset + limit);
-
-  const results = pagedGroups.map((group) => {
-    const variantSummaries = group.variants
-      .map((variant) =>
-        variant.item_id ? snapshotItemsById.get(variant.item_id)?.summary ?? null : null,
-      )
-      .filter((summary): summary is NonNullable<typeof summary> => summary != null);
-
-    const lowestAsk = variantSummaries
-      .map((summary) => (summary.best_ask_usd != null ? Number(summary.best_ask_usd) : null))
-      .filter((value): value is number => value != null && Number.isFinite(value))
-      .reduce<number | null>((min, value) => (min == null || value < min ? value : min), null);
-
-    const totalVolume = variantSummaries.reduce(
-      (sum, summary) => sum + (summary.total_volume_24h ?? 0),
-      0,
-    );
-
-    const representativeSummary = group.representative.item_id
-      ? snapshotItemsById.get(group.representative.item_id)?.summary
-      : undefined;
-
-    const wearsAvailable = group.variants
-      .map((variant) => variant.wear_name)
-      .filter((wear): wear is string => Boolean(wear));
-    const uniqueWears = [...new Set(wearsAvailable)].sort(
-      (a, b) => (WEAR_ORDER[a] ?? 99) - (WEAR_ORDER[b] ?? 99),
-    );
-
-    return {
-      item: group.representative,
-      priceUsd: lowestAsk != null ? lowestAsk.toFixed(2) : null,
-      priceChange24hPct: representativeSummary?.price_rate_24h ?? null,
-      volume24h: totalVolume > 0 ? totalVolume : null,
-      metricsAsOf: representativeSummary?.liquidity_last_updated ?? snapshotGeneratedAt,
-      displayName: stripWearSuffix(group.representative.market_hash_name),
-      variantCount: group.variants.length,
-      wearsAvailable: uniqueWears,
-    };
-  });
-
-  const pagination: PaginationMeta = {
-    limit,
-    offset,
-    total: totalGroups,
-    has_next:
-      !usedFallback && (offset + limit < totalGroups || (scanCapped && lastResponseHadNext)),
-    has_prev: offset > 0,
+  return response ?? {
+    meta: {
+      generated_at: new Date().toISOString(),
+      data_source: "cache",
+      freshness_sec: 0,
+      query: q || null,
+      filters: {
+        item_type: filters.item_type ? [filters.item_type] : [],
+        weapon_type: filters.weapon_type ? [filters.weapon_type] : [],
+        rarity_name: filters.rarity_name ? [filters.rarity_name] : [],
+        wear_name: filters.wear_name ? [filters.wear_name] : [],
+        phase: filters.phase ? [filters.phase] : [],
+        collection: filters.collection ? [filters.collection] : [],
+        min_price_usd: filters.min_price_usd ?? null,
+        max_price_usd: filters.max_price_usd ?? null,
+      },
+      sort: filters.sort || "rank",
+      direction: filters.direction || "asc",
+    },
+    items: [],
+    facets: {
+      item_type: [],
+      weapon_type: [],
+      rarity_name: [],
+      wear_name: [],
+      phase: [],
+      collection: [],
+    },
+    price_histogram: [],
+    pagination: {
+      limit,
+      offset,
+      total: 0,
+      has_next: false,
+      has_prev: offset > 0,
+    },
   };
-
-  return {
-    metadata,
-    filters,
-    query: q,
-    pagination,
-    results,
-    grouped: true as const,
-    scanCapped,
-  };
-}
-
-function stripWearSuffix(name: string): string {
-  return name.replace(WEAR_SUFFIX_PATTERN, "");
-}
-
-type SearchGroup = {
-  key: string;
-  representative: ItemOut;
-  variants: ItemOut[];
-};
-
-function groupSearchResults(items: ItemOut[]): SearchGroup[] {
-  const groupsByKey = new Map<string, SearchGroup>();
-  const orderedKeys: string[] = [];
-
-  for (const item of items) {
-    const hasFamily = Boolean(item.base_name && item.skin_name);
-    const key = hasFamily
-      ? [
-          item.base_name,
-          item.skin_name,
-          item.is_stattrak ? "st" : "",
-          item.is_souvenir ? "sv" : "",
-          item.phase ?? "",
-        ].join("|")
-      : `mhn:${item.market_hash_name}`;
-
-    let group = groupsByKey.get(key);
-    if (!group) {
-      group = { key, representative: item, variants: [item] };
-      groupsByKey.set(key, group);
-      orderedKeys.push(key);
-      continue;
-    }
-
-    group.variants.push(item);
-
-    // Pick the variant closest to FN as the representative.
-    const currentRank = WEAR_ORDER[group.representative.wear_name ?? ""] ?? 99;
-    const candidateRank = WEAR_ORDER[item.wear_name ?? ""] ?? 99;
-    if (candidateRank < currentRank) {
-      group.representative = item;
-    }
-  }
-
-  return orderedKeys.map((key) => groupsByKey.get(key)!);
 }
 
 export async function getItemDetailPageCoreData(

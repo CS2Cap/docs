@@ -10,7 +10,7 @@ import { StructuredData, buildOrganization, buildWebSite, buildWebApplication } 
 import { buildTickerRows, getLandingPageData } from "@/lib/api/compositions";
 
 const DESC =
-  "Track the live CS2 skin market cap and get real-time prices, buy orders, and sales across 39+ marketplaces — plus a free unified CS2 / CS:GO API.";
+  "Track the live CS2 skin market cap and get real-time prices, buy orders, and sales across 40+ marketplaces — plus a free unified CS2 / CS:GO API.";
 
 export const metadata: Metadata = {
   title: "CS2Cap — CS2 Skins Pricing API & Market Data",

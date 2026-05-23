@@ -12,7 +12,7 @@ import {
 import { serverApi } from "@/lib/api/server";
 
 const DESC =
-  "CS2Cap pricing — start free, scale to Quant. Real-time prices, buy orders, sales history, candles, and analytics across 39+ marketplaces. Monthly or quarterly billing.";
+  "CS2Cap pricing — start free, scale to Quant. Real-time prices, buy orders, sales history, candles, and analytics across 40+ marketplaces. Monthly or quarterly billing.";
 
 export const metadata: Metadata = {
   title: "Pricing — CS2Cap API Plans (Free · Starter · Pro · Quant)",

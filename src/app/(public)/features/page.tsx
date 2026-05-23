@@ -33,7 +33,7 @@ export const dynamic = "force-static";
 const NEXT_STEP_LINKS = [
   { href: "/apis", label: "BROWSE ALL APIs", desc: "Endpoint-by-endpoint reference for every CS2Cap API." },
   { href: "/pricing", label: "VIEW PRICING", desc: "Plans, rate limits, and the feature matrix side by side." },
-  { href: "/marketplaces", label: "39 MARKETPLACES", desc: "Every market we pull from — BUFF163, Youpin, Steam, more." },
+  { href: "/marketplaces", label: "40 MARKETPLACES", desc: "Every market we pull from — BUFF163, Youpin, Steam, more." },
 ];
 
 export default function FeaturesPage() {
@@ -62,7 +62,7 @@ export default function FeaturesPage() {
             <p className="mt-6 max-w-2xl font-mono text-sm leading-relaxed text-muted-foreground md:text-base">
               Real-time prices, Doppler phase data, recent sales, multi-year
               candlesticks, item analytics, technical indicators, and an
-              arbitrage scanner — all behind one REST API across 39+
+              arbitrage scanner — all behind one REST API across 40+
               marketplaces.
             </p>
           </div>
