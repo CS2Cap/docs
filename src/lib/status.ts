@@ -120,6 +120,7 @@ export interface MonitorSummary {
   uptime24h: number | null; // 0..1
   lastPing: number | null;
   lastBeatAt: string | null;
+  logo: string | null;
 }
 
 export const BAR_COUNT = 60;
@@ -144,7 +145,11 @@ export function deriveState(beats: Heartbeat[]): MonitorState {
   return "unknown";
 }
 
-export function summarizeMonitor(monitor: Monitor, hb: HeartbeatResponse): MonitorSummary {
+export function summarizeMonitor(
+  monitor: Monitor,
+  hb: HeartbeatResponse,
+  logoMap?: Map<string, string>,
+): MonitorSummary {
   const beats = bucketBeats(hb.heartbeatList[String(monitor.id)]);
   const state = deriveState(beats);
   const last = beats[beats.length - 1] ?? null;
@@ -156,8 +161,10 @@ export function summarizeMonitor(monitor: Monitor, hb: HeartbeatResponse): Monit
     uptime24h: hb.uptimeList[`${monitor.id}_24`] ?? null,
     lastPing: last?.ping ?? null,
     lastBeatAt: last?.time ?? null,
+    logo: logoMap ? logoForMonitor(monitor.name, logoMap) : null,
   };
 }
+
 
 export interface OverallSummary {
   total: number;
