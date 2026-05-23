@@ -36,6 +36,7 @@ import type {
   ItemsMetadataResponse,
   ItemsResponse,
   LinkedProviderResponse,
+  MarketOverviewResponse,
   MarketItemAnalyticsResponse,
   PendingChangeCancelResponse,
   PhaseName,
@@ -207,6 +208,7 @@ export const webApi = {
     params: {
       q?: string;
       item_type?: string[];
+      base_name?: string[];
       weapon_type?: string[];
       rarity_name?: string[];
       wear_name?: string[];
@@ -223,6 +225,10 @@ export const webApi = {
     } = {},
   ): Promise<WebSearchResponse> {
     return request(`/v1/web/search${buildQuery(params)}`);
+  },
+
+  getMarketOverview(): Promise<MarketOverviewResponse> {
+    return request("/v1/web/market/overview");
   },
 
   getProviders(params: { provider?: string } = {}): Promise<ProviderInfo[]> {

@@ -4,7 +4,7 @@ import { getPagesByType } from "@/lib/seo/landing-pages";
 
 const TITLE = "CS2 Marketplace API Directory — 40+ Skin Markets";
 const DESCRIPTION =
-  "Every CS2 / CS:GO marketplace CS2Cap indexes — Buff163, CSFloat, Skinport, Steam, DMarket and 35+ more. One API for pricing, buy orders, and sales across all of them.";
+  "Every CS2 / CS:GO marketplace CS2Cap indexes — Buff163, CSFloat, Skinport, Steam, DMarket and 40+ more. One API for pricing, buy orders, and sales across all of them.";
 
 export const metadata: Metadata = {
   title: TITLE,

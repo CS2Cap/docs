@@ -28,6 +28,7 @@ import type {
   MarketIndexGroupBy,
   MarketItem,
   MarketItemsSnapshotResponse,
+  MarketOverviewResponse,
   MarketTimeframe,
   PlansResponse,
   PriceCandlesPage,
@@ -290,6 +291,7 @@ export const serverApi = {
     params: {
       q?: string;
       item_type?: string[];
+      base_name?: string[];
       weapon_type?: string[];
       rarity_name?: string[];
       wear_name?: string[];
@@ -436,6 +438,14 @@ export const serverApi = {
       `/v1/web/market/indexes${buildQuery({ group_by: groupBy })}`,
       { revalidate, anon: true, timeoutMs: 10000 },
     );
+  },
+
+  getMarketOverview(revalidate: number | false = 60) {
+    return serverFetch<MarketOverviewResponse>("/v1/web/market/overview", {
+      revalidate,
+      anon: true,
+      timeoutMs: 10000,
+    });
   },
 
   getBillingPlans(revalidate: number | false = false) {

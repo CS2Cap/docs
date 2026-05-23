@@ -460,6 +460,7 @@ export type WebSearchDirection = "asc" | "desc";
 
 export interface WebSearchAppliedFilters {
   item_type: string[];
+  base_name: string[];
   weapon_type: string[];
   rarity_name: string[];
   wear_name: string[];
@@ -516,6 +517,7 @@ export interface WebSearchFacetBucket {
 
 export interface WebSearchFacets {
   item_type: WebSearchFacetBucket[];
+  base_name: WebSearchFacetBucket[];
   weapon_type: WebSearchFacetBucket[];
   rarity_name: WebSearchFacetBucket[];
   wear_name: WebSearchFacetBucket[];
@@ -1114,4 +1116,79 @@ export interface MarketIndexesResponse {
     total_marketcap_usd: string;
     groups: MarketIndexGroup[];
   };
+}
+
+export type MarketOverviewRange = "24h" | "7d" | "30d" | "90d" | "all";
+
+export interface MarketOverviewSummary {
+  total_marketcap_usd: string;
+  change_24h_pct: number | null;
+  change_7d_pct: number | null;
+  change_30d_pct: number | null;
+  items_tracked: number;
+  included_count: number;
+  excluded_count: number;
+  excluded_pct: number;
+  volume_24h_usd: string;
+  listed_value_usd: string;
+  marketplace_count: number;
+}
+
+export interface MarketOverviewHistoryPoint {
+  t: string;
+  marketcap_usd: string;
+}
+
+export interface MarketOverviewCategoryRow {
+  group: string;
+  marketcap_usd: string;
+  share_pct: number;
+  item_count: number;
+  included_count: number;
+  excluded_count: number;
+  change_24h_pct: number | null;
+}
+
+export interface MarketOverviewItem {
+  item_id: number;
+  market_hash_name: string;
+  phase: string | null;
+  image_url: string | null;
+  item_type: string | null;
+  weapon_type: string | null;
+  wear_name: string | null;
+  best_ask_usd: string | null;
+  best_bid_usd: string | null;
+  marketcap_usd: string | null;
+  supply: number | null;
+  rank: number | null;
+  price_rate_24h: number | null;
+  sales_1d: number;
+  provider_count: number;
+}
+
+export interface MarketOverviewMarketplace {
+  provider: string;
+  name: string;
+  logo: string;
+  listing_count: number;
+  listed_value_usd: string;
+  share_pct: number;
+}
+
+export interface MarketOverviewResponse {
+  meta: {
+    generated_at: string;
+    data_source: "cache" | "live" | "mixed";
+    freshness_sec: number;
+  };
+  summary: MarketOverviewSummary;
+  history: Record<MarketOverviewRange, MarketOverviewHistoryPoint[]>;
+  categories: Record<MarketIndexGroupBy, MarketOverviewCategoryRow[]>;
+  top_movers: {
+    gainers_24h: MarketOverviewItem[];
+    losers_24h: MarketOverviewItem[];
+  };
+  most_valuable: MarketOverviewItem[];
+  marketplaces: MarketOverviewMarketplace[];
 }

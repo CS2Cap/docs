@@ -17,6 +17,7 @@ import { buildItemPath } from "@/lib/seo/itemSlug";
 type SearchParams = {
   q?: string | string[];
   item_type?: string | string[];
+  base_name?: string | string[];
   weapon_type?: string | string[];
   wear_name?: string | string[];
   rarity_name?: string | string[];
@@ -36,7 +37,7 @@ type SearchPageProps = {
 type FilterField = {
   key: Extract<
     keyof SearchFilterValues,
-    "item_type" | "weapon_type" | "wear_name" | "rarity_name" | "collection" | "phase"
+    "item_type" | "base_name" | "wear_name" | "rarity_name" | "collection" | "phase"
   >;
   label: string;
 };
@@ -44,7 +45,7 @@ type FilterField = {
 const SEARCH_CANONICAL_PARAMS = [
   "q",
   "item_type",
-  "weapon_type",
+  "base_name",
   "wear_name",
   "rarity_name",
   "collection",
@@ -53,7 +54,7 @@ const SEARCH_CANONICAL_PARAMS = [
 
 const FILTER_FIELDS: FilterField[] = [
   { key: "item_type", label: "Type" },
-  { key: "weapon_type", label: "Weapon" },
+  { key: "base_name", label: "Weapon" },
   { key: "rarity_name", label: "Rarity" },
   { key: "wear_name", label: "Wear" },
   { key: "phase", label: "Phase" },
@@ -161,6 +162,7 @@ export async function generateMetadata({
   const resolved = await searchParams;
   const q = clean(resolved.q);
   const itemType = clean(resolved.item_type);
+  const baseName = clean(resolved.base_name);
   const weaponType = clean(resolved.weapon_type);
   const wearName = clean(resolved.wear_name);
   const rarityName = clean(resolved.rarity_name);
@@ -169,7 +171,8 @@ export async function generateMetadata({
 
   const titleParts: string[] = [];
   if (q) titleParts.push(titleCase(q));
-  if (weaponType) titleParts.push(weaponType);
+  if (baseName) titleParts.push(baseName);
+  else if (weaponType) titleParts.push(weaponType);
   if (wearName) titleParts.push(wearName);
   if (rarityName) titleParts.push(rarityName);
   if (phase) titleParts.push(phase);
@@ -184,12 +187,12 @@ export async function generateMetadata({
     ? `Live CS2 skin prices for ${titleSubject}. Compare ask prices, buy orders, and market analytics across 40+ marketplaces with the CS2Cap API.`
     : "Search every CS2 skin in the catalog and compare live prices, buy orders, and analytics across 40+ marketplaces.";
   const hasFilter = Boolean(
-    q || itemType || weaponType || wearName || rarityName || collection || phase,
+    q || itemType || baseName || weaponType || wearName || rarityName || collection || phase,
   );
   const canonical = buildCanonicalSearchPath({
     q,
     item_type: itemType,
-    weapon_type: weaponType,
+    base_name: baseName ?? weaponType,
     wear_name: wearName,
     rarity_name: rarityName,
     collection,
@@ -706,7 +709,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const query = clean(resolved.q) ?? "";
   const filters: SearchFilterValues = {
     item_type: clean(resolved.item_type),
-    weapon_type: clean(resolved.weapon_type),
+    base_name: clean(resolved.base_name) ?? clean(resolved.weapon_type),
     wear_name: clean(resolved.wear_name),
     rarity_name: clean(resolved.rarity_name),
     collection: clean(resolved.collection),
@@ -722,7 +725,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const filterKey = [
     query,
     filters.item_type ?? "",
-    filters.weapon_type ?? "",
+    filters.base_name ?? "",
     filters.wear_name ?? "",
     filters.rarity_name ?? "",
     filters.collection ?? "",

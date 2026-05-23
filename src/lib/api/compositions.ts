@@ -151,6 +151,7 @@ export async function getLandingPageData() {
 
 export type SearchFilterValues = {
   item_type?: string;
+  base_name?: string;
   weapon_type?: string;
   wear_name?: string;
   rarity_name?: string;
@@ -176,6 +177,7 @@ export async function getSearchPageData(input: {
     {
       q: q || undefined,
       item_type: filters.item_type ? [filters.item_type] : undefined,
+      base_name: filters.base_name ? [filters.base_name] : undefined,
       weapon_type: filters.weapon_type ? [filters.weapon_type] : undefined,
       wear_name: filters.wear_name ? [filters.wear_name] : undefined,
       rarity_name: filters.rarity_name ? [filters.rarity_name] : undefined,
@@ -200,6 +202,7 @@ export async function getSearchPageData(input: {
       query: q || null,
       filters: {
         item_type: filters.item_type ? [filters.item_type] : [],
+        base_name: filters.base_name ? [filters.base_name] : [],
         weapon_type: filters.weapon_type ? [filters.weapon_type] : [],
         rarity_name: filters.rarity_name ? [filters.rarity_name] : [],
         wear_name: filters.wear_name ? [filters.wear_name] : [],
@@ -214,6 +217,7 @@ export async function getSearchPageData(input: {
     items: [],
     facets: {
       item_type: [],
+      base_name: [],
       weapon_type: [],
       rarity_name: [],
       wear_name: [],

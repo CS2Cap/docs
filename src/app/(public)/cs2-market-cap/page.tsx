@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { TrendingUp } from "lucide-react";
 import { FooterSection } from "@/components/FooterSection";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData, buildFAQPage } from "@/components/seo/StructuredData";
@@ -64,33 +63,8 @@ const FAQS = [
   },
 ];
 
-function formatFreshness(seconds: number): string {
-  if (seconds < 90) return "moments ago";
-  const minutes = Math.round(seconds / 60);
-  if (minutes < 60) return `${minutes} min ago`;
-  const hours = Math.round(minutes / 60);
-  return `${hours} hr ago`;
-}
-
-function formatUsd(value: string | number): string {
-  const n = typeof value === "string" ? Number(value) : value;
-  if (!Number.isFinite(n)) return "—";
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(n);
-}
-
 export default async function CS2MarketCapPage() {
-  const [byItemType, byWeaponType] = await Promise.all([
-    serverApi.getMarketIndexes("item_type"),
-    serverApi.getMarketIndexes("weapon_type"),
-  ]);
-
-  const primary = byItemType ?? byWeaponType;
-  const total = primary ? formatUsd(primary.data.total_marketcap_usd) : null;
-  const freshness = primary ? formatFreshness(primary.meta.freshness_sec) : null;
+  const overview = await serverApi.getMarketOverview(60);
 
   return (
     <>
@@ -103,67 +77,7 @@ export default async function CS2MarketCapPage() {
       <StructuredData data={buildFAQPage(FAQS)} />
 
       <main>
-        {/* Hero */}
-        <section className="relative overflow-x-clip bg-grid py-16 md:py-20">
-          <div className="container relative z-10">
-            <div className="mb-6 flex items-center gap-3">
-              <TrendingUp className="h-5 w-5 text-primary" />
-              <span className="font-mono text-xs tracking-widest text-primary">
-                // MARKET INDEX
-              </span>
-            </div>
-            <h1 className="display-heading mb-6 text-4xl font-black tracking-tighter sm:text-5xl md:text-7xl">
-              <span className="text-foreground">CS2 Skin </span>
-              <span className="glow-text text-gradient-brand">Market Cap</span>
-            </h1>
-            <p className="mb-10 max-w-xl font-mono text-sm leading-relaxed text-muted-foreground">
-              The total market capitalization of Counter-Strike 2 skins, indexed
-              live across 40+ marketplaces — with a category-by-category
-              breakdown of where the value sits.
-            </p>
-
-            {total ? (
-              <div className="inline-block border-brutal bg-card p-6 md:p-8">
-                <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
-                  TOTAL CS2 SKIN MARKET CAP
-                </div>
-                <div className="mt-2 font-mono text-4xl font-black tracking-tight text-foreground md:text-6xl">
-                  {total}
-                </div>
-                <div className="mt-2 font-mono text-[11px] text-muted-foreground">
-                  Updated {freshness} · 24h snapshot
-                </div>
-              </div>
-            ) : (
-              <div className="inline-block border-brutal bg-card p-6">
-                <p className="font-mono text-sm text-muted-foreground">
-                  Live market cap is temporarily unavailable. Please check back
-                  shortly.
-                </p>
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* Category index */}
-        {(byItemType || byWeaponType) && (
-          <section className="border-t-2 border-border py-16 md:py-20">
-            <div className="container">
-              <div className="mb-8">
-                <div className="mb-2 font-mono text-xs tracking-widest text-primary">
-                  // CATEGORY BREAKDOWN
-                </div>
-                <h2 className="display-heading text-3xl font-black tracking-tighter md:text-4xl">
-                  CS2 MARKET INDEX BY CATEGORY
-                </h2>
-              </div>
-              <MarketCapView
-                itemType={byItemType?.data ?? null}
-                weaponType={byWeaponType?.data ?? null}
-              />
-            </div>
-          </section>
-        )}
+        <MarketCapView overview={overview} />
 
         {/* SEO long-form content */}
         <section className="border-t-2 border-border py-16 md:py-20">
