@@ -59,6 +59,55 @@ export function getStatusHeartbeats() {
   return fetchJson<HeartbeatResponse>(`${STATUS_BASE}/api/status-page/heartbeat/${SLUG}`);
 }
 
+// ── Provider logos ───────────────────────────────────────────────────────────
+
+export interface StatusProvider {
+  key: string;
+  name: string;
+  code?: string;
+  logo?: string;
+}
+
+export async function getStatusProviders(): Promise<StatusProvider[]> {
+  try {
+    const data = await fetchJson<Record<string, { key: string; code?: string; logo?: string }>>(
+      "https://api.cs2c.app/v1/web/providers",
+    );
+    return Object.entries(data).map(([name, p]) => ({ name, key: p.key, code: p.code, logo: p.logo }));
+  } catch {
+    return [];
+  }
+}
+
+function normalizeName(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/\s*[—-]\s*(prices|bids).*$/i, "")
+    .replace(/[^a-z0-9]/g, "");
+}
+
+export function buildLogoMap(providers: StatusProvider[]): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const p of providers) {
+    if (!p.logo) continue;
+    map.set(normalizeName(p.name), p.logo);
+    map.set(normalizeName(p.key), p.logo);
+    if (p.code) map.set(normalizeName(p.code), p.logo);
+  }
+  return map;
+}
+
+export function logoForMonitor(name: string, map: Map<string, string>): string | null {
+  const norm = normalizeName(name);
+  if (map.has(norm)) return map.get(norm) ?? null;
+  // Try contains match (e.g. "csmoneymarket" → matches "csmoney_m" → "csmoneym")
+  for (const [k, v] of map) {
+    if (k && (norm.startsWith(k) || k.startsWith(norm))) return v;
+  }
+  return null;
+}
+
+
 // ── Derived data ─────────────────────────────────────────────────────────────
 
 export type MonitorState = "up" | "down" | "degraded" | "maintenance" | "pending" | "unknown";
@@ -71,6 +120,7 @@ export interface MonitorSummary {
   uptime24h: number | null; // 0..1
   lastPing: number | null;
   lastBeatAt: string | null;
+  logo: string | null;
 }
 
 export const BAR_COUNT = 60;
@@ -95,7 +145,11 @@ export function deriveState(beats: Heartbeat[]): MonitorState {
   return "unknown";
 }
 
-export function summarizeMonitor(monitor: Monitor, hb: HeartbeatResponse): MonitorSummary {
+export function summarizeMonitor(
+  monitor: Monitor,
+  hb: HeartbeatResponse,
+  logoMap?: Map<string, string>,
+): MonitorSummary {
   const beats = bucketBeats(hb.heartbeatList[String(monitor.id)]);
   const state = deriveState(beats);
   const last = beats[beats.length - 1] ?? null;
@@ -107,8 +161,10 @@ export function summarizeMonitor(monitor: Monitor, hb: HeartbeatResponse): Monit
     uptime24h: hb.uptimeList[`${monitor.id}_24`] ?? null,
     lastPing: last?.ping ?? null,
     lastBeatAt: last?.time ?? null,
+    logo: logoMap ? logoForMonitor(monitor.name, logoMap) : null,
   };
 }
+
 
 export interface OverallSummary {
   total: number;
