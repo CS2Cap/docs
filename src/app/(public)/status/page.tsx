@@ -33,9 +33,13 @@ export const metadata: Metadata = {
 };
 
 export default async function StatusPage() {
-  let config, heartbeats;
+  let config, heartbeats, providers;
   try {
-    [config, heartbeats] = await Promise.all([getStatusConfig(), getStatusHeartbeats()]);
+    [config, heartbeats, providers] = await Promise.all([
+      getStatusConfig(),
+      getStatusHeartbeats(),
+      getStatusProviders(),
+    ]);
   } catch {
     return (
       <main className="container py-24">
@@ -56,12 +60,14 @@ export default async function StatusPage() {
     );
   }
 
+  const logoMap = buildLogoMap(providers);
   const groups = (config.publicGroupList ?? []).map((group) => ({
     name: group.name,
     monitors: (group.monitorList ?? [])
-      .map((m) => summarizeMonitor(m, heartbeats))
+      .map((m) => summarizeMonitor(m, heartbeats, logoMap))
       .filter((m): m is MonitorSummary => Boolean(m)),
   }));
+
 
   const allMonitors = groups.flatMap((g) => g.monitors);
   const overall = computeOverall(allMonitors);
