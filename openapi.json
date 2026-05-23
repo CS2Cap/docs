@@ -22376,6 +22376,27 @@
             "description": "Filter by one or more item type values."
           },
           {
+            "name": "base_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by one or more canonical weapon base names.",
+              "title": "Base Name"
+            },
+            "description": "Filter by one or more canonical weapon base names."
+          },
+          {
             "name": "weapon_type",
             "in": "query",
             "required": false,
@@ -31811,12 +31832,6 @@
             ],
             "title": "Change 24H Pct",
             "description": "Group market cap percentage change over the last 24 hours."
-          },
-          "volume_24h_usd": {
-            "type": "string",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-            "title": "Volume 24H Usd",
-            "description": "Estimated 24h activity value for the group in USD major units."
           }
         },
         "type": "object",
@@ -31826,8 +31841,7 @@
           "share_pct",
           "item_count",
           "included_count",
-          "excluded_count",
-          "volume_24h_usd"
+          "excluded_count"
         ],
         "title": "MarketOverviewCategoryRow",
         "description": "One category/weapon row for the Market Cap page."
@@ -32032,33 +32046,45 @@
             "title": "Provider",
             "description": "Provider key."
           },
-          "activity_24h": {
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Provider display name."
+          },
+          "logo": {
+            "type": "string",
+            "title": "Logo",
+            "description": "CDN URL for the provider logo asset."
+          },
+          "listing_count": {
             "type": "integer",
             "minimum": 0.0,
-            "title": "Activity 24H",
-            "description": "24h depletion/activity count."
+            "title": "Listing Count",
+            "description": "Current listed unit count."
           },
-          "volume_24h_usd": {
+          "listed_value_usd": {
             "type": "string",
             "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-            "title": "Volume 24H Usd",
-            "description": "24h depletion/activity value in USD major units."
+            "title": "Listed Value Usd",
+            "description": "Current listed value in USD major units."
           },
           "share_pct": {
             "type": "number",
             "title": "Share Pct",
-            "description": "Share of total 24h activity value."
+            "description": "Share of total current listed marketplace value."
           }
         },
         "type": "object",
         "required": [
           "provider",
-          "activity_24h",
-          "volume_24h_usd",
+          "name",
+          "logo",
+          "listing_count",
+          "listed_value_usd",
           "share_pct"
         ],
         "title": "MarketOverviewMarketplace",
-        "description": "Marketplace activity-value share row."
+        "description": "Marketplace listed-value share row."
       },
       "MarketOverviewMeta": {
         "properties": {
@@ -32146,7 +32172,7 @@
             },
             "type": "array",
             "title": "Marketplaces",
-            "description": "Provider activity-value breakdown."
+            "description": "Provider listed-value breakdown."
           }
         },
         "type": "object",
@@ -32233,13 +32259,19 @@
             "type": "string",
             "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Volume 24H Usd",
-            "description": "24h depletion/activity value in USD major units."
+            "description": "Estimated 24h activity value in USD major units."
+          },
+          "listed_value_usd": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Listed Value Usd",
+            "description": "Current listed marketplace value in USD major units."
           },
           "marketplace_count": {
             "type": "integer",
             "minimum": 0.0,
             "title": "Marketplace Count",
-            "description": "Providers contributing 24h activity value rows."
+            "description": "Providers contributing current listed marketplace value rows."
           }
         },
         "type": "object",
@@ -32250,6 +32282,7 @@
           "excluded_count",
           "excluded_pct",
           "volume_24h_usd",
+          "listed_value_usd",
           "marketplace_count"
         ],
         "title": "MarketOverviewSummary",
@@ -36813,6 +36846,14 @@
             "title": "Item Type",
             "description": "Item type filter values."
           },
+          "base_name": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Base Name",
+            "description": "Canonical weapon base-name filter values."
+          },
           "weapon_type": {
             "items": {
               "type": "string"
@@ -36907,6 +36948,7 @@
         "type": "object",
         "required": [
           "item_type",
+          "base_name",
           "weapon_type",
           "rarity_name",
           "wear_name",
@@ -36947,6 +36989,14 @@
             "type": "array",
             "title": "Item Type",
             "description": "Item type facet buckets."
+          },
+          "base_name": {
+            "items": {
+              "$ref": "#/components/schemas/WebSearchFacetBucket"
+            },
+            "type": "array",
+            "title": "Base Name",
+            "description": "Canonical weapon base-name facet buckets."
           },
           "weapon_type": {
             "items": {
@@ -36992,6 +37042,7 @@
         "type": "object",
         "required": [
           "item_type",
+          "base_name",
           "weapon_type",
           "rarity_name",
           "wear_name",
