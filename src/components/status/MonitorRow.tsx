@@ -43,12 +43,25 @@ export function MonitorRow({ monitor }: { monitor: MonitorSummary }) {
   ];
 
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)] md:grid-cols-[200px_minmax(0,1fr)_120px] items-center gap-4 px-5 py-4 border-b border-border last:border-b-0 hover:bg-secondary/30 transition-colors">
+    <div className="grid grid-cols-[minmax(0,1fr)] md:grid-cols-[220px_minmax(0,1fr)_120px] items-center gap-4 px-5 py-4 border-b border-border last:border-b-0 hover:bg-secondary/30 transition-colors">
       <div className="flex items-center gap-2.5 min-w-0">
         <span
           className={`h-2 w-2 shrink-0 rounded-full ${STATE_DOT[monitor.state]} ${monitor.state === "up" ? "animate-pulse-glow" : ""}`}
           aria-hidden="true"
         />
+        {monitor.logo ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={monitor.logo}
+            alt=""
+            width={18}
+            height={18}
+            loading="lazy"
+            className="h-[18px] w-[18px] shrink-0 rounded-sm object-contain"
+          />
+        ) : (
+          <span className="h-[18px] w-[18px] shrink-0 rounded-sm border border-border bg-secondary/50" aria-hidden="true" />
+        )}
         <span className="font-mono text-[13px] font-semibold tracking-wide text-foreground truncate">
           {monitor.name}
         </span>

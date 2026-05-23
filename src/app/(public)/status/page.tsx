@@ -3,9 +3,11 @@ import { StatusAutoRefresh } from "@/components/status/StatusAutoRefresh";
 import { StatusBanner } from "@/components/status/StatusBanner";
 import { StatusGroup } from "@/components/status/StatusGroup";
 import {
+  buildLogoMap,
   computeOverall,
   getStatusConfig,
   getStatusHeartbeats,
+  getStatusProviders,
   summarizeMonitor,
   type MonitorSummary,
 } from "@/lib/status";
