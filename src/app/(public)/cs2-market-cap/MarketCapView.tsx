@@ -271,7 +271,17 @@ function CategoryTable({ rows }: { rows: MarketOverviewCategoryRow[] }) {
   );
 }
 
-function ItemRow({ item, compact = false }: { item: MarketOverviewItem; compact?: boolean }) {
+function ItemRow({
+  item,
+  compact = false,
+  valueField = "marketcap",
+}: {
+  item: MarketOverviewItem;
+  compact?: boolean;
+  valueField?: "marketcap" | "price";
+}) {
+  const displayValue =
+    valueField === "price" ? item.best_ask_usd : item.marketcap_usd;
   return (
     <div className="grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 border-b border-border px-3 py-2.5 last:border-b-0">
       <div className="relative h-10 w-10 overflow-hidden border border-border bg-background">
@@ -295,7 +305,7 @@ function ItemRow({ item, compact = false }: { item: MarketOverviewItem; compact?
       </div>
       <div className="text-right">
         <div className="font-mono text-xs font-bold text-foreground">
-          {formatUsd(item.marketcap_usd, compact)}
+          {formatUsd(displayValue, compact)}
         </div>
         <div className={`font-mono text-[10px] ${changeClass(item.price_rate_24h)}`}>
           {formatPct(item.price_rate_24h)}
@@ -323,7 +333,11 @@ function MoversPanel({
         <span className="text-primary">{icon}</span>
       </div>
       {rows.length ? (
-        rows.slice(0, 6).map((item) => <ItemRow key={item.item_id} item={item} compact />)
+        rows
+          .slice(0, 6)
+          .map((item) => (
+            <ItemRow key={item.item_id} item={item} compact valueField="price" />
+          ))
       ) : (
         <div className="px-4 py-8 text-center font-mono text-sm text-muted-foreground">
           No movement data
