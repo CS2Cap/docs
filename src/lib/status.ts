@@ -156,6 +156,7 @@ export function summarizeMonitor(
   monitor: Monitor,
   hb: HeartbeatResponse,
   logoMap?: Map<string, string>,
+  groupName?: string,
 ): MonitorSummary {
   const beats = bucketBeats(hb.heartbeatList[String(monitor.id)]);
   const state = deriveState(beats);
@@ -168,7 +169,7 @@ export function summarizeMonitor(
     uptime24h: hb.uptimeList[`${monitor.id}_24`] ?? null,
     lastPing: last?.ping ?? null,
     lastBeatAt: last?.time ?? null,
-    logo: logoMap ? logoForMonitor(monitor.name, logoMap) : null,
+    logo: logoMap ? logoForMonitor(monitor.name, logoMap, groupName) : null,
   };
 }
 
