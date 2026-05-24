@@ -56,6 +56,7 @@ const PROVIDER_DISPLAY_NAMES: Record<string, string> = {
   csmoney_t: "CS.Money Trade",
   cstrade: "CS.Trade",
   dmarket: "DMarket",
+  dupefi: "Dupe.fi",
   ecosteam: "Eco Steam",
   haloskins: "HaloSkins",
   itradegg: "iTrade.gg",
@@ -68,6 +69,7 @@ const PROVIDER_DISPLAY_NAMES: Record<string, string> = {
   shadowpay: "ShadowPay",
   skinbaron: "SkinBaron",
   skinflow: "SkinFlow",
+  skinland: "Skin.Land",
   skinout: "SkinOut",
   skinplace: "SkinPlace",
   skinport: "Skinport",
@@ -227,7 +229,7 @@ const CS2_PRICE_HISTORY_API_CONTENT: SeoPageContent = {
 
 function buildProviderContent(key: string, displayName: string): SeoPageContent {
   const isBuyOrderProvider = [
-    "buff163", "buffmarket", "c5", "csfloat", "dmarket",
+    "buff163", "buffmarket", "c5", "csfloat", "dmarket", "dupefi",
     "ecosteam", "marketcsgo", "steam", "waxpeer", "whitemarket", "youpin",
   ].includes(key);
 
@@ -598,8 +600,8 @@ const FEATURE_PAGES: SeoPageConfig[] = [
 
 const PRIORITY_PROVIDER_SLUGS = [
   "youpin", "buff163", "c5",
-  "csfloat", "csmoney_t", "csmoney_m", "dmarket", "lisskins",
-  "marketcsgo", "skinport", "steam", "whitemarket",
+  "csfloat", "csmoney_t", "csmoney_m", "dmarket", "dupefi", "lisskins",
+  "marketcsgo", "skinland", "skinport", "steam", "whitemarket",
 ];
 
 function buildMarketPages(): SeoPageConfig[] {

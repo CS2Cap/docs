@@ -11,6 +11,15 @@ import {
   TrendingDown,
   TrendingUp,
 } from "lucide-react";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import type {
   MarketIndexGroupBy,
   MarketOverviewCategoryRow,
@@ -68,16 +77,6 @@ function formatFreshness(seconds: number): string {
   return `${hours} hr ago`;
 }
 
-function formatMonthYear(value: string | null | undefined): string {
-  if (!value) return "—";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "—";
-  return new Intl.DateTimeFormat("en-US", {
-    month: "2-digit",
-    year: "2-digit",
-  }).format(date);
-}
-
 function providerLogoUrl(provider: string): string | null {
   return provider ? `https://cdn.cs2c.app/images/providers/${provider}.png` : null;
 }
@@ -111,33 +110,13 @@ function changeClass(value: number | null | undefined): string {
   return value >= 0 ? "text-emerald-400" : "text-red-400";
 }
 
-function buildChartPath(points: { t: string; marketcap_usd: string }[]): string {
-  if (points.length < 2) return "";
-  const values = points.map((point) => numeric(point.marketcap_usd));
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  const span = max - min || 1;
-  const width = 100;
-  const height = 42;
-
-  return points
-    .map((point, index) => {
-      const x = (index / Math.max(points.length - 1, 1)) * width;
-      const y = height - ((numeric(point.marketcap_usd) - min) / span) * height;
-      return `${index === 0 ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)}`;
-    })
-    .join(" ");
-}
-
 function MetricCell({
   label,
   value,
-  sub,
   icon,
 }: {
   label: string;
   value: string;
-  sub?: string;
   icon: ReactNode;
 }) {
   return (
@@ -151,11 +130,6 @@ function MetricCell({
       <div className="truncate font-mono text-xl font-black text-foreground md:text-2xl">
         {value}
       </div>
-      {sub && (
-        <div className="mt-1 truncate font-mono text-[11px] text-muted-foreground">
-          {sub}
-        </div>
-      )}
     </div>
   );
 }
@@ -182,46 +156,194 @@ function EmptyDashboard() {
   );
 }
 
-function Sparkline({ points }: { points: { t: string; marketcap_usd: string }[] }) {
-  const path = buildChartPath(points);
-  const latest = points.at(-1);
+type ChartPoint = { timestamp: number; value: number };
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+function formatChartDate(ts: number, spanMs: number): string {
+  const date = new Date(ts);
+  if (spanMs <= 2 * DAY_MS) {
+    return date.toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+  }
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function formatAxisTick(ts: number, spanMs: number): string {
+  const date = new Date(ts);
+  if (spanMs <= 2 * DAY_MS) {
+    return date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+  }
+  if (spanMs > 180 * DAY_MS) {
+    return date.toLocaleDateString("en-US", { month: "short", year: "2-digit" });
+  }
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+function Sparkline({
+  points,
+  range,
+  onRangeChange,
+}: {
+  points: { t: string; marketcap_usd: string }[];
+  range: MarketOverviewRange;
+  onRangeChange: (next: MarketOverviewRange) => void;
+}) {
+  const [hovered, setHovered] = useState<ChartPoint | null>(null);
+
+  const data = useMemo<ChartPoint[]>(
+    () =>
+      points
+        .map((p) => ({
+          timestamp: Date.parse(p.t),
+          value: numeric(p.marketcap_usd),
+        }))
+        .filter((p) => Number.isFinite(p.timestamp)),
+    [points],
+  );
+
+  const first = data[0];
+  const last = data.at(-1);
+  const active = hovered ?? last ?? null;
+  const changePct =
+    active && first && first.value > 0
+      ? ((active.value - first.value) / first.value) * 100
+      : null;
+  const spanMs = data.length > 1 ? data[data.length - 1].timestamp - data[0].timestamp : 0;
 
   return (
     <div className="border-brutal bg-card">
-      <div className="flex items-center justify-between gap-4 border-b-2 border-border px-4 py-3">
-        <div>
+      <div className="flex items-start justify-between gap-4 border-b-2 border-border px-4 py-3">
+        <div className="min-w-0">
           <div className="font-mono text-[10px] font-bold tracking-widest text-muted-foreground">
             TOTAL MARKET CAP
           </div>
-          <div className="mt-1 font-mono text-2xl font-black text-foreground">
-            {formatUsd(latest?.marketcap_usd)}
+          <div className="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <div className="font-mono text-2xl font-black text-foreground">
+              {formatUsd(active?.value)}
+            </div>
+            {changePct !== null ? (
+              <div className={`font-mono text-xs font-bold ${changeClass(changePct)}`}>
+                {formatPct(changePct)}{" "}
+                <span className="font-normal text-muted-foreground">vs range start</span>
+              </div>
+            ) : null}
+            {hovered ? (
+              <div className="font-mono text-[10px] text-muted-foreground">
+                {formatChartDate(hovered.timestamp, spanMs)}
+              </div>
+            ) : null}
           </div>
         </div>
-        <BarChart3 className="h-5 w-5 text-primary" />
+        <div
+          className="flex flex-wrap gap-px bg-border"
+          role="tablist"
+          aria-label="Market cap range"
+        >
+          {RANGE_TABS.map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              role="tab"
+              aria-selected={range === tab.key}
+              onClick={() => onRangeChange(tab.key)}
+              className={`px-3 py-1.5 font-mono text-[10px] font-bold tracking-widest transition-colors ${
+                range === tab.key
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-card text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
-      <div className="relative h-80 px-4 py-5">
-        <div className="absolute inset-x-4 top-1/2 border-t border-dashed border-border" />
-        {path ? (
-          <svg
-            viewBox="0 0 100 42"
-            preserveAspectRatio="none"
-            className="relative h-full w-full overflow-visible"
-            aria-hidden="true"
-          >
-            <path
-              d={`${path} L 100 42 L 0 42 Z`}
-              fill="currentColor"
-              className="text-primary/10"
-            />
-            <path
-              d={path}
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.4"
-              vectorEffect="non-scaling-stroke"
-              className="text-primary"
-            />
-          </svg>
+      <div className="h-80 w-full">
+        {data.length >= 2 ? (
+          <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+            <AreaChart
+              data={data}
+              margin={{ top: 16, right: 16, left: 8, bottom: 8 }}
+              onMouseMove={(state) => {
+                const idx = state?.activeTooltipIndex;
+                if (typeof idx === "number" && data[idx]) setHovered(data[idx]);
+              }}
+              onMouseLeave={() => setHovered(null)}
+            >
+              <defs>
+                <linearGradient id="mcapFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                  <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid
+                stroke="hsl(var(--border))"
+                strokeOpacity={0.4}
+                vertical={false}
+              />
+              <XAxis
+                dataKey="timestamp"
+                type="number"
+                scale="time"
+                domain={["dataMin", "dataMax"]}
+                tickFormatter={(value) => formatAxisTick(Number(value), spanMs)}
+                tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
+                tickLine={false}
+                axisLine={false}
+                minTickGap={40}
+              />
+              <YAxis
+                tickFormatter={(value) => formatUsd(Number(value), true)}
+                tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
+                tickLine={false}
+                axisLine={false}
+                width={64}
+                domain={["auto", "auto"]}
+              />
+              <Tooltip
+                cursor={{
+                  stroke: "hsl(var(--primary))",
+                  strokeOpacity: 0.45,
+                  strokeDasharray: "3 3",
+                }}
+                content={({ active: isActive, payload }) => {
+                  if (!isActive || !payload?.length) return null;
+                  const p = payload[0].payload as ChartPoint;
+                  return (
+                    <div className="border-brutal bg-card px-3 py-2 font-mono text-xs">
+                      <div className="text-[10px] text-muted-foreground">
+                        {formatChartDate(p.timestamp, spanMs)}
+                      </div>
+                      <div className="mt-1 font-bold text-foreground">
+                        {formatUsd(p.value)}
+                      </div>
+                    </div>
+                  );
+                }}
+              />
+              <Area
+                type="monotone"
+                dataKey="value"
+                stroke="hsl(var(--primary))"
+                strokeWidth={1.6}
+                fill="url(#mcapFill)"
+                activeDot={{ r: 4, strokeWidth: 0, fill: "hsl(var(--primary))" }}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
         ) : (
           <div className="flex h-full items-center justify-center font-mono text-sm text-muted-foreground">
             Waiting for history
@@ -417,13 +539,6 @@ export function MarketCapView({ overview }: { overview: MarketOverviewResponse |
     [overview, category],
   );
   const chartPoints = overview?.history[range] ?? [];
-  const athPoint = useMemo(() => {
-    const points = overview?.history.all ?? [];
-    return points.reduce<(typeof points)[number] | null>((max, point) => {
-      if (!max) return point;
-      return numeric(point.marketcap_usd) > numeric(max.marketcap_usd) ? point : max;
-    }, null);
-  }, [overview]);
 
   if (!overview) return <EmptyDashboard />;
 
@@ -451,66 +566,36 @@ export function MarketCapView({ overview }: { overview: MarketOverviewResponse |
           </div>
         </div>
 
-        <div className="mb-7 grid overflow-hidden border-l-2 border-t-2 border-border md:grid-cols-3 xl:grid-cols-6">
+        <div className="mb-7 grid overflow-hidden border-l-2 border-t-2 border-border md:grid-cols-3 xl:grid-cols-5">
           <MetricCell
             label="TOTAL CAP"
             value={formatUsd(overview.summary.total_marketcap_usd)}
-            sub={`${formatNumber(overview.summary.included_count)} priced items`}
             icon={<Database className="h-4 w-4" />}
           />
           <MetricCell
             label="24H CHANGE"
             value={formatPct(overview.summary.change_24h_pct)}
-            sub="total index"
             icon={<TrendingUp className="h-4 w-4" />}
           />
           <MetricCell
             label="7D CHANGE"
             value={formatPct(overview.summary.change_7d_pct)}
-            sub="total index"
             icon={<BarChart3 className="h-4 w-4" />}
           />
           <MetricCell
             label="30D CHANGE"
             value={formatPct(overview.summary.change_30d_pct)}
-            sub="total index"
             icon={<TrendingDown className="h-4 w-4" />}
           />
           <MetricCell
             label="24H VOLUME"
             value={formatUsd(overview.summary.volume_24h_usd, true)}
-            sub="activity proxy"
             icon={<Activity className="h-4 w-4" />}
           />
-          <MetricCell
-            label="ATH"
-            value={formatUsd(athPoint?.marketcap_usd, true)}
-            sub={`ATH · ${formatMonthYear(athPoint?.t)}`}
-            icon={<Gauge className="h-4 w-4" />}
-          />
-        </div>
-
-        <div className="mb-5 flex flex-wrap gap-px bg-border" role="tablist" aria-label="Market cap range">
-          {RANGE_TABS.map((tab) => (
-            <button
-              key={tab.key}
-              type="button"
-              role="tab"
-              aria-selected={range === tab.key}
-              onClick={() => setRange(tab.key)}
-              className={`px-4 py-2 font-mono text-[11px] font-bold tracking-widest transition-colors ${
-                range === tab.key
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-card text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
         </div>
 
         <div className="grid gap-5">
-          <Sparkline points={chartPoints} />
+          <Sparkline points={chartPoints} range={range} onRangeChange={setRange} />
         </div>
 
         <div className="mt-5 flex flex-wrap gap-px bg-border" role="tablist" aria-label="Market cap category">
