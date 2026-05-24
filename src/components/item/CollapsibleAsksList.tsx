@@ -153,8 +153,9 @@ export function CollapsibleAsksList({
             {/* Mobile: third row — qty + updated */}
             <div className="mt-1 grid grid-cols-2 gap-x-4 md:contents">
               <div className="md:text-right">
-                <span className="font-mono text-[10px] text-muted-foreground">
-                  <span className="md:hidden">Qty: </span>{formatNumber(row.quantity)}
+                <span className="font-mono text-xs font-bold text-foreground">
+                  <span className="md:hidden font-normal text-muted-foreground">Qty: </span>
+                  {formatNumber(row.quantity)}
                 </span>
               </div>
               <div className="md:text-right">

@@ -452,7 +452,7 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                   <div>PROVIDER</div>
                   <div className="text-right">PRICE</div>
                   <div className="text-right">VS BEST</div>
-                  <div className="text-right">QTY</div>
+                  <div className="text-right font-bold text-foreground">QTY</div>
                   <div className="text-right">UPDATED</div>
                   <div />
                 </div>
