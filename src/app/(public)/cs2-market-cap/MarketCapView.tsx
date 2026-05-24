@@ -78,6 +78,27 @@ function formatMonthYear(value: string | null | undefined): string {
   }).format(date);
 }
 
+function providerLogoUrl(provider: string): string | null {
+  return provider ? `https://cdn.cs2c.app/images/providers/${provider}.png` : null;
+}
+
+function providerFallbackName(provider: string): string {
+  const labels: Record<string, string> = {
+    buff163: "BUFF163",
+    c5: "C5Game",
+    csfloat: "CSFloat",
+    csmoney_m: "CS.MONEY Market",
+    csmoney_t: "CS.MONEY Trade",
+    dmarket: "DMarket",
+    marketcsgo: "Market.CSGO",
+    skinport: "Skinport",
+    steam: "Steam",
+    whitemarket: "WhiteMarket",
+    youpin: "Youpin898",
+  };
+  return labels[provider] ?? titleCase(provider);
+}
+
 function titleCase(raw: string | null | undefined): string {
   if (!raw) return "Unknown";
   return raw
@@ -214,7 +235,7 @@ function Sparkline({ points }: { points: { t: string; marketcap_usd: string }[] 
 function CategoryTable({ rows }: { rows: MarketOverviewCategoryRow[] }) {
   return (
     <div className="overflow-hidden border-brutal bg-card">
-      <div className="grid grid-cols-[minmax(150px,1.4fr)_90px_90px_120px] gap-4 border-b-2 border-border px-4 py-3 font-mono text-[10px] font-bold tracking-widest text-muted-foreground max-lg:min-w-[640px]">
+      <div className="grid grid-cols-[minmax(150px,1.4fr)_90px_90px_120px] gap-4 border-b-2 border-border px-4 py-3 font-mono text-[10px] font-bold tracking-widest text-muted-foreground max-lg:min-w-160">
         <div>CATEGORY</div>
         <div className="text-right">SHARE</div>
         <div className="text-right">24H</div>
@@ -224,7 +245,7 @@ function CategoryTable({ rows }: { rows: MarketOverviewCategoryRow[] }) {
         {rows.map((row) => (
           <div
             key={row.group}
-            className="grid grid-cols-[minmax(150px,1.4fr)_90px_90px_120px] items-center gap-4 border-b border-border px-4 py-3 last:border-b-0 max-lg:min-w-[640px]"
+            className="grid grid-cols-[minmax(150px,1.4fr)_90px_90px_120px] items-center gap-4 border-b border-border px-4 py-3 last:border-b-0 max-lg:min-w-160"
           >
             <div className="min-w-0">
               <div className="truncate font-mono text-sm font-bold text-foreground">
@@ -321,43 +342,54 @@ function MarketplacePanel({ rows }: { rows: MarketOverviewMarketplace[] }) {
         </div>
         <Activity className="h-5 w-5 text-primary" />
       </div>
-      {rows.map((row) => (
-        <div key={row.provider} className="border-b border-border px-4 py-3 last:border-b-0">
-          <div className="flex items-center justify-between gap-4">
-            <div className="min-w-0">
-              <span className="flex min-w-0 items-center gap-2">
-                <Image
-                  src={row.logo}
-                  alt={row.name}
-                  width={20}
-                  height={20}
-                  className="h-5 w-5 shrink-0 rounded-sm object-contain"
-                />
-                <span className="truncate font-mono text-sm font-bold text-foreground">
-                  {row.name}
+      {rows.map((row) => {
+        const name = row.name || providerFallbackName(row.provider);
+        const logo = row.logo || providerLogoUrl(row.provider);
+        const hasListedValue = row.listed_value_usd != null && row.listed_value_usd !== "";
+        const hasListingCount = Number.isFinite(row.listing_count);
+
+        return (
+          <div key={row.provider} className="border-b border-border px-4 py-3 last:border-b-0">
+            <div className="flex items-center justify-between gap-4">
+              <div className="min-w-0">
+                <span className="flex min-w-0 items-center gap-2">
+                  {logo ? (
+                    <Image
+                      src={logo}
+                      alt={name}
+                      width={20}
+                      height={20}
+                      className="h-5 w-5 shrink-0 rounded-sm object-contain"
+                    />
+                  ) : (
+                    <span className="h-5 w-5 shrink-0 rounded-sm bg-muted" aria-hidden />
+                  )}
+                  <span className="truncate font-mono text-sm font-bold text-foreground">
+                    {name}
+                  </span>
                 </span>
-              </span>
-              <div className="mt-1 font-mono text-[10px] text-muted-foreground">
-                {formatNumber(row.listing_count)} listed units
+                <div className="mt-1 font-mono text-[10px] text-muted-foreground">
+                  {hasListingCount ? `${formatNumber(row.listing_count)} listed units` : "listed units pending"}
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="font-mono text-sm font-bold text-foreground">
+                  {hasListedValue ? formatUsd(row.listed_value_usd, true) : "—"}
+                </div>
+                <div className="font-mono text-[10px] text-muted-foreground">
+                  {row.share_pct.toFixed(1)}%
+                </div>
               </div>
             </div>
-            <div className="text-right">
-              <div className="font-mono text-sm font-bold text-foreground">
-                {formatUsd(row.listed_value_usd, true)}
-              </div>
-              <div className="font-mono text-[10px] text-muted-foreground">
-                {row.share_pct.toFixed(1)}%
-              </div>
+            <div className="mt-2 h-1 bg-muted">
+              <div
+                className="h-full bg-primary"
+                style={{ width: `${Math.min(row.share_pct, 100)}%` }}
+              />
             </div>
           </div>
-          <div className="mt-2 h-1 bg-muted">
-            <div
-              className="h-full bg-primary"
-              style={{ width: `${Math.min(row.share_pct, 100)}%` }}
-            />
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

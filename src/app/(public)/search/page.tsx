@@ -295,7 +295,7 @@ function itemSubtitle(item: WebSearchItem) {
 }
 
 function facetOptions(data: WebSearchResponse, key: FilterField["key"], currentValue?: string) {
-  const buckets = data.facets[key] as WebSearchFacetBucket[];
+  const buckets = (data.facets[key] ?? []) as WebSearchFacetBucket[];
   if (!currentValue || buckets.some((bucket) => bucket.value === currentValue)) {
     return buckets;
   }
