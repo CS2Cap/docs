@@ -64,7 +64,7 @@ export default async function StatusPage() {
   const groups = (config.publicGroupList ?? []).map((group) => ({
     name: group.name,
     monitors: (group.monitorList ?? [])
-      .map((m) => summarizeMonitor(m, heartbeats, logoMap))
+      .map((m) => summarizeMonitor(m, heartbeats, logoMap, group.name))
       .filter((m): m is MonitorSummary => Boolean(m)),
   }));
 

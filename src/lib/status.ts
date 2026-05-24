@@ -97,13 +97,20 @@ export function buildLogoMap(providers: StatusProvider[]): Map<string, string> {
   return map;
 }
 
-export function logoForMonitor(name: string, map: Map<string, string>): string | null {
+export const CORE_PLATFORM_LOGO = "https://cdn.cs2c.app/assets/logo-512.svg";
+
+export function logoForMonitor(
+  name: string,
+  map: Map<string, string>,
+  groupName?: string,
+): string | null {
   const norm = normalizeName(name);
   if (map.has(norm)) return map.get(norm) ?? null;
   // Try contains match (e.g. "csmoneymarket" → matches "csmoney_m" → "csmoneym")
   for (const [k, v] of map) {
     if (k && (norm.startsWith(k) || k.startsWith(norm))) return v;
   }
+  if (groupName && /core\s*platform/i.test(groupName)) return CORE_PLATFORM_LOGO;
   return null;
 }
 
@@ -149,6 +156,7 @@ export function summarizeMonitor(
   monitor: Monitor,
   hb: HeartbeatResponse,
   logoMap?: Map<string, string>,
+  groupName?: string,
 ): MonitorSummary {
   const beats = bucketBeats(hb.heartbeatList[String(monitor.id)]);
   const state = deriveState(beats);
@@ -161,7 +169,7 @@ export function summarizeMonitor(
     uptime24h: hb.uptimeList[`${monitor.id}_24`] ?? null,
     lastPing: last?.ping ?? null,
     lastBeatAt: last?.time ?? null,
-    logo: logoMap ? logoForMonitor(monitor.name, logoMap) : null,
+    logo: logoMap ? logoForMonitor(monitor.name, logoMap, groupName) : null,
   };
 }
 
