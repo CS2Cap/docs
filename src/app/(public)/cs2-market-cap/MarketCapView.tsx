@@ -11,6 +11,7 @@ import {
   Download,
   ExternalLink,
   Gauge,
+  LayoutList,
   TrendingDown,
   TrendingUp,
 } from "lucide-react";
@@ -212,12 +213,22 @@ type ChartPoint = { timestamp: number; value: number };
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-function formatChartDate(ts: number, spanMs: number): string {
+function formatChartDate(ts: number, spanMs: number, pointSpacingMs = Infinity): string {
   const date = new Date(ts);
   if (spanMs <= 2 * DAY_MS) {
     return date.toLocaleString("en-US", {
       month: "short",
       day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+  }
+  if (pointSpacingMs < DAY_MS) {
+    return date.toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
@@ -275,9 +286,10 @@ function Sparkline({
       ? ((active.value - first.value) / first.value) * 100
       : null;
   const spanMs = data.length > 1 ? data[data.length - 1].timestamp - data[0].timestamp : 0;
+  const pointSpacingMs = data.length > 1 ? spanMs / (data.length - 1) : Infinity;
 
   return (
-    <div className="terminal-panel">
+    <div className="terminal-panel flex h-full flex-col">
       <div className="flex flex-col gap-3 border-b terminal-rule px-3 py-2.5 md:flex-row md:items-start md:justify-between">
         <div className="min-w-0">
           <div className="font-mono text-[10px] font-bold tracking-widest text-muted-foreground">
@@ -295,7 +307,7 @@ function Sparkline({
             ) : null}
             {hovered ? (
               <div className="font-mono text-[10px] text-muted-foreground">
-                {formatChartDate(hovered.timestamp, spanMs)}
+                {formatChartDate(hovered.timestamp, spanMs, pointSpacingMs)}
               </div>
             ) : null}
           </div>
@@ -323,9 +335,9 @@ function Sparkline({
           ))}
         </div>
       </div>
-      <div className="h-72 w-full">
+      <div className="min-h-72 w-full flex-1">
         {data.length >= 2 ? (
-          <ResponsiveContainer width="100%" height={288} minWidth={0}>
+          <ResponsiveContainer width="100%" height="100%" minHeight={288} minWidth={0}>
             <AreaChart
               data={data}
               margin={{ top: 16, right: 16, left: 8, bottom: 8 }}
@@ -377,7 +389,7 @@ function Sparkline({
                   return (
                     <div className="border-brutal bg-card px-3 py-2 font-mono text-xs">
                       <div className="text-[10px] text-muted-foreground">
-                        {formatChartDate(p.timestamp, spanMs)}
+                        {formatChartDate(p.timestamp, spanMs, pointSpacingMs)}
                       </div>
                       <div className="mt-1 font-bold text-foreground">
                         {formatUsd(p.value)}
@@ -406,51 +418,7 @@ function Sparkline({
   );
 }
 
-function CategoryTreemap({ rows }: { rows: MarketOverviewCategoryRow[] }) {
-  const visibleRows = rows.slice(0, 10);
-  const maxShare = Math.max(...visibleRows.map((row) => row.share_pct), 1);
-
-  return (
-    <div className="terminal-panel h-full">
-      <div className="flex items-center justify-between gap-3 border-b terminal-rule px-3 py-2.5">
-        <div className="font-mono text-[10px] font-bold tracking-widest text-muted-foreground">
-          TREEMAP · CAP DISTRIBUTION
-        </div>
-        <Database className="h-4 w-4 text-primary" />
-      </div>
-      <div className="grid min-h-72 grid-cols-2 auto-rows-fr gap-1 p-2">
-        {visibleRows.map((row) => {
-          const share = Math.max(row.share_pct, 1);
-          const intensity = Math.max(0.15, Math.min(0.75, share / maxShare));
-          return (
-            <div
-              key={row.group}
-              className="flex min-h-16 flex-col justify-between border border-primary/30 bg-primary/10 p-2"
-              style={{
-                gridColumn: row.share_pct >= 22 ? "span 2" : "span 1",
-                opacity: 0.72 + intensity * 0.28,
-              }}
-            >
-              <div className="truncate font-mono text-[11px] font-black uppercase tracking-widest text-foreground">
-                {titleCase(row.group)}
-              </div>
-              <div>
-                <div className="font-mono text-sm font-black text-primary">
-                  {formatUsd(row.marketcap_usd, true)}
-                </div>
-                <div className="font-mono text-[10px] text-muted-foreground">
-                  {row.share_pct.toFixed(1)}% · {formatNumber(row.included_count)} priced
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function CategoryTable({
+function CategoryTreemap({
   rows,
   category,
   onCategoryChange,
@@ -459,11 +427,32 @@ function CategoryTable({
   category: MarketIndexGroupBy;
   onCategoryChange: (next: MarketIndexGroupBy) => void;
 }) {
+  const visibleRows = useMemo(() => {
+    const TARGET_ROWS = 5;
+    const COLS = 2;
+    const out: MarketOverviewCategoryRow[] = [];
+    let filled = 0;
+    for (const row of rows) {
+      const span = row.share_pct >= 22 ? 2 : 1;
+      const startCol = filled % COLS;
+      const lead = startCol === 0 ? 0 : COLS - startCol;
+      if (span === 2 && lead > 0) {
+        filled += lead;
+      }
+      const rowsAfter = Math.ceil((filled + span) / COLS);
+      if (rowsAfter > TARGET_ROWS) break;
+      out.push(row);
+      filled += span;
+    }
+    return out;
+  }, [rows]);
+  const maxShare = Math.max(...visibleRows.map((row) => row.share_pct), 1);
+
   return (
-    <div className="terminal-panel overflow-hidden">
+    <div className="terminal-panel">
       <div className="flex flex-col gap-3 border-b terminal-rule px-3 py-2.5 md:flex-row md:items-center md:justify-between">
         <div className="font-mono text-[10px] font-bold tracking-widest text-muted-foreground">
-          CATEGORY TABLE
+          TREEMAP · CAP DISTRIBUTION
         </div>
         <div className="flex flex-wrap gap-px bg-border" role="tablist" aria-label="Market cap category">
           {CATEGORY_TABS.map((tab) => (
@@ -484,19 +473,58 @@ function CategoryTable({
           ))}
         </div>
       </div>
-      <div className="grid grid-cols-[34px_minmax(150px,1.4fr)_80px_80px_90px_110px] gap-3 border-b terminal-rule px-3 py-2 font-mono text-[10px] font-bold tracking-widest text-muted-foreground max-lg:min-w-170">
+      <div className="grid h-96 grid-cols-2 auto-rows-fr gap-1 p-2">
+        {visibleRows.map((row) => {
+          const share = Math.max(row.share_pct, 1);
+          const intensity = Math.max(0.15, Math.min(0.75, share / maxShare));
+          return (
+            <div
+              key={row.group}
+              className="flex min-h-16 flex-col justify-between border border-primary/30 bg-primary/10 p-2"
+              style={{
+                gridColumn: row.share_pct >= 22 ? "span 2" : "span 1",
+                opacity: 0.72 + intensity * 0.28,
+              }}
+            >
+              <div className="truncate font-mono text-sm font-black uppercase tracking-widest text-foreground">
+                {titleCase(row.group)}
+              </div>
+              <div>
+                <div className="font-mono text-sm font-black text-primary">
+                  {row.share_pct.toFixed(2)}%
+                </div>
+                <div className="font-mono text-[9px] text-muted-foreground">
+                  {formatNumber(row.included_count)} items
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function CategoryTable({ rows }: { rows: MarketOverviewCategoryRow[] }) {
+  return (
+    <div className="terminal-panel overflow-hidden">
+      <div className="flex items-center justify-between gap-3 border-b terminal-rule px-3 py-2.5">
+        <div className="font-mono text-[10px] font-bold tracking-widest text-muted-foreground">
+          CATEGORY TABLE
+        </div>
+        <LayoutList className="h-4 w-4 text-primary" />
+      </div>
+      <div className="grid grid-cols-[34px_minmax(150px,1.4fr)_70px_90px] gap-3 border-b terminal-rule px-3 py-2 font-mono text-[10px] font-bold tracking-widest text-muted-foreground">
         <div>#</div>
         <div>CATEGORY</div>
-        <div className="text-right">ITEMS</div>
         <div className="text-right">24H</div>
-        <div className="text-right">SHARE</div>
         <div className="text-right">MKTCAP</div>
       </div>
-      <div className="overflow-x-auto">
+      <div>
         {rows.map((row, index) => (
           <div
             key={row.group}
-            className="grid grid-cols-[34px_minmax(150px,1.4fr)_80px_80px_90px_110px] items-center gap-3 border-b border-border px-3 py-2.5 last:border-b-0 max-lg:min-w-170"
+            className="grid grid-cols-[34px_minmax(150px,1.4fr)_70px_90px] items-center gap-3 border-b border-border px-3 py-2.5 last:border-b-0"
           >
             <div className="font-mono text-[10px] text-muted-foreground">
               {String(index + 1).padStart(2, "0")}
@@ -512,14 +540,8 @@ function CategoryTable({
                 />
               </div>
             </div>
-            <div className="text-right font-mono text-xs text-muted-foreground">
-              {formatNumber(row.item_count)}
-            </div>
             <div className={`text-right font-mono text-xs font-bold ${changeClass(row.change_24h_pct)}`}>
               {formatPct(row.change_24h_pct)}
-            </div>
-            <div className="text-right font-mono text-xs text-muted-foreground">
-              {row.share_pct.toFixed(1)}%
             </div>
             <div className="text-right font-mono text-sm font-bold text-foreground">
               {formatUsd(row.marketcap_usd, true)}
@@ -545,15 +567,15 @@ function ItemRow({
   return (
     <Link
       href={buildItemPath(item.item_id, item.market_hash_name)}
-      className="grid grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-3 border-b border-border px-3 py-2 transition-colors last:border-b-0 hover:bg-muted/40"
+      className="grid grid-cols-[56px_minmax(0,1fr)_auto] items-center gap-3 border-b border-border px-3 py-2 transition-colors last:border-b-0 hover:bg-muted/40"
     >
-      <div className="relative h-9 w-9 overflow-hidden border border-border bg-background">
+      <div className="relative h-14 w-14 overflow-hidden border border-border bg-background">
         {item.image_url ? (
           <Image
             src={item.image_url}
             alt=""
             fill
-            sizes="36px"
+            sizes="56px"
             className="object-contain p-1"
           />
         ) : null}
@@ -610,7 +632,21 @@ function MoversPanel({
   );
 }
 
+const MARKETPLACE_VISIBLE_LIMIT = 10;
+
 function MarketplacePanel({ rows }: { rows: MarketOverviewMarketplace[] }) {
+  const visible = rows.slice(0, MARKETPLACE_VISIBLE_LIMIT);
+  const overflow = rows.slice(MARKETPLACE_VISIBLE_LIMIT);
+  const othersShare = overflow.reduce((sum, r) => sum + (r.share_pct || 0), 0);
+  const othersListingCount = overflow.reduce(
+    (sum, r) => sum + (Number.isFinite(r.listing_count) ? r.listing_count : 0),
+    0,
+  );
+  const othersValue = overflow.reduce((sum, r) => {
+    const n = r.listed_value_usd == null || r.listed_value_usd === "" ? NaN : Number(r.listed_value_usd);
+    return Number.isFinite(n) ? sum + n : sum;
+  }, 0);
+
   return (
     <div className="terminal-panel">
       <div className="flex items-center justify-between gap-4 border-b terminal-rule px-3 py-2.5">
@@ -619,7 +655,7 @@ function MarketplacePanel({ rows }: { rows: MarketOverviewMarketplace[] }) {
         </div>
         <Activity className="h-5 w-5 text-primary" />
       </div>
-      {rows.map((row) => {
+      {visible.map((row) => {
         const name = row.name || providerFallbackName(row.provider);
         const logo = row.logo || providerLogoUrl(row.provider);
         const hasListedValue = row.listed_value_usd != null && row.listed_value_usd !== "";
@@ -667,6 +703,39 @@ function MarketplacePanel({ rows }: { rows: MarketOverviewMarketplace[] }) {
           </div>
         );
       })}
+      {overflow.length ? (
+        <div className="border-b border-border px-3 py-2.5 last:border-b-0">
+          <div className="flex items-center justify-between gap-4">
+            <div className="min-w-0">
+              <span className="flex min-w-0 items-center gap-2">
+                <span className="h-5 w-5 shrink-0 rounded-sm bg-muted" aria-hidden />
+                <span className="truncate font-mono text-sm font-bold text-foreground">
+                  Others
+                </span>
+              </span>
+              <div className="mt-1 font-mono text-[10px] text-muted-foreground">
+                {othersListingCount > 0
+                  ? `${formatNumber(othersListingCount)} listed units · ${overflow.length} marketplaces`
+                  : `${overflow.length} marketplaces`}
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="font-mono text-sm font-bold text-foreground">
+                {othersValue > 0 ? formatUsd(othersValue, true) : "—"}
+              </div>
+              <div className="font-mono text-[10px] text-muted-foreground">
+                {othersShare.toFixed(1)}%
+              </div>
+            </div>
+          </div>
+          <div className="mt-2 h-1 bg-muted">
+            <div
+              className="h-full bg-primary"
+              style={{ width: `${Math.min(othersShare, 100)}%` }}
+            />
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -697,13 +766,13 @@ function MostValuablePanel({ rows }: { rows: MarketOverviewItem[] }) {
               {String(item.rank ?? index + 1).padStart(2, "0")}
             </div>
             <div className="flex min-w-0 items-center gap-2">
-              <div className="relative h-8 w-8 shrink-0 overflow-hidden border border-border bg-background">
+              <div className="relative h-12 w-12 shrink-0 overflow-hidden border border-border bg-background">
                 {item.image_url ? (
                   <Image
                     src={item.image_url}
                     alt=""
                     fill
-                    sizes="32px"
+                    sizes="48px"
                     className="object-contain p-1"
                   />
                 ) : null}
@@ -752,12 +821,9 @@ export function MarketCapView({ overview }: { overview: MarketOverviewResponse |
         <div className="terminal-panel mb-4 overflow-hidden">
           <div className="flex flex-col gap-3 border-b terminal-rule px-3 py-3 md:flex-row md:items-center md:justify-between">
             <div className="min-w-0">
-              <div className="flex items-center gap-2 font-mono text-[10px] font-bold tracking-widest text-primary">
+              <div className="flex items-center gap-2 font-mono text-[25px] font-bold tracking-widest text-primary">
               <Gauge className="h-5 w-5" />
-                // CS2-MKTCAP::INDEX
-              </div>
-              <div className="mt-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                {formatNumber(overview.summary.items_tracked)} tracked · {formatNumber(overview.summary.included_count)} priced · {overview.summary.marketplace_count} marketplaces
+                CS2 MARKETCAP INDEX
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2 font-mono text-[10px] font-bold tracking-widest">
@@ -779,11 +845,11 @@ export function MarketCapView({ overview }: { overview: MarketOverviewResponse |
             </div>
           </div>
           <div className="px-3 py-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-            Cache / {overview.meta.data_source.toUpperCase()} · updated {formatFreshness(overview.meta.freshness_sec)}
+            Updated {formatFreshness(overview.meta.freshness_sec)}
           </div>
         </div>
 
-        <div className="mb-4 grid overflow-hidden border-l border-t terminal-rule md:grid-cols-3 xl:grid-cols-6">
+        <div className="mb-4 grid overflow-hidden border terminal-rule md:grid-cols-3 xl:grid-cols-5">
           <MetricCell
             label="TOTAL MKTCAP · USD"
             value={formatUsd(overview.summary.total_marketcap_usd)}
@@ -812,24 +878,18 @@ export function MarketCapView({ overview }: { overview: MarketOverviewResponse |
             value={formatUsd(overview.summary.volume_24h_usd, true)}
             icon={<Activity className="h-4 w-4" />}
           />
-          <MetricCell
-            label="RELIABLE ITEMS"
-            value={`${formatNumber(overview.summary.included_count)} / ${formatNumber(overview.summary.items_tracked)}`}
-            icon={<Gauge className="h-4 w-4" />}
-          />
         </div>
 
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)]">
           <Sparkline points={chartPoints} range={range} onRangeChange={setRange} />
-          <CategoryTreemap rows={categoryRows} />
-        </div>
-
-        <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(380px,1fr)]">
-          <CategoryTable
+          <CategoryTreemap
             rows={categoryRows}
             category={category}
             onCategoryChange={setCategory}
           />
+        </div>
+
+        <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)]">
           <div className="grid gap-4">
             <MoversPanel
               title="MOVERS · GAINERS · 24H"
@@ -842,6 +902,7 @@ export function MarketCapView({ overview }: { overview: MarketOverviewResponse |
               icon={<TrendingDown className="h-5 w-5" />}
             />
           </div>
+          <CategoryTable rows={categoryRows} />
         </div>
 
         <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)]">
