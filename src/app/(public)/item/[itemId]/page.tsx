@@ -169,10 +169,9 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
     : undefined;
 
   const itemFacts = [
-    { label: "Weapon", value: data.item.weapon_type },
-    { label: "Category", value: data.item.item_subtype },
     { label: "Type", value: data.item.item_type },
-    { label: "Collection", value: data.item.collection },
+    { label: "Category", value: data.item.item_subtype },
+    { label: "Weapon", value: data.item.weapon_type },
     { label: "Finish Style", value: data.item.style_name },
     { label: "Phase", value: data.item.phase },
   ].filter((entry) => entry.value);
@@ -444,10 +443,27 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                 </div>
               </div>
 
+              {data.item.collection ? (
+                <Link
+                  href={`/search?collection=${encodeURIComponent(data.item.collection)}`}
+                  className="group block border-brutal bg-card p-4 transition-colors hover:border-primary"
+                >
+                  <div className="mb-3 font-mono text-[10px] tracking-widest text-primary">
+                    COLLECTION
+                  </div>
+                  <div className="flex items-center justify-between px-2 py-2">
+                    <span className="font-mono text-[11px] text-foreground transition-colors group-hover:text-primary">
+                      {data.item.collection}
+                    </span>
+                    <ChevronRight className="h-3 w-3 text-muted-foreground transition-colors group-hover:text-primary" />
+                  </div>
+                </Link>
+              ) : null}
+
               <ItemMarketDistribution rows={askRows} providers={data.providers} />
 
               <Link
-                href="/cs2-api"
+                href="/pricing"
                 className="group flex items-start gap-3 border-brutal bg-card p-4 transition-colors hover:border-primary"
               >
                 <Code className="mt-0.5 h-4 w-4 shrink-0 text-primary" strokeWidth={1.5} />
@@ -460,20 +476,6 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                   </div>
                 </div>
               </Link>
-
-              {data.item.collection ? (
-                <div className="border-brutal bg-card p-4">
-                  <div className="mb-3 font-mono text-[10px] tracking-widest text-primary">
-                    COLLECTION
-                  </div>
-                  <div className="flex items-center justify-between px-2 py-2">
-                    <span className="font-mono text-[11px] text-foreground">
-                      {data.item.collection}
-                    </span>
-                    <ChevronRight className="h-3 w-3 text-muted-foreground" />
-                  </div>
-                </div>
-              ) : null}
             </div>
 
             <div className="space-y-6 lg:col-span-8 xl:col-span-9">
@@ -494,12 +496,12 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                   </span>
                 </div>
 
-                <div className="hidden grid-cols-[52px_minmax(180px,1.7fr)_88px_108px_minmax(140px,1fr)_88px_108px] gap-4 border-b border-border px-6 py-3.5 font-mono text-[11px] tracking-widest text-muted-foreground md:grid">
+                <div className="hidden grid-cols-[48px_minmax(200px,1.3fr)_minmax(110px,1fr)_minmax(170px,1.4fr)_80px_minmax(110px,1fr)_120px] gap-4 border-b border-border px-6 py-3.5 font-mono text-[12px] tracking-widest text-foreground/80 md:grid">
                   <div>#</div>
                   <div>PROVIDER</div>
                   <div className="text-right">PRICE</div>
                   <div className="text-right">VS BEST</div>
-                  <div className="text-right font-bold text-foreground">QTY</div>
+                  <div className="text-right">QTY</div>
                   <div className="text-right">UPDATED</div>
                   <div />
                 </div>
@@ -517,17 +519,21 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                   </span>
                 </div>
 
-                <div className="hidden grid-cols-[52px_minmax(180px,1.7fr)_108px_108px] gap-4 border-b border-border px-6 py-3.5 font-mono text-[11px] tracking-widest text-muted-foreground md:grid">
+                <div className="hidden grid-cols-[48px_minmax(200px,1.3fr)_minmax(110px,1fr)_minmax(170px,1.4fr)_80px_minmax(110px,1fr)_120px] gap-4 border-b border-border px-6 py-3.5 font-mono text-[12px] tracking-widest text-foreground/80 md:grid">
                   <div>#</div>
                   <div>PROVIDER</div>
-                  <div className="text-right">BIDS</div>
                   <div className="text-right">HIGHEST BID</div>
+                  <div className="text-right">VS BEST</div>
+                  <div className="text-right">BIDS</div>
+                  <div className="text-right">UPDATED</div>
+                  <div />
                 </div>
 
                 <BuyOrdersList
                   reliable={data.buyOrders.reliable}
                   flagged={data.buyOrders.flagged}
                   providers={data.providers}
+                  askRows={askRows}
                 />
               </div>
 

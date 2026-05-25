@@ -161,7 +161,7 @@ export function ItemPriceHistoryChart({
 
       <div className="h-64 w-full min-w-0">
         <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-          <AreaChart data={filteredPoints} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+          <AreaChart data={filteredPoints} margin={{ top: 24, right: 8, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="priceFill" x1="0" y1="0" x2="0" y2="1">
                 <stop
@@ -240,8 +240,10 @@ export function ItemPriceHistoryChart({
                 label={{
                   value: `${marker.dropPct.toFixed(0)}%`,
                   position: "top",
+                  offset: 8,
                   fill: "hsl(var(--destructive))",
-                  fontSize: 10,
+                  fontSize: 11,
+                  fontWeight: 600,
                   fontFamily: "var(--font-mono, monospace)",
                 }}
               />

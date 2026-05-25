@@ -44,34 +44,27 @@ export function StatusBanner({ overall }: { overall: OverallSummary }) {
       </div>
 
       <div className="grid grid-cols-3 gap-px bg-border border-2 border-border">
-        <Tile
-          label="MONITORS UP"
-          value={`${overall.up}/${overall.total}`}
-          sub={overall.degraded || overall.down ? `${overall.degraded} degraded · ${overall.down} down` : "0 incidents"}
-        />
+        <Tile label="MONITORS UP" value={`${overall.up}/${overall.total}`} />
         <Tile
           label="24H UPTIME"
           value={overall.avgUptime24h != null ? `${(overall.avgUptime24h * 100).toFixed(2)}%` : "—"}
-          sub="rolling average"
         />
         <Tile
           label="AVG RESPONSE"
           value={overall.avgPing != null ? `${Math.round(overall.avgPing)}ms` : "—"}
-          sub="last heartbeat"
         />
       </div>
     </div>
   );
 }
 
-function Tile({ label, value, sub }: { label: string; value: string; sub: string }) {
+function Tile({ label, value }: { label: string; value: string }) {
   return (
     <div className="bg-card px-5 py-4">
       <div className="font-mono text-[10px] tracking-widest text-muted-foreground mb-2">{label}</div>
       <div className="font-mono text-2xl md:text-3xl font-black tracking-tight text-foreground tabular-nums">
         {value}
       </div>
-      <div className="font-mono text-[10px] text-muted-foreground mt-1 tracking-wide">{sub}</div>
     </div>
   );
 }

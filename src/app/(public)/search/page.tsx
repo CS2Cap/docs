@@ -13,6 +13,7 @@ import type {
   WebSearchSort,
 } from "@/lib/api/types";
 import { buildItemPath } from "@/lib/seo/itemSlug";
+import { PendingResults } from "./PendingResults";
 
 type SearchParams = {
   q?: string | string[];
@@ -61,6 +62,14 @@ const FILTER_FIELDS: FilterField[] = [
   { key: "collection", label: "Collection" },
 ];
 
+const FACET_MAX_VISIBLE: Partial<Record<FilterField["key"], number>> = {
+  item_type: 20,
+  rarity_name: 20,
+  base_name: 80,
+  collection: 200,
+};
+const DEFAULT_FACET_MAX = 8;
+
 const SORT_OPTIONS: Array<{ value: WebSearchSort; label: string }> = [
   { value: "rank", label: "Rank" },
   { value: "best_ask_usd", label: "Ask" },
@@ -92,6 +101,27 @@ function sanitizeSort(value: string | string[] | undefined): WebSearchSort {
 
 function sanitizeDirection(value: string | string[] | undefined): WebSearchDirection {
   return clean(value) === "desc" ? "desc" : "asc";
+}
+
+function buildPendingSnapshot(
+  query: string,
+  filters: SearchFilterValues,
+  page: number,
+): string {
+  return [
+    query,
+    filters.item_type ?? "",
+    filters.base_name ?? "",
+    filters.wear_name ?? "",
+    filters.rarity_name ?? "",
+    filters.collection ?? "",
+    filters.phase ?? "",
+    filters.min_price_usd ?? "",
+    filters.max_price_usd ?? "",
+    filters.sort ?? "rank",
+    filters.direction ?? "asc",
+    String(page),
+  ].join("|");
 }
 
 function titleCase(value: string): string {
@@ -285,7 +315,6 @@ function priceChangeClass(value: number | null | undefined) {
 
 function itemSubtitle(item: WebSearchItem) {
   return [
-    item.wear_name,
     item.phase,
     item.rarity_name,
     item.collection,
@@ -307,17 +336,10 @@ function priceBucketLabel(bucket: WebSearchResponse["price_histogram"][number]) 
   const min = Number(bucket.min_price_usd);
   const max = bucket.max_price_usd == null ? null : Number(bucket.max_price_usd);
   const minLabel = Number.isFinite(min) ? `$${min.toLocaleString()}` : "$0";
-  const maxLabel = max != null && Number.isFinite(max) ? `$${max.toLocaleString()}` : "+";
-  return `${minLabel}-${maxLabel}`;
-}
-
-function formatFreshness(seconds: number): string {
-  if (!Number.isFinite(seconds)) return "freshness pending";
-  if (seconds < 90) return "moments ago";
-  const minutes = Math.round(seconds / 60);
-  if (minutes < 60) return `${minutes} min ago`;
-  const hours = Math.round(minutes / 60);
-  return `${hours} hr ago`;
+  if (max == null || !Number.isFinite(max)) {
+    return `${minLabel}+`;
+  }
+  return `${minLabel}-$${max.toLocaleString()}`;
 }
 
 function csvCell(value: string | number | null | undefined): string {
@@ -457,7 +479,7 @@ function SearchExperienceFallback({ currentPage }: { currentPage: number }) {
         <div className="h-10 w-full animate-pulse rounded-sm bg-secondary/70" />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
+      <div className="grid gap-4 lg:grid-cols-[340px_minmax(0,1fr)]">
         <div className="space-y-3 terminal-panel p-3">
           <div className="h-3 w-24 animate-pulse rounded-sm bg-secondary/70" />
           <div className="h-10 w-full animate-pulse rounded-sm bg-secondary/70" />
@@ -505,25 +527,12 @@ function SearchTerminalHeader({
   query: string;
   filters: SearchFilterValues;
 }) {
-  const totalDisplay = data.pagination.total.toLocaleString();
-  const maxMarkets = Math.max(...data.items.map((item) => item.provider_count), 0);
-  const generatedAt = new Date(data.meta.generated_at);
-  const updated = Number.isNaN(generatedAt.getTime())
-    ? "time pending"
-    : generatedAt.toLocaleTimeString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-
   return (
     <div className="terminal-panel mb-4 overflow-hidden">
       <div className="flex flex-col gap-3 border-b terminal-rule px-3 py-3 md:flex-row md:items-center md:justify-between">
         <div className="min-w-0">
           <div className="font-mono text-[10px] font-bold tracking-widest text-primary">
             // CATALOG::QUERY
-          </div>
-          <div className="mt-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-            {totalDisplay} variants · {maxMarkets ? `up to ${maxMarkets} mkts on page` : "markets pending"} · {data.meta.data_source} snapshot
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2 font-mono text-[10px] font-bold tracking-widest">
@@ -561,12 +570,9 @@ function SearchTerminalHeader({
           type="submit"
           className="border border-primary bg-primary px-5 py-2.5 font-mono text-[10px] font-black tracking-widest text-primary-foreground transition-colors hover:bg-primary/90"
         >
-          EXECUTE
+          SEARCH
         </button>
       </form>
-      <div className="border-t terminal-rule px-3 py-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-        Updated {updated} · {formatFreshness(data.meta.freshness_sec)}
-      </div>
     </div>
   );
 }
@@ -583,21 +589,32 @@ function FacetList({
   filters: SearchFilterValues;
 }) {
   const currentValue = filters[field.key] ?? "";
-  const options = facetOptions(data, field.key, currentValue).slice(0, 8);
+  const allOptions = facetOptions(data, field.key, currentValue);
+  const maxVisible = FACET_MAX_VISIBLE[field.key] ?? DEFAULT_FACET_MAX;
+  const options = allOptions.slice(0, maxVisible);
+  const isScrollable = options.length > DEFAULT_FACET_MAX;
 
   return (
     <div className="border-t terminal-rule pt-3">
       <div className="mb-2 flex items-center justify-between gap-3 font-mono text-[10px] font-bold tracking-widest">
         <span className="text-muted-foreground">{field.label.toUpperCase()}</span>
-        <span className="text-muted-foreground/70">{options.length}</span>
+        <span className="text-muted-foreground/70">
+          {options.length}
+          {allOptions.length > options.length ? `/${allOptions.length}` : ""}
+        </span>
       </div>
-      <div className="space-y-1">
+      <div
+        className={`space-y-1 ${
+          isScrollable ? "terminal-scroll max-h-64 overflow-y-auto pr-1" : ""
+        }`}
+      >
         {options.map((bucket) => {
           const isActive = currentValue === bucket.value;
           return (
             <Link
               key={bucket.value}
               href={facetHref(query, filters, field.key, isActive ? undefined : bucket.value)}
+              scroll={false}
               className={`grid grid-cols-[14px_minmax(0,1fr)_auto] items-center gap-2 px-1 py-1 font-mono text-[11px] transition-colors ${
                 isActive
                   ? "bg-primary/10 text-foreground"
@@ -637,8 +654,24 @@ function FilterControls({
     FILTER_FIELDS.reduce((count, field) => (filters[field.key] ? count + 1 : count), 0) +
     (filters.min_price_usd ? 1 : 0) +
     (filters.max_price_usd ? 1 : 0);
+  const histogramBuckets = (() => {
+    const cutoff = 1000;
+    const below = data.price_histogram.filter(
+      (bucket) => Number(bucket.min_price_usd) < cutoff,
+    );
+    const aboveCount = data.price_histogram.reduce(
+      (sum, bucket) =>
+        Number(bucket.min_price_usd) >= cutoff ? sum + bucket.count : sum,
+      0,
+    );
+    if (aboveCount === 0) return below;
+    return [
+      ...below,
+      { min_price_usd: String(cutoff), max_price_usd: null, count: aboveCount },
+    ];
+  })();
   const maxHistogramCount = Math.max(
-    ...data.price_histogram.map((bucket) => bucket.count),
+    ...histogramBuckets.map((bucket) => bucket.count),
     1,
   );
   const chips = activeChips(query, filters);
@@ -652,67 +685,6 @@ function FilterControls({
             <input key={key} type="hidden" name={key} value={filters[key]} />
           ) : null,
         )}
-
-        <div className="grid min-w-0 grid-cols-2 gap-2">
-          <label className="flex min-w-0 flex-col gap-1 font-mono text-[10px] font-bold tracking-widest text-muted-foreground">
-            <span>MIN USD</span>
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              name="min_price_usd"
-              defaultValue={filters.min_price_usd ?? ""}
-              className="min-w-0 w-full border border-border bg-background px-2 py-2 font-mono text-sm text-foreground outline-none focus:border-primary"
-            />
-          </label>
-          <label className="flex min-w-0 flex-col gap-1 font-mono text-[10px] font-bold tracking-widest text-muted-foreground">
-            <span>MAX USD</span>
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              name="max_price_usd"
-              defaultValue={filters.max_price_usd ?? ""}
-              className="min-w-0 w-full border border-border bg-background px-2 py-2 font-mono text-sm text-foreground outline-none focus:border-primary"
-            />
-          </label>
-        </div>
-
-        {data.price_histogram.length > 0 ? (
-          <div>
-            <div className="mb-2 font-mono text-[10px] tracking-widest text-muted-foreground">
-              PRICE DIST
-            </div>
-            <div className="space-y-1">
-              {data.price_histogram.slice(0, 8).map((bucket) => (
-                <div key={priceBucketLabel(bucket)} className="grid min-w-0 grid-cols-[58px_minmax(0,1fr)_34px] items-center gap-2 sm:grid-cols-[68px_minmax(0,1fr)_34px]">
-                  <div className="truncate font-mono text-[10px] text-muted-foreground">
-                    {priceBucketLabel(bucket)}
-                  </div>
-                  <div className="h-2 bg-background">
-                    <div
-                      className="h-2 bg-primary"
-                      style={{ width: `${Math.max((bucket.count / maxHistogramCount) * 100, 4)}%` }}
-                    />
-                  </div>
-                  <div className="text-right font-mono text-[10px] text-muted-foreground">
-                    {bucket.count}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : null}
-
-        {FILTER_FIELDS.map((field) => (
-          <FacetList
-            key={field.key}
-            field={field}
-            data={data}
-            query={query}
-            filters={filters}
-          />
-        ))}
 
         <div className="grid min-w-0 grid-cols-2 gap-2">
           <label className="flex min-w-0 flex-col gap-1 font-mono text-[10px] font-bold tracking-widest text-muted-foreground">
@@ -757,6 +729,7 @@ function FilterControls({
               </span>
               <Link
                 href={query ? buildSearchHref(query, {}) : "/search"}
+                scroll={false}
                 className="font-mono text-[10px] font-bold tracking-widest text-muted-foreground hover:text-foreground"
               >
                 CLEAR ALL
@@ -767,6 +740,7 @@ function FilterControls({
                 <Link
                   key={`${chip.label}:${chip.href}`}
                   href={chip.href}
+                  scroll={false}
                   className="border border-primary/40 bg-primary/10 px-2 py-1 font-mono text-[10px] font-bold tracking-widest text-primary hover:border-primary"
                 >
                   {chip.label}
@@ -774,16 +748,102 @@ function FilterControls({
               ))}
             </div>
           </div>
-        ) : (
+        ) : query ? (
           <div className="border-t terminal-rule pt-3">
             <Link
-              href={query ? buildSearchHref(query, {}) : "/search"}
+              href="/search"
+              scroll={false}
               className="font-mono text-[10px] font-bold tracking-widest text-muted-foreground hover:text-foreground"
             >
               CLEAR QUERY
             </Link>
           </div>
-        )}
+        ) : null}
+
+        <div className="grid min-w-0 grid-cols-2 gap-2">
+          <label className="flex min-w-0 flex-col gap-1 font-mono text-[10px] font-bold tracking-widest text-muted-foreground">
+            <span>MIN USD</span>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              name="min_price_usd"
+              defaultValue={filters.min_price_usd ?? ""}
+              className="min-w-0 w-full border border-border bg-background px-2 py-2 font-mono text-sm text-foreground outline-none focus:border-primary"
+            />
+          </label>
+          <label className="flex min-w-0 flex-col gap-1 font-mono text-[10px] font-bold tracking-widest text-muted-foreground">
+            <span>MAX USD</span>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              name="max_price_usd"
+              defaultValue={filters.max_price_usd ?? ""}
+              className="min-w-0 w-full border border-border bg-background px-2 py-2 font-mono text-sm text-foreground outline-none focus:border-primary"
+            />
+          </label>
+        </div>
+
+        {histogramBuckets.length > 0 ? (
+          <div>
+            <div className="mb-2 font-mono text-[10px] tracking-widest text-muted-foreground">
+              PRICE DIST
+            </div>
+            <div className="space-y-1">
+              {histogramBuckets.map((bucket) => {
+                const bucketMin = String(Number(bucket.min_price_usd));
+                const bucketMax =
+                  bucket.max_price_usd == null
+                    ? undefined
+                    : String(Number(bucket.max_price_usd));
+                const isActive =
+                  (filters.min_price_usd ?? "") === bucketMin &&
+                  (filters.max_price_usd ?? "") === (bucketMax ?? "");
+                const href = buildSearchHref(query, filters, 1, {
+                  min_price_usd: isActive ? undefined : bucketMin,
+                  max_price_usd: isActive ? undefined : bucketMax,
+                });
+                return (
+                  <Link
+                    key={priceBucketLabel(bucket)}
+                    href={href}
+                    scroll={false}
+                    className={`grid min-w-0 grid-cols-[68px_minmax(0,1fr)_42px] items-center gap-2 px-1 py-1 transition-colors sm:grid-cols-[78px_minmax(0,1fr)_42px] ${
+                      isActive
+                        ? "bg-primary/10 text-foreground"
+                        : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
+                    }`}
+                  >
+                    <span className="truncate font-mono text-[10px]">
+                      {priceBucketLabel(bucket)}
+                    </span>
+                    <span className="h-2 bg-background">
+                      <span
+                        className={`block h-2 ${isActive ? "bg-accent" : "bg-primary"}`}
+                        style={{ width: `${Math.max((bucket.count / maxHistogramCount) * 100, 4)}%` }}
+                      />
+                    </span>
+                    <span className="text-right font-mono text-[10px]">
+                      {bucket.count.toLocaleString()}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
+
+        {FILTER_FIELDS.map((field) => (
+          <FacetList
+            key={field.key}
+            field={field}
+            data={data}
+            query={query}
+            filters={filters}
+          />
+        ))}
+
       </form>
     </aside>
   );
@@ -823,11 +883,10 @@ function SearchResultsTable({
         </div>
       </div>
 
-      <div className="hidden grid-cols-[minmax(240px,1.4fr)_88px_88px_78px_72px_72px_82px_52px] gap-3 border border-border bg-card/80 px-3 py-2 font-mono text-[10px] font-bold tracking-widest text-muted-foreground md:grid">
+      <div className="hidden grid-cols-[minmax(240px,1.4fr)_88px_88px_72px_72px_82px_52px] gap-3 border border-border bg-card/80 px-3 py-2 font-mono text-[10px] font-bold tracking-widest text-muted-foreground md:grid">
         <div>ITEM</div>
         <div className="text-right">ASK</div>
         <div className="text-right">BID</div>
-        <div className="text-right">SPREAD</div>
         <div className="text-right">24H</div>
         <div className="text-right">7D</div>
         <div className="text-right">VOL 24H</div>
@@ -845,17 +904,17 @@ function SearchResultsTable({
           <Link
             key={item.item_id}
             href={buildItemPath(item.item_id, item.market_hash_name)}
-            className="block border-x border-b border-border bg-background/40 px-3 py-2.5 transition-colors hover:bg-card/60"
+            className="block border-x border-b border-border bg-background/40 px-3 py-4 transition-colors hover:bg-card/60"
           >
-            <div className="md:grid md:grid-cols-[minmax(240px,1.4fr)_88px_88px_78px_72px_72px_82px_52px] md:items-center md:gap-3">
+            <div className="md:grid md:grid-cols-[minmax(240px,1.4fr)_88px_88px_72px_72px_82px_52px] md:items-center md:gap-3">
               <div className="flex min-w-0 items-center gap-3">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden border border-border bg-secondary/50">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden border border-border bg-secondary/50">
                   {item.image_url ? (
                     <Image
                       src={item.image_url}
                       alt={item.market_hash_name}
-                      width={44}
-                      height={44}
+                      width={56}
+                      height={56}
                       className="h-full w-full object-contain p-1"
                     />
                   ) : (
@@ -880,9 +939,6 @@ function SearchResultsTable({
               </div>
               <div className="hidden font-mono text-sm text-muted-foreground md:block md:text-right">
                 {formatUsdMajor(item.best_bid_usd)}
-              </div>
-              <div className="hidden font-mono text-sm text-muted-foreground md:block md:text-right">
-                {formatSignedPercent(item.avg_spread_pct)}
               </div>
               <div className={`hidden font-mono text-sm font-bold md:block md:text-right ${priceChangeClass(item.price_rate_24h)}`}>
                 {formatSignedPercent(item.price_rate_24h)}
@@ -1010,13 +1066,17 @@ async function SearchExperience({
     page: currentPage,
   });
 
+  const snapshot = buildPendingSnapshot(query, filters, currentPage);
+
   return (
     <div className="container">
       <SearchTerminalHeader data={data} query={query} filters={filters} />
-      <div className="grid min-w-0 gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
+      <div className="grid min-w-0 gap-4 lg:grid-cols-[340px_minmax(0,1fr)]">
         <FilterControls data={data} query={query} filters={filters} />
         <div className="min-w-0">
-          <SearchResultsTable data={data} query={query} filters={filters} currentPage={currentPage} />
+          <PendingResults snapshot={snapshot}>
+            <SearchResultsTable data={data} query={query} filters={filters} currentPage={currentPage} />
+          </PendingResults>
         </div>
       </div>
     </div>
@@ -1041,27 +1101,10 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const page = Number.parseInt(clean(resolved.page) ?? "1", 10);
   const currentPage = Number.isFinite(page) && page > 0 ? page : 1;
 
-  const filterKey = [
-    query,
-    filters.item_type ?? "",
-    filters.base_name ?? "",
-    filters.wear_name ?? "",
-    filters.rarity_name ?? "",
-    filters.collection ?? "",
-    filters.phase ?? "",
-    filters.min_price_usd ?? "",
-    filters.max_price_usd ?? "",
-    filters.sort ?? "",
-    filters.direction ?? "",
-  ].join("|");
-
   return (
     <>
       <section className="terminal-page border-b border-border py-4 md:py-5">
-        <Suspense
-          key={`search:${filterKey}:${currentPage}`}
-          fallback={<SearchExperienceFallback currentPage={currentPage} />}
-        >
+        <Suspense fallback={<SearchExperienceFallback currentPage={currentPage} />}>
           <SearchExperience query={query} filters={filters} currentPage={currentPage} />
         </Suspense>
       </section>

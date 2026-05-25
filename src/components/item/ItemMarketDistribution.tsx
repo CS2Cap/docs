@@ -6,14 +6,14 @@ import { getProvider, providerLabel } from "@/lib/api";
 import type { MarketItem, ProviderInfo } from "@/lib/api/types";
 
 const PALETTE = [
-  "hsl(var(--primary))",
-  "hsl(var(--chart-2))",
-  "hsl(var(--chart-3))",
-  "hsl(var(--chart-5))",
-  "hsl(var(--success))",
-  "hsl(var(--warning))",
+  "hsl(0 85% 55%)",
+  "hsl(48 95% 55%)",
+  "hsl(215 90% 55%)",
+  "hsl(140 70% 45%)",
+  "hsl(28 90% 55%)",
+  "hsl(280 60% 60%)",
 ];
-const OTHER_COLOR = "hsl(var(--muted-foreground))";
+const OTHER_COLOR = "hsl(220 10% 38%)";
 const TOP_N = 6;
 
 type DonutDatum = {

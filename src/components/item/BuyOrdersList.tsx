@@ -1,6 +1,7 @@
-import { TriangleAlert } from "lucide-react";
+import { ExternalLink, TriangleAlert } from "lucide-react";
 import { ProviderIdentity } from "@/components/ProviderIdentity";
 import { Price } from "@/components/Price";
+import { RelativeTime } from "@/components/item/CollapsibleAsksList";
 import {
   Tooltip,
   TooltipContent,
@@ -9,10 +10,10 @@ import {
 } from "@/components/ui/tooltip";
 import { getProvider, providerLabel } from "@/lib/api";
 import type { BuyOrderFlag, ClassifiedBuyOrder } from "@/lib/api/view-models";
-import type { BuyOrderItem, ProviderInfo } from "@/lib/api/types";
+import type { BuyOrderItem, MarketItem, ProviderInfo } from "@/lib/api/types";
 
 const ROW_GRID =
-  "md:grid md:grid-cols-[52px_minmax(180px,1.7fr)_108px_108px] md:items-center md:gap-4 md:px-6 md:py-4";
+  "md:grid md:grid-cols-[48px_minmax(200px,1.3fr)_minmax(110px,1fr)_minmax(170px,1.4fr)_80px_minmax(110px,1fr)_120px] md:items-center md:gap-4 md:px-6 md:py-4";
 
 const FLAG_TOOLTIP: Record<BuyOrderFlag, string> = {
   "unreliable-provider":
@@ -35,15 +36,23 @@ function BuyOrderRow({
   displayIndex,
   providers,
   flag,
+  bestBid,
+  askLink,
 }: {
   row: BuyOrderItem;
   displayIndex: number;
   providers: ProviderInfo[];
   flag?: BuyOrderFlag;
+  bestBid: number;
+  askLink?: string;
 }) {
   const priceClass = flag
-    ? "font-mono text-sm font-bold text-muted-foreground"
-    : "font-mono text-sm font-bold text-success";
+    ? "font-mono text-base font-bold text-muted-foreground"
+    : "font-mono text-base font-bold text-success";
+
+  const isBest = !flag && bestBid > 0 && row.highest_bid === bestBid;
+  const spreadPct =
+    bestBid > 0 ? ((row.highest_bid - bestBid) / bestBid) * 100 : 0;
 
   return (
     <div
@@ -51,7 +60,7 @@ function BuyOrderRow({
         flag ? "bg-amber-500/3" : ""
       }`}
     >
-      <div className="hidden font-mono text-xs text-muted-foreground md:block">
+      <div className="hidden font-mono text-sm text-foreground/70 md:block">
         #{displayIndex}
       </div>
 
@@ -61,8 +70,8 @@ function BuyOrderRow({
           <ProviderIdentity
             provider={getProvider(row.provider, providers)}
             fallback={providerLabel(row.provider, providers)}
-            logoSize={22}
-            textClassName="font-mono text-sm font-bold text-foreground"
+            logoSize={24}
+            textClassName="font-mono text-base font-bold text-foreground"
             className="flex min-w-0 items-center gap-2"
           />
           {flag ? (
@@ -93,12 +102,51 @@ function BuyOrderRow({
         </span>
       </div>
 
-      {/* Desktop only columns */}
-      <div className="hidden font-mono text-sm text-muted-foreground md:block md:text-right">
-        {formatNumber(row.num_bids)}
-      </div>
+      {/* Desktop: HIGHEST BID */}
       <div className={`hidden md:block md:text-right ${priceClass}`}>
         <Price cents={row.highest_bid} />
+      </div>
+
+      {/* Desktop: VS BEST */}
+      <div className="hidden font-mono text-sm md:block md:text-right">
+        {flag ? (
+          <span className="text-foreground/40">—</span>
+        ) : isBest ? (
+          <span className="font-bold text-success">best bid</span>
+        ) : (
+          <span className="text-foreground/85">
+            {spreadPct.toFixed(2)}%{" "}
+            <span className="text-foreground/60">
+              (<Price cents={row.highest_bid - bestBid} />)
+            </span>
+          </span>
+        )}
+      </div>
+
+      {/* Desktop: BIDS */}
+      <div className="hidden font-mono text-sm font-bold text-foreground md:block md:text-right">
+        {formatNumber(row.num_bids)}
+      </div>
+
+      {/* Desktop: UPDATED */}
+      <div className="hidden md:block md:text-right">
+        <RelativeTime value={row.last_updated ?? row.timestamp} />
+      </div>
+
+      {/* Desktop: VIEW */}
+      <div className="hidden md:flex md:justify-end">
+        {askLink ? (
+          <a
+            href={askLink}
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-2 border-brutal px-4 py-2.5 font-mono text-xs tracking-wider brutalist-hover hover:border-primary"
+          >
+            VIEW <ExternalLink className="h-3.5 w-3.5" />
+          </a>
+        ) : (
+          <span className="font-mono text-sm text-foreground/70">—</span>
+        )}
       </div>
     </div>
   );
@@ -108,10 +156,12 @@ export function BuyOrdersList({
   reliable,
   flagged,
   providers,
+  askRows,
 }: {
   reliable: BuyOrderItem[];
   flagged: ClassifiedBuyOrder[];
   providers: ProviderInfo[];
+  askRows: MarketItem[];
 }) {
   if (reliable.length === 0 && flagged.length === 0) {
     return (
@@ -121,6 +171,18 @@ export function BuyOrdersList({
     );
   }
 
+  const askLinkByProvider = new Map<string, string>();
+  for (const row of askRows) {
+    const link = row.link || row.url;
+    if (link && !askLinkByProvider.has(row.provider)) {
+      askLinkByProvider.set(row.provider, link);
+    }
+  }
+
+  const bestBid = reliable.length
+    ? Math.max(...reliable.map((r) => r.highest_bid))
+    : 0;
+
   return (
     <>
       {reliable.map((row, index) => (
@@ -129,6 +191,8 @@ export function BuyOrdersList({
           row={row}
           displayIndex={index + 1}
           providers={providers}
+          bestBid={bestBid}
+          askLink={askLinkByProvider.get(row.provider)}
         />
       ))}
 
@@ -145,6 +209,8 @@ export function BuyOrdersList({
               displayIndex={reliable.length + index + 1}
               providers={providers}
               flag={row.flag ?? undefined}
+              bestBid={bestBid}
+              askLink={askLinkByProvider.get(row.provider)}
             />
           ))}
         </>

@@ -57,10 +57,10 @@ export function MonitorRow({ monitor }: { monitor: MonitorSummary }) {
             width={18}
             height={18}
             loading="lazy"
-            className="h-[18px] w-[18px] shrink-0 rounded-sm object-contain"
+            className="h-4.5 w-4.5 shrink-0 rounded-sm object-contain"
           />
         ) : (
-          <span className="h-[18px] w-[18px] shrink-0 rounded-sm border border-border bg-secondary/50" aria-hidden="true" />
+          <span className="h-4.5 w-4.5 shrink-0 rounded-sm border border-border bg-secondary/50" aria-hidden="true" />
         )}
         <span className="font-mono text-[13px] font-semibold tracking-wide text-foreground truncate">
           {monitor.name}
@@ -69,14 +69,14 @@ export function MonitorRow({ monitor }: { monitor: MonitorSummary }) {
       </div>
 
       <div
-        className="flex items-end gap-[2px] h-7 md:h-8"
+        className="flex items-end gap-0.5 h-7 md:h-8"
         role="img"
         aria-label={`Last ${monitor.beats.length} heartbeats for ${monitor.name}`}
       >
         {padded.map((beat, i) => (
           <span
             key={i}
-            className={`flex-1 h-full min-w-[2px] ${barColor(beat)} opacity-90 hover:opacity-100 transition-opacity rounded-[1px]`}
+            className={`flex-1 h-full min-w-0.5 ${barColor(beat)} opacity-90 hover:opacity-100 transition-opacity rounded-[1px]`}
             title={formatTooltip(beat)}
           />
         ))}

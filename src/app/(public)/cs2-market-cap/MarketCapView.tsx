@@ -31,6 +31,7 @@ import type {
   MarketOverviewRange,
   MarketOverviewResponse,
 } from "@/lib/api/types";
+import { buildItemPath } from "@/lib/seo/itemSlug";
 
 const RANGE_TABS: { key: MarketOverviewRange; label: string }[] = [
   { key: "24h", label: "24H" },
@@ -483,7 +484,7 @@ function CategoryTable({
           ))}
         </div>
       </div>
-      <div className="grid grid-cols-[34px_minmax(150px,1.4fr)_80px_80px_90px_110px] gap-3 border-b terminal-rule px-3 py-2 font-mono text-[10px] font-bold tracking-widest text-muted-foreground max-lg:min-w-[680px]">
+      <div className="grid grid-cols-[34px_minmax(150px,1.4fr)_80px_80px_90px_110px] gap-3 border-b terminal-rule px-3 py-2 font-mono text-[10px] font-bold tracking-widest text-muted-foreground max-lg:min-w-170">
         <div>#</div>
         <div>CATEGORY</div>
         <div className="text-right">ITEMS</div>
@@ -495,7 +496,7 @@ function CategoryTable({
         {rows.map((row, index) => (
           <div
             key={row.group}
-            className="grid grid-cols-[34px_minmax(150px,1.4fr)_80px_80px_90px_110px] items-center gap-3 border-b border-border px-3 py-2.5 last:border-b-0 max-lg:min-w-[680px]"
+            className="grid grid-cols-[34px_minmax(150px,1.4fr)_80px_80px_90px_110px] items-center gap-3 border-b border-border px-3 py-2.5 last:border-b-0 max-lg:min-w-170"
           >
             <div className="font-mono text-[10px] text-muted-foreground">
               {String(index + 1).padStart(2, "0")}
@@ -542,7 +543,10 @@ function ItemRow({
   const displayValue =
     valueField === "price" ? item.best_ask_usd : item.marketcap_usd;
   return (
-    <div className="grid grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-3 border-b border-border px-3 py-2 last:border-b-0">
+    <Link
+      href={buildItemPath(item.item_id, item.market_hash_name)}
+      className="grid grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-3 border-b border-border px-3 py-2 transition-colors last:border-b-0 hover:bg-muted/40"
+    >
       <div className="relative h-9 w-9 overflow-hidden border border-border bg-background">
         {item.image_url ? (
           <Image
@@ -570,7 +574,7 @@ function ItemRow({
           {formatPct(item.price_rate_24h)}
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
 
@@ -676,7 +680,7 @@ function MostValuablePanel({ rows }: { rows: MarketOverviewItem[] }) {
         </div>
         <Database className="h-4 w-4 text-primary" />
       </div>
-      <div className="grid grid-cols-[34px_minmax(190px,1fr)_78px_70px_96px] gap-3 border-b terminal-rule px-3 py-2 font-mono text-[10px] font-bold tracking-widest text-muted-foreground max-lg:min-w-[620px]">
+      <div className="grid grid-cols-[34px_minmax(190px,1fr)_78px_70px_96px] gap-3 border-b terminal-rule px-3 py-2 font-mono text-[10px] font-bold tracking-widest text-muted-foreground max-lg:min-w-155">
         <div>#</div>
         <div>ITEM</div>
         <div className="text-right">ASK</div>
@@ -687,7 +691,7 @@ function MostValuablePanel({ rows }: { rows: MarketOverviewItem[] }) {
         {rows.slice(0, 10).map((item, index) => (
           <div
             key={item.item_id}
-            className="grid grid-cols-[34px_minmax(190px,1fr)_78px_70px_96px] items-center gap-3 border-b border-border px-3 py-2 last:border-b-0 max-lg:min-w-[620px]"
+            className="grid grid-cols-[34px_minmax(190px,1fr)_78px_70px_96px] items-center gap-3 border-b border-border px-3 py-2 last:border-b-0 max-lg:min-w-155"
           >
             <div className="font-mono text-[10px] text-muted-foreground">
               {String(item.rank ?? index + 1).padStart(2, "0")}
@@ -820,7 +824,7 @@ export function MarketCapView({ overview }: { overview: MarketOverviewResponse |
           <CategoryTreemap rows={categoryRows} />
         </div>
 
-        <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.55fr)]">
+        <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(380px,1fr)]">
           <CategoryTable
             rows={categoryRows}
             category={category}
