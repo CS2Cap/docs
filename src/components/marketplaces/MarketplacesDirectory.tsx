@@ -1,102 +1,95 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState, useMemo } from "react";
 import { Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import type { ProviderInfo } from "@/lib/api";
 import { MarketplaceCard } from "./MarketplaceCard";
-import {
-  MARKET_TYPE_FILTERS,
-  normalizeMarketType,
-  type MarketTypeKey,
-} from "./marketplaces-utils";
+import { normalizeMarketType, MARKET_TYPE_FILTERS } from "./marketplaces-utils";
 
-type FilterKey = "ALL" | MarketTypeKey;
+interface Props {
+  providers: ProviderInfo[];
+}
 
-export function MarketplacesDirectory({ providers }: { providers: ProviderInfo[] }) {
-  const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState<FilterKey>("ALL");
-
-  const sorted = useMemo(
-    () =>
-      [...providers].sort((a, b) =>
-        (a.name ?? a.key).localeCompare(b.name ?? b.key, undefined, { sensitivity: "base" }),
-      ),
-    [providers],
-  );
+export function MarketplacesDirectory({ providers }: Props) {
+  const [search, setSearch] = useState("");
+  const [activeFilter, setActiveFilter] = useState<string>("ALL");
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return sorted.filter((p) => {
-      if (filter !== "ALL" && normalizeMarketType(p.market_type) !== filter) return false;
-      if (!q) return true;
-      const haystack = `${p.name ?? ""} ${p.code ?? ""} ${p.key}`.toLowerCase();
-      return haystack.includes(q);
-    });
-  }, [sorted, query, filter]);
+    let list = [...providers];
+
+    if (activeFilter !== "ALL") {
+      list = list.filter(
+        (p) => normalizeMarketType(p.market_type) === activeFilter,
+      );
+    }
+
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      list = list.filter(
+        (p) =>
+          (p.name ?? "").toLowerCase().includes(q) ||
+          (p.code ?? "").toLowerCase().includes(q),
+      );
+    }
+
+    return list.sort((a, b) =>
+      (a.name ?? a.code ?? "").localeCompare(b.name ?? b.code ?? ""),
+    );
+  }, [providers, search, activeFilter]);
 
   return (
-    <>
-      <section className="border-t-2 border-border">
-        <div className="container py-6">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div className="relative flex-1 lg:max-w-md">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-              <input
-                type="search"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Filter by name (e.g. Buff, CSFloat, Skinport)…"
-                className="w-full border border-border bg-card py-2.5 pl-9 pr-3 font-mono text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
-                aria-label="Filter marketplaces by name"
+    <TooltipProvider delayDuration={100}>
+      <section className="py-12 md:py-16">
+        <div className="container">
+          {/* Search and filters */}
+          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="relative max-w-sm flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search marketplaces..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9 font-mono text-sm"
               />
             </div>
-            <div className="flex flex-wrap gap-1.5">
-              {MARKET_TYPE_FILTERS.map((opt) => {
-                const active = filter === opt.key;
-                return (
-                  <button
-                    key={opt.key}
-                    type="button"
-                    onClick={() => setFilter(opt.key)}
-                    className={`h-9 border px-3 font-mono text-[10px] tracking-widest transition-colors ${
-                      active
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="border-t-2 border-border py-10 md:py-14">
-        <div className="container">
-          <div className="mb-6 flex items-end justify-between">
-            <div className="font-mono text-xs tracking-widest text-primary">
-              // {filter === "ALL" ? "ALL VENUES" : `${filter} VENUES`} · A-Z
-            </div>
-            <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
-              {filtered.length} / {providers.length} VENUES
+            <div className="flex flex-wrap gap-2">
+              {MARKET_TYPE_FILTERS.map((filter) => (
+                <button
+                  key={filter}
+                  onClick={() => setActiveFilter(filter)}
+                  className={`border px-3 py-1.5 font-mono text-[10px] tracking-wider transition-colors ${
+                    activeFilter === filter
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border bg-transparent text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {filter}
+                </button>
+              ))}
             </div>
           </div>
 
-          {filtered.length === 0 ? (
-            <div className="border border-border bg-card p-10 text-center font-mono text-xs text-muted-foreground">
-              No marketplaces match your filters.
+          {/* Grid */}
+          {filtered.length > 0 ? (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {filtered.map((provider) => (
+                <MarketplaceCard
+                  key={provider.code ?? provider.key}
+                  provider={provider}
+                />
+              ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-px bg-border sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {filtered.map((p) => (
-                <MarketplaceCard key={p.key} provider={p} />
-              ))}
+            <div className="py-20 text-center">
+              <p className="font-mono text-sm text-muted-foreground">
+                No marketplaces match your filters.
+              </p>
             </div>
           )}
         </div>
       </section>
-    </>
+    </TooltipProvider>
   );
 }

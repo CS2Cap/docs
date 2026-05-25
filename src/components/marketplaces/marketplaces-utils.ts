@@ -1,85 +1,86 @@
-import type { ProviderInfo } from "@/lib/api";
+import type { ProviderFees } from "@/lib/api";
 
-export type MarketTypeKey = "P2P" | "ESCROW" | "HYBRID" | "TRADING" | "STORE" | "OTHER";
+export type FeeKey = "sell_fee" | "insta_sell_fee" | "trading_spread_fee";
 
-export const MARKET_TYPE_FILTERS: { key: "ALL" | MarketTypeKey; label: string }[] = [
-  { key: "ALL", label: "ALL" },
-  { key: "P2P", label: "P2P" },
-  { key: "ESCROW", label: "ESCROW" },
-  { key: "HYBRID", label: "HYBRID" },
-  { key: "TRADING", label: "TRADING" },
-  { key: "STORE", label: "STORE" },
-];
+export const FEE_LABELS: Record<FeeKey, string> = {
+  sell_fee: "Selling Fee",
+  insta_sell_fee: "Instant Sell Fee",
+  trading_spread_fee: "Trading Spread Fee",
+};
 
-export function normalizeMarketType(value?: string): MarketTypeKey {
-  const upper = (value ?? "").toUpperCase();
-  if (upper === "P2P" || upper === "ESCROW" || upper === "HYBRID" || upper === "TRADING" || upper === "STORE") {
-    return upper;
-  }
-  return "OTHER";
+export function normalizeMarketType(mt?: string): string {
+  return (mt ?? "OTHER").toUpperCase().trim();
 }
 
-export function marketTypeBadgeClass(type: MarketTypeKey): string {
-  switch (type) {
-    case "P2P":
-      return "border-primary/40 text-primary";
-    case "ESCROW":
-      return "border-chart-2/40 text-chart-2";
-    case "HYBRID":
-      return "border-chart-3/40 text-chart-3";
-    case "TRADING":
-      return "border-chart-4/40 text-chart-4";
-    case "STORE":
-      return "border-chart-5/40 text-chart-5";
-    default:
-      return "border-border text-muted-foreground";
-  }
-}
-
-export interface PrimaryFee {
-  kind: "sell" | "insta" | "spread";
-  value: number;
-}
-
-export function pickPrimaryFee(provider: ProviderInfo): PrimaryFee | null {
-  const { sell_fee, insta_sell_fee, trading_spread_fee } = provider.fees ?? {};
-  if (typeof sell_fee === "number") return { kind: "sell", value: sell_fee };
-  if (typeof insta_sell_fee === "number") return { kind: "insta", value: insta_sell_fee };
-  if (typeof trading_spread_fee === "number") return { kind: "spread", value: trading_spread_fee };
+export function pickPrimaryFee(
+  fees: ProviderFees,
+): { key: FeeKey; value: number } | null {
+  if (fees.sell_fee != null) return { key: "sell_fee", value: fees.sell_fee };
+  if (fees.insta_sell_fee != null)
+    return { key: "insta_sell_fee", value: fees.insta_sell_fee };
+  if (fees.trading_spread_fee != null)
+    return { key: "trading_spread_fee", value: fees.trading_spread_fee };
   return null;
 }
 
-export function formatFee(fee: PrimaryFee | null): string {
-  if (!fee) return "—";
-  const pct = fee.value * 100;
-  const formatted = Number.isInteger(pct) ? pct.toFixed(0) : pct.toFixed(pct < 1 ? 2 : 1);
-  return `${formatted}%`;
+export function formatFee(value: number): string {
+  return `${(value * 100).toFixed(1)}%`;
 }
 
 export function formatCompactUsd(value: number): string {
-  if (!Number.isFinite(value) || value <= 0) return "$0";
-  const abs = Math.abs(value);
-  if (abs >= 1e12) return `$${(value / 1e12).toFixed(1)}T`;
-  if (abs >= 1e9) return `$${(value / 1e9).toFixed(1)}B`;
-  if (abs >= 1e6) return `$${(value / 1e6).toFixed(1)}M`;
-  if (abs >= 1e3) return `$${(value / 1e3).toFixed(1)}K`;
+  if (value >= 1_000_000_000) return `$${(value / 1_000_000_000).toFixed(1)}B`;
+  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`;
+  if (value >= 1_000) return `$${(value / 1_000).toFixed(1)}K`;
   return `$${value.toFixed(0)}`;
 }
 
 export function formatCompactCount(value: number): string {
-  if (!Number.isFinite(value) || value <= 0) return "0";
-  if (value >= 1e6) return `${(value / 1e6).toFixed(1)}M`;
-  if (value >= 1e3) return `${(value / 1e3).toFixed(1)}K`;
-  return value.toString();
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
+  if (value >= 1_000) return `${(value / 1_000).toFixed(1)}K`;
+  return `${value}`;
 }
 
 export function statusDotClass(status?: string): string {
-  switch ((status ?? "").toLowerCase()) {
-    case "up":
-      return "bg-success";
-    case "down":
-      return "bg-destructive";
+  const s = (status ?? "").toLowerCase();
+  if (s === "online" || s === "healthy") return "bg-success";
+  if (s === "degraded") return "bg-warning";
+  return "bg-destructive";
+}
+
+export const MARKET_TYPE_FILTERS = [
+  "ALL",
+  "P2P",
+  "ESCROW",
+  "HYBRID",
+  "TRADING",
+  "STORE",
+] as const;
+
+export const MARKET_TYPE_DESCRIPTIONS: Record<string, string> = {
+  P2P: "A platform where regular users create publicly visible listings at seller-defined prices and trade directly with each other. Seller-friendly.",
+  ESCROW:
+    "A platform where sellers must deposit their skins before listing. Buyer-friendly, since the site mediates trades.",
+  HYBRID:
+    "A platform that offers more than one marketplace model (e.g. P2P and STORE).",
+  TRADING:
+    "A platform that exchanges user items for items in the platform's bot inventory based on a site valuation system. Cash withdrawals typically aren't allowed.",
+  STORE:
+    "A platform that sells items directly from its own bot-operated inventory at fixed prices. Often offers instant sell services as well.",
+};
+
+export function marketTypeBadgeClass(mt: string): string {
+  switch (mt) {
+    case "P2P":
+      return "bg-primary/10 text-primary border-primary/30";
+    case "ESCROW":
+      return "bg-success/10 text-success border-success/30";
+    case "HYBRID":
+      return "bg-accent/10 text-accent border-accent/30";
+    case "TRADING":
+      return "bg-warning/10 text-warning border-warning/30";
+    case "STORE":
+      return "bg-secondary/30 text-secondary-foreground border-border";
     default:
-      return "bg-muted-foreground/50";
+      return "bg-muted text-muted-foreground border-border";
   }
 }
