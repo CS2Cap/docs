@@ -39,7 +39,7 @@ function DonutTooltip({
     <div className="border border-border bg-card px-2 py-1 font-mono text-[10px]">
       <div className="font-bold text-foreground">{datum.label}</div>
       <div className="text-muted-foreground">
-        {datum.value} {datum.value === 1 ? "listing" : "listings"} · {datum.pct}%
+        {datum.value.toLocaleString()} {datum.value === 1 ? "unit" : "units"} · {datum.pct}%
       </div>
     </div>
   );
@@ -57,30 +57,34 @@ export function ItemMarketDistribution({
       return [];
     }
 
-    const counts = new Map<string, number>();
+    const units = new Map<string, number>();
     for (const row of rows) {
-      counts.set(row.provider, (counts.get(row.provider) ?? 0) + 1);
+      const qty = row.quantity > 0 ? row.quantity : 1;
+      units.set(row.provider, (units.get(row.provider) ?? 0) + qty);
     }
 
-    const ranked = [...counts.entries()].sort((left, right) => right[1] - left[1]);
-    const total = rows.length;
+    const ranked = [...units.entries()].sort((left, right) => right[1] - left[1]);
+    const total = ranked.reduce((sum, [, qty]) => sum + qty, 0);
+    if (total === 0) {
+      return [];
+    }
 
-    const top = ranked.slice(0, TOP_N).map(([provider, count], index) => ({
+    const top = ranked.slice(0, TOP_N).map(([provider, qty], index) => ({
       label: providerLabel(provider, providers) || getProvider(provider, providers)?.name || provider,
-      value: count,
-      pct: Math.round((count / total) * 100),
+      value: qty,
+      pct: Math.round((qty / total) * 100),
       color: PALETTE[index % PALETTE.length],
     }));
 
-    const restCount = ranked
+    const restQty = ranked
       .slice(TOP_N)
-      .reduce((sum, [, count]) => sum + count, 0);
+      .reduce((sum, [, qty]) => sum + qty, 0);
 
-    if (restCount > 0) {
+    if (restQty > 0) {
       top.push({
         label: "Other",
-        value: restCount,
-        pct: Math.round((restCount / total) * 100),
+        value: restQty,
+        pct: Math.round((restQty / total) * 100),
         color: OTHER_COLOR,
       });
     }

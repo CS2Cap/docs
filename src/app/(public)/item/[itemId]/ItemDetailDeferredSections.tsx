@@ -123,6 +123,36 @@ export function ItemMarketInsightsFallback() {
   );
 }
 
+type InsightTone = "success" | "warning" | "destructive" | "neutral";
+
+const TONE_VALUE_CLASS: Record<InsightTone, string> = {
+  success: "text-success",
+  warning: "text-warning",
+  destructive: "text-destructive",
+  neutral: "text-foreground",
+};
+
+const TONE_TAG_CLASS: Record<InsightTone, string> = {
+  success: "text-success",
+  warning: "text-warning",
+  destructive: "text-destructive",
+  neutral: "text-muted-foreground",
+};
+
+function liquidityTone(value: number | null | undefined): { tone: InsightTone; tag: string } {
+  if (value == null) return { tone: "neutral", tag: "" };
+  if (value >= 70) return { tone: "success", tag: "GOOD" };
+  if (value >= 40) return { tone: "warning", tag: "OK" };
+  return { tone: "destructive", tag: "LOW" };
+}
+
+function spreadTone(value: number | null | undefined): { tone: InsightTone; tag: string } {
+  if (value == null) return { tone: "neutral", tag: "" };
+  if (value <= 5) return { tone: "success", tag: "TIGHT" };
+  if (value <= 15) return { tone: "warning", tag: "WIDE" };
+  return { tone: "destructive", tag: "HIGH" };
+}
+
 export async function ItemMarketInsightsSection({
   itemId,
   listingProvidersCount,
@@ -133,42 +163,64 @@ export async function ItemMarketInsightsSection({
   const snapshot = await serverApi.getMarketItemsSnapshot({ timeframe: "24h" });
   const analyticsSummary = snapshot?.data.items.find((i) => i.item_id === itemId)?.summary ?? null;
 
+  const liquidity = liquidityTone(analyticsSummary?.liquidity);
+  const spread = spreadTone(analyticsSummary?.avg_spread_pct);
+
+  const cards: Array<{ label: string; value: string; detail: string; tone: InsightTone; tag: string }> = [
+    {
+      label: "PROVIDERS",
+      value: String(listingProvidersCount),
+      detail: "Live markets",
+      tone: "neutral",
+      tag: "",
+    },
+    {
+      label: "24H VOLUME",
+      value: formatCompact(analyticsSummary?.total_volume_24h ?? null),
+      detail: "Sales / 24h",
+      tone: "neutral",
+      tag: "",
+    },
+    {
+      label: "LIQUIDITY",
+      value:
+        analyticsSummary?.liquidity != null
+          ? `${analyticsSummary.liquidity}/100`
+          : "N/A",
+      detail: "Ease of sale",
+      tone: liquidity.tone,
+      tag: liquidity.tag,
+    },
+    {
+      label: "AVG SPREAD",
+      value:
+        analyticsSummary?.avg_spread_pct != null
+          ? `${analyticsSummary.avg_spread_pct.toFixed(2)}%`
+          : "N/A",
+      detail: "Bid-ask gap",
+      tone: spread.tone,
+      tag: spread.tag,
+    },
+  ];
+
   return (
     <div className="grid gap-px bg-border md:grid-cols-4">
-      {[
-        {
-          label: "PROVIDERS",
-          value: String(listingProvidersCount),
-          detail: "Markets with listings",
-        },
-        {
-          label: "24H VOLUME",
-          value: formatCompact(analyticsSummary?.total_volume_24h ?? null),
-          detail: "Sales in the last 24 hours",
-        },
-        {
-          label: "LIQUIDITY",
-          value:
-            analyticsSummary?.liquidity != null
-              ? `${analyticsSummary.liquidity}/100`
-              : "N/A",
-          detail: "How easy this item is to sell",
-        },
-        {
-          label: "AVG SPREAD",
-          value:
-            analyticsSummary?.avg_spread_pct != null
-              ? `${analyticsSummary.avg_spread_pct.toFixed(2)}%`
-              : "N/A",
-          detail: "Gap between best buy and sell price",
-        },
-      ].map((card) => (
+      {cards.map((card) => (
         <div key={card.label} className="bg-card p-4">
           <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
             {card.label}
           </div>
-          <div className="mt-1 font-mono text-2xl font-bold text-foreground">{card.value}</div>
-          <div className="mt-1 font-mono text-[10px] text-muted-foreground">{card.detail}</div>
+          <div className={`mt-1 font-mono text-2xl font-bold ${TONE_VALUE_CLASS[card.tone]}`}>
+            {card.value}
+          </div>
+          <div className="mt-1 flex items-center gap-1.5 font-mono text-[10px] text-muted-foreground">
+            {card.tag ? (
+              <span className={`font-bold tracking-widest ${TONE_TAG_CLASS[card.tone]}`}>
+                {card.tag}
+              </span>
+            ) : null}
+            <span className="truncate">{card.detail}</span>
+          </div>
         </div>
       ))}
     </div>
@@ -291,15 +343,20 @@ export function ItemRelatedItemsFallback() {
 }
 
 export async function ItemRelatedItemsSection({ item }: { item: ItemOut }) {
-  if (!item.weapon_type) {
+  // Prefer base_name (e.g. "USP-S") for genuine model-level similarity;
+  // weapon_type ("Pistol") is too broad and returns unrelated weapons.
+  const filter = item.base_name
+    ? { base_name: item.base_name }
+    : item.weapon_type
+      ? { weapon_type: item.weapon_type }
+      : null;
+
+  if (!filter) {
     return null;
   }
 
   const relatedItems = await serverApi.getItems(
-    buildQuery({
-      weapon_type: item.weapon_type,
-      limit: 18,
-    }),
+    buildQuery({ ...filter, limit: 18 }),
     300,
   );
 

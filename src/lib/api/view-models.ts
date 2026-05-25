@@ -130,7 +130,17 @@ const UNRELIABLE_BID_PROVIDERS = new Set(["steam"]);
 // as suspect (likely bad data or a niche item variant).
 const EXCESSIVE_BID_ASK_MULTIPLE = 2;
 
-export type BuyOrderFlag = "unreliable-provider" | "inverted-spread" | "excessive-bid";
+// A bid below this multiple of the median reliable bid is treated as a
+// stale/abandoned lowball offer that would mislead the headline range.
+// Only applied when there are enough reliable bids to compute a stable median.
+const LOWBALL_BID_MEDIAN_MULTIPLE = 0.5;
+const MIN_BIDS_FOR_LOWBALL_DETECTION = 4;
+
+export type BuyOrderFlag =
+  | "unreliable-provider"
+  | "inverted-spread"
+  | "excessive-bid"
+  | "lowball-bid";
 
 export interface ClassifiedBuyOrder extends BuyOrderItem {
   /** `null` means the bid passed every reliability check. */
@@ -181,7 +191,7 @@ export function classifyBuyOrders(
   const byBidDesc = (left: BuyOrderItem, right: BuyOrderItem) =>
     right.highest_bid - left.highest_bid;
 
-  const reliable: BuyOrderItem[] = [];
+  let reliable: BuyOrderItem[] = [];
   const flagged: ClassifiedBuyOrder[] = [];
   for (const bid of bids) {
     const flag = flagFor(bid);
@@ -191,6 +201,25 @@ export function classifyBuyOrders(
       reliable.push(bid);
     }
   }
+
+  // Second pass: demote outlier-low bids once we know the reliable cohort.
+  if (reliable.length >= MIN_BIDS_FOR_LOWBALL_DETECTION) {
+    const sorted = [...reliable].map((b) => b.highest_bid).sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    const median =
+      sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+    const threshold = median * LOWBALL_BID_MEDIAN_MULTIPLE;
+    const survivors: BuyOrderItem[] = [];
+    for (const bid of reliable) {
+      if (bid.highest_bid < threshold) {
+        flagged.push({ ...bid, flag: "lowball-bid" });
+      } else {
+        survivors.push(bid);
+      }
+    }
+    reliable = survivors;
+  }
+
   reliable.sort(byBidDesc);
   flagged.sort(byBidDesc);
   return { reliable, flagged };

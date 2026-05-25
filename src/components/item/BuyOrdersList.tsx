@@ -21,6 +21,8 @@ const FLAG_TOOLTIP: Record<BuyOrderFlag, string> = {
     "This bid is higher than this marketplace's own lowest ask; likely due to a niche item variant (e.g. low float range) rather than this exact item.",
   "excessive-bid":
     "This bid is more than double the lowest ask across all markets — likely bad or niche-variant data.",
+  "lowball-bid":
+    "This bid is less than half the median across reliable markets — likely a stale or abandoned buy order rather than a real offer.",
 };
 
 function formatNumber(value?: number | null) {
@@ -66,14 +68,11 @@ function BuyOrderRow({
           {flag ? (
             <TooltipProvider>
               <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    type="button"
-                    aria-label="Why is this buy order flagged?"
-                    className="shrink-0 text-amber-500"
-                  >
-                    <TriangleAlert className="h-3.5 w-3.5" />
-                  </button>
+                <TooltipTrigger
+                  aria-label="Why is this buy order flagged?"
+                  className="shrink-0 text-amber-500"
+                >
+                  <TriangleAlert className="h-3.5 w-3.5" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
                   {FLAG_TOOLTIP[flag]}

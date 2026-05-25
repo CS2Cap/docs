@@ -266,7 +266,8 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                   <h1 className="text-2xl font-black tracking-tighter xl:text-3xl">
                     {data.item.market_hash_name}
                   </h1>
-                  {data.item.wear_name ? (
+                  {data.item.wear_name &&
+                  !data.item.market_hash_name.includes(`(${data.item.wear_name})`) ? (
                     <div className="mt-1 font-mono text-[11px] tracking-wider text-muted-foreground">
                       {data.item.wear_name}
                     </div>
@@ -313,7 +314,7 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                       <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
                         MARKETS WITH ASKS
                       </div>
-                      <div className="mt-1 font-mono text-base font-bold text-foreground">
+                      <div className="mt-1 flex h-4.5 items-center font-mono text-base font-bold text-foreground">
                         {data.coverage.askProviders}
                       </div>
                     </div>
@@ -321,14 +322,31 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                       <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
                         BEST ASK AT
                       </div>
-                      <div className="mt-1 text-base font-bold text-primary">
+                      <div className="mt-1 flex h-4.5 items-center text-base font-bold text-primary">
                         {data.bestAsk ? (
-                          <ProviderIdentity
-                            provider={bestAskProvider}
-                            fallback={providerLabel(data.bestAsk.provider, data.providers)}
-                            logoSize={18}
-                            textClassName="font-mono text-base font-bold text-primary"
-                          />
+                          (() => {
+                            const bestAskUrl = data.bestAsk.link || data.bestAsk.url;
+                            const chip = (
+                              <ProviderIdentity
+                                provider={bestAskProvider}
+                                fallback={providerLabel(data.bestAsk.provider, data.providers)}
+                                logoSize={18}
+                                textClassName="font-mono text-base font-bold text-primary"
+                              />
+                            );
+                            return bestAskUrl ? (
+                              <a
+                                href={bestAskUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="hover:underline"
+                              >
+                                {chip}
+                              </a>
+                            ) : (
+                              chip
+                            );
+                          })()
                         ) : (
                           "N/A"
                         )}
@@ -353,10 +371,39 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                 <div className="mb-3.5 font-mono text-[11px] tracking-widest text-primary">
                   FLOAT RANGE
                 </div>
-                <div className="mb-3 h-2.5 bg-linear-to-r from-success via-warning to-destructive" />
+                <div className="relative mb-5 h-2.5 bg-linear-to-r from-success via-warning to-destructive">
+                  {data.item.min_float != null && data.item.max_float != null ? (
+                    <>
+                      <div
+                        className="absolute inset-y-0 border-2 border-foreground"
+                        style={{
+                          left: `${Math.max(0, Math.min(1, data.item.min_float)) * 100}%`,
+                          width: `${Math.max(0, Math.min(1, data.item.max_float - data.item.min_float)) * 100}%`,
+                        }}
+                        aria-hidden="true"
+                      />
+                      {data.item.min_float > 0 ? (
+                        <div
+                          className="absolute top-full mt-0.5 -translate-x-1/2 font-mono text-[9px] font-bold text-foreground"
+                          style={{ left: `${Math.min(1, data.item.min_float) * 100}%` }}
+                        >
+                          {data.item.min_float.toFixed(2)}
+                        </div>
+                      ) : null}
+                      {data.item.max_float < 1 ? (
+                        <div
+                          className="absolute top-full mt-0.5 -translate-x-1/2 font-mono text-[9px] font-bold text-foreground"
+                          style={{ left: `${Math.min(1, data.item.max_float) * 100}%` }}
+                        >
+                          {data.item.max_float.toFixed(2)}
+                        </div>
+                      ) : null}
+                    </>
+                  ) : null}
+                </div>
                 <div className="flex justify-between font-mono text-[10px] text-muted-foreground">
-                  <span>{data.item.min_float?.toFixed(2) ?? "N/A"}</span>
-                  <span>{data.item.max_float?.toFixed(2) ?? "N/A"}</span>
+                  <span>0.00</span>
+                  <span>1.00</span>
                 </div>
                 <div className="mt-4 grid grid-cols-5 gap-px bg-border">
                   {[

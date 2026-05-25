@@ -17,7 +17,13 @@ export function ItemCasesSection({ item }: { item: ItemOut }) {
           {crates.length} {crates.length === 1 ? "case" : "cases"}
         </span>
       </div>
-      <div className="grid gap-px bg-border md:grid-cols-2 xl:grid-cols-3">
+      <div
+        className={
+          crates.length > 1
+            ? "grid gap-px bg-border md:grid-cols-2 xl:grid-cols-3"
+            : "bg-card"
+        }
+      >
         {crates.map((crate) => (
           <Link
             key={crate}
