@@ -202,6 +202,32 @@
     background-size: 20px 20px;
   }
 
+  .terminal-page {
+    --terminal-panel: hsl(220 18% 6% / 0.92);
+    --terminal-line: hsl(217 40% 20% / 0.84);
+    --terminal-muted: hsl(215 12% 58%);
+    background-image:
+      linear-gradient(hsl(217 40% 20% / 0.24) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(217 40% 20% / 0.2) 1px, transparent 1px);
+    background-size: 18px 18px;
+  }
+
+  .terminal-page .font-mono.text-\[8px\] { font-size: 8px; letter-spacing: 0.1em; }
+  .terminal-page .font-mono.text-\[9px\] { font-size: 9px; letter-spacing: 0.09em; }
+  .terminal-page .font-mono.text-\[10px\] { font-size: 10px; letter-spacing: 0.08em; }
+  .terminal-page .font-mono.text-\[11px\] { font-size: 11px; letter-spacing: 0.06em; }
+  .terminal-page .font-mono.text-xs { font-size: 12px; letter-spacing: 0.02em; }
+  .terminal-page .font-mono.text-sm { font-size: 13px; letter-spacing: 0; }
+
+  .terminal-panel {
+    border: 1px solid var(--terminal-line);
+    background: var(--terminal-panel);
+  }
+
+  .terminal-rule {
+    border-color: var(--terminal-line);
+  }
+
   .glow-blue {
     box-shadow: 0 0 20px hsl(217 90% 55% / 0.15), 0 0 60px hsl(217 90% 55% / 0.05);
   }

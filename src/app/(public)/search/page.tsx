@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { Search } from "lucide-react";
+import { Download, ExternalLink, Search as SearchIcon } from "lucide-react";
 import { FooterSection } from "@/components/FooterSection";
 import { getSearchPageData, type SearchFilterValues } from "@/lib/api/compositions";
 import type {
@@ -311,32 +311,175 @@ function priceBucketLabel(bucket: WebSearchResponse["price_histogram"][number]) 
   return `${minLabel}-${maxLabel}`;
 }
 
+function formatFreshness(seconds: number): string {
+  if (!Number.isFinite(seconds)) return "freshness pending";
+  if (seconds < 90) return "moments ago";
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 60) return `${minutes} min ago`;
+  const hours = Math.round(minutes / 60);
+  return `${hours} hr ago`;
+}
+
+function csvCell(value: string | number | null | undefined): string {
+  const raw = value == null ? "" : String(value);
+  return `"${raw.replaceAll("\"", "\"\"")}"`;
+}
+
+function buildSearchCsvHref(items: WebSearchItem[]): string {
+  const rows = [
+    [
+      "item_id",
+      "market_hash_name",
+      "best_ask_usd",
+      "best_bid_usd",
+      "avg_spread_pct",
+      "price_rate_24h",
+      "price_rate_7d",
+      "sales_1d",
+      "provider_count",
+      "marketcap",
+    ],
+    ...items.map((item) => [
+      item.item_id,
+      item.market_hash_name,
+      item.best_ask_usd,
+      item.best_bid_usd,
+      item.avg_spread_pct,
+      item.price_rate_24h,
+      item.price_rate_7d,
+      item.sales_1d,
+      item.provider_count,
+      item.marketcap,
+    ]),
+  ];
+
+  return `data:text/csv;charset=utf-8,${encodeURIComponent(
+    rows.map((row) => row.map(csvCell).join(",")).join("\n"),
+  )}`;
+}
+
+function paginationPages(currentPage: number, totalPages: number): number[] {
+  const start = Math.max(1, currentPage - 2);
+  const end = Math.min(totalPages, currentPage + 2);
+  return Array.from({ length: end - start + 1 }, (_, index) => start + index);
+}
+
+function resultWindow(data: WebSearchResponse): string {
+  const total = data.pagination.total;
+  if (total <= 0) return "0";
+  const start = data.pagination.offset + 1;
+  const end = Math.min(data.pagination.offset + data.pagination.limit, total);
+  return `${start.toLocaleString()}-${end.toLocaleString()}`;
+}
+
+function facetHref(
+  query: string,
+  filters: SearchFilterValues,
+  key: FilterField["key"],
+  value: string | undefined,
+) {
+  return buildSearchHref(query, filters, 1, {
+    [key]: value,
+  } as Partial<SearchFilterValues>);
+}
+
+function activeChips(query: string, filters: SearchFilterValues) {
+  const chips: Array<{ label: string; href: string }> = [];
+
+  if (query) {
+    chips.push({
+      label: `QUERY: ${query}`,
+      href: buildSearchHref("", filters, 1),
+    });
+  }
+
+  for (const field of FILTER_FIELDS) {
+    const value = filters[field.key];
+    if (!value) continue;
+    chips.push({
+      label: `${field.label.toUpperCase()}: ${value}`,
+      href: facetHref(query, filters, field.key, undefined),
+    });
+  }
+
+  if (filters.min_price_usd) {
+    chips.push({
+      label: `MIN: $${filters.min_price_usd}`,
+      href: buildSearchHref(query, filters, 1, { min_price_usd: undefined }),
+    });
+  }
+
+  if (filters.max_price_usd) {
+    chips.push({
+      label: `MAX: $${filters.max_price_usd}`,
+      href: buildSearchHref(query, filters, 1, { max_price_usd: undefined }),
+    });
+  }
+
+  return chips;
+}
+
+function HiddenFilterInputs({ filters }: { filters: SearchFilterValues }) {
+  return (
+    <>
+      {FILTER_FIELDS.map(({ key }) =>
+        filters[key] ? (
+          <input key={key} type="hidden" name={key} value={filters[key]} />
+        ) : null,
+      )}
+      {filters.min_price_usd ? (
+        <input type="hidden" name="min_price_usd" value={filters.min_price_usd} />
+      ) : null}
+      {filters.max_price_usd ? (
+        <input type="hidden" name="max_price_usd" value={filters.max_price_usd} />
+      ) : null}
+      {filters.sort && filters.sort !== "rank" ? (
+        <input type="hidden" name="sort" value={filters.sort} />
+      ) : null}
+      {filters.direction && filters.direction !== "asc" ? (
+        <input type="hidden" name="direction" value={filters.direction} />
+      ) : null}
+    </>
+  );
+}
+
 function SearchExperienceFallback({ currentPage }: { currentPage: number }) {
   return (
     <div className="container">
-      <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
-        <div className="space-y-3 border-brutal bg-card p-4">
-          <div className="h-4 w-24 animate-pulse rounded-sm bg-secondary/70" />
-          <div className="h-12 w-full animate-pulse rounded-sm bg-secondary/70" />
+      <div className="mb-4 terminal-panel p-3">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div className="h-3 w-32 animate-pulse rounded-sm bg-secondary/70" />
+            <div className="mt-2 h-3 w-56 animate-pulse rounded-sm bg-secondary/70" />
+          </div>
+          <div className="h-8 w-40 animate-pulse rounded-sm bg-secondary/70" />
+        </div>
+        <div className="h-10 w-full animate-pulse rounded-sm bg-secondary/70" />
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
+        <div className="space-y-3 terminal-panel p-3">
+          <div className="h-3 w-24 animate-pulse rounded-sm bg-secondary/70" />
+          <div className="h-10 w-full animate-pulse rounded-sm bg-secondary/70" />
           {Array.from({ length: 6 }).map((_, index) => (
-            <div key={index} className="h-14 w-full animate-pulse rounded-sm bg-secondary/70" />
+            <div key={index} className="h-20 w-full animate-pulse rounded-sm bg-secondary/70" />
           ))}
         </div>
 
         <div>
-          <div className="mb-4 flex items-end justify-between">
+          <div className="mb-3 flex items-end justify-between terminal-panel p-3">
             <div>
               <div className="h-3 w-24 animate-pulse rounded-sm bg-secondary/70" />
               <div className="mt-2 h-3 w-32 animate-pulse rounded-sm bg-secondary/70" />
             </div>
           </div>
-          <div className="hidden grid-cols-[minmax(220px,1.4fr)_90px_90px_80px_75px_75px_90px_60px] gap-3 border-b-2 border-border px-4 py-3 md:grid">
+          <div className="hidden grid-cols-[minmax(220px,1.4fr)_90px_90px_80px_75px_75px_90px_60px] gap-3 border border-border px-3 py-2 md:grid">
             {Array.from({ length: 8 }).map((_, index) => (
               <div key={index} className="h-3 w-14 animate-pulse rounded-sm bg-secondary/70" />
             ))}
           </div>
           {Array.from({ length: 8 }).map((_, index) => (
-            <div key={index} className="border-b border-border px-4 py-4">
+            <div key={index} className="border-x border-b border-border px-3 py-3">
               <div className="h-12 w-full animate-pulse rounded-sm bg-secondary/70" />
             </div>
           ))}
@@ -348,6 +491,134 @@ function SearchExperienceFallback({ currentPage }: { currentPage: number }) {
             <div className="border-brutal px-4 py-2 font-mono text-xs tracking-wider opacity-40">NEXT</div>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function SearchTerminalHeader({
+  data,
+  query,
+  filters,
+}: {
+  data: WebSearchResponse;
+  query: string;
+  filters: SearchFilterValues;
+}) {
+  const totalDisplay = data.pagination.total.toLocaleString();
+  const maxMarkets = Math.max(...data.items.map((item) => item.provider_count), 0);
+  const generatedAt = new Date(data.meta.generated_at);
+  const updated = Number.isNaN(generatedAt.getTime())
+    ? "time pending"
+    : generatedAt.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
+  return (
+    <div className="terminal-panel mb-4 overflow-hidden">
+      <div className="flex flex-col gap-3 border-b terminal-rule px-3 py-3 md:flex-row md:items-center md:justify-between">
+        <div className="min-w-0">
+          <div className="font-mono text-[10px] font-bold tracking-widest text-primary">
+            // CATALOG::QUERY
+          </div>
+          <div className="mt-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+            {totalDisplay} variants · {maxMarkets ? `up to ${maxMarkets} mkts on page` : "markets pending"} · {data.meta.data_source} snapshot
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 font-mono text-[10px] font-bold tracking-widest">
+          <a
+            href={buildSearchCsvHref(data.items)}
+            download="cs2cap-search-page.csv"
+            className="inline-flex h-8 items-center gap-1 border border-border px-3 text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
+          >
+            <Download className="h-3 w-3" />
+            EXPORT CSV
+          </a>
+          <Link
+            href="/api-info"
+            className="inline-flex h-8 items-center gap-1 border border-border px-3 text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
+          >
+            QUERY API
+            <ExternalLink className="h-3 w-3" />
+          </Link>
+        </div>
+      </div>
+
+      <form action="/search" className="grid gap-2 p-3 md:grid-cols-[1fr_auto]">
+        <HiddenFilterInputs filters={filters} />
+        <div className="flex min-w-0 items-center border border-border bg-background/80 px-3">
+          <SearchIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
+          <input
+            type="text"
+            name="q"
+            placeholder="AK-47 Redline, Doppler, M9..."
+            defaultValue={query}
+            className="min-w-0 flex-1 bg-transparent py-2.5 pl-3 font-mono text-sm text-foreground outline-none placeholder:text-muted-foreground"
+          />
+        </div>
+        <button
+          type="submit"
+          className="border border-primary bg-primary px-5 py-2.5 font-mono text-[10px] font-black tracking-widest text-primary-foreground transition-colors hover:bg-primary/90"
+        >
+          EXECUTE
+        </button>
+      </form>
+      <div className="border-t terminal-rule px-3 py-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+        Updated {updated} · {formatFreshness(data.meta.freshness_sec)}
+      </div>
+    </div>
+  );
+}
+
+function FacetList({
+  field,
+  data,
+  query,
+  filters,
+}: {
+  field: FilterField;
+  data: WebSearchResponse;
+  query: string;
+  filters: SearchFilterValues;
+}) {
+  const currentValue = filters[field.key] ?? "";
+  const options = facetOptions(data, field.key, currentValue).slice(0, 8);
+
+  return (
+    <div className="border-t terminal-rule pt-3">
+      <div className="mb-2 flex items-center justify-between gap-3 font-mono text-[10px] font-bold tracking-widest">
+        <span className="text-muted-foreground">{field.label.toUpperCase()}</span>
+        <span className="text-muted-foreground/70">{options.length}</span>
+      </div>
+      <div className="space-y-1">
+        {options.map((bucket) => {
+          const isActive = currentValue === bucket.value;
+          return (
+            <Link
+              key={bucket.value}
+              href={facetHref(query, filters, field.key, isActive ? undefined : bucket.value)}
+              className={`grid grid-cols-[14px_minmax(0,1fr)_auto] items-center gap-2 px-1 py-1 font-mono text-[11px] transition-colors ${
+                isActive
+                  ? "bg-primary/10 text-foreground"
+                  : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
+              }`}
+            >
+              <span
+                className={`flex h-3.5 w-3.5 items-center justify-center border text-[8px] ${
+                  isActive
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border text-transparent"
+                }`}
+                aria-hidden="true"
+              >
+                X
+              </span>
+              <span className="truncate">{bucket.value}</span>
+              <span className="text-muted-foreground/80">{bucket.count.toLocaleString()}</span>
+            </Link>
+          );
+        })}
       </div>
     </div>
   );
@@ -370,26 +641,20 @@ function FilterControls({
     ...data.price_histogram.map((bucket) => bucket.count),
     1,
   );
+  const chips = activeChips(query, filters);
 
   return (
-    <aside className="border-brutal bg-card p-4">
-      <form action="/search" className="space-y-4">
-        <div>
-          <div className="mb-2 font-mono text-[10px] tracking-widest text-primary">QUERY</div>
-          <div className="flex items-center gap-3 border-brutal bg-background px-3">
-            <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
-            <input
-              type="text"
-              name="q"
-              placeholder="AK-47 Redline..."
-              defaultValue={query}
-              className="min-w-0 flex-1 bg-transparent py-3 font-mono text-sm text-foreground outline-none placeholder:text-muted-foreground"
-            />
-          </div>
-        </div>
+    <aside className="terminal-panel min-w-0 p-3">
+      <form action="/search" className="min-w-0 space-y-3">
+        {query ? <input type="hidden" name="q" value={query} /> : null}
+        {FILTER_FIELDS.map(({ key }) =>
+          filters[key] ? (
+            <input key={key} type="hidden" name={key} value={filters[key]} />
+          ) : null,
+        )}
 
-        <div className="grid grid-cols-2 gap-2">
-          <label className="flex flex-col gap-1 font-mono text-[10px] tracking-widest text-muted-foreground">
+        <div className="grid min-w-0 grid-cols-2 gap-2">
+          <label className="flex min-w-0 flex-col gap-1 font-mono text-[10px] font-bold tracking-widest text-muted-foreground">
             <span>MIN USD</span>
             <input
               type="number"
@@ -397,10 +662,10 @@ function FilterControls({
               min="0"
               name="min_price_usd"
               defaultValue={filters.min_price_usd ?? ""}
-              className="w-full border-brutal bg-background px-3 py-2 font-mono text-sm text-foreground outline-none"
+              className="min-w-0 w-full border border-border bg-background px-2 py-2 font-mono text-sm text-foreground outline-none focus:border-primary"
             />
           </label>
-          <label className="flex flex-col gap-1 font-mono text-[10px] tracking-widest text-muted-foreground">
+          <label className="flex min-w-0 flex-col gap-1 font-mono text-[10px] font-bold tracking-widest text-muted-foreground">
             <span>MAX USD</span>
             <input
               type="number"
@@ -408,7 +673,7 @@ function FilterControls({
               min="0"
               name="max_price_usd"
               defaultValue={filters.max_price_usd ?? ""}
-              className="w-full border-brutal bg-background px-3 py-2 font-mono text-sm text-foreground outline-none"
+              className="min-w-0 w-full border border-border bg-background px-2 py-2 font-mono text-sm text-foreground outline-none focus:border-primary"
             />
           </label>
         </div>
@@ -420,7 +685,7 @@ function FilterControls({
             </div>
             <div className="space-y-1">
               {data.price_histogram.slice(0, 8).map((bucket) => (
-                <div key={priceBucketLabel(bucket)} className="grid grid-cols-[68px_1fr_34px] items-center gap-2">
+                <div key={priceBucketLabel(bucket)} className="grid min-w-0 grid-cols-[58px_minmax(0,1fr)_34px] items-center gap-2 sm:grid-cols-[68px_minmax(0,1fr)_34px]">
                   <div className="truncate font-mono text-[10px] text-muted-foreground">
                     {priceBucketLabel(bucket)}
                   </div>
@@ -439,39 +704,23 @@ function FilterControls({
           </div>
         ) : null}
 
-        {FILTER_FIELDS.map((field) => {
-          const options = facetOptions(data, field.key, filters[field.key]);
-          const currentValue = filters[field.key] ?? "";
+        {FILTER_FIELDS.map((field) => (
+          <FacetList
+            key={field.key}
+            field={field}
+            data={data}
+            query={query}
+            filters={filters}
+          />
+        ))}
 
-          return (
-            <label
-              key={field.key}
-              className="flex flex-col gap-1 font-mono text-[10px] tracking-widest text-muted-foreground"
-            >
-              <span>{field.label.toUpperCase()}</span>
-              <select
-                name={field.key}
-                defaultValue={currentValue}
-                className="w-full border-brutal bg-background px-3 py-2 font-mono text-sm text-foreground outline-none"
-              >
-                <option value="">All</option>
-                {options.map((bucket) => (
-                  <option key={bucket.value} value={bucket.value}>
-                    {bucket.value} ({bucket.count})
-                  </option>
-                ))}
-              </select>
-            </label>
-          );
-        })}
-
-        <div className="grid grid-cols-2 gap-2">
-          <label className="flex flex-col gap-1 font-mono text-[10px] tracking-widest text-muted-foreground">
+        <div className="grid min-w-0 grid-cols-2 gap-2">
+          <label className="flex min-w-0 flex-col gap-1 font-mono text-[10px] font-bold tracking-widest text-muted-foreground">
             <span>SORT</span>
             <select
               name="sort"
               defaultValue={filters.sort ?? "rank"}
-              className="w-full border-brutal bg-background px-3 py-2 font-mono text-sm text-foreground outline-none"
+              className="min-w-0 w-full border border-border bg-background px-2 py-2 font-mono text-sm text-foreground outline-none focus:border-primary"
             >
               {SORT_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -480,12 +729,12 @@ function FilterControls({
               ))}
             </select>
           </label>
-          <label className="flex flex-col gap-1 font-mono text-[10px] tracking-widest text-muted-foreground">
+          <label className="flex min-w-0 flex-col gap-1 font-mono text-[10px] font-bold tracking-widest text-muted-foreground">
             <span>DIR</span>
             <select
               name="direction"
               defaultValue={filters.direction ?? "asc"}
-              className="w-full border-brutal bg-background px-3 py-2 font-mono text-sm text-foreground outline-none"
+              className="min-w-0 w-full border border-border bg-background px-2 py-2 font-mono text-sm text-foreground outline-none focus:border-primary"
             >
               <option value="asc">Asc</option>
               <option value="desc">Desc</option>
@@ -495,24 +744,46 @@ function FilterControls({
 
         <button
           type="submit"
-          className="w-full border-2 border-primary bg-primary px-4 py-3 font-mono text-sm font-bold tracking-wider text-primary-foreground brutalist-hover"
+          className="w-full border border-primary bg-primary px-4 py-2.5 font-mono text-[10px] font-black tracking-widest text-primary-foreground transition-colors hover:bg-primary/90"
         >
-          APPLY
+          APPLY FILTERS
         </button>
 
         {activeCount > 0 ? (
-          <div className="flex items-center justify-between gap-3">
-            <span className="font-mono text-[10px] tracking-widest text-primary">
-              {activeCount} ACTIVE
-            </span>
+          <div className="border-t terminal-rule pt-3">
+            <div className="mb-2 flex items-center justify-between gap-3">
+              <span className="font-mono text-[10px] font-bold tracking-widest text-primary">
+                {activeCount} FILTERS
+              </span>
+              <Link
+                href={query ? buildSearchHref(query, {}) : "/search"}
+                className="font-mono text-[10px] font-bold tracking-widest text-muted-foreground hover:text-foreground"
+              >
+                CLEAR ALL
+              </Link>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {chips.map((chip) => (
+                <Link
+                  key={`${chip.label}:${chip.href}`}
+                  href={chip.href}
+                  className="border border-primary/40 bg-primary/10 px-2 py-1 font-mono text-[10px] font-bold tracking-widest text-primary hover:border-primary"
+                >
+                  {chip.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="border-t terminal-rule pt-3">
             <Link
               href={query ? buildSearchHref(query, {}) : "/search"}
-              className="border-brutal px-3 py-1 font-mono text-[10px] tracking-widest text-muted-foreground hover:border-primary hover:text-foreground"
+              className="font-mono text-[10px] font-bold tracking-widest text-muted-foreground hover:text-foreground"
             >
-              CLEAR
+              CLEAR QUERY
             </Link>
           </div>
-        ) : null}
+        )}
       </form>
     </aside>
   );
@@ -534,24 +805,25 @@ function SearchResultsTable({
   const hasPrev = data.pagination.has_prev;
   const hasNext = data.pagination.has_next;
   const totalDisplay = data.pagination.total.toLocaleString();
+  const pages = paginationPages(currentPage, totalPages);
 
   return (
     <div>
-      <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+      <div className="mb-3 flex flex-col gap-2 terminal-panel px-3 py-2 md:flex-row md:items-center md:justify-between">
         <div>
-          <div className="font-mono text-[10px] tracking-widest text-primary">
+          <div className="font-mono text-[10px] font-bold tracking-widest text-primary">
             {totalDisplay} VARIANTS
           </div>
-          <div className="font-mono text-xs text-muted-foreground">
-            Page {currentPage} / {totalPages} - {data.meta.data_source} snapshot
+          <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+            Showing {resultWindow(data)} · page {currentPage} / {totalPages}
           </div>
         </div>
-        <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
+        <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
           UPDATED {new Date(data.meta.generated_at).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
         </div>
       </div>
 
-      <div className="hidden grid-cols-[minmax(220px,1.4fr)_90px_90px_80px_75px_75px_90px_60px] gap-3 border-b-2 border-border px-4 py-3 font-mono text-[10px] tracking-widest text-muted-foreground md:grid">
+      <div className="hidden grid-cols-[minmax(240px,1.4fr)_88px_88px_78px_72px_72px_82px_52px] gap-3 border border-border bg-card/80 px-3 py-2 font-mono text-[10px] font-bold tracking-widest text-muted-foreground md:grid">
         <div>ITEM</div>
         <div className="text-right">ASK</div>
         <div className="text-right">BID</div>
@@ -563,7 +835,7 @@ function SearchResultsTable({
       </div>
 
       {data.items.length === 0 ? (
-        <div className="border-b border-border py-20 text-center">
+        <div className="border-x border-b border-border py-20 text-center">
           <div className="font-mono text-sm text-muted-foreground">
             No variants found. Try a different query or relax your filters.
           </div>
@@ -573,17 +845,17 @@ function SearchResultsTable({
           <Link
             key={item.item_id}
             href={buildItemPath(item.item_id, item.market_hash_name)}
-            className="block border-b border-border px-4 py-4 transition-colors hover:bg-card/40"
+            className="block border-x border-b border-border bg-background/40 px-3 py-2.5 transition-colors hover:bg-card/60"
           >
-            <div className="md:grid md:grid-cols-[minmax(220px,1.4fr)_90px_90px_80px_75px_75px_90px_60px] md:items-center md:gap-3">
+            <div className="md:grid md:grid-cols-[minmax(240px,1.4fr)_88px_88px_78px_72px_72px_82px_52px] md:items-center md:gap-3">
               <div className="flex min-w-0 items-center gap-3">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden border-brutal bg-secondary/50">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden border border-border bg-secondary/50">
                   {item.image_url ? (
                     <Image
                       src={item.image_url}
                       alt={item.market_hash_name}
-                      width={56}
-                      height={56}
+                      width={44}
+                      height={44}
                       className="h-full w-full object-contain p-1"
                     />
                   ) : (
@@ -594,8 +866,8 @@ function SearchResultsTable({
                   <div className="truncate font-mono text-sm font-bold text-foreground md:hover:text-primary">
                     {item.market_hash_name}
                   </div>
-                  <div className="truncate font-mono text-[11px] text-muted-foreground">
-                    {itemSubtitle(item)}
+                  <div className="truncate font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                    {item.rank ? `#${item.rank} · ` : ""}{itemSubtitle(item)}
                   </div>
                 </div>
                 <div className="ml-auto font-mono text-sm font-bold text-foreground md:hidden">
@@ -626,7 +898,7 @@ function SearchResultsTable({
               </div>
             </div>
 
-            <div className="mt-3 grid grid-cols-3 gap-3 md:hidden">
+            <div className="mt-3 grid grid-cols-4 gap-3 md:hidden">
               <div>
                 <div className="font-mono text-[10px] tracking-widest text-muted-foreground">BID</div>
                 <div className="font-mono text-sm text-muted-foreground">
@@ -639,6 +911,12 @@ function SearchResultsTable({
                   {formatSignedPercent(item.price_rate_24h)}
                 </div>
               </div>
+              <div>
+                <div className="font-mono text-[10px] tracking-widest text-muted-foreground">7D</div>
+                <div className={`font-mono text-sm font-bold ${priceChangeClass(item.price_rate_7d)}`}>
+                  {formatSignedPercent(item.price_rate_7d)}
+                </div>
+              </div>
               <div className="text-right">
                 <div className="font-mono text-[10px] tracking-widest text-muted-foreground">MKTS</div>
                 <div className="font-mono text-sm text-muted-foreground">{item.provider_count}</div>
@@ -648,32 +926,70 @@ function SearchResultsTable({
         ))
       )}
 
-      <div className="mt-8 flex items-center justify-between">
+      <div className="mt-4 flex flex-col gap-3 terminal-panel px-3 py-3 md:flex-row md:items-center md:justify-between">
+        <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+          Showing {resultWindow(data)} of {totalDisplay} · page {currentPage} / {totalPages}
+        </div>
+        <div className="flex flex-wrap items-center gap-1 font-mono text-[10px] font-bold tracking-widest">
+        <Link
+          href={hasPrev ? buildSearchHref(query, filters, 1) : "#"}
+          prefetch={hasPrev}
+          className={`border border-border px-3 py-1.5 ${
+            hasPrev
+              ? "text-muted-foreground hover:border-primary hover:text-foreground"
+              : "pointer-events-none opacity-40"
+          }`}
+        >
+          FIRST
+        </Link>
         <Link
           href={hasPrev ? buildSearchHref(query, filters, currentPage - 1) : "#"}
           prefetch={hasPrev}
-          className={`border-brutal px-4 py-2 font-mono text-xs tracking-wider ${
+          className={`border border-border px-3 py-1.5 ${
             hasPrev
-              ? "text-foreground brutalist-hover hover:border-primary"
+              ? "text-muted-foreground hover:border-primary hover:text-foreground"
               : "pointer-events-none opacity-40"
           }`}
         >
           PREV
         </Link>
-        <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
-          PAGE {currentPage} / {totalPages}
-        </div>
+        {pages.map((page) => (
+          <Link
+            key={page}
+            href={buildSearchHref(query, filters, page)}
+            prefetch={page === currentPage}
+            className={`border px-3 py-1.5 ${
+              page === currentPage
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border text-muted-foreground hover:border-primary hover:text-foreground"
+            }`}
+          >
+            {page}
+          </Link>
+        ))}
         <Link
           href={hasNext ? buildSearchHref(query, filters, currentPage + 1) : "#"}
           prefetch={hasNext}
-          className={`border-brutal px-4 py-2 font-mono text-xs tracking-wider ${
+          className={`border border-border px-3 py-1.5 ${
             hasNext
-              ? "text-foreground brutalist-hover hover:border-primary"
+              ? "text-muted-foreground hover:border-primary hover:text-foreground"
               : "pointer-events-none opacity-40"
           }`}
         >
           NEXT
         </Link>
+        <Link
+          href={hasNext ? buildSearchHref(query, filters, totalPages) : "#"}
+          prefetch={false}
+          className={`border border-border px-3 py-1.5 ${
+            hasNext
+              ? "text-muted-foreground hover:border-primary hover:text-foreground"
+              : "pointer-events-none opacity-40"
+          }`}
+        >
+          LAST
+        </Link>
+        </div>
       </div>
     </div>
   );
@@ -696,9 +1012,12 @@ async function SearchExperience({
 
   return (
     <div className="container">
-      <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
+      <SearchTerminalHeader data={data} query={query} filters={filters} />
+      <div className="grid min-w-0 gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
         <FilterControls data={data} query={query} filters={filters} />
-        <SearchResultsTable data={data} query={query} filters={filters} currentPage={currentPage} />
+        <div className="min-w-0">
+          <SearchResultsTable data={data} query={query} filters={filters} currentPage={currentPage} />
+        </div>
       </div>
     </div>
   );
@@ -738,19 +1057,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
   return (
     <>
-      <section className="border-b-2 border-border bg-grid py-10">
-        <div className="container">
-          <div className="mb-3 font-mono text-xs tracking-widest text-primary">// SEARCH::V2</div>
-          <h1 className="mb-3 text-4xl font-black tracking-tighter md:text-5xl">
-            MARKET <span className="text-gradient-brand">SEARCH</span>
-          </h1>
-          <p className="max-w-2xl font-mono text-sm text-muted-foreground">
-            Flat variant search with live asks, bids, movement, liquidity, and sidebar facets.
-          </p>
-        </div>
-      </section>
-
-      <section className="py-8">
+      <section className="terminal-page border-b border-border py-4 md:py-5">
         <Suspense
           key={`search:${filterKey}:${currentPage}`}
           fallback={<SearchExperienceFallback currentPage={currentPage} />}

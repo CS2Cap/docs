@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { FooterSection } from "@/components/FooterSection";
-import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
-import { StructuredData, buildFAQPage } from "@/components/seo/StructuredData";
+import {
+  StructuredData,
+  buildBreadcrumbList,
+  buildFAQPage,
+} from "@/components/seo/StructuredData";
 import { serverApi } from "@/lib/api/server";
 import { MarketCapView } from "./MarketCapView";
 
@@ -68,11 +71,11 @@ export default async function CS2MarketCapPage() {
 
   return (
     <>
-      <Breadcrumbs
-        items={[
-          { name: "Home", href: "/" },
-          { name: "CS2 Market Cap", href: "/cs2-market-cap" },
-        ]}
+      <StructuredData
+        data={buildBreadcrumbList([
+          { name: "Home", url: "https://cs2cap.com/" },
+          { name: "CS2 Market Cap", url: "https://cs2cap.com/cs2-market-cap" },
+        ])}
       />
       <StructuredData data={buildFAQPage(FAQS)} />
 
