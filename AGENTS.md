@@ -129,8 +129,8 @@ Cookie-based: `cs2c_access_token` (bearer) and `cs2c_web_session` (session). Nam
 - **UI**: shadcn/ui (`src/components/ui`) on Radix + Tailwind v4. Add components via the shadcn CLI; config in `components.json`.
 - **Path alias**: `@/*` → `src/*`.
 - **Currency**: user currency is global state via `src/lib/CurrencyContext.tsx`; render prices with `src/components/Price.tsx`.
-- **Analytics**: PostHog initialized in `instrumentation-client.ts`; events proxied through the `/ingest` rewrite in `next.config.ts`. Server-side capture via `src/lib/posthog-server.ts`.
-- **Images**: only `cdn.cs2c.app` is allowed (`next.config.ts`); custom loader in `src/lib/image-loader.ts`.
+- **Analytics**: PostHog initialized in `instrumentation-client.ts`; events proxied through the `/ingest` rewrite in `next.config.ts`.
+- **Images**: only `cdn.cs2c.app` is allowed (`next.config.ts`).
 
 ## Environment
 

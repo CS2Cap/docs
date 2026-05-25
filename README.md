@@ -239,12 +239,7 @@ The CSP uses `unsafe-inline` on `script-src` — this is a deliberate concession
 
 ## Image Pipeline
 
-`next.config.ts` restricts remote images to `cdn.cs2c.app` only. `src/lib/image-loader.ts` is a custom Next.js image loader that short-circuits CDN images:
-
-- URLs starting with `https://cdn.cs2c.app/` are passed directly to the CDN with only a `?w=<width>` query parameter — the CDN already serves optimally-compressed images, so routing them through Next.js's image optimization server would be wasted work
-- All other URLs go through the standard `/_next/image` pipeline
-
-Other settings:
+`next.config.ts` restricts remote images to `cdn.cs2c.app` only. Settings:
 
 - `minimumCacheTTL: 2592000` (30 days) — item images change rarely; aggressive caching reduces CDN egress
 - `formats: ["image/webp"]` — only WebP is negotiated
@@ -261,10 +256,6 @@ PostHog is the analytics layer. Client events, server events, and exceptions all
 `instrumentation-client.ts` (Next.js 16 client instrumentation entry point) initializes PostHog with `api_host: "/ingest"`. All browser events are proxied through the `/ingest` rewrite in `next.config.ts`, which forwards to PostHog's US ingestion endpoint. This keeps all PostHog traffic same-origin, bypassing ad blockers.
 
 Session recording and surveys are disabled. Exception capture is enabled (`capture_exceptions: true`).
-
-### Server-side
-
-`src/lib/posthog-server.ts` exposes a singleton `PostHog` Node.js client configured with `flushAt: 1, flushInterval: 0`. This causes every `capture()` call to flush immediately — necessary because Vercel function instances don't have a persistent lifecycle to rely on for batched flushes.
 
 ---
 

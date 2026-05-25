@@ -67,7 +67,7 @@ export function rarityColor(rarity: string | undefined): string {
   }
 }
 
-export function normalizeProviders(
+function normalizeProviders(
   providers?: ProvidersResponse | ProviderInfo[] | null,
 ): ProviderInfo[] {
   if (!providers) {
@@ -257,15 +257,6 @@ const VARIANT_KIND_LABEL: Record<VariantKind, string> = {
 
 export function getVariantKindLabel(item: ItemOut): string {
   return VARIANT_KIND_LABEL[getVariantKind(item)];
-}
-
-export function getVariantWearLabel(item: ItemOut): string {
-  const wear = item.wear_name ?? "";
-  const phase = item.phase ?? "";
-  if (!wear && !phase) {
-    return item.market_hash_name;
-  }
-  return phase ? `${wear || "Variant"} · ${phase}` : wear;
 }
 
 export function getSiblingVariants(
