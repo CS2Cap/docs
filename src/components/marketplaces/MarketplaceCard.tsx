@@ -82,14 +82,28 @@ export function MarketplaceCard({ provider }: { provider: ProviderInfo }) {
 
         {/* Capabilities */}
         {provider.features?.has_buy_orders && (
-          <span className="inline-flex items-center border border-primary/20 bg-primary/5 px-2 py-0.5 font-mono text-[10px] text-primary">
-            BO
-          </span>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="inline-flex cursor-help items-center border border-primary/20 bg-primary/5 px-2 py-0.5 font-mono text-[10px] text-primary">
+                BO
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="max-w-[260px] text-xs">
+              {CAPABILITY_LABELS.BO}
+            </TooltipContent>
+          </Tooltip>
         )}
         {provider.features?.has_recent_sales && (
-          <span className="inline-flex items-center border border-success/20 bg-success/5 px-2 py-0.5 font-mono text-[10px] text-success">
-            RS
-          </span>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="inline-flex cursor-help items-center border border-success/20 bg-success/5 px-2 py-0.5 font-mono text-[10px] text-success">
+                RS
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="max-w-[260px] text-xs">
+              {CAPABILITY_LABELS.RS}
+            </TooltipContent>
+          </Tooltip>
         )}
       </div>
 
