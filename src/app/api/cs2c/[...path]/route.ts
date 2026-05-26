@@ -43,6 +43,8 @@ function matchEdgeCachePolicy(pathname: string): EdgeCachePolicy | null {
   const normalized = pathname.replace(/^v1\/web\//, "v1/");
 
   if (normalized === "v1/items/metadata") return { sMaxAge: 300, staleWhileRevalidate: 900 };
+  if (normalized === "v1/search") return { sMaxAge: 15, staleWhileRevalidate: 60 };
+  if (normalized === "v1/market/overview") return { sMaxAge: 60, staleWhileRevalidate: 300 };
   if (/^v1\/items\/\d+$/.test(normalized)) return { sMaxAge: 120, staleWhileRevalidate: 600 };
   if (normalized === "v1/items") return { sMaxAge: 300, staleWhileRevalidate: 900 };
   if (normalized === "v1/providers") return { sMaxAge: 300, staleWhileRevalidate: 1800 };

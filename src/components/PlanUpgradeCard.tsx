@@ -43,7 +43,7 @@ export function PlanUpgradeCard({ highlight = false }: { highlight?: boolean }) 
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <Link
-            href="/api-info#pricing"
+            href="/pricing"
             className="border-brutal px-3 py-2 font-mono text-[11px] font-bold tracking-wider text-foreground brutalist-hover hover:border-primary transition-colors"
           >
             VIEW PLANS

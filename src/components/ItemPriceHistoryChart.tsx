@@ -7,6 +7,7 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -54,6 +55,23 @@ export function ItemPriceHistoryChart({
     const filtered = points.filter((p) => p.timestamp >= cutoff);
     return filtered.length > 1 ? filtered : points;
   }, [points, range]);
+
+  const dropMarkers = useMemo(() => {
+    if (filteredPoints.length < 2) return [];
+    const drops: Array<{ timestamp: number; dropPct: number }> = [];
+    for (let i = 1; i < filteredPoints.length; i++) {
+      const prev = filteredPoints[i - 1].price;
+      const curr = filteredPoints[i].price;
+      if (prev <= 0) continue;
+      const dropPct = ((curr - prev) / prev) * 100;
+      if (dropPct <= -10) {
+        drops.push({ timestamp: filteredPoints[i].timestamp, dropPct });
+      }
+    }
+    return drops
+      .sort((a, b) => a.dropPct - b.dropPct)
+      .slice(0, 3);
+  }, [filteredPoints]);
 
   const stats = useMemo(() => {
     if (filteredPoints.length === 0) return null;
@@ -143,7 +161,7 @@ export function ItemPriceHistoryChart({
 
       <div className="h-64 w-full min-w-0">
         <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-          <AreaChart data={filteredPoints} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+          <AreaChart data={filteredPoints} margin={{ top: 24, right: 8, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="priceFill" x1="0" y1="0" x2="0" y2="1">
                 <stop
@@ -212,6 +230,24 @@ export function ItemPriceHistoryChart({
               fill="url(#priceFill)"
               activeDot={{ r: 4, strokeWidth: 0 }}
             />
+            {dropMarkers.map((marker) => (
+              <ReferenceLine
+                key={marker.timestamp}
+                x={marker.timestamp}
+                stroke="hsl(var(--destructive))"
+                strokeOpacity={0.6}
+                strokeDasharray="3 3"
+                label={{
+                  value: `${marker.dropPct.toFixed(0)}%`,
+                  position: "top",
+                  offset: 8,
+                  fill: "hsl(var(--destructive))",
+                  fontSize: 11,
+                  fontWeight: 600,
+                  fontFamily: "var(--font-mono, monospace)",
+                }}
+              />
+            ))}
           </AreaChart>
         </ResponsiveContainer>
       </div>

@@ -95,7 +95,7 @@ export function InventoryValueTool() {
         </h1>
         <p className="mx-auto mt-5 max-w-2xl font-mono text-sm leading-relaxed text-muted-foreground md:text-base">
           Paste any Steam profile URL, SteamID64, or vanity name and price the
-          inventory at the lowest current ask across 35+ marketplaces. Live data,
+          inventory at the lowest current ask across40+ marketplaces. Live data,
           never stored.
         </p>
 

@@ -1,9 +1,23 @@
 import type { Metadata, Viewport } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { Providers } from "./providers";
 
+const geistSans = Geist({
+  subsets: ["latin"],
+  variable: "--font-geist-sans",
+  display: "swap",
+});
+
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-geist-mono",
+  display: "swap",
+});
+
 const ROOT_DESCRIPTION =
-  "Free CS2 market API for live skin prices, buy orders, and historical data across 39+ marketplaces (Buff163, Youpin, etc).";
+  "Free CS2 market API for live skin prices, buy orders, and historical data across 40+ marketplaces (Buff163, Youpin, etc).";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://cs2cap.com"),
@@ -72,7 +86,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className={`dark ${geistSans.variable} ${geistMono.variable}`}>
+      <Script
+        src="https://analytics.ahrefs.com/analytics.js"
+        data-key="0AtA8W/p/U7GHLsO05TdJQ"
+        async
+        strategy="lazyOnload"
+      />
       <body>
         <Providers>{children}</Providers>
       </body>

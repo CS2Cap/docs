@@ -24,7 +24,9 @@ export default function Loading() {
                 <SkeletonLine className="mt-4 aspect-square w-full" />
                 <SkeletonLine className="mt-4 h-6 w-3/4" />
                 <SkeletonLine className="mt-2 h-3 w-24" />
-                <div className="mt-6 grid grid-cols-2 gap-3">
+                <SkeletonLine className="mt-4 h-3 w-20" />
+                <SkeletonLine className="mt-2 h-6 w-40" />
+                <div className="mt-4 grid grid-cols-2 gap-3">
                   {Array.from({ length: 4 }).map((_, index) => (
                     <div key={index}>
                       <SkeletonLine className="h-3 w-16" />
@@ -48,9 +50,33 @@ export default function Loading() {
                   </div>
                 </div>
               ))}
+
+              <div className="border-brutal bg-card p-4">
+                <SkeletonLine className="h-3 w-32" />
+                <SkeletonLine className="mx-auto mt-4 h-32 w-32 rounded-full" />
+                <div className="mt-4 space-y-2">
+                  {Array.from({ length: 4 }).map((_, row) => (
+                    <SkeletonLine key={row} className="h-3 w-full" />
+                  ))}
+                </div>
+              </div>
             </div>
 
             <div className="space-y-6 lg:col-span-8 xl:col-span-9">
+              <div className="border-brutal bg-card">
+                <div className="border-b-2 border-border px-6 py-4">
+                  <SkeletonLine className="h-3 w-40" />
+                </div>
+                <div className="grid grid-cols-2 gap-px bg-border p-4 sm:grid-cols-3 lg:grid-cols-5">
+                  {Array.from({ length: 5 }).map((_, index) => (
+                    <div key={index} className="bg-card px-3 py-3">
+                      <SkeletonLine className="mx-auto h-3 w-16" />
+                      <SkeletonLine className="mx-auto mt-2 h-3 w-12" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               {Array.from({ length: 2 }).map((_, index) => (
                 <div key={index} className="border-brutal bg-card">
                   <div className="flex items-center justify-between border-b-2 border-border px-4 py-3">

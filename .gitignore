@@ -24,16 +24,11 @@ pnpm-debug.log*
 # Editor
 .vscode/*
 !.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-.vercel
-.env.local
+.claude/*
+!.claude/skills/
 .remember/
-.claude/
-next-env.d.ts
+.vercel
 CLAUDE.md
+.lovable/
+.env.local
+next-env.d.ts

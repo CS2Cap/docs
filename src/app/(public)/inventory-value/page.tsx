@@ -5,7 +5,7 @@ import { InventoryValueTool } from "./InventoryValueTool";
 
 const TITLE = "CS2 Inventory Value Checker — Live Steam Inventory Pricing";
 const DESCRIPTION =
-  "Instantly value any public CS2 Steam inventory. Paste a SteamID64, vanity name, or profile URL and see live USD pricing across 35+ marketplaces.";
+  "Instantly value any public CS2 Steam inventory. Paste a SteamID64, vanity name, or profile URL and see live USD pricing across40+ marketplaces.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -39,7 +39,7 @@ const STEPS = [
   {
     n: "03",
     title: "Priced at the best ask",
-    desc: "Every resolved item is valued at the lowest current ask indexed across 35+ marketplaces.",
+    desc: "Every resolved item is valued at the lowest current ask indexed across40+ marketplaces.",
   },
 ];
 

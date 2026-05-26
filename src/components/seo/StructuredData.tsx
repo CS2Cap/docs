@@ -65,7 +65,7 @@ export function buildWebApplication() {
     applicationCategory: "DeveloperApplication",
     operatingSystem: "All",
     description:
-      "Unified REST API for CS2 and CSGO skin market data across 39+ marketplaces.",
+      "Unified REST API for CS2 and CSGO skin market data across 40+ marketplaces.",
   };
 }
 
@@ -152,7 +152,7 @@ export function buildSoftwareApplication(plans: PlanInfo[]) {
       price: (plan.monthly_price_cents / 100).toFixed(2),
       priceCurrency: plan.currency || "USD",
       category: "Subscription",
-      url: `${SITE_URL}/api-info#pricing`,
+      url: `${SITE_URL}/pricing`,
       priceSpecification: {
         "@type": "UnitPriceSpecification",
         price: (plan.monthly_price_cents / 100).toFixed(2),
@@ -170,7 +170,7 @@ export function buildSoftwareApplication(plans: PlanInfo[]) {
     applicationCategory: "DeveloperApplication",
     operatingSystem: "All",
     description:
-      "Unified REST API for CS2 and CSGO skin market data — real-time prices, buy orders, candlestick charts, and analytics across 39+ marketplaces.",
+      "Unified REST API for CS2 and CSGO skin market data — real-time prices, buy orders, candlestick charts, and analytics across 40+ marketplaces.",
     ...(offers.length > 0 ? { offers } : {}),
   };
 }

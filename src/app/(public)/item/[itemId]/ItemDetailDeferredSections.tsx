@@ -1,24 +1,15 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { ItemPriceHistoryChart } from "@/components/ItemPriceHistoryChart";
 import { ProviderIdentity } from "@/components/ProviderIdentity";
-import {
-  formatCompact,
-  getProvider,
-  getSiblingVariants,
-  getVariantKindLabel,
-  getVariantWearLabel,
-  providerLabel,
-} from "@/lib/api";
+import { SimilarItemsGrid, type SimilarItem } from "@/components/item/SimilarItemsGrid";
+import { formatCompact, getProvider, providerLabel } from "@/lib/api";
 import { Price } from "@/components/Price";
 import { serverApi } from "@/lib/api/server";
+import { WEB_AUTH_TOKEN_COOKIE_NAME, WEB_SESSION_COOKIE_NAME } from "@/lib/api/config";
 import { buildQuery } from "@/lib/api/shared";
 import { buildItemPath } from "@/lib/seo/itemSlug";
-import type {
-  ItemOut,
-  MarketItem,
-  PriceCandlesPage,
-  ProviderInfo,
-} from "@/lib/api/types";
+import type { ItemOut, MarketItem, PriceCandlesPage, ProviderInfo } from "@/lib/api/types";
 
 function formatTimestamp(value?: string) {
   if (!value) {
@@ -81,138 +72,6 @@ function SkeletonLine({ className = "" }: { className?: string }) {
   return <div className={`animate-pulse rounded-sm bg-secondary/70 ${className}`.trim()} />;
 }
 
-export function ItemConditionVariantsFallback() {
-  return (
-    <div className="border-brutal bg-card p-4">
-      <div className="mb-3 font-mono text-[10px] tracking-widest text-primary">
-        CONDITION VARIANTS
-      </div>
-      <div className="space-y-2">
-        {Array.from({ length: 4 }).map((_, index) => (
-          <div key={index} className="flex items-center justify-between px-2 py-2">
-            <SkeletonLine className="h-3 w-24" />
-            <SkeletonLine className="h-3 w-12" />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-export async function ItemConditionVariants({
-  item,
-  currentItemId,
-}: {
-  item: ItemOut;
-  currentItemId: number;
-}) {
-  if (!item.base_name || !item.skin_name) {
-    return null;
-  }
-
-  const siblingItems = await serverApi.getItems(
-    buildQuery({
-      base_name: item.base_name,
-      skin_name: item.skin_name,
-      limit: 50,
-    }),
-    300,
-  );
-
-  const siblingItemIds =
-    siblingItems?.items
-      .map((candidate) => candidate.item_id)
-      .filter((candidate): candidate is number => typeof candidate === "number") ?? [];
-
-  if (siblingItemIds.length === 0) {
-    return null;
-  }
-
-  const siblingPrices = await serverApi.postPrices({ item_ids: siblingItemIds, currency: "USD" });
-  const priceItems = siblingPrices?.items ?? [];
-  const siblingVariants = getSiblingVariants(
-    siblingItems?.items ?? [],
-    item,
-    // Adapt MarketItem[] → BatchPriceItem[] shape for getSiblingVariants
-    siblingItemIds.map((id) => ({
-      item_id: id,
-      market_hash_name: "",
-      quotes: priceItems
-        .filter((p) => p.item_id === id)
-        .map((p) => ({ provider: p.provider, lowest_ask: p.lowest_ask, quantity: p.quantity })),
-    })),
-  );
-
-  if (siblingVariants.length === 0) {
-    return null;
-  }
-
-  // Group by variant kind so StatTrak / Souvenir / Phases are visually separated.
-  const groupedByKind = new Map<string, typeof siblingVariants>();
-  for (const variant of siblingVariants) {
-    const label = getVariantKindLabel(variant.item);
-    const bucket = groupedByKind.get(label) ?? [];
-    bucket.push(variant);
-    groupedByKind.set(label, bucket);
-  }
-
-  // Within each kind, also group by phase when present.
-  const renderGroups: Array<{ heading: string; rows: typeof siblingVariants }> = [];
-  for (const [kindLabel, variants] of groupedByKind) {
-    const byPhase = new Map<string, typeof siblingVariants>();
-    for (const variant of variants) {
-      const phase = variant.item.phase ?? "";
-      const list = byPhase.get(phase) ?? [];
-      list.push(variant);
-      byPhase.set(phase, list);
-    }
-
-    if (byPhase.size === 1 && byPhase.has("")) {
-      renderGroups.push({ heading: kindLabel, rows: variants });
-    } else {
-      for (const [phase, rows] of byPhase) {
-        renderGroups.push({
-          heading: phase ? `${kindLabel} · ${phase}` : kindLabel,
-          rows,
-        });
-      }
-    }
-  }
-
-  return (
-    <div className="border-brutal bg-card p-4">
-      <div className="mb-3 font-mono text-[10px] tracking-widest text-primary">
-        CONDITION VARIANTS
-      </div>
-      <div className="space-y-4">
-        {renderGroups.map((group) => (
-          <div key={group.heading} className="space-y-1">
-            <div className="mb-1 border-b border-border/60 pb-1 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
-              {group.heading}
-            </div>
-            {group.rows.map((variant) =>
-              variant.item.item_id ? (
-                <Link
-                  key={variant.item.item_id}
-                  href={buildItemPath(variant.item.item_id, variant.item.market_hash_name)}
-                  className={`flex items-center justify-between px-2 py-2 font-mono text-xs transition-colors ${
-                    variant.item.item_id === currentItemId
-                      ? "bg-primary/10 text-foreground"
-                      : "text-muted-foreground hover:bg-secondary/30"
-                  }`}
-                >
-                  <span>{getVariantWearLabel(variant.item)}</span>
-                  <span className="font-bold"><Price cents={variant.bestAsk} /></span>
-                </Link>
-              ) : null,
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 export function ItemPriceHistoryFallback() {
   return (
     <div className="border-brutal bg-card">
@@ -264,6 +123,36 @@ export function ItemMarketInsightsFallback() {
   );
 }
 
+type InsightTone = "success" | "warning" | "destructive" | "neutral";
+
+const TONE_VALUE_CLASS: Record<InsightTone, string> = {
+  success: "text-success",
+  warning: "text-warning",
+  destructive: "text-destructive",
+  neutral: "text-foreground",
+};
+
+const TONE_TAG_CLASS: Record<InsightTone, string> = {
+  success: "text-success",
+  warning: "text-warning",
+  destructive: "text-destructive",
+  neutral: "text-muted-foreground",
+};
+
+function liquidityTone(value: number | null | undefined): { tone: InsightTone; tag: string } {
+  if (value == null) return { tone: "neutral", tag: "" };
+  if (value >= 70) return { tone: "success", tag: "GOOD" };
+  if (value >= 40) return { tone: "warning", tag: "OK" };
+  return { tone: "destructive", tag: "LOW" };
+}
+
+function spreadTone(value: number | null | undefined): { tone: InsightTone; tag: string } {
+  if (value == null) return { tone: "neutral", tag: "" };
+  if (value <= 5) return { tone: "success", tag: "TIGHT" };
+  if (value <= 15) return { tone: "warning", tag: "WIDE" };
+  return { tone: "destructive", tag: "HIGH" };
+}
+
 export async function ItemMarketInsightsSection({
   itemId,
   listingProvidersCount,
@@ -274,42 +163,64 @@ export async function ItemMarketInsightsSection({
   const snapshot = await serverApi.getMarketItemsSnapshot({ timeframe: "24h" });
   const analyticsSummary = snapshot?.data.items.find((i) => i.item_id === itemId)?.summary ?? null;
 
+  const liquidity = liquidityTone(analyticsSummary?.liquidity);
+  const spread = spreadTone(analyticsSummary?.avg_spread_pct);
+
+  const cards: Array<{ label: string; value: string; detail: string; tone: InsightTone; tag: string }> = [
+    {
+      label: "PROVIDERS",
+      value: String(listingProvidersCount),
+      detail: "Live markets",
+      tone: "neutral",
+      tag: "",
+    },
+    {
+      label: "24H VOLUME",
+      value: formatCompact(analyticsSummary?.total_volume_24h ?? null),
+      detail: "Sales / 24h",
+      tone: "neutral",
+      tag: "",
+    },
+    {
+      label: "LIQUIDITY",
+      value:
+        analyticsSummary?.liquidity != null
+          ? `${analyticsSummary.liquidity}/100`
+          : "N/A",
+      detail: "Ease of sale",
+      tone: liquidity.tone,
+      tag: liquidity.tag,
+    },
+    {
+      label: "AVG SPREAD",
+      value:
+        analyticsSummary?.avg_spread_pct != null
+          ? `${analyticsSummary.avg_spread_pct.toFixed(2)}%`
+          : "N/A",
+      detail: "Bid-ask gap",
+      tone: spread.tone,
+      tag: spread.tag,
+    },
+  ];
+
   return (
     <div className="grid gap-px bg-border md:grid-cols-4">
-      {[
-        {
-          label: "PROVIDERS",
-          value: String(listingProvidersCount),
-          detail: "Markets with listings",
-        },
-        {
-          label: "24H VOLUME",
-          value: formatCompact(analyticsSummary?.total_volume_24h ?? null),
-          detail: "Sales in the last 24 hours",
-        },
-        {
-          label: "LIQUIDITY",
-          value:
-            analyticsSummary?.liquidity != null
-              ? `${analyticsSummary.liquidity}/100`
-              : "N/A",
-          detail: "How easy this item is to sell",
-        },
-        {
-          label: "AVG SPREAD",
-          value:
-            analyticsSummary?.avg_spread_pct != null
-              ? `${analyticsSummary.avg_spread_pct.toFixed(2)}%`
-              : "N/A",
-          detail: "Gap between best buy and sell price",
-        },
-      ].map((card) => (
+      {cards.map((card) => (
         <div key={card.label} className="bg-card p-4">
           <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
             {card.label}
           </div>
-          <div className="mt-1 font-mono text-2xl font-bold text-foreground">{card.value}</div>
-          <div className="mt-1 font-mono text-[10px] text-muted-foreground">{card.detail}</div>
+          <div className={`mt-1 font-mono text-2xl font-bold ${TONE_VALUE_CLASS[card.tone]}`}>
+            {card.value}
+          </div>
+          <div className="mt-1 flex items-center gap-1.5 font-mono text-[10px] text-muted-foreground">
+            {card.tag ? (
+              <span className={`font-bold tracking-widest ${TONE_TAG_CLASS[card.tone]}`}>
+                {card.tag}
+              </span>
+            ) : null}
+            <span className="truncate">{card.detail}</span>
+          </div>
         </div>
       ))}
     </div>
@@ -344,6 +255,27 @@ export async function ItemRecentSalesSection({
   itemId: number;
   providers: ProviderInfo[];
 }) {
+  const cookieStore = await cookies();
+  const isAuthenticated =
+    cookieStore.has(WEB_SESSION_COOKIE_NAME) || cookieStore.has(WEB_AUTH_TOKEN_COOKIE_NAME);
+
+  if (!isAuthenticated) {
+    return (
+      <div className="border-brutal bg-card">
+        <div className="flex items-center justify-between border-b-2 border-border px-4 py-3">
+          <span className="font-mono text-xs tracking-widest text-primary">RECENT SALES</span>
+          <span className="font-mono text-[10px] text-muted-foreground">Sign in required</span>
+        </div>
+        <div className="px-4 py-8 font-mono text-sm text-muted-foreground">
+          <Link href="/login" className="text-primary underline-offset-2 hover:underline">
+            Sign in
+          </Link>{" "}
+          to view recent sales for this item.
+        </div>
+      </div>
+    );
+  }
+
   const sales = await serverApi.getSales(`/v1/web/sales?item_id=${itemId}&limit=10`, 600);
 
   return (
@@ -390,13 +322,14 @@ export async function ItemRecentSalesSection({
 export function ItemRelatedItemsFallback() {
   return (
     <div className="border-brutal bg-card">
-      <div className="border-b-2 border-border px-4 py-3">
-        <span className="font-mono text-xs tracking-widest text-primary">RELATED ITEMS</span>
+      <div className="border-b-2 border-border px-6 py-4">
+        <span className="font-mono text-sm tracking-widest text-primary">SIMILAR ITEMS</span>
       </div>
       <div className="grid gap-px bg-border md:grid-cols-2 xl:grid-cols-3">
         {Array.from({ length: 6 }).map((_, index) => (
           <div key={index} className="bg-card p-4">
-            <SkeletonLine className="h-3 w-32" />
+            <SkeletonLine className="aspect-4/3 w-full" />
+            <SkeletonLine className="mt-3 h-3 w-32" />
             <SkeletonLine className="mt-2 h-3 w-24" />
             <div className="mt-3 flex items-center justify-between">
               <SkeletonLine className="h-3 w-14" />
@@ -410,74 +343,51 @@ export function ItemRelatedItemsFallback() {
 }
 
 export async function ItemRelatedItemsSection({ item }: { item: ItemOut }) {
-  if (!item.weapon_type) {
+  // Prefer base_name (e.g. "USP-S") for genuine model-level similarity;
+  // weapon_type ("Pistol") is too broad and returns unrelated weapons.
+  const filter = item.base_name
+    ? { base_name: item.base_name }
+    : item.weapon_type
+      ? { weapon_type: item.weapon_type }
+      : null;
+
+  if (!filter) {
     return null;
   }
 
   const relatedItems = await serverApi.getItems(
-    buildQuery({
-      weapon_type: item.weapon_type,
-      limit: 12,
-    }),
+    buildQuery({ ...filter, limit: 18 }),
     300,
   );
 
-  const relatedItemIds =
-    relatedItems?.items
-      .map((candidate) => candidate.item_id)
-      .filter((candidate): candidate is number => typeof candidate === "number")
-      .filter((candidate) => candidate !== item.item_id)
-      .slice(0, 6) ?? [];
-
-  if (relatedItemIds.length === 0) {
-    return null;
-  }
-
-  const relatedPrices = await serverApi.postPrices({ item_ids: relatedItemIds, currency: "USD" });
-  const relatedPriceItems = relatedPrices?.items ?? [];
-
-  const items =
+  const relatedCandidates =
     relatedItems?.items
       .filter((candidate) => candidate.item_id !== item.item_id)
-      .slice(0, 6)
-      .map((related) => ({
-        item: related,
-        bestAsk: related.item_id != null ? getBestAskFromPrices(relatedPriceItems, related.item_id) : null,
-      })) ?? [];
+      .filter(
+        (candidate): candidate is ItemOut & { item_id: number } =>
+          typeof candidate.item_id === "number",
+      )
+      .slice(0, 12) ?? [];
 
-  if (items.length === 0) {
+  if (relatedCandidates.length === 0) {
     return null;
   }
 
-  return (
-    <div className="border-brutal bg-card">
-      <div className="border-b-2 border-border px-4 py-3">
-        <span className="font-mono text-xs tracking-widest text-primary">RELATED ITEMS</span>
-      </div>
-      <div className="grid gap-px bg-border md:grid-cols-2 xl:grid-cols-3">
-        {items.map((related) =>
-          related.item.item_id ? (
-            <Link
-              key={related.item.item_id}
-              href={buildItemPath(related.item.item_id, related.item.market_hash_name)}
-              className="bg-card p-4 transition-colors hover:bg-secondary/30"
-            >
-              <div className="mb-2 font-mono text-xs font-bold text-foreground">
-                {related.item.market_hash_name}
-              </div>
-              <div className="font-mono text-[10px] text-muted-foreground">
-                {[related.item.wear_name, related.item.collection].filter(Boolean).join(" • ")}
-              </div>
-              <div className="mt-3 flex items-center justify-between">
-                <span className="font-mono text-[10px] tracking-widest text-primary">BEST ASK</span>
-                <span className="font-mono text-xs font-bold text-foreground">
-                  <Price cents={related.bestAsk} />
-                </span>
-              </div>
-            </Link>
-          ) : null,
-        )}
-      </div>
-    </div>
-  );
+  const relatedPrices = await serverApi.postPrices({
+    item_ids: relatedCandidates.map((candidate) => candidate.item_id),
+    currency: "USD",
+  });
+  const relatedPriceItems = relatedPrices?.items ?? [];
+
+  const items: SimilarItem[] = relatedCandidates.map((related) => ({
+    itemId: related.item_id,
+    name: related.market_hash_name,
+    imageUrl: related.image_url ?? null,
+    wear: related.wear_name ?? null,
+    collection: related.collection ?? null,
+    bestAsk: getBestAskFromPrices(relatedPriceItems, related.item_id),
+    href: buildItemPath(related.item_id, related.market_hash_name),
+  }));
+
+  return <SimilarItemsGrid items={items} />;
 }

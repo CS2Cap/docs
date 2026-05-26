@@ -1,12 +1,12 @@
 # CS2Cap
 
-> Free CS2 API for live skin prices, buy orders, sales history, and market analytics across 39+ marketplaces.
+> Free CS2 API for live skin prices, buy orders, sales history, and market analytics across 40+ marketplaces.
 
 CS2Cap is a unified REST API for Counter-Strike 2 skin market data. Developers use it to build trading bots, analytics dashboards, and price comparison tools. The platform aggregates real-time listings, historical candlesticks, arbitrage signals, and item catalog data from all major CS2 marketplaces.
 
 ## Pages
 
-- [/](/): Free CS2 API for skin prices across 39+ marketplaces.
+- [/](/): Free CS2 API for skin prices across 40+ marketplaces.
 - [/api-info](/api-info): API reference with endpoints, pricing, SDKs, and integration guide.
 - [/search](/search): Search and browse CS2 items across all supported marketplaces.
 - [/inventory-value](/inventory-value): Calculate your CS2 inventory value using your Steam profile.

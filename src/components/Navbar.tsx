@@ -5,7 +5,21 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Menu, X, Search, LayoutDashboard, Eye, Bell, User, Key, BarChart3, CreditCard, Settings, LogOut } from "lucide-react";
+import {
+  Menu,
+  X,
+  Search,
+  LayoutDashboard,
+  Eye,
+  Bell,
+  User,
+  Key,
+  BarChart3,
+  CreditCard,
+  Settings,
+  LogOut,
+  ChevronDown,
+} from "lucide-react";
 import { useSession, webApi } from "@/lib/api";
 import {
   DropdownMenu,
@@ -17,13 +31,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const navItems = [
-  { label: "MARKET CAP", href: "/cs2-market-cap" },
   { label: "SEARCH", href: "/search" },
-  { label: "INVENTORY", href: "/inventory-value" },
-  { label: "MARKETS", href: "/marketplaces" },
+  { label: "PRICING", href: "/pricing" },
   { label: "API", href: "/api-info" },
-  { label: "DASHBOARD", href: "/dashboard" },
   { label: "DOCS", href: "https://docs.cs2cap.com/", external: true },
+];
+
+const toolsItems = [
+  { label: "MARKET CAP", href: "/cs2-market-cap" },
+  { label: "INVENTORY", href: "/inventory-value" },
 ];
 
 const accountMenuItems = [
@@ -48,6 +64,7 @@ export function Navbar() {
   const { data: session } = useSession();
 
   const isActive = (href: string) => pathname === href;
+  const isToolsActive = toolsItems.some((t) => pathname === t.href);
   const isAuthed = Boolean(session);
 
   const avatarUrl = session?.linked_providers?.find((p) => p.avatar_url)?.avatar_url;
@@ -108,17 +125,49 @@ export function Navbar() {
               <Link
                 key={item.label}
                 href={item.href}
-                className={`px-3 py-1.5 font-mono text-sm font-semibold tracking-wider transition-colors ${isActive(item.href) ? "text-primary" : "text-foreground/90 hover:text-primary"
-                  }`}
+                className={`px-3 py-1.5 font-mono text-sm font-semibold tracking-wider transition-colors ${
+                  isActive(item.href) ? "text-primary" : "text-foreground/90 hover:text-primary"
+                }`}
               >
                 {item.label}
               </Link>
             )
           )}
+
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              className={`flex items-center gap-1 px-3 py-1.5 font-mono text-sm font-semibold tracking-wider transition-colors focus:outline-none ${
+                isToolsActive ? "text-primary" : "text-foreground/90 hover:text-primary"
+              }`}
+              aria-label="Tools menu"
+            >
+              TOOLS
+              <ChevronDown className="h-3 w-3" strokeWidth={2.5} />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="start"
+              className="w-56 rounded-none border-2 border-border bg-popover p-0"
+            >
+              {toolsItems.map((item) => (
+                <DropdownMenuItem
+                  key={item.href}
+                  asChild
+                  className="rounded-none focus:bg-secondary focus:text-primary"
+                >
+                  <Link
+                    href={item.href}
+                    className="flex w-full cursor-pointer items-center px-3 py-2 font-mono text-xs tracking-wider hover:text-primary focus:text-primary"
+                  >
+                    {item.label}
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
-        <div className="hidden md:flex items-center gap-3 ml-auto">
-          <form onSubmit={handleSearch} className="relative">
+        <div className="flex items-center gap-3 ml-auto">
+          <form onSubmit={handleSearch} className="relative hidden md:block">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
             <input
               type="text"
@@ -186,20 +235,20 @@ export function Navbar() {
           ) : (
             <Link
               href="/login"
-              className="border-brutal-accent px-4 py-1.5 font-mono text-xs font-bold tracking-wider text-primary brutalist-hover"
+              className="border-brutal-accent px-3 py-1.5 font-mono text-xs font-bold tracking-wider text-primary brutalist-hover whitespace-nowrap"
             >
               SIGN IN
             </Link>
           )}
-        </div>
 
-        <button
-          className="md:hidden p-2 text-foreground"
-          onClick={() => setMobileOpen(!mobileOpen)}
-          aria-label="Toggle menu"
-        >
-          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
+          <button
+            className="md:hidden p-2 text-foreground"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Toggle menu"
+          >
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
       </div>
 
       {mobileOpen && (
@@ -232,33 +281,31 @@ export function Navbar() {
                   key={item.label}
                   href={item.href}
                   onClick={() => setMobileOpen(false)}
-                  className={`px-3 py-2 font-mono text-xs tracking-wider ${isActive(item.href) ? "text-primary" : "text-muted-foreground"
-                    }`}
+                  className={`px-3 py-2 font-mono text-xs tracking-wider ${
+                    isActive(item.href) ? "text-primary" : "text-muted-foreground"
+                  }`}
                 >
                   {item.label}
                 </Link>
               )
             )}
-            {isAuthed ? (
-              <button
-                type="button"
-                onClick={() => {
-                  setMobileOpen(false);
-                  void handleLogout();
-                }}
-                className="px-3 py-2 text-left font-mono text-xs font-bold tracking-wider text-primary"
-              >
-                LOG OUT
-              </button>
-            ) : (
-              <Link
-                href="/login"
-                onClick={() => setMobileOpen(false)}
-                className="px-3 py-2 font-mono text-xs font-bold tracking-wider text-primary"
-              >
-                SIGN IN
-              </Link>
-            )}
+            <div className="mt-2 border-t border-border pt-3">
+              <div className="px-3 pb-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground/70">
+                Tools
+              </div>
+              {toolsItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  className={`block px-3 py-2 font-mono text-xs tracking-wider ${
+                    isActive(item.href) ? "text-primary" : "text-muted-foreground"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       )}

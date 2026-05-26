@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "CS2Cap — CS2 API for skin market data across 39+ marketplaces";
+export const alt = "CS2Cap — CS2 API for skin market data across 40+ marketplaces";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -75,7 +75,7 @@ export default async function Image() {
               lineHeight: 1.3,
             }}
           >
-            Real-time prices, buy orders, and analytics across 39+ CS2 skin
+            Real-time prices, buy orders, and analytics across 40+ CS2 skin
             marketplaces. Free tier available.
           </div>
         </div>

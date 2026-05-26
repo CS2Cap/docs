@@ -1,21 +1,21 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Code2, Globe, ArrowRight, Zap } from "lucide-react";
+import { Code2, Globe, ArrowRight, Zap, BookOpen, CreditCard } from "lucide-react";
 import { LiveTicker } from "@/components/LiveTicker";
 import { HeroSection } from "@/components/HeroSection";
-import { FeaturesGrid } from "@/components/FeaturesGrid";
+import { Top3FeaturesSection } from "@/components/Top3FeaturesSection";
 import { MarketplacesSection } from "@/components/MarketplacesSection";
 import { FooterSection } from "@/components/FooterSection";
 import { StructuredData, buildOrganization, buildWebSite, buildWebApplication } from "@/components/seo/StructuredData";
 import { buildTickerRows, getLandingPageData } from "@/lib/api/compositions";
 
 const DESC =
-  "Track the live CS2 skin market cap and get real-time prices, buy orders, and sales across 39+ marketplaces — plus a free unified CS2 / CS:GO API.";
+  "Track the live CS2 skin market cap and get real-time prices, buy orders, and sales across 40+ marketplaces — plus a free unified CS2 / CS:GO API.";
 
 export const metadata: Metadata = {
   title: "CS2Cap — CS2 Skins Pricing API & Market Data",
   description: DESC,
-  alternates: { canonical: "/" },
+  alternates: { canonical: "https://cs2cap.com/" },
   other: {
     "impact-site-verification": "ae70ce5b-ea4d-4103-a1c6-742b97475875",
   },
@@ -39,23 +39,6 @@ export const metadata: Metadata = {
 export const revalidate = 60;
 export const dynamic = "force-static";
 
-const SEO_LINKS = [
-  { href: "/cs2-market-cap", label: "CS2 Market Cap" },
-  { href: "/cs2-api", label: "CS2 API" },
-  { href: "/free-cs2-api", label: "Free CS2 API" },
-  { href: "/cs2-market-api", label: "CS2 Market API" },
-  { href: "/cs2-price-api", label: "CS2 Price API" },
-  { href: "/cs2-data-api", label: "CS2 Data API" },
-  { href: "/cs2-items-api", label: "CS2 Items API" },
-  { href: "/cs2-skins-api", label: "CS2 Skins API" },
-  { href: "/cs2-buy-order-api", label: "CS2 Buy Order API" },
-  { href: "/cs2-market-analytics-api", label: "CS2 Analytics API" },
-  { href: "/csgo-api", label: "CSGO API" },
-  { href: "/buff163-api", label: "Buff163 API" },
-  { href: "/csfloat-api", label: "CSFloat API" },
-  { href: "/skinport-api", label: "Skinport API" },
-  { href: "/steam-api", label: "Steam API" },
-];
 
 export default async function HomePage() {
   const landing = await getLandingPageData();
@@ -71,51 +54,7 @@ export default async function HomePage() {
       <main id="main-content">
         <HeroSection providerCount={landing.providerCount} totalItems={landing.totalItems} />
 
-        {/* Market cap — explains the brand and routes consumer traffic */}
-        <section className="border-t-2 border-border py-16">
-          <div className="container">
-            <div className="grid items-center gap-8 lg:grid-cols-2">
-              <div>
-                <div className="mb-4 font-mono text-xs tracking-widest text-primary">
-                  // CS2 MARKET CAP
-                </div>
-                <h2 className="display-heading mb-4 text-3xl font-black tracking-tighter md:text-4xl">
-                  THE NAME IS THE{" "}
-                  <span className="text-gradient-brand">MARKET CAP</span>
-                </h2>
-                <p className="mb-6 max-w-md font-mono text-sm leading-relaxed text-muted-foreground">
-                  CS2Cap is short for CS2 Market Cap. We track the total market
-                  capitalization of every Counter-Strike 2 and CS:GO skin —
-                  indexed live across 39+ marketplaces — with a category-by-category
-                  breakdown of where the value sits.
-                </p>
-                <Link
-                  href="/cs2-market-cap"
-                  className="inline-flex items-center gap-2 border-2 border-primary bg-primary px-8 py-3 font-mono text-sm font-bold tracking-wider text-primary-foreground brutalist-hover"
-                >
-                  VIEW LIVE MARKET CAP <ArrowRight className="h-4 w-4" />
-                </Link>
-              </div>
-              <div className="grid grid-cols-2 gap-px bg-border">
-                {[
-                  { label: "CS2 SKIN MARKET CAP", value: "Live total" },
-                  { label: "CATEGORY INDEX", value: "By type & weapon" },
-                  { label: "MARKETPLACES INDEXED", value: `${landing.providerCount}+` },
-                  { label: "PRICE BASIS", value: "24h snapshot" },
-                ].map((stat) => (
-                  <div key={stat.label} className="bg-card p-5 md:p-6">
-                    <div className="font-mono text-lg font-bold text-foreground">
-                      {stat.value}
-                    </div>
-                    <div className="mt-1 font-mono text-[10px] tracking-widest text-muted-foreground">
-                      {stat.label}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
+        <Top3FeaturesSection />
 
         {/* API / How it works — moved up from bottom */}
         <section className="relative overflow-x-clip border-t-2 border-border bg-grid py-24">
@@ -163,7 +102,7 @@ export default async function HomePage() {
                   SEE ENDPOINTS <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
-                  href="/api-info#pricing"
+                  href="/pricing"
                   className="border-brutal px-8 py-3 text-center font-mono text-sm font-bold tracking-wider text-foreground brutalist-hover hover:border-primary transition-colors"
                 >
                   VIEW PRICING
@@ -203,29 +142,43 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <FeaturesGrid />
       <MarketplacesSection providers={landing.providers} />
 
-      {/* Compact SEO link module */}
-      <section className="border-t-2 border-border py-16">
+      {/* CTA — Pricing & API Directory */}
+      <section className="border-t-2 border-border bg-grid py-20 md:py-24">
         <div className="container">
-          <div className="mb-4 font-mono text-xs tracking-widest text-primary">// EXPLORE THE API</div>
-          <h2 className="display-heading mb-2 text-3xl font-black tracking-tighter md:text-4xl">
-            BROWSE BY <span className="text-gradient-brand">ENDPOINT & MARKET</span>
-          </h2>
-          <p className="mb-8 max-w-2xl font-mono text-sm text-muted-foreground">
-            Dedicated reference pages for each API endpoint and supported marketplace.
-          </p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-px bg-border">
-            {SEO_LINKS.map((link) => (
+          <div className="grid gap-8 md:grid-cols-2">
+            <div className="border-brutal bg-card p-8 md:p-10">
+              <CreditCard className="mb-4 h-8 w-8 text-primary" strokeWidth={1.5} />
+              <h3 className="display-heading mb-3 text-2xl font-black tracking-tighter md:text-3xl">
+                START <span className="text-gradient-brand">FOR FREE</span>.
+              </h3>
+              <p className="mb-6 max-w-md font-mono text-sm leading-relaxed text-muted-foreground">
+                No credit card required. Get live prices, item catalog access, and generous rate limits on the Free plan. Upgrade when you need buy orders, sales history, and advanced analytics.
+              </p>
               <Link
-                key={link.href}
-                href={link.href}
-                className="bg-card px-4 py-4 font-mono text-xs font-bold tracking-wider text-foreground hover:text-primary hover:bg-card/80 transition-colors"
+                href="/pricing"
+                className="inline-flex items-center gap-2 border-2 border-primary bg-primary px-6 py-3 font-mono text-sm font-bold tracking-wider text-primary-foreground brutalist-hover"
               >
-                {link.label}
+                VIEW PRICING <ArrowRight className="h-4 w-4" />
               </Link>
-            ))}
+            </div>
+
+            <div className="border-brutal bg-card p-8 md:p-10">
+              <BookOpen className="mb-4 h-8 w-8 text-primary" strokeWidth={1.5} />
+              <h3 className="display-heading mb-3 text-2xl font-black tracking-tighter md:text-3xl">
+                EXPLORE THE <span className="text-gradient-brand">API</span>.
+              </h3>
+              <p className="mb-6 max-w-md font-mono text-sm leading-relaxed text-muted-foreground">
+                Browse every endpoint, parameter, and response shape in the API directory. Prices, buy orders, sales history, candles, arbitrage, alerts — all documented with examples.
+              </p>
+              <Link
+                href="/apis"
+                className="inline-flex items-center gap-2 border-brutal px-6 py-3 font-mono text-sm font-bold tracking-wider text-foreground brutalist-hover hover:border-primary transition-colors"
+              >
+                API DIRECTORY <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
           </div>
         </div>
       </section>

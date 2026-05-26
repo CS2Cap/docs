@@ -94,7 +94,7 @@ export function FooterSection({ showApiLink = true }: { showApiLink?: boolean })
 
           <div>
             <div className="font-mono text-[10px] tracking-widest text-muted-foreground mb-4">EXPLORE</div>
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col items-start gap-2">
               <Link href="/cs2-market-cap" className="font-mono text-xs text-foreground hover:text-primary transition-colors">CS2 Market Cap</Link>
               <Link href="/inventory-value" className="font-mono text-xs text-foreground hover:text-primary transition-colors">Inventory Value</Link>
               <Link href="/apis" className="font-mono text-xs text-foreground hover:text-primary transition-colors">All APIs</Link>
@@ -104,7 +104,7 @@ export function FooterSection({ showApiLink = true }: { showApiLink?: boolean })
 
           <div>
             <div className="font-mono text-[10px] tracking-widest text-muted-foreground mb-4">PLATFORM</div>
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col items-start gap-2">
               <Link href="/search" className="font-mono text-xs text-foreground hover:text-primary transition-colors">Search</Link>
               <Link href="/dashboard" className="font-mono text-xs text-foreground hover:text-primary transition-colors">Dashboard</Link>
               <Link href="/terms" className="font-mono text-xs text-foreground hover:text-primary transition-colors">Terms</Link>
@@ -114,13 +114,13 @@ export function FooterSection({ showApiLink = true }: { showApiLink?: boolean })
 
           <div>
             <div className="font-mono text-[10px] tracking-widest text-muted-foreground mb-4">DEVELOPERS</div>
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col items-start gap-2">
               {showApiLink && (
                 <Link href="/api-info" className="font-mono text-xs text-foreground hover:text-primary transition-colors">API</Link>
               )}
               <a href="https://github.com/CS2Cap" target="_blank" rel="noopener noreferrer" className="font-mono text-xs text-foreground hover:text-primary transition-colors">GitHub</a>
               <a href="https://docs.cs2cap.com/" target="_blank" rel="noopener noreferrer" className="font-mono text-xs text-foreground hover:text-primary transition-colors">Docs</a>
-              <a href="https://status.cs2c.app/" target="_blank" rel="noopener noreferrer" className="font-mono text-xs text-foreground hover:text-primary transition-colors">Uptime</a>
+              <Link href="/status" className="font-mono text-xs text-foreground hover:text-primary transition-colors">Status</Link>
             </div>
           </div>
         </div>

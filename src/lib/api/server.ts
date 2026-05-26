@@ -28,6 +28,7 @@ import type {
   MarketIndexGroupBy,
   MarketItem,
   MarketItemsSnapshotResponse,
+  MarketOverviewResponse,
   MarketTimeframe,
   PlansResponse,
   PriceCandlesPage,
@@ -37,6 +38,9 @@ import type {
   ProvidersResponse,
   SalesHistoryResponse,
   SubscriptionStatus,
+  WebSearchDirection,
+  WebSearchResponse,
+  WebSearchSort,
 } from "./types";
 
 interface ServerFetchOptions {
@@ -283,6 +287,35 @@ export const serverApi = {
     });
   },
 
+  getSearch(
+    params: {
+      q?: string;
+      item_type?: string[];
+      base_name?: string[];
+      weapon_type?: string[];
+      rarity_name?: string[];
+      wear_name?: string[];
+      phase?: string[];
+      collection?: string[];
+      is_stattrak?: boolean;
+      is_souvenir?: boolean;
+      min_price_usd?: string;
+      max_price_usd?: string;
+      sort?: WebSearchSort;
+      direction?: WebSearchDirection;
+      limit?: number;
+      offset?: number;
+    } = {},
+    revalidate: number | false = 30,
+    opts: { anon?: boolean } = {},
+  ) {
+    return serverFetch<WebSearchResponse>(`/v1/web/search${buildQuery(params)}`, {
+      revalidate,
+      anon: opts.anon,
+      timeoutMs: 10000,
+    });
+  },
+
   async getProviders(revalidate: number | false = false, opts: { anon?: boolean } = {}) {
     return normalizeProvidersResponse(
       await serverFetch<ProvidersResponse>("/v1/web/providers", { revalidate, anon: opts.anon }),
@@ -405,6 +438,14 @@ export const serverApi = {
       `/v1/web/market/indexes${buildQuery({ group_by: groupBy })}`,
       { revalidate, anon: true, timeoutMs: 10000 },
     );
+  },
+
+  getMarketOverview(revalidate: number | false = 60) {
+    return serverFetch<MarketOverviewResponse>("/v1/web/market/overview", {
+      revalidate,
+      anon: true,
+      timeoutMs: 10000,
+    });
   },
 
   getBillingPlans(revalidate: number | false = false) {

@@ -113,6 +113,17 @@ function onIdle(callback: () => void) {
   return () => globalThis.clearTimeout(timeoutId);
 }
 
+function promoteAnonymousVisitor(intent: "pricing" | "docs" | "signup", target: string) {
+  posthog.setPersonProperties(
+    { last_conversion_intent: intent, last_conversion_target: target },
+    {
+      first_conversion_intent: intent,
+      first_conversion_target: target,
+      first_conversion_path: window.location.pathname,
+    },
+  );
+}
+
 function captureNavigationIntent(event: MouseEvent) {
   const link = (event.target as Element | null)?.closest("a[href]") as HTMLAnchorElement | null;
   if (!link) return;
@@ -127,17 +138,20 @@ function captureNavigationIntent(event: MouseEvent) {
   const label = link.textContent?.trim().replace(/\s+/g, " ").slice(0, 120) || undefined;
   const target = `${url.pathname}${url.hash}`;
 
-  if (target === "/api-info#pricing" || label?.toLowerCase().includes("pricing")) {
+  if (target === "/pricing" || target === "/api-info#pricing" || label?.toLowerCase().includes("pricing")) {
+    promoteAnonymousVisitor("pricing", target);
     posthog.capture("pricing_clicked", { href: target, label });
     return;
   }
 
   if (url.hostname === "docs.cs2cap.com") {
+    promoteAnonymousVisitor("docs", url.toString());
     posthog.capture("docs_clicked", { href: url.toString(), label });
     return;
   }
 
   if (url.pathname === "/login" || label?.toLowerCase().includes("sign")) {
+    promoteAnonymousVisitor("signup", target);
     posthog.capture("signup_clicked", { href: target, label });
   }
 }

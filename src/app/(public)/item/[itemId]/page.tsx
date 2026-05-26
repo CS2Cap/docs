@@ -28,8 +28,6 @@ import {
   slugifyMarketHashName,
 } from "@/lib/seo/itemSlug";
 import {
-  ItemConditionVariants,
-  ItemConditionVariantsFallback,
   ItemMarketInsightsFallback,
   ItemMarketInsightsSection,
   ItemPriceHistoryFallback,
@@ -39,6 +37,12 @@ import {
   ItemRelatedItemsFallback,
   ItemRelatedItemsSection,
 } from "./ItemDetailDeferredSections";
+import { ItemCasesSection } from "@/components/item/ItemCasesSection";
+import {
+  ItemConditionVariantTabs,
+  ItemConditionVariantTabsFallback,
+} from "@/components/item/ItemConditionVariantTabs";
+import { ItemMarketDistribution } from "@/components/item/ItemMarketDistribution";
 
 type ItemPageProps = {
   params: Promise<{
@@ -165,10 +169,9 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
     : undefined;
 
   const itemFacts = [
-    { label: "Weapon", value: data.item.weapon_type },
-    { label: "Category", value: data.item.item_subtype },
     { label: "Type", value: data.item.item_type },
-    { label: "Collection", value: data.item.collection },
+    { label: "Category", value: data.item.item_subtype },
+    { label: "Weapon", value: data.item.weapon_type },
     { label: "Finish Style", value: data.item.style_name },
     { label: "Phase", value: data.item.phase },
   ].filter((entry) => entry.value);
@@ -189,6 +192,7 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
   const productDescription = productDescriptionParts.join(" ") + ".";
   const highestAskCents =
     askRows.length > 0 ? askRows[askRows.length - 1].lowest_ask : undefined;
+  const lowestAskCents = askRows.length > 0 ? askRows[0].lowest_ask : undefined;
 
   return (
     <>
@@ -257,56 +261,91 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                   </div>
                 </div>
 
-                <div className="px-4 pb-4">
-                  <h1 className="text-xl font-black tracking-tighter">
+                <div className="px-5 pb-5">
+                  <h1 className="text-2xl font-black tracking-tighter xl:text-3xl">
                     {data.item.market_hash_name}
                   </h1>
-                  {data.item.wear_name ? (
-                    <div className="mt-0.5 font-mono text-[10px] tracking-wider text-muted-foreground">
+                  {data.item.wear_name &&
+                  !data.item.market_hash_name.includes(`(${data.item.wear_name})`) ? (
+                    <div className="mt-1 font-mono text-[11px] tracking-wider text-muted-foreground">
                       {data.item.wear_name}
                     </div>
                   ) : null}
 
-                  <div className="mt-4 grid grid-cols-2 gap-3">
+                  {askRows.length > 0 ? (
+                    <div className="mt-5">
+                      <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
+                        PRICE RANGE
+                      </div>
+                      <div className="mt-1 font-mono text-2xl font-bold">
+                        <span className="text-success">
+                          <Price cents={lowestAskCents} />
+                        </span>
+                        <span className="px-1.5 text-muted-foreground">—</span>
+                        <span className="text-foreground">
+                          <Price cents={highestAskCents} />
+                        </span>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  <div className="mt-5 grid grid-cols-2 gap-3">
                     <div>
-                      <div className="font-mono text-[9px] tracking-widest text-muted-foreground">
+                      <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
                         LOWEST ASK
                       </div>
-                      <div className="font-mono text-sm font-bold text-success">
+                      <div className="mt-1 font-mono text-lg font-bold text-success">
                         <Price cents={data.bestAsk?.lowest_ask} />
                       </div>
                     </div>
                     <div>
-                      <div className="font-mono text-[9px] tracking-widest text-muted-foreground">
+                      <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
                         HIGHEST BID
                       </div>
-                      <div className="font-mono text-sm font-bold text-foreground">
+                      <div className="mt-1 font-mono text-lg font-bold text-foreground">
                         <Price cents={data.bestBid?.highest_bid} />
                       </div>
                     </div>
                   </div>
 
-                  <div className="mt-2 grid grid-cols-2 gap-3">
+                  <div className="mt-3 grid grid-cols-2 gap-3">
                     <div>
-                      <div className="font-mono text-[9px] tracking-widest text-muted-foreground">
+                      <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
                         MARKETS WITH ASKS
                       </div>
-                      <div className="font-mono text-sm font-bold text-foreground">
+                      <div className="mt-1 flex h-4.5 items-center font-mono text-base font-bold text-foreground">
                         {data.coverage.askProviders}
                       </div>
                     </div>
                     <div>
-                      <div className="font-mono text-[9px] tracking-widest text-muted-foreground">
+                      <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
                         BEST ASK AT
                       </div>
-                      <div className="text-sm font-bold text-primary">
+                      <div className="mt-1 flex h-4.5 items-center text-base font-bold text-primary">
                         {data.bestAsk ? (
-                          <ProviderIdentity
-                            provider={bestAskProvider}
-                            fallback={providerLabel(data.bestAsk.provider, data.providers)}
-                            logoSize={16}
-                            textClassName="font-mono text-sm font-bold text-primary"
-                          />
+                          (() => {
+                            const bestAskUrl = data.bestAsk.link || data.bestAsk.url;
+                            const chip = (
+                              <ProviderIdentity
+                                provider={bestAskProvider}
+                                fallback={providerLabel(data.bestAsk.provider, data.providers)}
+                                logoSize={18}
+                                textClassName="font-mono text-base font-bold text-primary"
+                              />
+                            );
+                            return bestAskUrl ? (
+                              <a
+                                href={bestAskUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="hover:underline"
+                              >
+                                {chip}
+                              </a>
+                            ) : (
+                              chip
+                            );
+                          })()
                         ) : (
                           "N/A"
                         )}
@@ -314,29 +353,59 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                     </div>
                   </div>
 
-                  <div className="mt-4 flex gap-2">
+                  <div className="mt-5 flex gap-2">
                     <WatchItemButton itemId={numericItemId} />
                     <Link
                       href={`/alerts?itemId=${numericItemId}`}
-                      className="flex items-center justify-center gap-1.5 border-brutal px-3 py-2 font-mono text-[10px] tracking-wider brutalist-hover"
+                      rel="nofollow"
+                      className="flex items-center justify-center gap-1.5 border-brutal px-3.5 py-2.5 font-mono text-[11px] tracking-wider brutalist-hover"
                     >
-                      <Bell className="h-3 w-3" />
+                      <Bell className="h-3.5 w-3.5" />
                       ALERT
                     </Link>
                   </div>
                 </div>
               </div>
 
-              <div className="border-brutal bg-card p-4">
-                <div className="mb-3 font-mono text-[10px] tracking-widest text-primary">
+              <div className="border-brutal bg-card p-5">
+                <div className="mb-3.5 font-mono text-[11px] tracking-widest text-primary">
                   FLOAT RANGE
                 </div>
-                <div className="mb-3 h-2 bg-linear-to-r from-success via-warning to-destructive" />
-                <div className="flex justify-between font-mono text-[9px] text-muted-foreground">
-                  <span>{data.item.min_float?.toFixed(2) ?? "N/A"}</span>
-                  <span>{data.item.max_float?.toFixed(2) ?? "N/A"}</span>
+                <div className="relative mb-5 h-2.5 bg-linear-to-r from-success via-warning to-destructive">
+                  {data.item.min_float != null && data.item.max_float != null ? (
+                    <>
+                      <div
+                        className="absolute inset-y-0 border-2 border-foreground"
+                        style={{
+                          left: `${Math.max(0, Math.min(1, data.item.min_float)) * 100}%`,
+                          width: `${Math.max(0, Math.min(1, data.item.max_float - data.item.min_float)) * 100}%`,
+                        }}
+                        aria-hidden="true"
+                      />
+                      {data.item.min_float > 0 ? (
+                        <div
+                          className="absolute top-full mt-0.5 -translate-x-1/2 font-mono text-[9px] font-bold text-foreground"
+                          style={{ left: `${Math.min(1, data.item.min_float) * 100}%` }}
+                        >
+                          {data.item.min_float.toFixed(2)}
+                        </div>
+                      ) : null}
+                      {data.item.max_float < 1 ? (
+                        <div
+                          className="absolute top-full mt-0.5 -translate-x-1/2 font-mono text-[9px] font-bold text-foreground"
+                          style={{ left: `${Math.min(1, data.item.max_float) * 100}%` }}
+                        >
+                          {data.item.max_float.toFixed(2)}
+                        </div>
+                      ) : null}
+                    </>
+                  ) : null}
                 </div>
-                <div className="mt-3 grid grid-cols-5 gap-px bg-border">
+                <div className="flex justify-between font-mono text-[10px] text-muted-foreground">
+                  <span>0.00</span>
+                  <span>1.00</span>
+                </div>
+                <div className="mt-4 grid grid-cols-5 gap-px bg-border">
                   {[
                     { name: "Factory New", abbr: "FN" },
                     { name: "Minimal Wear", abbr: "MW" },
@@ -346,7 +415,7 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                   ].map(({ name, abbr }) => (
                     <div
                       key={name}
-                      className={`px-2 py-1.5 text-center font-mono text-xs font-bold tracking-wider ${data.item.wear_name === name
+                      className={`px-2 py-2 text-center font-mono text-xs font-bold tracking-wider ${data.item.wear_name === name
                           ? "bg-primary/15 text-primary"
                           : "bg-secondary text-foreground"
                         }`}
@@ -357,17 +426,17 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                 </div>
               </div>
 
-              <div className="border-brutal bg-card p-4">
-                <div className="mb-3 font-mono text-[10px] tracking-widest text-primary">
+              <div className="border-brutal bg-card p-5">
+                <div className="mb-3.5 font-mono text-[11px] tracking-widest text-primary">
                   DETAILS
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   {itemFacts.map((fact) => (
                     <div key={fact.label} className="flex justify-between gap-4">
-                      <span className="font-mono text-[10px] text-muted-foreground">
+                      <span className="font-mono text-[11px] text-muted-foreground">
                         {fact.label}
                       </span>
-                      <span className="text-right font-mono text-[10px] font-bold text-foreground">
+                      <span className="text-right font-mono text-[11px] font-bold text-foreground">
                         {fact.value}
                       </span>
                     </div>
@@ -375,12 +444,27 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                 </div>
               </div>
 
-              <Suspense fallback={<ItemConditionVariantsFallback />}>
-                <ItemConditionVariants item={data.item} currentItemId={numericItemId} />
-              </Suspense>
+              {data.item.collection ? (
+                <Link
+                  href={`/search?collection=${encodeURIComponent(data.item.collection)}`}
+                  className="group block border-brutal bg-card p-4 transition-colors hover:border-primary"
+                >
+                  <div className="mb-3 font-mono text-[10px] tracking-widest text-primary">
+                    COLLECTION
+                  </div>
+                  <div className="flex items-center justify-between px-2 py-2">
+                    <span className="font-mono text-[11px] text-foreground transition-colors group-hover:text-primary">
+                      {data.item.collection}
+                    </span>
+                    <ChevronRight className="h-3 w-3 text-muted-foreground transition-colors group-hover:text-primary" />
+                  </div>
+                </Link>
+              ) : null}
+
+              <ItemMarketDistribution rows={askRows} providers={data.providers} />
 
               <Link
-                href="/cs2-api"
+                href="/pricing"
                 className="group flex items-start gap-3 border-brutal bg-card p-4 transition-colors hover:border-primary"
               >
                 <Code className="mt-0.5 h-4 w-4 shrink-0 text-primary" strokeWidth={1.5} />
@@ -393,26 +477,19 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                   </div>
                 </div>
               </Link>
-
-              {data.item.collection ? (
-                <div className="border-brutal bg-card p-4">
-                  <div className="mb-3 font-mono text-[10px] tracking-widest text-primary">
-                    COLLECTION
-                  </div>
-                  <div className="flex items-center justify-between px-2 py-2">
-                    <span className="font-mono text-[11px] text-foreground">
-                      {data.item.collection}
-                    </span>
-                    <ChevronRight className="h-3 w-3 text-muted-foreground" />
-                  </div>
-                </div>
-              ) : null}
             </div>
 
             <div className="space-y-6 lg:col-span-8 xl:col-span-9">
+              <Suspense fallback={<ItemConditionVariantTabsFallback />}>
+                <ItemConditionVariantTabs
+                  item={data.item}
+                  currentItemId={numericItemId}
+                />
+              </Suspense>
+
               <div className="border-brutal bg-card">
-                <div className="flex items-center justify-between border-b-2 border-border px-6 py-4">
-                  <span className="font-mono text-sm tracking-widest text-primary">
+                <div className="flex items-center justify-between border-b-2 border-border px-6 py-5">
+                  <span className="font-mono text-base font-bold tracking-widest text-primary">
                     WHERE TO BUY
                   </span>
                   <span className="font-mono text-xs text-muted-foreground">
@@ -420,12 +497,12 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                   </span>
                 </div>
 
-                <div className="hidden grid-cols-[52px_minmax(180px,1.7fr)_88px_108px_minmax(140px,1fr)_88px_108px] gap-4 border-b border-border px-6 py-3 font-mono text-[10px] tracking-widest text-muted-foreground md:grid">
+                <div className="hidden grid-cols-[48px_minmax(200px,1.3fr)_minmax(110px,1fr)_minmax(170px,1.4fr)_80px_minmax(110px,1fr)_120px] gap-4 border-b border-border px-6 py-3.5 font-mono text-[12px] tracking-widest text-foreground/80 md:grid">
                   <div>#</div>
                   <div>PROVIDER</div>
-                  <div className="text-right">QTY</div>
                   <div className="text-right">PRICE</div>
                   <div className="text-right">VS BEST</div>
+                  <div className="text-right">QTY</div>
                   <div className="text-right">UPDATED</div>
                   <div />
                 </div>
@@ -434,8 +511,8 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
               </div>
 
               <div className="border-brutal bg-card">
-                <div className="flex items-center justify-between border-b-2 border-border px-6 py-4">
-                  <span className="font-mono text-sm tracking-widest text-primary">
+                <div className="flex items-center justify-between border-b-2 border-border px-6 py-5">
+                  <span className="font-mono text-base font-bold tracking-widest text-primary">
                     BUY ORDERS
                   </span>
                   <span className="font-mono text-xs text-muted-foreground">
@@ -443,17 +520,21 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                   </span>
                 </div>
 
-                <div className="hidden grid-cols-[52px_minmax(180px,1.7fr)_108px_108px] gap-4 border-b border-border px-6 py-3 font-mono text-[10px] tracking-widest text-muted-foreground md:grid">
+                <div className="hidden grid-cols-[48px_minmax(200px,1.3fr)_minmax(110px,1fr)_minmax(170px,1.4fr)_80px_minmax(110px,1fr)_120px] gap-4 border-b border-border px-6 py-3.5 font-mono text-[12px] tracking-widest text-foreground/80 md:grid">
                   <div>#</div>
                   <div>PROVIDER</div>
-                  <div className="text-right">BIDS</div>
                   <div className="text-right">HIGHEST BID</div>
+                  <div className="text-right">VS BEST</div>
+                  <div className="text-right">BIDS</div>
+                  <div className="text-right">UPDATED</div>
+                  <div />
                 </div>
 
                 <BuyOrdersList
                   reliable={data.buyOrders.reliable}
                   flagged={data.buyOrders.flagged}
                   providers={data.providers}
+                  askRows={askRows}
                 />
               </div>
 
@@ -467,6 +548,8 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                   listingProvidersCount={data.coverage.askProviders}
                 />
               </Suspense>
+
+              <ItemCasesSection item={data.item} />
 
               <Suspense fallback={<ItemRecentSalesFallback />}>
                 <ItemRecentSalesSection itemId={numericItemId} providers={data.providers} />

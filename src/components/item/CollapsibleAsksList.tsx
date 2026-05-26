@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ChevronDown, ExternalLink } from "lucide-react";
 import { ProviderIdentity } from "@/components/ProviderIdentity";
 import { getProvider, providerLabel } from "@/lib/api";
@@ -28,6 +28,29 @@ function formatRelativeTime(value?: string | null) {
   if (hr < 24) return `${hr}h ago`;
   const day = Math.floor(hr / 24);
   return `${day}d ago`;
+}
+
+function useRelativeTime(value?: string | null) {
+  const [label, setLabel] = useState<string | null>(null);
+  useEffect(() => {
+    const compute = () => setLabel(formatRelativeTime(value));
+    compute();
+    const id = setInterval(compute, 30_000);
+    return () => clearInterval(id);
+  }, [value]);
+  return label;
+}
+
+export function RelativeTime({ value }: { value?: string | null }) {
+  const label = useRelativeTime(value);
+  return (
+    <span
+      suppressHydrationWarning
+      className="font-mono text-xs text-foreground/70"
+    >
+      {label ?? "—"}
+    </span>
+  );
 }
 
 export function CollapsibleAsksList({
@@ -60,7 +83,6 @@ export function CollapsibleAsksList({
     <>
       {visibleRows.map((row, index) => {
         const link = row.link || row.url;
-        const updated = formatRelativeTime(row.last_updated ?? row.timestamp);
         const spreadPct =
           bestAsk > 0 ? ((row.lowest_ask - bestAsk) / bestAsk) * 100 : 0;
         const isBest = row.lowest_ask === bestAsk;
@@ -68,10 +90,10 @@ export function CollapsibleAsksList({
         return (
           <div
             key={`${row.provider}-${row.lowest_ask}-${index}`}
-            className="border-b border-border px-4 py-3 last:border-0 md:grid md:grid-cols-[52px_minmax(180px,1.7fr)_88px_108px_minmax(140px,1fr)_88px_108px] md:items-center md:gap-4 md:px-6 md:py-4"
+            className="border-b border-border px-4 py-3 last:border-0 md:grid md:grid-cols-[48px_minmax(200px,1.3fr)_minmax(110px,1fr)_minmax(170px,1.4fr)_80px_minmax(110px,1fr)_120px] md:items-center md:gap-4 md:px-6 md:py-4"
           >
             {/* Desktop: rank */}
-            <div className="hidden font-mono text-xs text-muted-foreground md:block">
+            <div className="hidden font-mono text-sm text-foreground/70 md:block">
               #{index + 1}
             </div>
 
@@ -81,8 +103,8 @@ export function CollapsibleAsksList({
                 <ProviderIdentity
                   provider={getProvider(row.provider, providers)}
                   fallback={providerLabel(row.provider, providers)}
-                  logoSize={22}
-                  textClassName="font-mono text-sm font-bold text-foreground"
+                  logoSize={24}
+                  textClassName="font-mono text-base font-bold text-foreground"
                   className="flex min-w-0 flex-1 items-center gap-2"
                 />
               </div>
@@ -93,12 +115,12 @@ export function CollapsibleAsksList({
                     href={link}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center gap-1.5 border-brutal px-3 py-1.5 font-mono text-[10px] tracking-wider brutalist-hover hover:border-primary"
+                    className="flex items-center gap-2 border-brutal px-4 py-2.5 font-mono text-xs tracking-wider brutalist-hover hover:border-primary"
                   >
-                    VIEW <ExternalLink className="h-3 w-3" />
+                    VIEW <ExternalLink className="h-3.5 w-3.5" />
                   </a>
                 ) : (
-                  <span className="font-mono text-xs text-muted-foreground">—</span>
+                  <span className="font-mono text-sm text-foreground/70">—</span>
                 )}
               </div>
             </div>
@@ -107,19 +129,19 @@ export function CollapsibleAsksList({
             <div className="mt-2 grid grid-cols-2 gap-x-4 md:contents">
               <div className="md:text-right">
                 <div className="font-mono text-[9px] tracking-widest text-muted-foreground md:hidden">PRICE</div>
-                <div className="font-mono text-sm font-bold text-foreground md:text-right">
+                <div className="font-mono text-base font-bold text-success md:text-right">
                   {formatPrice(row.lowest_ask)}
                 </div>
               </div>
               <div className="md:text-right">
                 <div className="font-mono text-[9px] tracking-widest text-muted-foreground md:hidden">VS BEST</div>
-                <div className="font-mono text-xs md:text-right">
+                <div className="font-mono text-sm md:text-right">
                   {isBest ? (
-                    <span className="text-success">best price</span>
+                    <span className="font-bold text-success">best price</span>
                   ) : (
-                    <span className="text-muted-foreground">
+                    <span className="text-foreground/85">
                       +{spreadPct.toFixed(2)}%{" "}
-                      <span className="text-muted-foreground/60">
+                      <span className="text-foreground/60">
                         ({formatPrice(row.lowest_ask - bestAsk)})
                       </span>
                     </span>
@@ -131,14 +153,13 @@ export function CollapsibleAsksList({
             {/* Mobile: third row — qty + updated */}
             <div className="mt-1 grid grid-cols-2 gap-x-4 md:contents">
               <div className="md:text-right">
-                <span className="font-mono text-[10px] text-muted-foreground">
-                  <span className="md:hidden">Qty: </span>{formatNumber(row.quantity)}
+                <span className="font-mono text-sm font-bold text-foreground">
+                  <span className="md:hidden font-normal text-muted-foreground">Qty: </span>
+                  {formatNumber(row.quantity)}
                 </span>
               </div>
               <div className="md:text-right">
-                <span className="font-mono text-[10px] text-muted-foreground">
-                  {updated ?? "—"}
-                </span>
+                <RelativeTime value={row.last_updated ?? row.timestamp} />
               </div>
             </div>
           </div>
