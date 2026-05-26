@@ -39,23 +39,6 @@ export const metadata: Metadata = {
 export const revalidate = 60;
 export const dynamic = "force-static";
 
-const SEO_LINKS = [
-  { href: "/cs2-market-cap", label: "CS2 Market Cap" },
-  { href: "/cs2-api", label: "CS2 API" },
-  { href: "/free-cs2-api", label: "Free CS2 API" },
-  { href: "/cs2-market-api", label: "CS2 Market API" },
-  { href: "/cs2-price-api", label: "CS2 Price API" },
-  { href: "/cs2-data-api", label: "CS2 Data API" },
-  { href: "/cs2-items-api", label: "CS2 Items API" },
-  { href: "/cs2-skins-api", label: "CS2 Skins API" },
-  { href: "/cs2-buy-order-api", label: "CS2 Buy Order API" },
-  { href: "/cs2-market-analytics-api", label: "CS2 Analytics API" },
-  { href: "/csgo-api", label: "CSGO API" },
-  { href: "/buff163-api", label: "Buff163 API" },
-  { href: "/csfloat-api", label: "CSFloat API" },
-  { href: "/skinport-api", label: "Skinport API" },
-  { href: "/steam-api", label: "Steam API" },
-];
 
 export default async function HomePage() {
   const landing = await getLandingPageData();
