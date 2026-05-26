@@ -22588,41 +22588,54 @@
             "in": "query",
             "required": false,
             "schema": {
-              "enum": [
-                "rank",
-                "name",
-                "best_ask_usd",
-                "best_bid_usd",
-                "spread_pct",
-                "price_rate_24h",
-                "price_rate_7d",
-                "sales_1d",
-                "provider_count",
-                "marketcap",
-                "liquidity"
+              "anyOf": [
+                {
+                  "enum": [
+                    "rank",
+                    "name",
+                    "best_ask_usd",
+                    "best_bid_usd",
+                    "spread_pct",
+                    "price_rate_24h",
+                    "price_rate_7d",
+                    "sales_1d",
+                    "provider_count",
+                    "marketcap",
+                    "liquidity",
+                    "relevance"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
               ],
-              "type": "string",
-              "description": "Sort key for search results.",
-              "default": "rank",
+              "description": "Sort key for search results. When omitted, defaults to `relevance` if a text query (`q`) is provided, otherwise `rank`.",
               "title": "Sort"
             },
-            "description": "Sort key for search results."
+            "description": "Sort key for search results. When omitted, defaults to `relevance` if a text query (`q`) is provided, otherwise `rank`."
           },
           {
             "name": "direction",
             "in": "query",
             "required": false,
             "schema": {
-              "enum": [
-                "asc",
-                "desc"
+              "anyOf": [
+                {
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
               ],
-              "type": "string",
-              "description": "Sort direction for search results.",
-              "default": "asc",
+              "description": "Sort direction for search results. When omitted, defaults to `desc` for `relevance` and `asc` for all other sort keys.",
               "title": "Direction"
             },
-            "description": "Sort direction for search results."
+            "description": "Sort direction for search results. When omitted, defaults to `desc` for `relevance` and `asc` for all other sort keys."
           },
           {
             "name": "limit",
@@ -37454,7 +37467,8 @@
               "sales_1d",
               "provider_count",
               "marketcap",
-              "liquidity"
+              "liquidity",
+              "relevance"
             ],
             "title": "Sort",
             "description": "Sort key used for returned rows."
