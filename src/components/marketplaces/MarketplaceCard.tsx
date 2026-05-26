@@ -11,6 +11,7 @@ import {
   statusDotClass,
   FEE_LABELS,
   MARKET_TYPE_DESCRIPTIONS,
+  CAPABILITY_LABELS,
 } from "./marketplaces-utils";
 
 export function MarketplaceCard({ provider }: { provider: ProviderInfo }) {
