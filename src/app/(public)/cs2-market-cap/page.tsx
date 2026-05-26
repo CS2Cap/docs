@@ -85,12 +85,12 @@ export default async function CS2MarketCapPage() {
         {/* SEO long-form content */}
         <section className="border-t-2 border-border py-16 md:py-20">
           <div className="container max-w-3xl">
-            <div className="mb-3 flex items-center gap-2">
-              <div className="h-3 w-1 bg-primary" />
-              <h2 className="font-mono text-sm font-bold tracking-widest">
-                ABOUT THE CS2 MARKET CAP
-              </h2>
+            <div className="mb-2 font-mono text-xs tracking-widest text-primary">
+              // ABOUT
             </div>
+            <h2 className="display-heading mb-8 text-3xl font-black tracking-tighter md:text-4xl">
+              ABOUT THE CS2 MARKET CAP
+            </h2>
             <div className="space-y-4 font-mono text-sm leading-7 text-muted-foreground">
               <p>
                 &ldquo;Market cap&rdquo; — short for market capitalization — is
@@ -162,13 +162,13 @@ export default async function CS2MarketCapPage() {
             <div className="divide-y-2 divide-border border-brutal bg-card">
               {FAQS.map((faq) => (
                 <details key={faq.q} className="group">
-                  <summary className="flex cursor-pointer items-center justify-between gap-4 px-5 py-4 font-mono text-sm font-bold text-foreground marker:content-none">
+                  <summary className="flex cursor-pointer items-center justify-between gap-4 px-5 py-4 font-mono text-base font-bold text-foreground marker:content-none">
                     {faq.q}
                     <span className="font-mono text-primary transition-transform group-open:rotate-45">
                       +
                     </span>
                   </summary>
-                  <p className="px-5 pb-4 font-mono text-[13px] leading-6 text-muted-foreground">
+                  <p className="px-5 pb-4 font-mono text-sm leading-7 text-muted-foreground">
                     {faq.a}
                   </p>
                 </details>

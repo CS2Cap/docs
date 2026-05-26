@@ -156,6 +156,61 @@ function changeClass(value: number | null | undefined): string {
   return value >= 0 ? "text-emerald-400" : "text-red-400";
 }
 
+type ItemNameTag = "st" | "sv" | null;
+
+const ITEM_STRIP_PREFIXES = ["Sticker | ", "Souvenir Charm | ", "Graffiti | ", "Music Kit | ", "Autograph Capsule | "];
+const ITEM_STRIP_SUFFIXES = [
+  " (Factory New)",
+  " (Minimal Wear)",
+  " (Field-Tested)",
+  " (Well-Worn)",
+  " (Battle-Scarred)",
+];
+
+function formatItemDisplay(rawName: string): { prefix: string | null; name: string; tag: ItemNameTag } {
+  let name = rawName;
+  let tag: ItemNameTag = null;
+  let prefix: string | null = null;
+
+  for (const p of ITEM_STRIP_PREFIXES) {
+    if (name.startsWith(p)) {
+      name = name.slice(p.length);
+      break;
+    }
+  }
+
+  if (name.startsWith("StatTrak™ ")) {
+    name = name.slice("StatTrak™ ".length);
+    prefix = "ST";
+    tag = "st";
+  } else if (name.startsWith("Souvenir ")) {
+    name = name.slice("Souvenir ".length);
+    prefix = "SV";
+    tag = "sv";
+  }
+
+  for (const suffix of ITEM_STRIP_SUFFIXES) {
+    if (name.endsWith(suffix)) {
+      name = name.slice(0, -suffix.length);
+      break;
+    }
+  }
+
+  return { prefix, name, tag };
+}
+
+function itemTagFrameClass(tag: ItemNameTag): string {
+  if (tag === "st") return "border-orange-500/70";
+  if (tag === "sv") return "border-yellow-400/70";
+  return "border-border";
+}
+
+function itemTagTextClass(tag: ItemNameTag): string {
+  if (tag === "st") return "text-orange-400";
+  if (tag === "sv") return "text-yellow-400";
+  return "";
+}
+
 function MetricCell({
   label,
   value,
@@ -175,14 +230,14 @@ function MetricCell({
         : "text-foreground";
 
   return (
-    <div className="border-b border-r terminal-rule bg-card/80 px-3 py-2.5 last:border-r-0 md:border-b-0">
+    <div className="border-b border-r terminal-rule bg-card/80 px-4 py-3.5 last:border-r-0 md:border-b-0">
       <div className="mb-2 flex items-center justify-between gap-3">
-        <span className="truncate font-mono text-[10px] font-bold tracking-widest text-muted-foreground">
+        <span className="truncate font-mono text-xs font-bold tracking-widest text-muted-foreground">
           {label}
         </span>
         <span className="shrink-0 text-primary">{icon}</span>
       </div>
-      <div className={`truncate font-mono text-lg font-black md:text-xl ${valueClass}`}>
+      <div className={`truncate font-mono text-2xl font-black md:text-3xl ${valueClass}`}>
         {value}
       </div>
     </div>
@@ -194,12 +249,12 @@ function EmptyDashboard() {
     <section className="terminal-page relative overflow-x-clip py-5">
       <div className="container">
         <div className="terminal-panel p-4 md:p-5">
-          <div className="mb-3 flex items-center gap-2 font-mono text-[11px] font-bold tracking-widest text-primary">
-            <Clock3 className="h-4 w-4" />
+          <div className="mb-3 flex items-center gap-2 font-mono text-sm font-bold tracking-widest text-primary">
+            <Clock3 className="h-5 w-5" />
             MARKET OVERVIEW WARMING
           </div>
-          <h1 className="font-mono text-xl font-black tracking-tight md:text-2xl">CS2 Skin Market Cap</h1>
-          <p className="mt-4 max-w-2xl font-mono text-sm leading-6 text-muted-foreground">
+          <h1 className="font-mono text-3xl font-black tracking-tight md:text-4xl">CS2 Skin Market Cap</h1>
+          <p className="mt-4 max-w-2xl font-mono text-base leading-7 text-muted-foreground">
             The market cap dashboard cache is being rebuilt. The long-form guide
             and FAQ remain available below while the live overview warms.
           </p>
@@ -290,23 +345,23 @@ function Sparkline({
 
   return (
     <div className="terminal-panel flex h-full flex-col">
-      <div className="flex flex-col gap-3 border-b terminal-rule px-3 py-2.5 md:flex-row md:items-start md:justify-between">
+      <div className="flex flex-col gap-3 border-b terminal-rule px-4 py-3 md:flex-row md:items-start md:justify-between">
         <div className="min-w-0">
-          <div className="font-mono text-[10px] font-bold tracking-widest text-muted-foreground">
+          <div className="font-mono text-xs font-bold tracking-widest text-muted-foreground">
             TOTAL MARKET CAP
           </div>
           <div className="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <div className="font-mono text-xl font-black text-foreground">
+            <div className="font-mono text-3xl font-black text-foreground md:text-4xl">
               {formatUsd(active?.value)}
             </div>
             {changePct !== null ? (
-              <div className={`font-mono text-xs font-bold ${changeClass(changePct)}`}>
+              <div className={`font-mono text-sm font-bold ${changeClass(changePct)}`}>
                 {formatPct(changePct)}{" "}
                 <span className="font-normal text-muted-foreground">vs range start</span>
               </div>
             ) : null}
             {hovered ? (
-              <div className="font-mono text-[10px] text-muted-foreground">
+              <div className="font-mono text-xs text-muted-foreground">
                 {formatChartDate(hovered.timestamp, spanMs, pointSpacingMs)}
               </div>
             ) : null}
@@ -324,7 +379,7 @@ function Sparkline({
               role="tab"
               aria-selected={range === tab.key}
               onClick={() => onRangeChange(tab.key)}
-              className={`px-2.5 py-1.5 font-mono text-[10px] font-bold tracking-widest transition-colors ${
+              className={`px-3 py-2 font-mono text-xs font-bold tracking-widest transition-colors ${
                 range === tab.key
                   ? "bg-primary text-primary-foreground"
                   : "bg-card text-muted-foreground hover:text-foreground"
@@ -364,17 +419,17 @@ function Sparkline({
                 scale="time"
                 domain={["dataMin", "dataMax"]}
                 tickFormatter={(value) => formatAxisTick(Number(value), spanMs)}
-                tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
+                tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 13 }}
                 tickLine={false}
                 axisLine={false}
                 minTickGap={40}
               />
               <YAxis
                 tickFormatter={(value) => formatUsd(Number(value), true)}
-                tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
+                tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 13 }}
                 tickLine={false}
                 axisLine={false}
-                width={64}
+                width={72}
                 domain={["auto", "auto"]}
               />
               <Tooltip
@@ -387,8 +442,8 @@ function Sparkline({
                   if (!isActive || !payload?.length) return null;
                   const p = payload[0].payload as ChartPoint;
                   return (
-                    <div className="border-brutal bg-card px-3 py-2 font-mono text-xs">
-                      <div className="text-[10px] text-muted-foreground">
+                    <div className="border-brutal bg-card px-3 py-2 font-mono text-sm">
+                      <div className="text-xs text-muted-foreground">
                         {formatChartDate(p.timestamp, spanMs, pointSpacingMs)}
                       </div>
                       <div className="mt-1 font-bold text-foreground">
@@ -409,7 +464,7 @@ function Sparkline({
             </AreaChart>
           </ResponsiveContainer>
         ) : (
-          <div className="flex h-full items-center justify-center font-mono text-sm text-muted-foreground">
+          <div className="flex h-full items-center justify-center font-mono text-base text-muted-foreground">
             Waiting for history
           </div>
         )}
@@ -450,9 +505,9 @@ function CategoryTreemap({
 
   return (
     <div className="terminal-panel">
-      <div className="flex flex-col gap-3 border-b terminal-rule px-3 py-2.5 md:flex-row md:items-center md:justify-between">
-        <div className="font-mono text-[10px] font-bold tracking-widest text-muted-foreground">
-          TREEMAP · CAP DISTRIBUTION
+      <div className="flex flex-col gap-3 border-b terminal-rule px-4 py-3 md:flex-row md:items-center md:justify-between">
+        <div className="font-mono text-xs font-bold tracking-widest text-muted-foreground">
+          TREEMAP · DISTRIBUTION
         </div>
         <div className="flex flex-wrap gap-px bg-border" role="tablist" aria-label="Market cap category">
           {CATEGORY_TABS.map((tab) => (
@@ -462,7 +517,7 @@ function CategoryTreemap({
               role="tab"
               aria-selected={category === tab.key}
               onClick={() => onCategoryChange(tab.key)}
-              className={`px-3 py-1.5 font-mono text-[10px] font-bold tracking-widest transition-colors ${
+              className={`px-3 py-2 font-mono text-xs font-bold tracking-widest transition-colors ${
                 category === tab.key
                   ? "bg-primary text-primary-foreground"
                   : "bg-card text-muted-foreground hover:text-foreground"
@@ -490,10 +545,10 @@ function CategoryTreemap({
                 {titleCase(row.group)}
               </div>
               <div>
-                <div className="font-mono text-sm font-black text-primary">
+                <div className="font-mono text-base font-black text-primary">
                   {row.share_pct.toFixed(2)}%
                 </div>
-                <div className="font-mono text-[9px] text-muted-foreground">
+                <div className="font-mono text-[10px] text-muted-foreground">
                   {formatNumber(row.included_count)} items
                 </div>
               </div>
@@ -507,43 +562,43 @@ function CategoryTreemap({
 
 function CategoryTable({ rows }: { rows: MarketOverviewCategoryRow[] }) {
   return (
-    <div className="terminal-panel overflow-hidden">
-      <div className="flex items-center justify-between gap-3 border-b terminal-rule px-3 py-2.5">
-        <div className="font-mono text-[10px] font-bold tracking-widest text-muted-foreground">
+    <div className="terminal-panel flex h-full flex-col overflow-hidden">
+      <div className="flex items-center justify-between gap-3 border-b terminal-rule px-4 py-3">
+        <div className="font-mono text-xs font-bold tracking-widest text-muted-foreground">
           CATEGORY TABLE
         </div>
-        <LayoutList className="h-4 w-4 text-primary" />
+        <LayoutList className="h-5 w-5 text-primary" />
       </div>
-      <div className="grid grid-cols-[34px_minmax(150px,1.4fr)_70px_90px] gap-3 border-b terminal-rule px-3 py-2 font-mono text-[10px] font-bold tracking-widest text-muted-foreground">
+      <div className="grid grid-cols-[28px_minmax(0,1fr)_64px_84px] gap-2 border-b terminal-rule px-4 py-2.5 font-mono text-xs font-bold tracking-widest text-muted-foreground">
         <div>#</div>
         <div>CATEGORY</div>
         <div className="text-right">24H</div>
         <div className="text-right">MKTCAP</div>
       </div>
-      <div>
+      <div className="flex flex-1 flex-col">
         {rows.map((row, index) => (
           <div
             key={row.group}
-            className="grid grid-cols-[34px_minmax(150px,1.4fr)_70px_90px] items-center gap-3 border-b border-border px-3 py-2.5 last:border-b-0"
+            className="grid grid-cols-[28px_minmax(0,1fr)_64px_84px] items-center gap-2 border-b border-border px-4 py-3 last:border-b-0"
           >
-            <div className="font-mono text-[10px] text-muted-foreground">
+            <div className="font-mono text-xs text-muted-foreground">
               {String(index + 1).padStart(2, "0")}
             </div>
             <div className="min-w-0">
-              <div className="truncate font-mono text-sm font-bold text-foreground">
+              <div className="truncate font-mono text-base font-bold text-foreground">
                 {titleCase(row.group)}
               </div>
-              <div className="mt-1 h-1 bg-muted">
+              <div className="mt-1.5 h-1 bg-muted">
                 <div
                   className="h-full bg-primary"
                   style={{ width: `${Math.min(row.share_pct, 100)}%` }}
                 />
               </div>
             </div>
-            <div className={`text-right font-mono text-xs font-bold ${changeClass(row.change_24h_pct)}`}>
+            <div className={`text-right font-mono text-sm font-bold ${changeClass(row.change_24h_pct)}`}>
               {formatPct(row.change_24h_pct)}
             </div>
-            <div className="text-right font-mono text-sm font-bold text-foreground">
+            <div className="text-right font-mono text-base font-bold text-foreground">
               {formatUsd(row.marketcap_usd, true)}
             </div>
           </div>
@@ -564,35 +619,39 @@ function ItemRow({
 }) {
   const displayValue =
     valueField === "price" ? item.best_ask_usd : item.marketcap_usd;
+  const display = formatItemDisplay(item.market_hash_name);
   return (
     <Link
       href={buildItemPath(item.item_id, item.market_hash_name)}
-      className="grid grid-cols-[56px_minmax(0,1fr)_auto] items-center gap-3 border-b border-border px-3 py-2 transition-colors last:border-b-0 hover:bg-muted/40"
+      className="grid grid-cols-[64px_minmax(0,1fr)_auto] items-center gap-3 border-b border-border px-4 py-3 transition-colors last:border-b-0 hover:bg-muted/40"
     >
-      <div className="relative h-14 w-14 overflow-hidden border border-border bg-background">
+      <div className={`relative h-16 w-16 overflow-hidden border bg-background ${itemTagFrameClass(display.tag)}`}>
         {item.image_url ? (
           <Image
             src={item.image_url}
             alt=""
             fill
-            sizes="56px"
+            sizes="64px"
             className="object-contain p-1"
           />
         ) : null}
       </div>
       <div className="min-w-0">
-        <div className="truncate font-mono text-xs font-bold text-foreground">
-          {item.market_hash_name}
+        <div className="truncate font-mono text-base font-bold text-foreground">
+          {display.prefix ? (
+            <span className={itemTagTextClass(display.tag)}>{display.prefix} </span>
+          ) : null}
+          {display.name}
         </div>
-        <div className="mt-1 truncate font-mono text-[10px] text-muted-foreground">
+        <div className="mt-1 truncate font-mono text-xs text-muted-foreground">
           {titleCase(item.weapon_type ?? item.item_type)} · {item.phase ?? item.wear_name ?? "Base"}
         </div>
       </div>
       <div className="text-right">
-        <div className="font-mono text-xs font-bold text-foreground">
+        <div className="font-mono text-base font-bold text-foreground">
           {formatUsd(displayValue, compact)}
         </div>
-        <div className={`font-mono text-[10px] ${changeClass(item.price_rate_24h)}`}>
+        <div className={`font-mono text-xs ${changeClass(item.price_rate_24h)}`}>
           {formatPct(item.price_rate_24h)}
         </div>
       </div>
@@ -610,24 +669,26 @@ function MoversPanel({
   icon: ReactNode;
 }) {
   return (
-    <div className="terminal-panel">
-      <div className="flex items-center justify-between gap-4 border-b terminal-rule px-3 py-2.5">
-        <div className="font-mono text-[10px] font-bold tracking-widest text-muted-foreground">
+    <div className="terminal-panel flex h-full flex-col">
+      <div className="flex items-center justify-between gap-4 border-b terminal-rule px-4 py-3">
+        <div className="font-mono text-xs font-bold tracking-widest text-muted-foreground">
           {title}
         </div>
         <span className="text-primary">{icon}</span>
       </div>
-      {rows.length ? (
-        rows
-          .slice(0, 6)
-          .map((item) => (
-            <ItemRow key={item.item_id} item={item} compact valueField="price" />
-          ))
-      ) : (
-        <div className="px-4 py-8 text-center font-mono text-sm text-muted-foreground">
-          No movement data
-        </div>
-      )}
+      <div className="flex flex-1 flex-col">
+        {rows.length ? (
+          rows
+            .slice(0, 8)
+            .map((item) => (
+              <ItemRow key={item.item_id} item={item} compact valueField="price" />
+            ))
+        ) : (
+          <div className="flex flex-1 items-center justify-center px-4 py-8 text-center font-mono text-base text-muted-foreground">
+            No movement data
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -649,8 +710,8 @@ function MarketplacePanel({ rows }: { rows: MarketOverviewMarketplace[] }) {
 
   return (
     <div className="terminal-panel">
-      <div className="flex items-center justify-between gap-4 border-b terminal-rule px-3 py-2.5">
-        <div className="font-mono text-[10px] font-bold tracking-widest text-muted-foreground">
+      <div className="flex items-center justify-between gap-4 border-b terminal-rule px-4 py-3">
+        <div className="font-mono text-xs font-bold tracking-widest text-muted-foreground">
           MARKETPLACE LISTED VALUE
         </div>
         <Activity className="h-5 w-5 text-primary" />
@@ -662,7 +723,7 @@ function MarketplacePanel({ rows }: { rows: MarketOverviewMarketplace[] }) {
         const hasListingCount = Number.isFinite(row.listing_count);
 
         return (
-          <div key={row.provider} className="border-b border-border px-3 py-2.5 last:border-b-0">
+          <div key={row.provider} className="border-b border-border px-4 py-3 last:border-b-0">
             <div className="flex items-center justify-between gap-4">
               <div className="min-w-0">
                 <span className="flex min-w-0 items-center gap-2">
@@ -670,26 +731,26 @@ function MarketplacePanel({ rows }: { rows: MarketOverviewMarketplace[] }) {
                     <Image
                       src={logo}
                       alt={name}
-                      width={20}
-                      height={20}
-                      className="h-5 w-5 shrink-0 rounded-sm object-contain"
+                      width={24}
+                      height={24}
+                      className="h-6 w-6 shrink-0 rounded-sm object-contain"
                     />
                   ) : (
-                    <span className="h-5 w-5 shrink-0 rounded-sm bg-muted" aria-hidden />
+                    <span className="h-6 w-6 shrink-0 rounded-sm bg-muted" aria-hidden />
                   )}
-                  <span className="truncate font-mono text-sm font-bold text-foreground">
+                  <span className="truncate font-mono text-base font-bold text-foreground">
                     {name}
                   </span>
                 </span>
-                <div className="mt-1 font-mono text-[10px] text-muted-foreground">
+                <div className="mt-1 font-mono text-xs text-muted-foreground">
                   {hasListingCount ? `${formatNumber(row.listing_count)} listed units` : "listed units pending"}
                 </div>
               </div>
               <div className="text-right">
-                <div className="font-mono text-sm font-bold text-foreground">
+                <div className="font-mono text-base font-bold text-foreground">
                   {hasListedValue ? formatUsd(row.listed_value_usd, true) : "—"}
                 </div>
-                <div className="font-mono text-[10px] text-muted-foreground">
+                <div className="font-mono text-xs text-muted-foreground">
                   {row.share_pct.toFixed(1)}%
                 </div>
               </div>
@@ -743,13 +804,13 @@ function MarketplacePanel({ rows }: { rows: MarketOverviewMarketplace[] }) {
 function MostValuablePanel({ rows }: { rows: MarketOverviewItem[] }) {
   return (
     <div className="terminal-panel">
-      <div className="flex items-center justify-between gap-4 border-b terminal-rule px-3 py-2.5">
-        <div className="font-mono text-[10px] font-bold tracking-widest text-muted-foreground">
+      <div className="flex items-center justify-between gap-4 border-b terminal-rule px-4 py-3">
+        <div className="font-mono text-xs font-bold tracking-widest text-muted-foreground">
           MOST VALUABLE · BY CAP
         </div>
-        <Database className="h-4 w-4 text-primary" />
+        <Database className="h-5 w-5 text-primary" />
       </div>
-      <div className="grid grid-cols-[34px_minmax(190px,1fr)_78px_70px_96px] gap-3 border-b terminal-rule px-3 py-2 font-mono text-[10px] font-bold tracking-widest text-muted-foreground max-lg:min-w-155">
+      <div className="grid grid-cols-[40px_minmax(220px,1fr)_90px_80px_110px] gap-3 border-b terminal-rule px-4 py-2.5 font-mono text-xs font-bold tracking-widest text-muted-foreground max-lg:min-w-160">
         <div>#</div>
         <div>ITEM</div>
         <div className="text-right">ASK</div>
@@ -757,46 +818,52 @@ function MostValuablePanel({ rows }: { rows: MarketOverviewItem[] }) {
         <div className="text-right">CAP</div>
       </div>
       <div className="overflow-x-auto">
-        {rows.slice(0, 10).map((item, index) => (
+        {rows.slice(0, 10).map((item, index) => {
+          const display = formatItemDisplay(item.market_hash_name);
+          return (
           <div
             key={item.item_id}
-            className="grid grid-cols-[34px_minmax(190px,1fr)_78px_70px_96px] items-center gap-3 border-b border-border px-3 py-2 last:border-b-0 max-lg:min-w-155"
+            className="grid grid-cols-[40px_minmax(220px,1fr)_90px_80px_110px] items-center gap-3 border-b border-border px-4 py-2.5 last:border-b-0 max-lg:min-w-160"
           >
-            <div className="font-mono text-[10px] text-muted-foreground">
+            <div className="font-mono text-xs text-muted-foreground">
               {String(item.rank ?? index + 1).padStart(2, "0")}
             </div>
-            <div className="flex min-w-0 items-center gap-2">
-              <div className="relative h-12 w-12 shrink-0 overflow-hidden border border-border bg-background">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className={`relative h-14 w-14 shrink-0 overflow-hidden border bg-background ${itemTagFrameClass(display.tag)}`}>
                 {item.image_url ? (
                   <Image
                     src={item.image_url}
                     alt=""
                     fill
-                    sizes="48px"
+                    sizes="56px"
                     className="object-contain p-1"
                   />
                 ) : null}
               </div>
               <div className="min-w-0">
-                <div className="truncate font-mono text-xs font-bold text-foreground">
-                  {item.market_hash_name}
+                <div className="truncate font-mono text-base font-bold text-foreground">
+                  {display.prefix ? (
+                    <span className={itemTagTextClass(display.tag)}>{display.prefix} </span>
+                  ) : null}
+                  {display.name}
                 </div>
-                <div className="truncate font-mono text-[10px] text-muted-foreground">
+                <div className="truncate font-mono text-xs text-muted-foreground">
                   {titleCase(item.weapon_type ?? item.item_type)} · {item.phase ?? item.wear_name ?? "Base"}
                 </div>
               </div>
             </div>
-            <div className="text-right font-mono text-xs text-muted-foreground">
+            <div className="text-right font-mono text-sm text-muted-foreground">
               {formatUsd(item.best_ask_usd, true)}
             </div>
-            <div className="text-right font-mono text-xs text-muted-foreground">
+            <div className="text-right font-mono text-sm text-muted-foreground">
               {item.supply == null ? "—" : formatNumber(item.supply)}
             </div>
-            <div className="text-right font-mono text-xs font-bold text-foreground">
+            <div className="text-right font-mono text-base font-bold text-foreground">
               {formatUsd(item.marketcap_usd, true)}
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -821,10 +888,10 @@ export function MarketCapView({ overview }: { overview: MarketOverviewResponse |
         <div className="terminal-panel mb-4 overflow-hidden">
           <div className="flex flex-col gap-3 border-b terminal-rule px-3 py-3 md:flex-row md:items-center md:justify-between">
             <div className="min-w-0">
-              <div className="flex items-center gap-2 font-mono text-[25px] font-bold tracking-widest text-primary">
-              <Gauge className="h-5 w-5" />
-                CS2 MARKETCAP INDEX
-              </div>
+              <div className="flex items-center gap-2 font-mono text-2xl font-bold tracking-widest text-primary md:text-3xl">
+              <Gauge className="h-6 w-6" />
+              CS2 MARKETCAP INDEX
+            </div>
             </div>
             <div className="flex flex-wrap items-center gap-2 font-mono text-[10px] font-bold tracking-widest">
               <a
@@ -849,7 +916,7 @@ export function MarketCapView({ overview }: { overview: MarketOverviewResponse |
           </div>
         </div>
 
-        <div className="mb-4 grid overflow-hidden border terminal-rule md:grid-cols-3 xl:grid-cols-5">
+        <div className="mb-4 grid overflow-hidden border terminal-rule md:grid-cols-3 xl:grid-cols-[1.1fr_1fr_1fr_1fr_1fr]">
           <MetricCell
             label="TOTAL MKTCAP · USD"
             value={formatUsd(overview.summary.total_marketcap_usd)}
@@ -880,7 +947,7 @@ export function MarketCapView({ overview }: { overview: MarketOverviewResponse |
           />
         </div>
 
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)]">
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(320px,0.85fr)]">
           <Sparkline points={chartPoints} range={range} onRangeChange={setRange} />
           <CategoryTreemap
             rows={categoryRows}
@@ -889,23 +956,21 @@ export function MarketCapView({ overview }: { overview: MarketOverviewResponse |
           />
         </div>
 
-        <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)]">
-          <div className="grid gap-4">
-            <MoversPanel
-              title="MOVERS · GAINERS · 24H"
-              rows={overview.top_movers.gainers_24h}
-              icon={<TrendingUp className="h-5 w-5" />}
-            />
-            <MoversPanel
-              title="MOVERS · LOSERS · 24H"
-              rows={overview.top_movers.losers_24h}
-              icon={<TrendingDown className="h-5 w-5" />}
-            />
-          </div>
+        <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(320px,0.85fr)]">
+          <MoversPanel
+            title="MOVERS · GAINERS · 24H"
+            rows={overview.top_movers.gainers_24h}
+            icon={<TrendingUp className="h-5 w-5" />}
+          />
+          <MoversPanel
+            title="MOVERS · LOSERS · 24H"
+            rows={overview.top_movers.losers_24h}
+            icon={<TrendingDown className="h-5 w-5" />}
+          />
           <CategoryTable rows={categoryRows} />
         </div>
 
-        <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)]">
+        <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(320px,0.85fr)]">
           <MostValuablePanel rows={overview.most_valuable} />
           <MarketplacePanel rows={overview.marketplaces} />
         </div>
