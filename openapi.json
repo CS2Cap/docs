@@ -22598,7 +22598,8 @@
                 "price_rate_7d",
                 "sales_1d",
                 "provider_count",
-                "marketcap"
+                "marketcap",
+                "liquidity"
               ],
               "type": "string",
               "description": "Sort key for search results.",
@@ -37310,6 +37311,78 @@
             "title": "Rank",
             "description": "Descending market cap rank."
           },
+          "liquidity": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Liquidity",
+            "description": "Item-level liquidity score (0-100)."
+          },
+          "listing_score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Listing Score",
+            "description": "Listing-depth component score (0-15)."
+          },
+          "gap_score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gap Score",
+            "description": "Bid/ask gap component score (0-10)."
+          },
+          "volume_score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Volume Score",
+            "description": "24h churn component score (0-35)."
+          },
+          "stability_score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stability Score",
+            "description": "24h price stability component score (0-20)."
+          },
+          "external_score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "External Score",
+            "description": "External confirmation component score (0-20): Steam volume + Buff163 depth."
+          },
           "is_watchlisted": {
             "type": "boolean",
             "title": "Is Watchlisted",
@@ -37380,7 +37453,8 @@
               "price_rate_7d",
               "sales_1d",
               "provider_count",
-              "marketcap"
+              "marketcap",
+              "liquidity"
             ],
             "title": "Sort",
             "description": "Sort key used for returned rows."
