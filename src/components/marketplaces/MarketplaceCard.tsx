@@ -66,20 +66,6 @@ export function MarketplaceCard({ provider }: { provider: ProviderInfo }) {
           </TooltipContent>
         </Tooltip>
 
-        {/* Fee with tooltip */}
-        {fee && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span className="inline-flex cursor-help items-center border border-border bg-muted/40 px-2 py-0.5 font-mono text-[10px] text-muted-foreground">
-                {formatFee(fee.value)}
-              </span>
-            </TooltipTrigger>
-            <TooltipContent side="top" className="text-xs">
-              {FEE_LABELS[fee.key]}
-            </TooltipContent>
-          </Tooltip>
-        )}
-
         {/* Capabilities */}
         {provider.features?.has_buy_orders && (
           <Tooltip>
@@ -102,6 +88,20 @@ export function MarketplaceCard({ provider }: { provider: ProviderInfo }) {
             </TooltipTrigger>
             <TooltipContent side="top" className="max-w-[260px] text-xs">
               {CAPABILITY_LABELS.RS}
+            </TooltipContent>
+          </Tooltip>
+        )}
+
+        {/* Fee with tooltip — furthest right */}
+        {fee && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="inline-flex cursor-help items-center border border-border bg-muted/40 px-2 py-0.5 font-mono text-[10px] text-muted-foreground">
+                {formatFee(fee.value)}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="text-xs">
+              {FEE_LABELS[fee.key]}
             </TooltipContent>
           </Tooltip>
         )}
