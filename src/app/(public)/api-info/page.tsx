@@ -1,17 +1,15 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import {
   Code,
   Database,
-  Shield,
-  Clock,
   Activity,
   Terminal,
   Globe,
   BadgeDollarSign,
   CandlestickChart,
   Layers3,
-  Zap,
   KeyRound,
   FileJson,
   PackageOpen,
@@ -24,6 +22,7 @@ import { FooterSection } from "@/components/FooterSection";
 import { StructuredData, buildBreadcrumbList, buildSoftwareApplication } from "@/components/seo/StructuredData";
 import { getApiInfoPageData } from "@/lib/api/compositions";
 import { serverApi } from "@/lib/api/server";
+import type { ProviderInfo } from "@/lib/api/types";
 import { getPagesByType } from "@/lib/seo/landing-pages";
 
 function GithubMark({ className }: { className?: string }) {
@@ -122,6 +121,115 @@ const apiSectionIcons: Record<string, typeof Database> = {
   Other: Database,
 };
 
+const PROVIDER_LOGO_BASE = "https://cdn.cs2c.app/images/providers";
+
+const networkNodes = [
+  { key: "buff163", x: 18, y: 24 },
+  { key: "marketcsgo", x: 14, y: 48 },
+  { key: "youpin", x: 18, y: 72 },
+  { key: "csfloat", x: 38, y: 12 },
+  { key: "csmoney_m", x: 62, y: 12 },
+  { key: "c5", x: 82, y: 24 },
+  { key: "dmarket", x: 86, y: 48 },
+  { key: "skinport", x: 82, y: 72 },
+  { key: "steam", x: 38, y: 88 },
+  { key: "tradeit", x: 62, y: 88 },
+] as const;
+
+function providerLogoUrl(providers: ProviderInfo[], key: string) {
+  return providers.find((provider) => provider.key === key)?.logo ?? `${PROVIDER_LOGO_BASE}/${key}.png`;
+}
+
+function ApiNetworkHeroPanel({ providers }: { providers: ProviderInfo[] }) {
+  const stats = [
+    { value: "<50ms", label: "AVG LATENCY" },
+    { value: providers.length.toLocaleString(), label: "MARKETPLACES" },
+    { value: "99.9%", label: "TARGET UPTIME" },
+    { value: "5m", label: "MIN INTERVAL" },
+  ];
+
+  return (
+    <div
+      className="animate-fade-in-up-sm border-2 border-border bg-card"
+      style={{ animationDelay: "0.3s", animationFillMode: "both" }}
+    >
+      <div className="relative min-h-[300px] overflow-hidden bg-background sm:min-h-[360px] lg:min-h-[400px]">
+        <div className="absolute inset-0 bg-grid-dense opacity-60" />
+        <div className="absolute left-8 top-8 h-28 w-28 rotate-12 border-2 border-primary/10" />
+        <div className="absolute bottom-8 right-10 h-20 w-20 -rotate-6 border-2 border-primary/10" />
+
+        <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
+          <defs>
+            <radialGradient id="api-network-hub-glow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="hsl(217 90% 55%)" stopOpacity="0.38" />
+              <stop offset="100%" stopColor="hsl(217 90% 55%)" stopOpacity="0" />
+            </radialGradient>
+          </defs>
+
+          <circle cx="50" cy="50" r="19" fill="url(#api-network-hub-glow)" />
+          {networkNodes.map((node, index) => (
+            <g key={`line-${node.key}`}>
+              <line
+                x1="50"
+                y1="50"
+                x2={node.x}
+                y2={node.y}
+                className="api-network-line"
+                style={{ animationDelay: `${index * 0.18}s` }}
+              />
+              <circle
+                r="0.7"
+                className="api-network-packet"
+                style={{ animationDelay: `${index * 0.16}s` }}
+              >
+                <animateMotion
+                  dur="2.6s"
+                  begin={`${index * 0.18}s`}
+                  repeatCount="indefinite"
+                  path={`M${node.x},${node.y} L50,50`}
+                />
+              </circle>
+            </g>
+          ))}
+        </svg>
+
+        <div className="api-network-hub absolute left-1/2 top-1/2 flex h-20 w-20 -translate-x-1/2 -translate-y-1/2 items-center justify-center sm:h-24 sm:w-24">
+          <Image src="/assets/logo.svg" alt="" width={76} height={76} className="h-full w-full object-contain" priority />
+        </div>
+
+        {networkNodes.map((node, index) => (
+          <div
+            key={node.key}
+            className="api-network-node absolute flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center sm:h-14 sm:w-14"
+            style={{
+              left: `${node.x}%`,
+              top: `${node.y}%`,
+              animationDelay: `${0.2 + index * 0.09}s`,
+            }}
+          >
+            <Image
+              src={providerLogoUrl(providers, node.key)}
+              alt=""
+              width={40}
+              height={40}
+              className="h-full w-full object-contain"
+            />
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-2 gap-px bg-border sm:grid-cols-4">
+        {stats.map((stat) => (
+          <div key={stat.label} className="bg-card px-4 py-4 md:px-5">
+            <div className="font-mono text-xl font-bold text-foreground md:text-2xl">{stat.value}</div>
+            <div className="mt-1 font-mono text-[10px] tracking-widest text-muted-foreground">{stat.label}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default async function ApiPage() {
   const [apiInfo, providers, metadata, plans] = await Promise.all([
     getApiInfoPageData(),
@@ -189,45 +297,7 @@ export default async function ApiPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-px bg-border">
-              {[
-                {
-                  icon: Zap,
-                  value: "<50ms",
-                  label: "AVG LATENCY",
-                  sub: "Global edge network",
-                },
-                {
-                  icon: Database,
-                  value: providers.length.toLocaleString(),
-                  label: "MARKETPLACES",
-                  sub: "CFloat, BUFF163, Youpin...",
-                },
-                {
-                  icon: Shield,
-                  value: "99.9%",
-                  label: "TARGET UPTIME",
-                  sub: "Enterprise-grade reliability",
-                },
-                {
-                  icon: Clock,
-                  value: "5m",
-                  label: "MIN INTERVAL",
-                  sub: "Candlestick granularity",
-                },
-              ].map((stat, i) => (
-                <div
-                  key={stat.label}
-                  className="bg-card p-4 md:p-6 animate-fade-in-up-sm"
-                  style={{ animationDelay: `${0.3 + i * 0.08}s`, animationFillMode: "both" }}
-                >
-                  <stat.icon className="mb-3 h-4 w-4 text-primary" strokeWidth={1.5} />
-                  <div className="font-mono text-xl md:text-2xl font-bold text-foreground">{stat.value}</div>
-                  <div className="font-mono text-[10px] tracking-widest text-muted-foreground">{stat.label}</div>
-                  <div className="mt-1 font-mono text-[10px] text-muted-foreground/70">{stat.sub}</div>
-                </div>
-              ))}
-            </div>
+            <ApiNetworkHeroPanel providers={providers} />
           </div>
         </div>
       </section>

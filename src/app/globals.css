@@ -291,6 +291,61 @@
     animation: pulse-glow 2s ease-in-out infinite;
   }
 
+  @keyframes api-network-line-flow {
+    from { stroke-dashoffset: 24; }
+    to { stroke-dashoffset: 0; }
+  }
+
+  .api-network-line {
+    stroke: hsl(217 90% 55% / 0.5);
+    stroke-width: 0.28;
+    stroke-dasharray: 3 5;
+    vector-effect: non-scaling-stroke;
+    animation: api-network-line-flow 1.8s linear infinite;
+  }
+
+  @keyframes api-network-packet-pulse {
+    0%, 100% { opacity: 0; }
+    18%, 70% { opacity: 1; }
+  }
+
+  .api-network-packet {
+    fill: hsl(190 95% 50%);
+    filter: drop-shadow(0 0 5px hsl(190 95% 50% / 0.8));
+    animation: api-network-packet-pulse 2.6s ease-in-out infinite;
+  }
+
+  @keyframes api-network-node-glow {
+    0%, 100% {
+      filter: drop-shadow(0 0 5px hsl(217 90% 55% / 0.12));
+    }
+    50% {
+      filter: drop-shadow(0 0 14px hsl(217 90% 55% / 0.34));
+    }
+  }
+
+  .api-network-node {
+    animation: api-network-node-glow 3s ease-in-out infinite;
+  }
+
+  .api-network-hub {
+    filter:
+      drop-shadow(0 0 10px hsl(217 90% 55% / 0.55))
+      drop-shadow(0 0 34px hsl(190 95% 50% / 0.22));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .api-network-line,
+    .api-network-packet,
+    .api-network-node {
+      animation: none;
+    }
+
+    .api-network-packet {
+      display: none;
+    }
+  }
+
   @keyframes fade-in-up {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }

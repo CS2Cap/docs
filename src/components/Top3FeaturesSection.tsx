@@ -20,8 +20,8 @@ export function Top3FeaturesSection() {
       title: "BUFF163, YOUPIN +30 MORE",
       blurb:
         "Live ask, bid, and recent sales across every market that moves CS2 prices.",
-      cta: "BUFF163 API",
-      href: "/buff163-api",
+      cta: "VIEW MARKETS",
+      href: "/marketplaces",
       visual: <PrimaryMarketsVisual />,
     },
     {
@@ -35,11 +35,11 @@ export function Top3FeaturesSection() {
     },
     {
       tag: "MULTI-YEAR HISTORY",
-      title: "REAL OHLC CANDLES",
+      title: "REAL OHLCV CANDLES",
       blurb:
         "5-minute to daily candlesticks. Two years of depth across every release and patch.",
-      cta: "HISTORY API",
-      href: "/cs2-price-history-api",
+      cta: "CANDLESTICK API",
+      href: "/cs2-candlestick-api",
       visual: <OhlcCandlesVisual />,
     },
   ];
