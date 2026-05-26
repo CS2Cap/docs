@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowRight, BookOpen, CreditCard } from "lucide-react";
 import type { Metadata } from "next";
 import { Code2, Globe, ArrowRight, Zap } from "lucide-react";
 import { LiveTicker } from "@/components/LiveTicker";
