@@ -8,6 +8,11 @@ export const FEE_LABELS: Record<FeeKey, string> = {
   trading_spread_fee: "Trading Spread Fee",
 };
 
+export const CAPABILITY_LABELS: Record<string, string> = {
+  BO: "Buy Orders — this marketplace supports public buy (bid) listings.",
+  RS: "Recent Sales — this marketplace provides historical sale data.",
+};
+
 export function normalizeMarketType(mt?: string): string {
   return (mt ?? "OTHER").toUpperCase().trim();
 }
