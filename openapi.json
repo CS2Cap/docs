@@ -25378,7 +25378,7 @@
               "application/json": {
                 "example": {
                   "status": "degraded",
-                  "provider_count": 39,
+                  "provider_count": 40,
                   "degraded_provider_count": 1,
                   "stale_provider_count": 0,
                   "max_consecutive_failures": 7,
