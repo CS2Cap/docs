@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen, CreditCard } from "lucide-react";
 import type { Metadata } from "next";
-import { Code2, Globe, ArrowRight, Zap } from "lucide-react";
+import { Code2, Globe, ArrowRight, Zap, BookOpen, CreditCard } from "lucide-react";
 import { LiveTicker } from "@/components/LiveTicker";
 import { HeroSection } from "@/components/HeroSection";
 import { Top3FeaturesSection } from "@/components/Top3FeaturesSection";
