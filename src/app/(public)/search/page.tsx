@@ -216,9 +216,6 @@ export async function generateMetadata({
   const description = titleSubject
     ? `Live CS2 skin prices for ${titleSubject}. Compare ask prices, buy orders, and market analytics across 40+ marketplaces with the CS2Cap API.`
     : "Search every CS2 skin in the catalog and compare live prices, buy orders, and analytics across 40+ marketplaces.";
-  const hasFilter = Boolean(
-    q || itemType || baseName || weaponType || wearName || rarityName || collection || phase,
-  );
   const canonical = buildCanonicalSearchPath({
     q,
     item_type: itemType,
@@ -233,9 +230,7 @@ export async function generateMetadata({
     title,
     description,
     alternates: { canonical },
-    robots: hasFilter
-      ? { index: true, follow: true }
-      : { index: false, follow: true },
+    robots: { index: true, follow: true },
     openGraph: {
       title,
       description,

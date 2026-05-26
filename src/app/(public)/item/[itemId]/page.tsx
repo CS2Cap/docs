@@ -357,6 +357,7 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                     <WatchItemButton itemId={numericItemId} />
                     <Link
                       href={`/alerts?itemId=${numericItemId}`}
+                      rel="nofollow"
                       className="flex items-center justify-center gap-1.5 border-brutal px-3.5 py-2.5 font-mono text-[11px] tracking-wider brutalist-hover"
                     >
                       <Bell className="h-3.5 w-3.5" />

@@ -15,7 +15,7 @@ const DESC =
 export const metadata: Metadata = {
   title: "CS2Cap — CS2 Skins Pricing API & Market Data",
   description: DESC,
-  alternates: { canonical: "/" },
+  alternates: { canonical: "https://cs2cap.com/" },
   other: {
     "impact-site-verification": "ae70ce5b-ea4d-4103-a1c6-742b97475875",
   },

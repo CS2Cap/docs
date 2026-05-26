@@ -47,9 +47,10 @@ export function formatCompactCount(value: number): string {
 
 export function statusDotClass(status?: string): string {
   const s = (status ?? "").toLowerCase();
-  if (s === "online" || s === "healthy") return "bg-success";
+  if (s === "up") return "bg-success";
   if (s === "degraded") return "bg-warning";
-  return "bg-destructive";
+  if (s === "down") return "bg-destructive";
+  return "bg-muted-foreground";
 }
 
 export const MARKET_TYPE_FILTERS = [

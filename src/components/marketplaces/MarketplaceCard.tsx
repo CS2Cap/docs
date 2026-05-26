@@ -17,7 +17,7 @@ import {
 export function MarketplaceCard({ provider }: { provider: ProviderInfo }) {
   const marketType = normalizeMarketType(provider.market_type);
   const fee = pickPrimaryFee(provider.fees);
-  const seoPage = getPageBySlug(`${provider.code}-api`);
+  const seoPage = getPageBySlug(`${provider.key}-api`);
   const href = seoPage?.canonicalPath;
 
   const CardContent = (
