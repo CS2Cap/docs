@@ -22502,6 +22502,24 @@
             "description": "Filter by one or more collection values."
           },
           {
+            "name": "container_slug",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by container/case slug.",
+              "title": "Container Slug"
+            },
+            "description": "Filter by container/case slug."
+          },
+          {
             "name": "is_stattrak",
             "in": "query",
             "required": false,
@@ -36852,6 +36870,18 @@
       },
       "WebSearchAppliedFilters": {
         "properties": {
+          "container_slug": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Container Slug",
+            "description": "Container/case slug used to restrict candidate items."
+          },
           "item_type": {
             "items": {
               "type": "string"
