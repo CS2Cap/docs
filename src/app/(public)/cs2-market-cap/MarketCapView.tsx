@@ -534,7 +534,7 @@ function CategoryTreemap({
           ))}
         </div>
       </div>
-      <div className="grid h-[28rem] grid-cols-2 auto-rows-fr gap-1 p-2">
+      <div className="grid h-112 grid-cols-2 auto-rows-fr gap-1 p-2">
         {visibleRows.map((row) => {
           const share = Math.max(row.share_pct, 1);
           const intensity = Math.max(0.15, Math.min(0.75, share / maxShare));
