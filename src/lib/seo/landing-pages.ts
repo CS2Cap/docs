@@ -58,6 +58,7 @@ const PROVIDER_DISPLAY_NAMES: Record<string, string> = {
   dmarket: "DMarket",
   dupefi: "Dupe.fi",
   ecosteam: "Eco Steam",
+  gameboost: "GameBoost",
   haloskins: "HaloSkins",
   itradegg: "iTrade.gg",
   lisskins: "LisSkins",
@@ -600,7 +601,7 @@ const FEATURE_PAGES: SeoPageConfig[] = [
 
 const PRIORITY_PROVIDER_SLUGS = [
   "youpin", "buff163", "c5",
-  "csfloat", "csmoney_t", "csmoney_m", "dmarket", "dupefi", "lisskins",
+  "csfloat", "csmoney_t", "csmoney_m", "dmarket", "dupefi", "gameboost", "lisskins",
   "marketcsgo", "skinland", "skinport", "steam", "whitemarket",
 ];
 

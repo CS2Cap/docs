@@ -33,7 +33,7 @@ export const dynamic = "force-static";
 const NEXT_STEP_LINKS = [
   { href: "/apis", label: "BROWSE ALL APIs", desc: "Endpoint-by-endpoint reference for every CS2Cap API." },
   { href: "/pricing", label: "VIEW PRICING", desc: "Plans, rate limits, and the feature matrix side by side." },
-  { href: "/marketplaces", label: "40 MARKETPLACES", desc: "Every market we pull from — BUFF163, Youpin, Steam, more." },
+  { href: "/marketplaces", label: "41 MARKETPLACES", desc: "Every market we pull from — BUFF163, Youpin, CSFloat, and more." },
 ];
 
 export default function FeaturesPage() {
