@@ -534,7 +534,7 @@ function CategoryTreemap({
           ))}
         </div>
       </div>
-      <div className="grid h-96 grid-cols-2 auto-rows-fr gap-1 p-2">
+      <div className="grid h-[28rem] grid-cols-2 auto-rows-fr gap-1 p-2">
         {visibleRows.map((row) => {
           const share = Math.max(row.share_pct, 1);
           const intensity = Math.max(0.15, Math.min(0.75, share / maxShare));
@@ -547,14 +547,14 @@ function CategoryTreemap({
                 opacity: 0.72 + intensity * 0.28,
               }}
             >
-              <div className="truncate font-mono text-sm font-black uppercase tracking-widest text-foreground">
+              <div className="truncate font-mono text-sm font-black uppercase leading-tight tracking-widest text-foreground">
                 {titleCase(row.group)}
               </div>
               <div>
-                <div className="font-mono text-base font-black text-primary">
+                <div className="font-mono text-base font-black leading-tight text-primary">
                   {row.share_pct.toFixed(2)}%
                 </div>
-                <div className="font-mono text-xs text-muted-foreground">
+                <div className="font-mono text-xs leading-tight text-muted-foreground">
                   {formatNumber(row.included_count)} items
                 </div>
               </div>
