@@ -207,13 +207,13 @@ export async function ItemMarketInsightsSection({
     <div className="grid gap-px bg-border md:grid-cols-4">
       {cards.map((card) => (
         <div key={card.label} className="bg-card p-4">
-          <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
+          <div className="font-mono text-xs tracking-widest text-muted-foreground">
             {card.label}
           </div>
           <div className={`mt-1 font-mono text-2xl font-bold ${TONE_VALUE_CLASS[card.tone]}`}>
             {card.value}
           </div>
-          <div className="mt-1 flex items-center gap-1.5 font-mono text-[10px] text-muted-foreground">
+          <div className="mt-1 flex items-center gap-1.5 font-mono text-xs text-muted-foreground">
             {card.tag ? (
               <span className={`font-bold tracking-widest ${TONE_TAG_CLASS[card.tone]}`}>
                 {card.tag}
@@ -264,7 +264,7 @@ export async function ItemRecentSalesSection({
       <div className="border-brutal bg-card">
         <div className="flex items-center justify-between border-b-2 border-border px-4 py-3">
           <span className="font-mono text-xs tracking-widest text-primary">RECENT SALES</span>
-          <span className="font-mono text-[10px] text-muted-foreground">Sign in required</span>
+          <span className="font-mono text-xs text-muted-foreground">Sign in required</span>
         </div>
         <div className="px-4 py-8 font-mono text-sm text-muted-foreground">
           <Link href="/login" className="text-primary underline-offset-2 hover:underline">
@@ -282,7 +282,7 @@ export async function ItemRecentSalesSection({
     <div className="border-brutal bg-card">
       <div className="flex items-center justify-between border-b-2 border-border px-4 py-3">
         <span className="font-mono text-xs tracking-widest text-primary">RECENT SALES</span>
-        <span className="font-mono text-[10px] text-muted-foreground">
+        <span className="font-mono text-xs text-muted-foreground">
           {sales?.items.length ?? 0} recent sales
         </span>
       </div>

@@ -153,7 +153,7 @@ function ApiNetworkHeroPanel({ providers }: { providers: ProviderInfo[] }) {
       className="animate-fade-in-up-sm border-2 border-border bg-card"
       style={{ animationDelay: "0.3s", animationFillMode: "both" }}
     >
-      <div className="relative min-h-[300px] overflow-hidden bg-background sm:min-h-[360px] lg:min-h-[400px]">
+      <div className="relative min-h-75 overflow-hidden bg-background sm:min-h-90 lg:min-h-100">
         <div className="absolute inset-0 bg-grid-dense opacity-60" />
         <div className="absolute left-8 top-8 h-28 w-28 rotate-12 border-2 border-primary/10" />
         <div className="absolute bottom-8 right-10 h-20 w-20 -rotate-6 border-2 border-primary/10" />
@@ -222,7 +222,7 @@ function ApiNetworkHeroPanel({ providers }: { providers: ProviderInfo[] }) {
         {stats.map((stat) => (
           <div key={stat.label} className="bg-card px-4 py-4 md:px-5">
             <div className="font-mono text-xl font-bold text-foreground md:text-2xl">{stat.value}</div>
-            <div className="mt-1 font-mono text-[10px] tracking-widest text-muted-foreground">{stat.label}</div>
+            <div className="mt-1 font-mono text-xs tracking-widest text-muted-foreground">{stat.label}</div>
           </div>
         ))}
       </div>
@@ -283,7 +283,7 @@ export default async function ApiPage() {
                 style={{ animationDelay: "0.25s", animationFillMode: "both" }}
               >
                 <Link
-                  href="/login"
+                  href="/account"
                   className="w-full sm:w-auto text-center border-2 border-primary bg-primary px-8 py-3 font-mono text-sm font-bold tracking-wider text-primary-foreground brutalist-hover"
                 >
                   GET ACCESS →
@@ -314,7 +314,7 @@ export default async function ApiPage() {
               <div key={useCase.title} className="bg-card p-6 transition-colors hover:bg-secondary/30">
                 <useCase.icon className="mb-4 h-5 w-5 text-primary" strokeWidth={1.5} />
                 <h3 className="mb-2 font-mono text-xs font-bold tracking-wider text-foreground">{useCase.title}</h3>
-                <p className="font-mono text-xs leading-relaxed text-foreground">{useCase.desc}</p>
+                <p className="font-mono text-sm leading-6 text-foreground">{useCase.desc}</p>
               </div>
             ))}
           </div>
@@ -333,7 +333,7 @@ export default async function ApiPage() {
               <div key={item.title} className="bg-card p-8 transition-colors hover:bg-secondary/30">
                 <item.icon className="mb-4 h-5 w-5 text-primary" strokeWidth={1.5} />
                 <h3 className="mb-2 font-mono text-xs font-bold tracking-wider text-foreground">{item.title}</h3>
-                <p className="font-mono text-xs leading-relaxed text-foreground">{item.desc}</p>
+                <p className="font-mono text-sm leading-6 text-foreground">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -381,7 +381,7 @@ export default async function ApiPage() {
               <div key={sdk.title} className="bg-card p-8 transition-colors hover:bg-secondary/30">
                 <sdk.icon className="mb-4 h-5 w-5 text-primary" />
                 <h3 className="mb-2 font-mono text-xs font-bold tracking-wider text-foreground">{sdk.title}</h3>
-                <p className="mb-5 font-mono text-xs leading-relaxed text-foreground">{sdk.desc}</p>
+                <p className="mb-5 font-mono text-sm leading-6 text-foreground">{sdk.desc}</p>
 
                 <div className="mb-5 border border-border bg-secondary/50 px-3 py-2 font-mono text-xs text-foreground">
                   <span className="text-muted-foreground">$</span> {sdk.install}
@@ -391,7 +391,7 @@ export default async function ApiPage() {
                   href={sdk.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 border-2 border-primary bg-primary px-5 py-2.5 font-mono text-[11px] font-bold tracking-wider text-primary-foreground brutalist-hover"
+                  className="inline-flex items-center gap-2 border-2 border-primary bg-primary px-5 py-2.5 font-mono text-xs font-bold tracking-wider text-primary-foreground brutalist-hover"
                 >
                   {sdk.label}
                 </a>
@@ -428,7 +428,7 @@ export default async function ApiPage() {
                     const SectionIcon = apiSectionIcons[category.title] ?? Database;
                     return <SectionIcon className="h-4 w-4 text-primary" strokeWidth={1.5} />;
                   })()}
-                  <span className="font-mono text-[10px] tracking-widest text-foreground">
+                  <span className="font-mono text-xs tracking-widest text-foreground">
                     {category.title.toUpperCase()}
                   </span>
                 </div>
@@ -438,12 +438,12 @@ export default async function ApiPage() {
                     className={`px-4 py-4 ${index !== category.endpoints.length - 1 ? "border-b border-border" : ""}`}
                   >
                     <div className="flex items-start gap-3">
-                      <span className="mt-0.5 shrink-0 bg-primary/20 px-2 py-1 font-mono text-[10px] font-bold tracking-wider text-primary">
+                      <span className="mt-0.5 shrink-0 bg-primary/20 px-2 py-1 font-mono text-xs font-bold tracking-wider text-primary">
                         {endpoint.method}
                       </span>
                       <div className="min-w-0">
                         <div className="font-mono text-sm font-bold text-foreground">{endpoint.path}</div>
-                        <div className="mt-1 font-mono text-[11px] text-muted-foreground">{endpoint.description}</div>
+                        <div className="mt-1 font-mono text-sm leading-6 text-muted-foreground">{endpoint.description}</div>
                       </div>
                     </div>
                   </div>
@@ -473,7 +473,7 @@ export default async function ApiPage() {
                 COMPARE PLANS →
               </Link>
               <Link
-                href="/login"
+                href="/account"
                 className="border-brutal px-6 py-3 font-mono text-xs font-bold tracking-wider text-foreground brutalist-hover hover:border-primary transition-colors"
               >
                 GET STARTED FREE
@@ -514,7 +514,7 @@ export default async function ApiPage() {
                 <Link
                   key={p.slug}
                   href={p.canonicalPath}
-                  className="bg-card px-4 py-3 font-mono text-[11px] tracking-wider text-muted-foreground transition-colors hover:bg-secondary/30 hover:text-primary"
+                  className="bg-card px-4 py-3 font-mono text-xs tracking-wider text-muted-foreground transition-colors hover:bg-secondary/30 hover:text-primary"
                 >
                   {p.h1}
                 </Link>
@@ -535,7 +535,7 @@ export default async function ApiPage() {
             {metadata?.catalog.total_items.toLocaleString() ?? 0} items, {providers.length} markets, one API.
           </p>
           <Link
-            href="/login"
+            href="/account"
             className="inline-block border-2 border-primary bg-primary px-12 py-4 font-mono text-sm font-bold tracking-wider text-primary-foreground brutalist-hover"
           >
             GET ACCESS →

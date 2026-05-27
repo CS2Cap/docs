@@ -86,7 +86,7 @@ export function InventoryValueTool() {
     <div className="container py-16 md:py-24">
       {/* Hero / search */}
       <div className="mx-auto max-w-3xl text-center">
-        <div className="mb-4 inline-flex items-center gap-2 border border-primary/30 px-3 py-1 font-mono text-[10px] tracking-widest text-primary">
+        <div className="mb-4 inline-flex items-center gap-2 border border-primary/30 px-3 py-1 font-mono text-xs tracking-widest text-primary">
           <span className="h-1.5 w-1.5 bg-primary animate-pulse-glow" />
           LIVE STEAM LOOKUP
         </div>
@@ -130,7 +130,7 @@ export function InventoryValueTool() {
             </button>
           </div>
 
-          <div className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 font-mono text-[11px] text-muted-foreground">
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 font-mono text-xs text-muted-foreground">
             <span>Examples:</span>
             {EXAMPLES.map((ex) => (
               <button
@@ -150,7 +150,7 @@ export function InventoryValueTool() {
       {/* Status / results */}
       {error ? (
         <div className="mx-auto mt-10 max-w-3xl border-2 border-destructive/40 bg-destructive/10 p-5">
-          <div className="font-mono text-[10px] uppercase tracking-widest text-destructive">
+          <div className="font-mono text-xs uppercase tracking-widest text-destructive">
             Lookup failed
           </div>
           <p className="mt-2 font-mono text-sm text-foreground">{error}</p>
@@ -167,13 +167,13 @@ export function InventoryValueTool() {
       {showResults && result ? (
         <div className="mt-12 space-y-8">
           {submittedTarget ? (
-            <div className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+            <div className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
               Results for{" "}
               <span className="text-foreground normal-case tracking-normal">
                 {submittedTarget}
               </span>
               {result.meta.cache_hit ? (
-                <span className="ml-2 border border-border px-1.5 py-0.5 text-[9px] tracking-widest text-muted-foreground">
+                <span className="ml-2 border border-border px-1.5 py-0.5 text-xs tracking-widest text-muted-foreground">
                   CACHED
                 </span>
               ) : null}
@@ -262,12 +262,12 @@ export function InventoryValueTool() {
                             <div className="truncate font-mono text-xs text-foreground">
                               {u.market_hash_name}
                               {u.phase ? (
-                                <span className="ml-2 text-[10px] text-primary">
+                                <span className="ml-2 text-xs text-primary">
                                   ({u.phase})
                                 </span>
                               ) : null}
                             </div>
-                            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                            <div className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
                               {unmatchedReasonLabel(u.reason)} · qty {u.quantity}
                             </div>
                           </div>

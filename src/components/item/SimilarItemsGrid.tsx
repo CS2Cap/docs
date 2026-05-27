@@ -52,7 +52,7 @@ export function SimilarItemsGrid({ items }: { items: SimilarItem[] }) {
                   className="h-full w-full object-contain p-3"
                 />
               ) : (
-                <div className="flex h-full items-center justify-center font-mono text-[10px] text-muted-foreground">
+                <div className="flex h-full items-center justify-center font-mono text-xs text-muted-foreground">
                   NO PREVIEW
                 </div>
               )}
@@ -60,11 +60,11 @@ export function SimilarItemsGrid({ items }: { items: SimilarItem[] }) {
             <div className="mt-3 font-mono text-xs font-bold text-foreground">
               {item.name}
             </div>
-            <div className="mt-1 font-mono text-[10px] text-muted-foreground">
+            <div className="mt-1 font-mono text-xs text-muted-foreground">
               {[item.wear, item.collection].filter(Boolean).join(" • ")}
             </div>
             <div className="mt-3 flex items-center justify-between">
-              <span className="font-mono text-[10px] tracking-widest text-primary">
+              <span className="font-mono text-xs tracking-widest text-primary">
                 BEST ASK
               </span>
               <span className="font-mono text-xs font-bold text-foreground">
@@ -78,7 +78,7 @@ export function SimilarItemsGrid({ items }: { items: SimilarItem[] }) {
         <button
           type="button"
           onClick={() => setExpanded((prev) => !prev)}
-          className="flex w-full items-center justify-center gap-2 border-t-2 border-border bg-secondary/20 px-4 py-3 font-mono text-[10px] tracking-widest text-primary transition-colors hover:bg-secondary/40"
+          className="flex w-full items-center justify-center gap-2 border-t-2 border-border bg-secondary/20 px-4 py-3 font-mono text-xs tracking-widest text-primary transition-colors hover:bg-secondary/40"
         >
           {expanded ? (
             <>

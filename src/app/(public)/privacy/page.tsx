@@ -156,7 +156,7 @@ export default function PrivacyPage() {
                 {section.body.map((paragraph, index) => (
                   <p
                     key={`${section.title}-p-${index}`}
-                    className="font-mono text-xs text-muted-foreground leading-relaxed"
+                    className="font-mono text-base leading-7 text-muted-foreground"
                   >
                     {paragraph}
                   </p>
@@ -167,7 +167,7 @@ export default function PrivacyPage() {
                     {section.bullets.map((bullet, index) => (
                       <li
                         key={`${section.title}-b-${index}`}
-                        className="font-mono text-xs text-muted-foreground leading-relaxed"
+                        className="font-mono text-base leading-7 text-muted-foreground"
                       >
                         {bullet}
                       </li>

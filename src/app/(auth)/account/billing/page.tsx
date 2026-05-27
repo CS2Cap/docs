@@ -350,7 +350,7 @@ export default function AccountBillingPage() {
             <div className="flex flex-wrap gap-3">
               <Button variant="outline" asChild>
                 <a
-                  href="https://docs.cs2cap.com/guides/pricing-plans"
+                  href="/pricing"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -518,7 +518,7 @@ function SubscriptionCycleDialog({
               <div>
                 <div className="flex items-center gap-2">
                   <p className="font-medium text-foreground">3 months</p>
-                  <span className="bg-success/20 px-1.5 py-0.5 font-mono text-[9px] tracking-wider text-success">
+                  <span className="bg-success/20 px-1.5 py-0.5 font-mono text-xs tracking-wider text-success">
                     -16%
                   </span>
                 </div>

@@ -263,7 +263,7 @@ export async function SeoLandingPage({ config }: { config: SeoPageConfig }) {
                   </Link>
                 )}
                 <Link
-                  href="/login"
+                  href="/account"
                   className="border-brutal px-8 py-3 font-mono text-sm font-bold tracking-wider text-foreground brutalist-hover hover:border-primary transition-colors text-center"
                 >
                   GET ACCESS
@@ -281,7 +281,7 @@ export async function SeoLandingPage({ config }: { config: SeoPageConfig }) {
                   >
                     <stat.icon className="mb-3 h-4 w-4 text-primary" strokeWidth={1.5} />
                     <div className="font-mono text-2xl font-bold text-foreground">{stat.value}</div>
-                    <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
+                    <div className="font-mono text-xs tracking-widest text-muted-foreground">
                       {stat.label}
                     </div>
                   </div>
@@ -298,11 +298,11 @@ export async function SeoLandingPage({ config }: { config: SeoPageConfig }) {
                   <div className="h-2 w-2 shrink-0 rounded-full bg-destructive/60" />
                   <div className="h-2 w-2 shrink-0 rounded-full bg-warning/60" />
                   <div className="h-2 w-2 shrink-0 rounded-full bg-success/60" />
-                  <span className="ml-2 min-w-0 truncate font-mono text-[10px] text-muted-foreground">
+                  <span className="ml-2 min-w-0 truncate font-mono text-xs text-muted-foreground">
                     {codeExample.method} {codeExample.path}
                   </span>
                 </div>
-                <pre className="overflow-x-auto p-4 font-mono text-[11px] leading-relaxed text-muted-foreground">
+                <pre className="overflow-x-auto p-4 font-mono text-sm leading-relaxed text-muted-foreground">
                   <code>{`curl https://api.cs2c.app${codeExample.path}\n\n${codeExample.response}`}</code>
                 </pre>
               </div>
@@ -362,7 +362,7 @@ export async function SeoLandingPage({ config }: { config: SeoPageConfig }) {
                     {item.label}
                   </h3>
                   {item.description && (
-                    <p className="mt-2 font-mono text-[11px] leading-relaxed text-muted-foreground">
+                    <p className="mt-2 font-mono text-sm leading-relaxed text-muted-foreground">
                       {item.description}
                     </p>
                   )}
@@ -394,7 +394,7 @@ export async function SeoLandingPage({ config }: { config: SeoPageConfig }) {
                   <h3 className="mb-2 font-mono text-xs font-bold tracking-wider text-foreground">
                     {item.title}
                   </h3>
-                  <p className="font-mono text-[11px] leading-relaxed text-muted-foreground">
+                  <p className="font-mono text-sm leading-relaxed text-muted-foreground">
                     {item.desc}
                   </p>
                 </div>
@@ -418,7 +418,7 @@ export async function SeoLandingPage({ config }: { config: SeoPageConfig }) {
                   <HelpCircle className="mt-0.5 h-4 w-4 shrink-0 text-primary" strokeWidth={1.5} />
                   <h3 className="font-mono text-sm font-bold text-foreground">{faq.q}</h3>
                 </div>
-                <p className="pl-7 font-mono text-[11px] leading-relaxed text-muted-foreground">
+                <p className="pl-7 font-mono text-sm leading-relaxed text-muted-foreground">
                   {faq.a}
                 </p>
               </div>
@@ -442,7 +442,7 @@ export async function SeoLandingPage({ config }: { config: SeoPageConfig }) {
                 <Link
                   key={p.slug}
                   href={p.canonicalPath}
-                  className="bg-card px-4 py-3 font-mono text-[11px] tracking-wider text-muted-foreground transition-colors hover:bg-secondary/30 hover:text-primary"
+                  className="bg-card px-4 py-3 font-mono text-xs tracking-wider text-muted-foreground transition-colors hover:bg-secondary/30 hover:text-primary"
                 >
                   {p.h1}
                 </Link>
@@ -490,7 +490,7 @@ export async function SeoLandingPage({ config }: { config: SeoPageConfig }) {
                     <Link
                       key={p.slug}
                       href={p.canonicalPath}
-                      className="bg-card px-4 py-3 font-mono text-[11px] tracking-wider text-muted-foreground transition-colors hover:bg-secondary/30 hover:text-primary"
+                      className="bg-card px-4 py-3 font-mono text-xs tracking-wider text-muted-foreground transition-colors hover:bg-secondary/30 hover:text-primary"
                     >
                       {p.h1}
                     </Link>
@@ -516,7 +516,7 @@ export async function SeoLandingPage({ config }: { config: SeoPageConfig }) {
                 <Link
                   key={p.slug}
                   href={p.canonicalPath}
-                  className="bg-card px-4 py-3 font-mono text-[11px] tracking-wider text-muted-foreground transition-colors hover:bg-secondary/30 hover:text-primary"
+                  className="bg-card px-4 py-3 font-mono text-xs tracking-wider text-muted-foreground transition-colors hover:bg-secondary/30 hover:text-primary"
                 >
                   {p.h1}
                 </Link>
@@ -545,7 +545,7 @@ export async function SeoLandingPage({ config }: { config: SeoPageConfig }) {
               API REFERENCE <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
-              href="/login"
+              href="/account"
               className="border-brutal px-12 py-4 font-mono text-sm font-bold tracking-wider text-foreground brutalist-hover hover:border-primary transition-colors"
             >
               GET ACCESS

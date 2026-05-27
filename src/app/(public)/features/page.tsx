@@ -90,10 +90,10 @@ export default function FeaturesPage() {
                   <span className="font-mono text-sm font-bold tracking-wider text-foreground group-hover:text-primary transition-colors">
                     {l.label}
                   </span>
-                  <p className="font-mono text-[12px] leading-relaxed text-muted-foreground">
+                  <p className="font-mono text-sm leading-6 text-muted-foreground">
                     {l.desc}
                   </p>
-                  <span className="mt-auto inline-flex items-center gap-1.5 font-mono text-[11px] font-bold tracking-wider text-primary">
+                  <span className="mt-auto inline-flex items-center gap-1.5 font-mono text-xs font-bold tracking-wider text-primary">
                     EXPLORE
                     <ArrowRight className="h-3 w-3" strokeWidth={2.5} />
                   </span>

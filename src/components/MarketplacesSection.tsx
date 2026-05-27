@@ -82,13 +82,13 @@ export function MarketplacesSection({ providers }: { providers: ProviderInfo[] }
                   {m.capabilities.map((cap) => (
                     <span key={cap} className="relative group/badge">
                       <span
-                        className={`inline-flex h-5 items-center border px-1.5 font-mono text-[8px] tracking-wider transition-colors ${capBadgeClass[cap] || "text-muted-foreground border-border"}`}
+                        className={`inline-flex h-5 items-center border px-1.5 font-mono text-xs tracking-wider transition-colors ${capBadgeClass[cap] || "text-muted-foreground border-border"}`}
                         aria-label={capLegend[cap] ?? cap}
                         tabIndex={0}
                       >
                         {cap === "Listings" ? "L" : cap === "Buy Orders" ? "BO" : "RS"}
                       </span>
-                      <span className="pointer-events-none absolute left-1/2 top-full z-10 mt-1 -translate-x-1/2 whitespace-nowrap rounded border border-border bg-background px-2 py-1 font-mono text-[10px] text-foreground opacity-0 shadow-lg transition-opacity group-hover/badge:opacity-100 group-focus-within/badge:opacity-100">
+                      <span className="pointer-events-none absolute left-1/2 top-full z-10 mt-1 -translate-x-1/2 whitespace-nowrap rounded border border-border bg-background px-2 py-1 font-mono text-xs text-foreground opacity-0 shadow-lg transition-opacity group-hover/badge:opacity-100 group-focus-within/badge:opacity-100">
                         {capLegend[cap] ?? cap}
                       </span>
                     </span>
@@ -110,7 +110,7 @@ export function MarketplacesSection({ providers }: { providers: ProviderInfo[] }
 
         <div className="mt-8 flex items-center gap-2">
           <div className="h-1.5 w-1.5 bg-success animate-pulse-glow" />
-          <span className="font-mono text-[10px] tracking-widest text-muted-foreground">
+          <span className="font-mono text-xs tracking-widest text-muted-foreground">
             LIVE
           </span>
         </div>

@@ -89,7 +89,7 @@ export default async function HomePage() {
                 ].map((item) => (
                   <div key={item.text} className="flex items-center gap-3">
                     <item.icon className="h-4 w-4 shrink-0 text-primary" strokeWidth={1.5} />
-                    <span className="font-mono text-xs text-foreground">{item.text}</span>
+                    <span className="font-mono text-sm leading-6 text-foreground">{item.text}</span>
                   </div>
                 ))}
               </div>
@@ -115,11 +115,11 @@ export default async function HomePage() {
                 <div className="h-2 w-2 shrink-0 rounded-full bg-destructive/60" />
                 <div className="h-2 w-2 shrink-0 rounded-full bg-warning/60" />
                 <div className="h-2 w-2 shrink-0 rounded-full bg-success/60" />
-                <span className="ml-2 min-w-0 truncate font-mono text-[10px] text-muted-foreground">
+                <span className="ml-2 min-w-0 truncate font-mono text-xs text-muted-foreground">
                   GET /v1/prices?item_id={featuredQuote?.item_id ?? "ITEM_ID"}&limit=3
                 </span>
               </div>
-              <pre className="overflow-x-auto p-4 font-mono text-[11px] leading-relaxed text-muted-foreground">
+              <pre className="overflow-x-auto p-4 font-mono text-sm leading-relaxed text-muted-foreground">
                 <code>{`curl https://api.cs2c.app/v1/prices?item_id=${featuredQuote?.item_id ?? "1234"}&limit=3
 
 {

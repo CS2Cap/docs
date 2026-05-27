@@ -502,7 +502,7 @@ function SearchExperienceFallback({ currentPage }: { currentPage: number }) {
           ))}
           <div className="mt-8 flex items-center justify-between">
             <div className="border-brutal px-4 py-2 font-mono text-xs tracking-wider opacity-40">PREV</div>
-            <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
+            <div className="font-mono text-xs tracking-widest text-muted-foreground">
               LOADING PAGE {currentPage}...
             </div>
             <div className="border-brutal px-4 py-2 font-mono text-xs tracking-wider opacity-40">NEXT</div>
@@ -526,22 +526,22 @@ function SearchTerminalHeader({
     <div className="terminal-panel mb-4 overflow-hidden">
       <div className="flex flex-col gap-3 border-b terminal-rule px-3 py-3 md:flex-row md:items-center md:justify-between">
         <div className="min-w-0">
-          <div className="font-mono text-[10px] font-bold tracking-widest text-primary">
+          <div className="font-mono text-xs font-bold tracking-widest text-primary">
             // CATALOG::QUERY
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2 font-mono text-[10px] font-bold tracking-widest">
+        <div className="flex flex-wrap items-center gap-2 font-mono text-xs font-bold tracking-widest">
           <a
             href={buildSearchCsvHref(data.items)}
             download="cs2cap-search-page.csv"
-            className="inline-flex h-8 items-center gap-1 border border-border px-3 text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
+            className="inline-flex h-10 items-center gap-1 border border-border px-3 text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
           >
             <Download className="h-3 w-3" />
             EXPORT CSV
           </a>
           <Link
             href="/api-info"
-            className="inline-flex h-8 items-center gap-1 border border-border px-3 text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
+            className="inline-flex h-10 items-center gap-1 border border-border px-3 text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
           >
             QUERY API
             <ExternalLink className="h-3 w-3" />
@@ -563,7 +563,7 @@ function SearchTerminalHeader({
         </div>
         <button
           type="submit"
-          className="border border-primary bg-primary px-5 py-2.5 font-mono text-[10px] font-black tracking-widest text-primary-foreground transition-colors hover:bg-primary/90"
+          className="border border-primary bg-primary px-5 py-2.5 font-mono text-xs font-black tracking-widest text-primary-foreground transition-colors hover:bg-primary/90"
         >
           SEARCH
         </button>
@@ -591,7 +591,7 @@ function FacetList({
 
   return (
     <div className="border-t terminal-rule pt-3">
-      <div className="mb-2 flex items-center justify-between gap-3 font-mono text-[10px] font-bold tracking-widest">
+      <div className="mb-2 flex items-center justify-between gap-3 font-mono text-xs font-bold tracking-widest">
         <span className="text-muted-foreground">{field.label.toUpperCase()}</span>
         <span className="text-muted-foreground/70">
           {options.length}
@@ -610,14 +610,14 @@ function FacetList({
               key={bucket.value}
               href={facetHref(query, filters, field.key, isActive ? undefined : bucket.value)}
               scroll={false}
-              className={`grid grid-cols-[14px_minmax(0,1fr)_auto] items-center gap-2 px-1 py-1 font-mono text-[11px] transition-colors ${
+              className={`grid grid-cols-[14px_minmax(0,1fr)_auto] items-center gap-2 px-1 py-2 font-mono text-sm transition-colors ${
                 isActive
                   ? "bg-primary/10 text-foreground"
                   : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
               }`}
             >
               <span
-                className={`flex h-3.5 w-3.5 items-center justify-center border text-[8px] ${
+                className={`flex h-3.5 w-3.5 items-center justify-center border text-xs leading-none ${
                   isActive
                     ? "border-primary bg-primary text-primary-foreground"
                     : "border-border text-transparent"
@@ -682,7 +682,7 @@ function FilterControls({
         )}
 
         <div className="grid min-w-0 grid-cols-2 gap-2">
-          <label className="flex min-w-0 flex-col gap-1 font-mono text-[10px] font-bold tracking-widest text-muted-foreground">
+          <label className="flex min-w-0 flex-col gap-1 font-mono text-xs font-bold tracking-widest text-muted-foreground">
             <span>SORT</span>
             <select
               name="sort"
@@ -696,7 +696,7 @@ function FilterControls({
               ))}
             </select>
           </label>
-          <label className="flex min-w-0 flex-col gap-1 font-mono text-[10px] font-bold tracking-widest text-muted-foreground">
+          <label className="flex min-w-0 flex-col gap-1 font-mono text-xs font-bold tracking-widest text-muted-foreground">
             <span>DIR</span>
             <select
               name="direction"
@@ -711,7 +711,7 @@ function FilterControls({
 
         <button
           type="submit"
-          className="w-full border border-primary bg-primary px-4 py-2.5 font-mono text-[10px] font-black tracking-widest text-primary-foreground transition-colors hover:bg-primary/90"
+          className="w-full border border-primary bg-primary px-4 py-2.5 font-mono text-xs font-black tracking-widest text-primary-foreground transition-colors hover:bg-primary/90"
         >
           APPLY FILTERS
         </button>
@@ -719,13 +719,13 @@ function FilterControls({
         {activeCount > 0 ? (
           <div className="border-t terminal-rule pt-3">
             <div className="mb-2 flex items-center justify-between gap-3">
-              <span className="font-mono text-[10px] font-bold tracking-widest text-primary">
+              <span className="font-mono text-xs font-bold tracking-widest text-primary">
                 {activeCount} FILTERS
               </span>
               <Link
                 href={query ? buildSearchHref(query, {}) : "/search"}
                 scroll={false}
-                className="font-mono text-[10px] font-bold tracking-widest text-muted-foreground hover:text-foreground"
+                className="font-mono text-xs font-bold tracking-widest text-muted-foreground hover:text-foreground"
               >
                 CLEAR ALL
               </Link>
@@ -736,7 +736,7 @@ function FilterControls({
                   key={`${chip.label}:${chip.href}`}
                   href={chip.href}
                   scroll={false}
-                  className="border border-primary/40 bg-primary/10 px-2 py-1 font-mono text-[10px] font-bold tracking-widest text-primary hover:border-primary"
+                  className="border border-primary/40 bg-primary/10 px-2 py-1 font-mono text-xs font-bold tracking-widest text-primary hover:border-primary"
                 >
                   {chip.label}
                 </Link>
@@ -748,7 +748,7 @@ function FilterControls({
             <Link
               href="/search"
               scroll={false}
-              className="font-mono text-[10px] font-bold tracking-widest text-muted-foreground hover:text-foreground"
+              className="font-mono text-xs font-bold tracking-widest text-muted-foreground hover:text-foreground"
             >
               CLEAR QUERY
             </Link>
@@ -756,7 +756,7 @@ function FilterControls({
         ) : null}
 
         <div className="grid min-w-0 grid-cols-2 gap-2">
-          <label className="flex min-w-0 flex-col gap-1 font-mono text-[10px] font-bold tracking-widest text-muted-foreground">
+          <label className="flex min-w-0 flex-col gap-1 font-mono text-xs font-bold tracking-widest text-muted-foreground">
             <span>MIN USD</span>
             <input
               type="number"
@@ -767,7 +767,7 @@ function FilterControls({
               className="min-w-0 w-full border border-border bg-background px-2 py-2 font-mono text-sm text-foreground outline-none focus:border-primary"
             />
           </label>
-          <label className="flex min-w-0 flex-col gap-1 font-mono text-[10px] font-bold tracking-widest text-muted-foreground">
+          <label className="flex min-w-0 flex-col gap-1 font-mono text-xs font-bold tracking-widest text-muted-foreground">
             <span>MAX USD</span>
             <input
               type="number"
@@ -782,7 +782,7 @@ function FilterControls({
 
         {histogramBuckets.length > 0 ? (
           <div>
-            <div className="mb-2 font-mono text-[10px] tracking-widest text-muted-foreground">
+            <div className="mb-2 font-mono text-xs tracking-widest text-muted-foreground">
               PRICE DIST
             </div>
             <div className="space-y-1">
@@ -810,7 +810,7 @@ function FilterControls({
                         : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
                     }`}
                   >
-                    <span className="truncate font-mono text-[10px]">
+                    <span className="truncate font-mono text-xs">
                       {priceBucketLabel(bucket)}
                     </span>
                     <span className="h-2 bg-background">
@@ -819,7 +819,7 @@ function FilterControls({
                         style={{ width: `${Math.max((bucket.count / maxHistogramCount) * 100, 4)}%` }}
                       />
                     </span>
-                    <span className="text-right font-mono text-[10px]">
+                    <span className="text-right font-mono text-xs">
                       {bucket.count.toLocaleString()}
                     </span>
                   </Link>
@@ -866,19 +866,19 @@ function SearchResultsTable({
     <div>
       <div className="mb-3 flex flex-col gap-2 terminal-panel px-3 py-2 md:flex-row md:items-center md:justify-between">
         <div>
-          <div className="font-mono text-[10px] font-bold tracking-widest text-primary">
+          <div className="font-mono text-xs font-bold tracking-widest text-primary">
             {totalDisplay} VARIANTS
           </div>
-          <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+          <div className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
             Showing {resultWindow(data)} · page {currentPage} / {totalPages}
           </div>
         </div>
-        <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+        <div className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
           UPDATED {new Date(data.meta.generated_at).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
         </div>
       </div>
 
-      <div className="hidden grid-cols-[minmax(240px,1.4fr)_88px_88px_72px_72px_82px_52px] gap-3 border border-border bg-card/80 px-3 py-2 font-mono text-[10px] font-bold tracking-widest text-muted-foreground md:grid">
+      <div className="hidden grid-cols-[minmax(240px,1.4fr)_88px_88px_72px_72px_82px_52px] gap-3 border border-border bg-card/80 px-3 py-2 font-mono text-xs font-bold tracking-widest text-muted-foreground md:grid">
         <div>ITEM</div>
         <div className="text-right">ASK</div>
         <div className="text-right">BID</div>
@@ -920,7 +920,7 @@ function SearchResultsTable({
                   <div className="truncate font-mono text-sm font-bold text-foreground md:hover:text-primary">
                     {item.market_hash_name}
                   </div>
-                  <div className="truncate font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                  <div className="truncate font-mono text-xs uppercase tracking-widest text-muted-foreground">
                     {item.rank ? `#${item.rank} · ` : ""}{itemSubtitle(item)}
                   </div>
                 </div>
@@ -951,25 +951,25 @@ function SearchResultsTable({
 
             <div className="mt-3 grid grid-cols-4 gap-3 md:hidden">
               <div>
-                <div className="font-mono text-[10px] tracking-widest text-muted-foreground">BID</div>
+                <div className="font-mono text-xs tracking-widest text-muted-foreground">BID</div>
                 <div className="font-mono text-sm text-muted-foreground">
                   {formatUsdMajor(item.best_bid_usd)}
                 </div>
               </div>
               <div>
-                <div className="font-mono text-[10px] tracking-widest text-muted-foreground">24H</div>
+                <div className="font-mono text-xs tracking-widest text-muted-foreground">24H</div>
                 <div className={`font-mono text-sm font-bold ${priceChangeClass(item.price_rate_24h)}`}>
                   {formatSignedPercent(item.price_rate_24h)}
                 </div>
               </div>
               <div>
-                <div className="font-mono text-[10px] tracking-widest text-muted-foreground">7D</div>
+                <div className="font-mono text-xs tracking-widest text-muted-foreground">7D</div>
                 <div className={`font-mono text-sm font-bold ${priceChangeClass(item.price_rate_7d)}`}>
                   {formatSignedPercent(item.price_rate_7d)}
                 </div>
               </div>
               <div className="text-right">
-                <div className="font-mono text-[10px] tracking-widest text-muted-foreground">MKTS</div>
+                <div className="font-mono text-xs tracking-widest text-muted-foreground">MKTS</div>
                 <div className="font-mono text-sm text-muted-foreground">{item.provider_count}</div>
               </div>
             </div>
@@ -978,14 +978,14 @@ function SearchResultsTable({
       )}
 
       <div className="mt-4 flex flex-col gap-3 terminal-panel px-3 py-3 md:flex-row md:items-center md:justify-between">
-        <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+        <div className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
           Showing {resultWindow(data)} of {totalDisplay} · page {currentPage} / {totalPages}
         </div>
-        <div className="flex flex-wrap items-center gap-1 font-mono text-[10px] font-bold tracking-widest">
+        <div className="flex flex-wrap items-center gap-1 font-mono text-xs font-bold tracking-widest">
         <Link
           href={hasPrev ? buildSearchHref(query, filters, 1) : "#"}
           prefetch={hasPrev}
-          className={`border border-border px-3 py-1.5 ${
+          className={`border border-border px-3 py-2.5 ${
             hasPrev
               ? "text-muted-foreground hover:border-primary hover:text-foreground"
               : "pointer-events-none opacity-40"
@@ -996,7 +996,7 @@ function SearchResultsTable({
         <Link
           href={hasPrev ? buildSearchHref(query, filters, currentPage - 1) : "#"}
           prefetch={hasPrev}
-          className={`border border-border px-3 py-1.5 ${
+          className={`border border-border px-3 py-2.5 ${
             hasPrev
               ? "text-muted-foreground hover:border-primary hover:text-foreground"
               : "pointer-events-none opacity-40"
@@ -1009,7 +1009,7 @@ function SearchResultsTable({
             key={page}
             href={buildSearchHref(query, filters, page)}
             prefetch={page === currentPage}
-            className={`border px-3 py-1.5 ${
+            className={`border px-3 py-2.5 ${
               page === currentPage
                 ? "border-primary bg-primary text-primary-foreground"
                 : "border-border text-muted-foreground hover:border-primary hover:text-foreground"
@@ -1021,7 +1021,7 @@ function SearchResultsTable({
         <Link
           href={hasNext ? buildSearchHref(query, filters, currentPage + 1) : "#"}
           prefetch={hasNext}
-          className={`border border-border px-3 py-1.5 ${
+          className={`border border-border px-3 py-2.5 ${
             hasNext
               ? "text-muted-foreground hover:border-primary hover:text-foreground"
               : "pointer-events-none opacity-40"
@@ -1032,7 +1032,7 @@ function SearchResultsTable({
         <Link
           href={hasNext ? buildSearchHref(query, filters, totalPages) : "#"}
           prefetch={false}
-          className={`border border-border px-3 py-1.5 ${
+          className={`border border-border px-3 py-2.5 ${
             hasNext
               ? "text-muted-foreground hover:border-primary hover:text-foreground"
               : "pointer-events-none opacity-40"

@@ -9,34 +9,22 @@ This catalog cross-references the report's recommendations against what cs2cap (
 **State at time of writing:**
 
 - Frontend: search w/ 6 facets, item detail (history, market distribution, similar items, variants, cases, asks), marketcap (treemap, sparkline, movers), auth (Steam/Google/Discord), inventory tracker, alerts, watchlist, API key/billing/usage UI, 22 marketplace landing pages, deal scanner absent on FE.
-- Backend: 40+ provider adapters, prices/sales/buy_orders services, liquidity scoring, portfolio + transactions + CSV import, account/api-key/webhook services, OAuth, Steam inventory parser, skinscanner/deals_service, 61 alembic migrations.
+- Backend: 40+ provider adapters, prices/sales/buy_orders services, liquidity scoring, portfolio + transactions + CSV import, account/api-key/webhook services, OAuth, Steam inventory parser, skinscanner/deals_service, 62 alembic migrations. Web search: snapshot scores wired into `/v1/web/search`, query understanding with alias dictionary + relevance sort, isolated rate-limit bucket.
 
 ---
 
-## Tier 1 — Foundational data-platform optimizations (unlocks many features)
+## Tier 1 — Search / catalog upgrades (unlocks better discovery features)
 
-These hardenings to the catalog/price/marketplace backbone make later features cheaper and safer to add.
+1. **`taxonomy_node` / `taxonomy_edge` closure table** — Replace ad-hoc category/collection joins with a DAG so weapon → finish → collection → container → tournament traversal is one indexed lookup. Required before adding tournament/player/team filters.
 
-1. **Wire scores from `market_items_snapshot_service` into the search-page redesign** — Scores (`liquidity_score`, `listing_score`, `gap_score`, `volume_score`, `stability_score`, `external_score`, `total_volume_24h`) are computed and exposed via `get_snapshot_items_json_stream` in `market_items_snapshot_service.py`, but **not** embedded in the cached `/v1/items` catalog blob built by `build_extended_catalog_with_ids` ([catalog_extended.py](cs2c-api/src/app/services/catalog/catalog_extended.py)). For the redesigned search page to offer sort-by-score, filter-by-liquidity, or mover ranking client-side, scores need to land alongside items. Three options, in order of recommendation:
-   - **A. Fetch catalog + market snapshot separately and join client-side** *(recommended)* — cleanest separation, each cached on its own TTL, no catalog churn from frequently-changing scores. Requires a small FE join helper keyed by `item_id`.
-   - **B. Embed scores into the catalog blob** — one fetch, simplest FE code, but the catalog goes stale faster since scores change far more often than the static metadata fields.
-   - **C. Server-side Redis sort indexes per score** — additive to `price_cache.set_prices_bulk`'s existing sorted-set pipeline. Only worth it if scores can't reasonably be shipped to the client, which they can.
-2. **Sub-hour intraday price buckets (`price_bucket_5m`) (conditional)** — Daily and hourly rollups already exist (`daily_price_archive_service` for OHLC candles, `daily_history_snapshot_service` + `market_overview_service` for hourly market-index aggregates). Only sub-hour resolution is missing. Add a 5-minute bucket *only if* the redesigned charts need minute-scale resolution within a recent window (1H/4H detail). Otherwise drop.
-
-## Tier 2 — Search / catalog upgrades (unlocks better discovery features)
-
-1. **Query understanding for search (aliases, tokens, fuzzy match, weighted ranking)** — Today `/v1/items?q=...` does plain substring match on `market_hash_name`, so `"AK-47 Redline"` fails because the canonical name uses ` | ` as the separator and `"ak redline ft"` yields nothing at all. Add: (a) tokenization that splits the query into terms; (b) an alias dictionary that resolves shortcuts (`ak`→`AK-47`, `ft`→`Field-Tested`, `fn`→`Factory New`, `mw`→`Minimal Wear`, `bs`→`Battle-Scarred`, `st`→`StatTrak`, etc.); (c) per-token matching across `base_name`/`skin_name`/`wear_name`/`weapon_type` with weighted scoring; (d) trigram-based typo tolerance; (e) result ranking so the most-relevant variant (`AK-47 | Redline (Field-Tested)` for the example) sorts first. Implementation can live entirely client-side over the already-cached `/items` catalog (e.g., MiniSearch, uFuzzy, Fuse.js, or hand-rolled) since the full catalog is shipped wholesale — no Postgres tsvector required unless server-side autocomplete is later needed for cold/SEO loads.
-2. **`taxonomy_node` / `taxonomy_edge` closure table** — Replace ad-hoc category/collection joins with a DAG so weapon → finish → collection → container → tournament traversal is one indexed lookup. Required before adding tournament/player/team filters.
-3. **Rate-limit autocomplete & filter endpoints separately from page endpoints** — They are the prime scraping targets per the report; today `ratelimit.py` splits per-IP/user/key counters but doesn't isolate scrape-attractive endpoints into their own buckets.
-
-## Tier 3 — Item-page metadata depth (matches CSGOSKINS.GG)
+## Tier 2 — Item-page metadata depth (matches CSGOSKINS.GG)
 
 1. **`item_attribute` open key/value table** — Game-file vs provider-derived attributes separated by `source enum(gamefile, provider, derived)`. Lets us add new metadata (drop odds, supported phases, sticker compatibility) without schema churn.
 2. **`drop_source` table** — Collection / case / capsule / update with `odds` numeric. Backs an unboxing-odds view, "drops from" reverse lookups, and case-EV calculators.
 3. **`media_asset` per-variant table** — `media_kind enum(image, video, wear_preview, screenshot, inspect_preview)`. Today only `cdn.cs2c.app` images are wired; this enables wear-preview videos, inspect renders, and 3D viewers later.
 4. **Hide canonical static metadata from per-asset instance data** — Asset-instance rows (float, paint seed, applied stickers) must be scoped to the owning inventory snapshot with retention lifecycles — a privacy obligation as soon as inventories are stored.
 
-## Tier 4 — User-state hardening (unlocks portfolio/alert depth)
+## Tier 3 — User-state hardening (unlocks portfolio/alert depth)
 
 1. **`auth_identity` table separate from `user_account`** — Multiple providers per user (currently auth.py likely couples them). Required before account-merge and SSO additions become safe.
 2. **`session` table with revocation + device fingerprint** — Today sessions live in Redis; backing them with an auditable durable table enables "sign out all devices", anomaly alerts, and forensic trails.
@@ -45,25 +33,25 @@ These hardenings to the catalog/price/marketplace backbone make later features c
 5. **`inventory_import_job` idempotency keys** — Dedup imports by `(steam_id, window)` so re-syncs are safe; required before public scheduled refresh (e.g. SteamLedger's 15-min cadence).
 6. **`transaction_ledger` kind-enum normalization** — Today CSV import + manual + buy/sell live in `transaction_service.py`; canonicalize into one ledger with `txn_kind enum(buy, sell, trade, manual_adjustment, import_basis)` so reports/analytics don't duplicate logic.
 
-## Tier 5 — Alerts, watchlists, notifications (unlocks retention plays)
+## Tier 4 — Alerts, watchlists, notifications (unlocks retention plays)
 
 1. **`alert_rule` ↔ `alert_event` split with dedupe_key** — Prevents alert storms when several providers cross a threshold simultaneously. Currently `alerts/page.tsx` exists but storage shape unknown — verify before adding Telegram/Discord channels.
 2. **`notification_endpoint` table with verification + webhook secrets** — Backs multi-channel alerts (browser, email, telegram, discord, webhook). Today only browser/email are visible.
 3. **`watchlist` ↔ `watchlist_item` distinct from alert rules** — A user can favorite without alerting and vice versa; collapsing them blocks UX patterns competitors already have.
 4. **Centralized notification scheduler/worker** — Separate from the SSE / push fanout for deal signals so alerting and live UI streams don't share back-pressure.
 
-## Tier 6 — Trader tools
+## Tier 5 — Trader tools
 
 1. **`tradeup_contract` / `tradeup_contract_input` / `tradeup_outcome`** — Deterministic, hash-cached EV computation. No backend trade-up service exists today; adding one unlocks both the tool and shareable trade-up links.
 2. **`deal_signal` table + SSE fanout for arbitrage** — `skinscanner/deals_service.py` exists; promote outputs to a typed table (variant, source/target marketplace, ROI, liquidity score, observed_profit) and stream via SSE. The report shows competitors treat this as their hook feature.
 3. **`loadout` / `loadout_slot` + share tokens** — Differentiator from CS2Locker. Cheap to add once we have variant + price projections; high engagement potential.
 
-## Tier 7 — Sponsored placements & affiliate attribution
+## Tier 6 — Sponsored placements & affiliate attribution
 
 1. **`campaign` / `placement` / `placement_event` tables with explicit editorial-vs-paid separation** — Prerequisite for monetizing marketplace partnerships without polluting "best price" ranking. Currently absent. Critical to design before adding monetization, not after.
 2. **`is_paid` flag plumbed through ranking now, even before any sponsored deal exists** — Wire ranking code to read an `is_paid` column so paid placements physically cannot mix into organic results. Cheap insurance now; expensive retrofit later, with serious user-trust risk if any contamination ever ships. No `is_paid` plumbing exists in the codebase today (only ToS mentions "sponsored").
 
-## Tier 8 — Cross-cutting frontend optimizations
+## Tier 7 — Cross-cutting frontend optimizations
 
 1. **TanStack Query key registry audit** — `src/lib/api/hooks.ts` has a `queryKeys` registry; ensure every new fetcher uses it and that mutation-driven invalidations are co-located.
 2. **Edge-cache policy parity** — The proxy `matchEdgeCachePolicy` and the server `revalidate` values per endpoint must move from two hand-synced lists into a single source-of-truth module imported by both.
@@ -77,6 +65,18 @@ These hardenings to the catalog/price/marketplace backbone make later features c
 ## Explicitly out of scope (per the report)
 
 The report's 0/5 family — **direct checkout, escrow, seller profiles, bot custody, deposit/withdrawal** — is intentionally omitted. None of the competitive set ships it; introducing it drags in KYC/AML, payments, sanctions screening, and bot operations. Defer indefinitely.
+
+## Recently shipped
+
+These items shipped to `main` and are no longer candidates. Listed here briefly so the catalog's trace isn't lost; full detail is in the commit history.
+
+- **Rate-limit isolation for `/v1/web/search`** *(was Tier 2 #5)* — Scrape-prone faceted search lives in its own `search:`-namespaced Redis bucket; limit is the stricter of `SEARCH_RATE_REQUESTS_PER_MINUTE` (default 60) and the user's tier rpm. Commit `7063be3af`.
+- **Snapshot scores on `/v1/web/search`** *(was Tier 1 #1)* — `WebSearchItem` now carries `liquidity`, `listing_score`, `gap_score`, `volume_score`, `stability_score`, `external_score`; new `liquidity` sort key. (Skipped `total_volume_24h` — already exposed as `sales_1d`.) Commit `78dbac294`.
+- **Query understanding for search** *(was Tier 2 #3)* — New `query_parser.py` with alias dictionary (`ak`→`AK-47`, `ft`→`Field-Tested`, …), tokenization, weighted-field scoring. Drops zero-score candidates, adds `relevance` sort key (auto-default when `q` is set). Trigram typo tolerance deferred. Commit `fbb39c45f` (+ follow-up `75e649009`).
+
+## Dropped
+
+- **Sub-hour intraday price buckets (`price_bucket_5m`)** *(was Tier 1 #2)* — Decided during planning that hourly resolution is sufficient for the redesigned charts. Daily and hourly rollups already exist; if minute-scale resolution is ever needed within a recent window, reopen as a sibling of any future short-window chart work.
 
 ## Rejected ideas (and why)
 
@@ -231,8 +231,8 @@ The only piece that may or may not be wired is "alert delivery is suppressed whe
 **Rejected because:** Conditionally moot.
 
 - Daily and hourly rollups already exist (`daily_price_archive_service`, `daily_history_snapshot_service`) and naturally absorb late data when rerun against the source tables (which survive the parser layer untouched — see "Snapshot pipeline replayability" rejection above).
-- 5-min buckets don't exist today (Tier 1 #2 is conditional on the redesign actually needing minute-scale chart detail).
-- If 5m buckets are never added, there's nothing to recompute; if they are added, this item should be reopened as a sibling of Tier 1 #2.
+- 5-min buckets don't exist today (see Dropped above).
+- If 5m buckets are ever added, this item should be reopened as a sibling.
 
 ### Per-IP / per-user / per-API-key rate limits split *(was Tier 9)*
 
@@ -246,27 +246,22 @@ The only piece that may or may not be wired is "alert delivery is suppressed whe
 - `tier_rate_limit(request)` reads `user.rate_requests_per_minute` from tier config, so each tier has its own per-minute limit
 - Counters are separate per dimension; one heavy customer doesn't share quota with anonymous IPs or session users
 
-Note: distinct from Tier 2 #5 (rate-limit autocomplete & filter endpoints *separately* from page endpoints), which is about endpoint-level isolation rather than caller-identity dimension. #5 may still be a real gap.
-
 ---
 
 ## Critical files referenced
 
-- `cs2c-api/src/app/services/inventory/steam_inventory_service.py` (Tier 4)
-- `cs2c-api/src/app/services/portfolio/{portfolio,transaction,history,csv_import}_service.py` (Tier 4)
-- `cs2c-api/src/app/services/analytics/market_items_snapshot_service.py` (Tier 1 #1)
-- `cs2c-api/src/app/services/catalog/catalog_extended.py` (Tier 1 #1)
-- `cs2c-api/src/app/services/analytics/{daily_price_archive,daily_history_snapshot,market_overview}_service.py` (Tier 1 #2)
-- `cs2c-api/src/app/cache/{price_cache,catalog_cache,keys}.py` (Tier 1 #1 option C)
-- `cs2c-api/src/app/services/skinscanner/deals_service.py` (Tier 6 #21)
-- `cs2c-api/src/app/services/auth/oauth_service.py` (Tier 4)
-- `cs2c-api/src/app/services/catalog/catalog_sync_job.py` (Tier 2)
-- `cs2c-api/src/app/{ratelimit,indexed_query,items_filter_values,schemas}.py` (Tier 2)
-- `cs2c-api/alembic/versions/` (61 migrations; new ones for each Tier 1–7 entity)
-- `cs2cap/src/lib/api/{server,client,hooks,types,compositions,view-models}.ts` (Tier 8)
-- `cs2cap/src/app/api/cs2c/[...path]/route.ts` (Tier 8 #26)
-- `cs2cap/src/lib/seo/landing-pages.ts` (Tier 8 #29)
-- `cs2cap/next.config.ts` (Tier 8 #31)
+- `cs2c-api/src/app/db_base.py` (Tier 1 — new TaxonomyNode / TaxonomyEdge / ItemTaxonomy models)
+- `cs2c-api/src/app/services/catalog/catalog_sync_job.py` (Tier 1 — seed source for container taxonomy)
+- `cs2c-api/src/app/services/analytics/web_search_service.py` (Tier 1 — new `container_slug` filter)
+- `cs2c-api/src/app/services/inventory/steam_inventory_service.py` (Tier 3)
+- `cs2c-api/src/app/services/portfolio/{portfolio,transaction,history,csv_import}_service.py` (Tier 3)
+- `cs2c-api/src/app/services/auth/oauth_service.py` (Tier 3)
+- `cs2c-api/src/app/services/skinscanner/deals_service.py` (Tier 5)
+- `cs2c-api/alembic/versions/` (62 migrations; new ones for each Tier 1–6 entity)
+- `cs2cap/src/lib/api/{server,client,hooks,types,compositions,view-models}.ts` (Tier 7)
+- `cs2cap/src/app/api/cs2c/[...path]/route.ts` (Tier 7 — edge-cache policy parity)
+- `cs2cap/src/lib/seo/landing-pages.ts` (Tier 7 — landing-page generation)
+- `cs2cap/next.config.ts` (Tier 7 — image pipeline allowlist)
 
 ## How to use this list
 
@@ -274,7 +269,7 @@ This catalog is intentionally broad. **Do not implement straight through it.** F
 
 1. Open a focused planning session for *that single item*.
 2. Confirm current implementation state (the inventory above is best-effort; verify before changing schemas).
-3. Decide migration safety (the platform has 61 alembic migrations and live data — additive-then-backfill-then-cutover is the safe pattern).
+3. Decide migration safety (the platform has 62 alembic migrations and live data — additive-then-backfill-then-cutover is the safe pattern).
 4. Define success criteria (CLAUDE.md §4): a test or measurable outcome per change.
 
-The strongest practical recommendation from the report applies here too: **prioritize data credibility over feature theatrics**. Tiers 1 and 2 unlock the most downstream features for the least surface area; Tiers 6–7 are visible but cheap only after the foundation is solid.
+The strongest practical recommendation from the report applies here too: **prioritize data credibility over feature theatrics**. Tier 1 (taxonomy DAG) is the cheapest unlock for future filter additions; Tiers 2–3 (item metadata depth + user-state hardening) are the next big content and retention investments; Tiers 5–6 (trader tools + sponsored) are visible but cheap only after the foundation is solid.

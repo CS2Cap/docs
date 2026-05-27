@@ -4,30 +4,102 @@
 
 CS2Cap is a unified REST API for Counter-Strike 2 skin market data. Developers use it to build trading bots, analytics dashboards, and price comparison tools. The platform aggregates real-time listings, historical candlesticks, arbitrage signals, and item catalog data from all major CS2 marketplaces.
 
-## Pages
+## Core pages
 
 - [/](/): Free CS2 API for skin prices across 40+ marketplaces.
-- [/api-info](/api-info): API reference with endpoints, pricing, SDKs, and integration guide.
-- [/search](/search): Search and browse CS2 items across all supported marketplaces.
-- [/inventory-value](/inventory-value): Calculate your CS2 inventory value using your Steam profile.
-- [/login](/login): Sign in with Steam to access API keys and account features.
-- [/privacy](/privacy): Privacy policy for CS2Cap users.
-- [/terms](/terms): Terms of service for the CS2Cap platform.
+- [/search](/search): Search and browse the full CS2 item catalog across all marketplaces.
+- [/item/{itemId}](/item/): Per-item page with prices, buy orders, sales history, float/sticker breakdowns, and similar items.
+- [/cs2-market-cap](/cs2-market-cap): Aggregate CS2 market cap, top categories, treemap, and biggest movers.
+- [/inventory-value](/inventory-value): Calculate the live value of any public Steam CS2 inventory.
+- [/marketplaces](/marketplaces): Directory of supported CS2 marketplaces with status and coverage.
+- [/status](/status): Live status of API endpoints and marketplace integrations.
 
-## Docs
+## API & pricing
 
-- [/api-info#endpoints](/api-info#endpoints): Complete REST endpoint reference.
-- [/api-info#pricing](/api-info#pricing): Free and paid API tier pricing.
+- [/api-info](/api-info): API reference with endpoints, authentication, SDKs, and integration guide.
+- [/apis](/apis): Catalog of CS2Cap API products grouped by capability.
+- [/features](/features): Platform features (prices, buy orders, sales, candlesticks, arbitrage, alerts).
+- [/pricing](/pricing): Free and paid API tier pricing and quotas.
 
-## Optional
+## Account
 
-- [/cs2-api](/cs2-api): CS2 API overview and features.
+- [/login](/login): Sign in with Steam.
+- [/dashboard](/dashboard): Authenticated user dashboard.
+- [/account](/account): Account overview.
+- [/account/api-keys](/account/api-keys): Manage API keys.
+- [/account/usage](/account/usage): API usage and quota.
+- [/account/billing](/account/billing): Plan and billing.
+- [/account/settings](/account/settings): Account settings.
+- [/watchlist](/watchlist): Saved items watchlist.
+- [/alerts](/alerts): Price and listing alerts.
+
+## Legal
+
+- [/privacy](/privacy): Privacy policy.
+- [/terms](/terms): Terms of service.
+
+## API landing pages — general
+
+- [/cs2-api](/cs2-api): CS2 API overview.
+- [/csgo-api](/csgo-api): CS:GO / CS2 API reference.
 - [/free-cs2-api](/free-cs2-api): Free tier capabilities and limits.
+- [/cs2-data-api](/cs2-data-api): CS2 market data API.
 - [/cs2-market-api](/cs2-market-api): Market data and analytics API reference.
-- [/cs2-price-api](/cs2-price-api): Real-time and historical price API endpoints.
+- [/cs2-items-api](/cs2-items-api): CS2 item catalog API.
+- [/cs2-skin-api](/cs2-skin-api): CS2 skin data API.
+- [/cs2-skins-api](/cs2-skins-api): CS2 skins API catalog.
+
+## API landing pages — features
+
+- [/cs2-price-api](/cs2-price-api): Real-time price API across marketplaces.
+- [/cs2-price-history-api](/cs2-price-history-api): Historical price API.
+- [/cs2-candlestick-api](/cs2-candlestick-api): OHLC candlestick price history API.
 - [/cs2-buy-order-api](/cs2-buy-order-api): Buy order and bid data API.
-- [/cs2-sales-api](/cs2-sales-api): Recent sales history API including float, paint seed and stickers details.
-- [/buff163-api](/buff163-api): Buff163 prices, buy orders & price history API.
-- [/youpin-api](/youpin-api): Youpin898 prices, buy orders & sales history API.
+- [/cs2-sales-api](/cs2-sales-api): Recent sales history API with float, paint seed, and sticker details.
+- [/cs2-item-catalog-api](/cs2-item-catalog-api): CS2 item catalog and metadata API.
+- [/cs2-market-analytics-api](/cs2-market-analytics-api): Market analytics, volume, and trend API.
+- [/cs2-market-indicators-api](/cs2-market-indicators-api): Technical market indicators API.
+- [/cs2-market-arbitrage-api](/cs2-market-arbitrage-api): Cross-marketplace arbitrage signals API.
+
+## API landing pages — marketplaces
+
+- [/steam-api](/steam-api): Steam Community Market data via CS2Cap.
+- [/buff163-api](/buff163-api): Buff163 prices, buy orders, and price history.
+- [/buffmarket-api](/buffmarket-api): BuffMarket prices and listings.
+- [/youpin-api](/youpin-api): Youpin898 prices, buy orders, and sales history.
+- [/c5-api](/c5-api): C5Game prices and listings.
+- [/haloskins-api](/haloskins-api): Haloskins prices and listings.
 - [/csfloat-api](/csfloat-api): CSFloat marketplace integration.
-- [/steam-api](/steam-api): Steam market data via CS2Cap.
+- [/skinport-api](/skinport-api): Skinport prices and listings.
+- [/dmarket-api](/dmarket-api): DMarket prices and listings.
+- [/bitskins-api](/bitskins-api): BitSkins prices and listings.
+- [/waxpeer-api](/waxpeer-api): Waxpeer prices and listings.
+- [/skinbaron-api](/skinbaron-api): SkinBaron prices and listings.
+- [/csdeals-api](/csdeals-api): CS.Deals prices and listings.
+- [/shadowpay-api](/shadowpay-api): ShadowPay prices and listings.
+- [/lisskins-api](/lisskins-api): Lis-Skins prices and listings.
+- [/marketcsgo-api](/marketcsgo-api): Market.CSGO prices and listings.
+- [/csmoney_m-api](/csmoney_m-api): CS.Money market prices.
+- [/csmoney_t-api](/csmoney_t-api): CS.Money trade prices.
+- [/csgoempire-api](/csgoempire-api): CSGOEmpire prices and listings.
+- [/skinflow-api](/skinflow-api): SkinFlow prices and listings.
+- [/skinsmonkey-api](/skinsmonkey-api): SkinsMonkey prices and listings.
+- [/skinswap-api](/skinswap-api): SkinSwap prices and listings.
+- [/swapgg-api](/swapgg-api): Swap.gg prices and listings.
+- [/tradeit-api](/tradeit-api): TradeIt.gg prices and listings.
+- [/cstrade-api](/cstrade-api): CS.Trade prices and listings.
+- [/lootfarm-api](/lootfarm-api): Loot.Farm prices and listings.
+- [/itradegg-api](/itradegg-api): iTrade.gg prices and listings.
+- [/mannco-api](/mannco-api): Mannco.store prices and listings.
+- [/rapidskins-api](/rapidskins-api): RapidSkins prices and listings.
+- [/pirateswap-api](/pirateswap-api): PirateSwap prices and listings.
+- [/skinout-api](/skinout-api): Skinout prices and listings.
+- [/skinplace-api](/skinplace-api): SkinPlace prices and listings.
+- [/skinland-api](/skinland-api): SkinLand prices and listings.
+- [/skinscom-api](/skinscom-api): Skins.com prices and listings.
+- [/skinvault-api](/skinvault-api): SkinVault prices and listings.
+- [/whitemarket-api](/whitemarket-api): WhiteMarket prices and listings.
+- [/ecosteam-api](/ecosteam-api): EcoSteam prices and listings.
+- [/avanmarket-api](/avanmarket-api): AvanMarket prices and listings.
+- [/dupefi-api](/dupefi-api): DupeFi prices and listings.
+- [/csgo500-api](/csgo500-api): CSGO500 prices and listings.

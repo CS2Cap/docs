@@ -174,7 +174,7 @@ export function Navbar() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search items..."
-              className="h-8 w-44 bg-muted/50 border border-border pl-8 pr-3 font-mono text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+              className="h-10 w-44 bg-muted/50 border border-border pl-8 pr-3 font-mono text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
             />
           </form>
 
@@ -192,10 +192,10 @@ export function Navbar() {
                 )}
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 rounded-none border-2 border-border bg-popover p-0 max-h-[calc(100vh-5rem)] overflow-y-auto">
-                <DropdownMenuLabel className="px-3 py-2 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                <DropdownMenuLabel className="px-3 py-2 font-mono text-xs uppercase tracking-wider text-muted-foreground">
                   <div className="truncate text-foreground text-xs normal-case tracking-normal">{displayName}</div>
                   {session?.email && (
-                    <div className="truncate text-[10px] text-muted-foreground normal-case tracking-normal">
+                    <div className="truncate text-xs text-muted-foreground normal-case tracking-normal">
                       {session.email}
                     </div>
                   )}
@@ -261,7 +261,7 @@ export function Navbar() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search items..."
-                className="h-9 w-full bg-muted/50 border border-border pl-8 pr-3 font-mono text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
+                className="h-10 w-full bg-muted/50 border border-border pl-8 pr-3 font-mono text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
               />
             </form>
             {navItems.map((item) =>
@@ -290,7 +290,7 @@ export function Navbar() {
               )
             )}
             <div className="mt-2 border-t border-border pt-3">
-              <div className="px-3 pb-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground/70">
+              <div className="px-3 pb-2 font-mono text-xs uppercase tracking-widest text-muted-foreground/70">
                 Tools
               </div>
               {toolsItems.map((item) => (

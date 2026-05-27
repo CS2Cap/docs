@@ -115,7 +115,7 @@ export function PricingPlanCards({ plans }: { plans: PlanInfo[] }) {
             }`}
           >
             3 MONTHS
-            <span className="ml-2 inline-block bg-success/20 px-1.5 py-0.5 font-mono text-[9px] tracking-wider text-success">
+            <span className="ml-2 inline-block bg-success/20 px-1.5 py-0.5 font-mono text-xs tracking-wider text-success">
               -16%
             </span>
           </button>
@@ -128,7 +128,7 @@ export function PricingPlanCards({ plans }: { plans: PlanInfo[] }) {
         ))}
       </div>
 
-      <p className="mt-7 text-center font-mono text-xs text-muted-foreground">
+      <p className="mt-7 text-center font-mono text-sm leading-6 text-muted-foreground">
         Need more than QUANT?{" "}
         <Link href="mailto:contact@cs2cap.com" className="text-primary underline hover:no-underline">
           Talk to us
@@ -164,7 +164,7 @@ function PlanCard({ plan, cycle }: { plan: PlanInfo; cycle: BillingCycle }) {
     >
       {isPro && (
         <div
-          className="absolute -left-0.5 -right-0.5 -top-0.5 bg-primary px-3 py-1.5 text-center font-mono text-[10px] font-black tracking-widest text-primary-foreground"
+          className="absolute -left-0.5 -right-0.5 -top-0.5 bg-primary px-3 py-1.5 text-center font-mono text-xs font-black tracking-widest text-primary-foreground"
         >
           MOST POPULAR
         </div>
@@ -182,7 +182,7 @@ function PlanCard({ plan, cycle }: { plan: PlanInfo; cycle: BillingCycle }) {
           <div className={`font-sans text-xl font-black tracking-tight ${accent}`}>
             {plan.display_name.toUpperCase()}
           </div>
-          <div className="mt-1 font-mono text-[11px] text-muted-foreground">
+          <div className="mt-1 font-mono text-sm leading-6 text-muted-foreground">
             {tagline}
           </div>
         </div>
@@ -195,7 +195,7 @@ function PlanCard({ plan, cycle }: { plan: PlanInfo; cycle: BillingCycle }) {
           </span>
           <span className="font-mono text-xs text-muted-foreground">/mo</span>
         </div>
-        <div className="mt-2 font-mono text-[11px] text-muted-foreground">
+        <div className="mt-2 font-mono text-sm leading-6 text-muted-foreground">
           {isFree
             ? "Always free · no card required"
             : isQuarterly
@@ -205,18 +205,18 @@ function PlanCard({ plan, cycle }: { plan: PlanInfo; cycle: BillingCycle }) {
       </div>
 
       <div className="border border-border bg-background px-4 py-3">
-        <div className="font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
+        <div className="font-mono text-xs tracking-widest text-muted-foreground uppercase">
           Monthly quota
         </div>
         <div className="mt-1 flex items-baseline gap-2">
           <span className={`font-mono text-2xl font-bold leading-none ${accent}`}>
             {formatCompact(plan.quota_requests_per_month)}
           </span>
-          <span className="font-mono text-[11px] text-muted-foreground">
+          <span className="font-mono text-xs text-muted-foreground">
             requests / month
           </span>
         </div>
-        <div className="mt-1.5 font-mono text-[11px] text-muted-foreground">
+        <div className="mt-1.5 font-mono text-sm text-muted-foreground">
           {plan.rate_requests_per_minute.toLocaleString()} req/min rate limit
         </div>
       </div>
@@ -225,7 +225,7 @@ function PlanCard({ plan, cycle }: { plan: PlanInfo; cycle: BillingCycle }) {
         {features.map((f) => (
           <li key={f} className="flex items-start gap-2.5">
             <Check className="mt-0.5 h-3 w-3 shrink-0 text-primary" strokeWidth={2.5} />
-            <span className="font-mono text-[13px] leading-snug text-foreground">{f}</span>
+            <span className="font-mono text-sm leading-6 text-foreground">{f}</span>
           </li>
         ))}
       </ul>

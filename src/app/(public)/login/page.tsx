@@ -46,12 +46,12 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           </div>
 
           <h1 className="mb-1 text-2xl font-black tracking-tighter">SIGN IN</h1>
-          <p className="mb-8 font-mono text-xs text-muted-foreground">
+          <p className="mb-8 font-mono text-sm leading-6 text-muted-foreground">
             Access your dashboard, watchlist, and alerts.
           </p>
 
           {error ? (
-            <div className="mb-6 border border-destructive/50 bg-destructive/10 px-3 py-2 font-mono text-[10px] text-destructive">
+            <div className="mb-6 border border-destructive/50 bg-destructive/10 px-3 py-2 font-mono text-xs text-destructive">
               OAuth sign-in could not be completed. Start the flow again.
             </div>
           ) : null}
@@ -59,7 +59,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <LoginProviderButtons apiBaseUrl={API_BASE_URL} />
 
           <div className="mt-6 text-center">
-            <span className="font-mono text-[10px] text-muted-foreground">
+            <span className="font-mono text-xs text-muted-foreground">
               By signing in, you agree to our{" "}
               <Link href="/terms" className="text-primary hover:underline">
                 Terms

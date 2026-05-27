@@ -89,7 +89,7 @@ export function FeaturesGrid() {
               >
                 {/* Tag */}
                 <div className="absolute right-4 top-3.5">
-                  <span className="border border-primary/50 px-1.5 py-0.5 font-mono text-[9px] font-bold tracking-widest text-primary">
+                  <span className="border border-primary/50 px-1.5 py-0.5 font-mono text-xs font-bold tracking-widest text-primary">
                     {f.tag}
                   </span>
                 </div>
@@ -98,7 +98,7 @@ export function FeaturesGrid() {
                 <h3 className="mb-2 pr-14 font-mono text-xs font-bold tracking-[0.14em]">
                   {f.title}
                 </h3>
-                <p className="pr-10 text-[13px] leading-6 text-muted-foreground">
+                <p className="pr-10 text-sm leading-6 text-muted-foreground">
                   {f.desc}
                 </p>
               </div>

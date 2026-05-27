@@ -283,7 +283,7 @@ export default function ApisDirectoryPage() {
                   href={group.docsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 border border-primary/40 bg-primary/10 px-2.5 py-1 text-[11px] tracking-widest text-primary hover:border-primary hover:bg-primary/20"
+                  className="inline-flex items-center gap-1.5 border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs tracking-widest text-primary hover:border-primary hover:bg-primary/20"
                 >
                   VIEW DOCS <ArrowRight className="h-3 w-3" />
                 </a>
@@ -298,7 +298,7 @@ export default function ApisDirectoryPage() {
                     className="grid items-center gap-3 px-4 py-3 md:grid-cols-[64px_minmax(0,1fr)_minmax(0,2fr)_72px]"
                   >
                     <span
-                      className={`inline-flex w-fit items-center justify-center border px-2 py-0.5 font-mono text-[10px] font-bold tracking-widest ${methodClasses(ep.method)}`}
+                      className={`inline-flex w-fit items-center justify-center border px-2 py-0.5 font-mono text-xs font-bold tracking-widest ${methodClasses(ep.method)}`}
                     >
                       {ep.method}
                     </span>
@@ -309,7 +309,7 @@ export default function ApisDirectoryPage() {
                       {ep.summary}
                     </p>
                     <span
-                      className={`font-mono text-[10px] font-bold tracking-widest md:text-right ${tierClasses(ep.tier)}`}
+                      className={`font-mono text-xs font-bold tracking-widest md:text-right ${tierClasses(ep.tier)}`}
                     >
                       {TIER_LABEL[ep.tier]}
                     </span>

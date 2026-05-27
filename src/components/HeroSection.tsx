@@ -29,7 +29,7 @@ export function HeroSection({
               <span className="font-mono text-xs tracking-widest text-success uppercase">
                 {providerCount} markets · live
               </span>
-              <span className="font-mono text-[10px] tracking-widest text-primary uppercase border border-primary/40 px-2 py-0.5">
+              <span className="font-mono text-xs tracking-widest text-primary uppercase border border-primary/40 px-2 py-0.5">
                 Free tier — no card
               </span>
             </div>
@@ -74,7 +74,7 @@ export function HeroSection({
               ].map((stat) => (
                 <div key={stat.label} className="bg-card p-4 md:p-6">
                   <div className="font-mono text-2xl md:text-3xl font-bold text-primary">{stat.value}</div>
-                  <div className="font-mono text-[10px] tracking-widest text-muted-foreground mt-1">{stat.label}</div>
+                  <div className="font-mono text-xs tracking-widest text-muted-foreground mt-1">{stat.label}</div>
                 </div>
               ))}
             </div>

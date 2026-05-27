@@ -128,13 +128,13 @@ export function CollapsibleAsksList({
             {/* Mobile: second row — price + spread */}
             <div className="mt-2 grid grid-cols-2 gap-x-4 md:contents">
               <div className="md:text-right">
-                <div className="font-mono text-[9px] tracking-widest text-muted-foreground md:hidden">PRICE</div>
+                <div className="font-mono text-xs tracking-widest text-muted-foreground md:hidden">PRICE</div>
                 <div className="font-mono text-base font-bold text-success md:text-right">
                   {formatPrice(row.lowest_ask)}
                 </div>
               </div>
               <div className="md:text-right">
-                <div className="font-mono text-[9px] tracking-widest text-muted-foreground md:hidden">VS BEST</div>
+                <div className="font-mono text-xs tracking-widest text-muted-foreground md:hidden">VS BEST</div>
                 <div className="font-mono text-sm md:text-right">
                   {isBest ? (
                     <span className="font-bold text-success">best price</span>
@@ -170,7 +170,7 @@ export function CollapsibleAsksList({
         <button
           type="button"
           onClick={() => setExpanded((prev) => !prev)}
-          className="flex w-full items-center justify-center gap-2 border-t-2 border-border bg-secondary/20 px-4 py-3 font-mono text-[10px] tracking-widest text-primary transition-colors hover:bg-secondary/40"
+          className="flex w-full items-center justify-center gap-2 border-t-2 border-border bg-secondary/20 px-4 py-3 font-mono text-xs tracking-widest text-primary transition-colors hover:bg-secondary/40"
         >
           {expanded ? (
             <>

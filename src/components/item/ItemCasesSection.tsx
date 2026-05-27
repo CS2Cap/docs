@@ -31,7 +31,7 @@ export function ItemCasesSection({ item }: { item: ItemOut }) {
             className="flex items-center justify-between gap-3 bg-card p-4 transition-colors hover:bg-secondary/30"
           >
             <div className="min-w-0">
-              <div className="font-mono text-[9px] tracking-widest text-muted-foreground">
+              <div className="font-mono text-xs tracking-widest text-muted-foreground">
                 CONTAINER
               </div>
               <div className="mt-1 truncate font-mono text-xs font-bold text-foreground">

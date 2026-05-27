@@ -44,7 +44,7 @@ function StatCard({
     <div className="border border-border bg-card p-4">
       <div className="mb-2 flex items-center gap-2">
         <Icon className="h-4 w-4 text-primary" />
-        <span className="font-mono text-[10px] font-bold tracking-wider text-muted-foreground">
+        <span className="font-mono text-xs font-bold tracking-wider text-muted-foreground">
           {label}
         </span>
       </div>
