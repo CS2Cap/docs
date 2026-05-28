@@ -13,18 +13,14 @@ This catalog cross-references the report's recommendations against what cs2cap (
 
 ---
 
-## Tier 1 — Search / catalog upgrades (unlocks better discovery features)
-
-1. **`taxonomy_node` / `taxonomy_edge` closure table** — Replace ad-hoc category/collection joins with a DAG so weapon → finish → collection → container → tournament traversal is one indexed lookup. Required before adding tournament/player/team filters.
-
-## Tier 2 — Item-page metadata depth (matches CSGOSKINS.GG)
+## Tier 1 — Item-page metadata depth (matches CSGOSKINS.GG)
 
 1. **`item_attribute` open key/value table** — Game-file vs provider-derived attributes separated by `source enum(gamefile, provider, derived)`. Lets us add new metadata (drop odds, supported phases, sticker compatibility) without schema churn.
 2. **`drop_source` table** — Collection / case / capsule / update with `odds` numeric. Backs an unboxing-odds view, "drops from" reverse lookups, and case-EV calculators.
 3. **`media_asset` per-variant table** — `media_kind enum(image, video, wear_preview, screenshot, inspect_preview)`. Today only `cdn.cs2c.app` images are wired; this enables wear-preview videos, inspect renders, and 3D viewers later.
 4. **Hide canonical static metadata from per-asset instance data** — Asset-instance rows (float, paint seed, applied stickers) must be scoped to the owning inventory snapshot with retention lifecycles — a privacy obligation as soon as inventories are stored.
 
-## Tier 3 — User-state hardening (unlocks portfolio/alert depth)
+## Tier 2 — User-state hardening (unlocks portfolio/alert depth)
 
 1. **`auth_identity` table separate from `user_account`** — Multiple providers per user (currently auth.py likely couples them). Required before account-merge and SSO additions become safe.
 2. **`session` table with revocation + device fingerprint** — Today sessions live in Redis; backing them with an auditable durable table enables "sign out all devices", anomaly alerts, and forensic trails.
@@ -33,25 +29,25 @@ This catalog cross-references the report's recommendations against what cs2cap (
 5. **`inventory_import_job` idempotency keys** — Dedup imports by `(steam_id, window)` so re-syncs are safe; required before public scheduled refresh (e.g. SteamLedger's 15-min cadence).
 6. **`transaction_ledger` kind-enum normalization** — Today CSV import + manual + buy/sell live in `transaction_service.py`; canonicalize into one ledger with `txn_kind enum(buy, sell, trade, manual_adjustment, import_basis)` so reports/analytics don't duplicate logic.
 
-## Tier 4 — Alerts, watchlists, notifications (unlocks retention plays)
+## Tier 3 — Alerts, watchlists, notifications (unlocks retention plays)
 
 1. **`alert_rule` ↔ `alert_event` split with dedupe_key** — Prevents alert storms when several providers cross a threshold simultaneously. Currently `alerts/page.tsx` exists but storage shape unknown — verify before adding Telegram/Discord channels.
 2. **`notification_endpoint` table with verification + webhook secrets** — Backs multi-channel alerts (browser, email, telegram, discord, webhook). Today only browser/email are visible.
 3. **`watchlist` ↔ `watchlist_item` distinct from alert rules** — A user can favorite without alerting and vice versa; collapsing them blocks UX patterns competitors already have.
 4. **Centralized notification scheduler/worker** — Separate from the SSE / push fanout for deal signals so alerting and live UI streams don't share back-pressure.
 
-## Tier 5 — Trader tools
+## Tier 4 — Trader tools
 
 1. **`tradeup_contract` / `tradeup_contract_input` / `tradeup_outcome`** — Deterministic, hash-cached EV computation. No backend trade-up service exists today; adding one unlocks both the tool and shareable trade-up links.
 2. **`deal_signal` table + SSE fanout for arbitrage** — `skinscanner/deals_service.py` exists; promote outputs to a typed table (variant, source/target marketplace, ROI, liquidity score, observed_profit) and stream via SSE. The report shows competitors treat this as their hook feature.
 3. **`loadout` / `loadout_slot` + share tokens** — Differentiator from CS2Locker. Cheap to add once we have variant + price projections; high engagement potential.
 
-## Tier 6 — Sponsored placements & affiliate attribution
+## Tier 5 — Sponsored placements & affiliate attribution
 
 1. **`campaign` / `placement` / `placement_event` tables with explicit editorial-vs-paid separation** — Prerequisite for monetizing marketplace partnerships without polluting "best price" ranking. Currently absent. Critical to design before adding monetization, not after.
 2. **`is_paid` flag plumbed through ranking now, even before any sponsored deal exists** — Wire ranking code to read an `is_paid` column so paid placements physically cannot mix into organic results. Cheap insurance now; expensive retrofit later, with serious user-trust risk if any contamination ever ships. No `is_paid` plumbing exists in the codebase today (only ToS mentions "sponsored").
 
-## Tier 7 — Cross-cutting frontend optimizations
+## Tier 6 — Cross-cutting frontend optimizations
 
 1. **TanStack Query key registry audit** — `src/lib/api/hooks.ts` has a `queryKeys` registry; ensure every new fetcher uses it and that mutation-driven invalidations are co-located.
 2. **Edge-cache policy parity** — The proxy `matchEdgeCachePolicy` and the server `revalidate` values per endpoint must move from two hand-synced lists into a single source-of-truth module imported by both.
@@ -73,6 +69,7 @@ These items shipped to `main` and are no longer candidates. Listed here briefly 
 - **Rate-limit isolation for `/v1/web/search`** *(was Tier 2 #5)* — Scrape-prone faceted search lives in its own `search:`-namespaced Redis bucket; limit is the stricter of `SEARCH_RATE_REQUESTS_PER_MINUTE` (default 60) and the user's tier rpm. Commit `7063be3af`.
 - **Snapshot scores on `/v1/web/search`** *(was Tier 1 #1)* — `WebSearchItem` now carries `liquidity`, `listing_score`, `gap_score`, `volume_score`, `stability_score`, `external_score`; new `liquidity` sort key. (Skipped `total_volume_24h` — already exposed as `sales_1d`.) Commit `78dbac294`.
 - **Query understanding for search** *(was Tier 2 #3)* — New `query_parser.py` with alias dictionary (`ak`→`AK-47`, `ft`→`Field-Tested`, …), tokenization, weighted-field scoring. Drops zero-score candidates, adds `relevance` sort key (auto-default when `q` is set). Trigram typo tolerance deferred. Commit `fbb39c45f` (+ follow-up `75e649009`).
+- **Taxonomy DAG (containers MVP)** *(was Tier 1, search/catalog)* — `taxonomy_node` / `taxonomy_edge` / `item_taxonomy` tables (migration `0062`), `taxonomy_service.py` with descendant/ancestor walks + cycle guard, `seed_container_taxonomy.py` deriving container nodes from catalog `crates`, and a `/v1/web/search?container_slug=` filter. Two deliberate MVP simplifications vs the original plan: recursive CTE instead of a `taxonomy_closure` table (simpler, fine at current scale), and `item_taxonomy` has no `relation_kind` column yet (containers-only). Seeding is wired into the catalog rebuild behind an optional `seed_taxonomy` flag. Commits `86f624ff6` + follow-ups (`9ea9a3464`, `dea2190e5`). Not migrated: existing string-based collection/rarity/wear filters; tournament/player/team seeding; FE container navigation.
 
 ## Dropped
 
@@ -250,18 +247,16 @@ The only piece that may or may not be wired is "alert delivery is suppressed whe
 
 ## Critical files referenced
 
-- `cs2c-api/src/app/db_base.py` (Tier 1 — new TaxonomyNode / TaxonomyEdge / ItemTaxonomy models)
-- `cs2c-api/src/app/services/catalog/catalog_sync_job.py` (Tier 1 — seed source for container taxonomy)
-- `cs2c-api/src/app/services/analytics/web_search_service.py` (Tier 1 — new `container_slug` filter)
-- `cs2c-api/src/app/services/inventory/steam_inventory_service.py` (Tier 3)
-- `cs2c-api/src/app/services/portfolio/{portfolio,transaction,history,csv_import}_service.py` (Tier 3)
-- `cs2c-api/src/app/services/auth/oauth_service.py` (Tier 3)
-- `cs2c-api/src/app/services/skinscanner/deals_service.py` (Tier 5)
-- `cs2c-api/alembic/versions/` (62 migrations; new ones for each Tier 1–6 entity)
-- `cs2cap/src/lib/api/{server,client,hooks,types,compositions,view-models}.ts` (Tier 7)
-- `cs2cap/src/app/api/cs2c/[...path]/route.ts` (Tier 7 — edge-cache policy parity)
-- `cs2cap/src/lib/seo/landing-pages.ts` (Tier 7 — landing-page generation)
-- `cs2cap/next.config.ts` (Tier 7 — image pipeline allowlist)
+- `cs2c-api/src/app/db_base.py` (Tier 1 — new `item_attribute` / `drop_source` / `media_asset` models)
+- `cs2c-api/src/app/services/inventory/steam_inventory_service.py` (Tier 2)
+- `cs2c-api/src/app/services/portfolio/{portfolio,transaction,history,csv_import}_service.py` (Tier 2)
+- `cs2c-api/src/app/services/auth/oauth_service.py` (Tier 2)
+- `cs2c-api/src/app/services/skinscanner/deals_service.py` (Tier 4)
+- `cs2c-api/alembic/versions/` (62 migrations; new ones for each Tier 1–5 entity)
+- `cs2cap/src/lib/api/{server,client,hooks,types,compositions,view-models}.ts` (Tier 6)
+- `cs2cap/src/app/api/cs2c/[...path]/route.ts` (Tier 6 — edge-cache policy parity)
+- `cs2cap/src/lib/seo/landing-pages.ts` (Tier 6 — landing-page generation)
+- `cs2cap/next.config.ts` (Tier 6 — image pipeline allowlist)
 
 ## How to use this list
 
@@ -272,4 +267,4 @@ This catalog is intentionally broad. **Do not implement straight through it.** F
 3. Decide migration safety (the platform has 62 alembic migrations and live data — additive-then-backfill-then-cutover is the safe pattern).
 4. Define success criteria (CLAUDE.md §4): a test or measurable outcome per change.
 
-The strongest practical recommendation from the report applies here too: **prioritize data credibility over feature theatrics**. Tier 1 (taxonomy DAG) is the cheapest unlock for future filter additions; Tiers 2–3 (item metadata depth + user-state hardening) are the next big content and retention investments; Tiers 5–6 (trader tools + sponsored) are visible but cheap only after the foundation is solid.
+The strongest practical recommendation from the report applies here too: **prioritize data credibility over feature theatrics**. Tiers 1–2 (item-page metadata depth + user-state hardening) are the next big content and retention investments; Tiers 4–5 (trader tools + sponsored) are visible but cheap only after the foundation is solid.
