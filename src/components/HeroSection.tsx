@@ -85,7 +85,7 @@ export function HeroSection({
             {/* ambient glow behind the image */}
             <div className="absolute inset-0 -z-10 blur-3xl opacity-30 bg-primary rounded-full scale-75 translate-x-8" />
             <Image
-              src="/assets/hero-market-card.png"
+              src="https://cdn.cs2c.app/assets/hero-market-card.png"
               alt="CS2 market analytics inspect panel showing AWP Asiimov with live prices, bids, and sparkline"
               width={814}
               height={1025}

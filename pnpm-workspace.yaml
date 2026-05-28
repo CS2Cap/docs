@@ -3,3 +3,7 @@ allowBuilds:
   protobufjs: true
   sharp: true
   unrs-resolver: true
+minimumReleaseAgeExclude:
+  - '@posthog/core@1.29.12'
+  - '@posthog/types@1.376.3'
+  - posthog-js@1.376.3
