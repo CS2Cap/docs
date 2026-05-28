@@ -25272,7 +25272,7 @@
           "Admin"
         ],
         "summary": "Get Providers Health",
-        "description": "Get health status for all providers.\n\n**Response:**\n\n```json\n{\n  \"providers\": {\n    \"steam\": {\n      \"last_success_quotes\": 950,\n      \"consecutive_failures\": 0,\n      \"last_attempt\": \"2025-12-16T10:00:00Z\",\n      \"last_success\": \"2025-12-16T10:00:00Z\"\n    },\n    \"c5\": {\n      \"last_success_quotes\": 27000,\n      \"consecutive_failures\": 0,\n      \"last_attempt\": \"2025-12-16T10:00:00Z\",\n      \"last_success\": \"2025-12-16T10:00:00Z\",\n      \"jobs\": {\n        \"ingest_c5game\": {\n          \"consecutive_failures\": 0,\n          \"last_attempt\": \"2025-12-16T10:00:00Z\",\n          \"last_success\": \"2025-12-16T10:00:00Z\",\n          \"quotes\": 25000\n        },\n        \"ingest_c5game_p\": {\n          \"consecutive_failures\": 0,\n          \"last_attempt\": \"2025-12-16T10:00:00Z\",\n          \"last_success\": \"2025-12-16T10:00:00Z\",\n          \"quotes\": 2000\n        }\n      }\n    }\n  }\n}\n```",
+        "description": "Get health status for all providers.\n\n**Response:**\n\n```json\n{\n  \"providers\": {\n    \"steam\": {\n      \"last_success_quotes\": 950,\n      \"consecutive_failures\": 0,\n      \"last_attempt\": \"2025-12-16T10:00:00Z\",\n      \"last_success\": \"2025-12-16T10:00:00Z\"\n    },\n    \"c5\": {\n      \"last_success_quotes\": 27000,\n      \"consecutive_failures\": 0,\n      \"last_attempt\": \"2025-12-16T10:00:00Z\",\n      \"last_success\": \"2025-12-16T10:00:00Z\",\n      \"jobs\": {\n        \"c5_listings_bo\": {\n          \"consecutive_failures\": 0,\n          \"last_attempt\": \"2025-12-16T10:00:00Z\",\n          \"last_success\": \"2025-12-16T10:00:00Z\",\n          \"quotes\": 25000\n        },\n        \"c5_phase_listings_bo\": {\n          \"consecutive_failures\": 0,\n          \"last_attempt\": \"2025-12-16T10:00:00Z\",\n          \"last_success\": \"2025-12-16T10:00:00Z\",\n          \"quotes\": 2000\n        }\n      }\n    }\n  }\n}\n```",
         "operationId": "adminGetProvidersHealth",
         "responses": {
           "200": {
@@ -25442,7 +25442,7 @@
           "Admin"
         ],
         "summary": "Get Queue Status",
-        "description": "Get worker queue status: pending jobs, in-progress jobs, failed jobs, and health.\n\nUsed with the distributed scheduler/worker architecture to monitor\njob queue depth and identify stuck/failed jobs.\n\n**Response:**\n\n```json\n{\n  \"queued_count\": 5,\n  \"in_progress_count\": 3,\n  \"failed_count\": 1,\n  \"queued_jobs\": [\"ingest_steam\", \"ingest_buff163\", ...],\n  \"in_progress_jobs\": [\n    {\"job_id\": \"ingest_csfloat\", \"started_at\": \"2025-12-28T10:00:00Z\", \"provider\": \"csfloat\"},\n    ...\n  ],\n  \"failed_jobs\": [\"ingest_skinport\"],\n  \"timestamp\": \"2025-12-28T10:00:00Z\",\n  \"status\": \"healthy\"\n}\n```\n\nStatus values:\n- `healthy`: Queue is empty or processing normally\n- `backlog`: Jobs are accumulating (queued > 100)\n- `critical`: Large backlog or many failed jobs (queued > 500 or failed > 50)",
+        "description": "Get worker queue status: pending jobs, in-progress jobs, failed jobs, and health.\n\nUsed with the distributed scheduler/worker architecture to monitor\njob queue depth and identify stuck/failed jobs.\n\n**Response:**\n\n```json\n{\n  \"queued_count\": 5,\n  \"in_progress_count\": 3,\n  \"failed_count\": 1,\n  \"queued_jobs\": [\"steam_listings_bo\", \"buff163_listings\", ...],\n  \"in_progress_jobs\": [\n    {\"job_id\": \"csfloat_listings\", \"started_at\": \"2025-12-28T10:00:00Z\", \"provider\": \"csfloat\"},\n    ...\n  ],\n  \"failed_jobs\": [\"skinport_listings\"],\n  \"timestamp\": \"2025-12-28T10:00:00Z\",\n  \"status\": \"healthy\"\n}\n```\n\nStatus values:\n- `healthy`: Queue is empty or processing normally\n- `backlog`: Jobs are accumulating (queued > 100)\n- `critical`: Large backlog or many failed jobs (queued > 500 or failed > 50)",
         "operationId": "adminGetQueueStatus",
         "security": [
           {
@@ -27575,7 +27575,6 @@
         "type": "string",
         "enum": [
           "avanmarket",
-          "bitskins",
           "buff163",
           "buffmarket",
           "c5",
@@ -34311,7 +34310,6 @@
       "RecentSalesProvider": {
         "type": "string",
         "enum": [
-          "bitskins",
           "buff163",
           "c5",
           "csfloat",
@@ -34588,10 +34586,10 @@
             "description": "Per-provider cache outcome map keyed by provider key. `hit` = served from Redis sales cache; `miss` = cache miss then live fetch; `error` = live fetch failed; `unavailable` = provider requested but not available.",
             "examples": [
               {
-                "bitskins": "unavailable",
                 "buff163": "miss",
                 "csfloat": "hit",
-                "csgoempire": "error"
+                "csgoempire": "error",
+                "dmarket": "unavailable"
               }
             ]
           }
