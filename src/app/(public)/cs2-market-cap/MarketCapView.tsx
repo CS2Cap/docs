@@ -750,7 +750,7 @@ function MarketplacePanel({ rows }: { rows: MarketOverviewMarketplace[] }) {
                   </span>
                 </span>
                 <div className="mt-1 font-mono text-xs text-muted-foreground">
-                  {hasListingCount ? `${formatNumber(row.listing_count)} listed units` : "listed units pending"}
+                  {hasListingCount ? `${formatNumber(row.listing_count)} listings` : "listings pending"}
                 </div>
               </div>
               <div className="text-right">
@@ -783,7 +783,7 @@ function MarketplacePanel({ rows }: { rows: MarketOverviewMarketplace[] }) {
               </span>
               <div className="mt-1 font-mono text-xs text-muted-foreground">
                 {othersListingCount > 0
-                  ? `${formatNumber(othersListingCount)} listed units · ${overflow.length} marketplaces`
+                  ? `${formatNumber(othersListingCount)} listings · ${overflow.length} marketplaces`
                   : `${overflow.length} marketplaces`}
               </div>
             </div>
