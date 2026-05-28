@@ -1,34 +1,10 @@
 import type { MetadataRoute } from "next";
-import { API_BASE_URL } from "@/lib/api/config";
-import { buildQuery } from "@/lib/api/shared";
 import { SEO_PAGES } from "@/lib/seo/landing-pages";
-import { buildItemPath } from "@/lib/seo/itemSlug";
-import type { ItemsMetadataResponse, ItemsResponse } from "@/lib/api/types";
 
 const BASE = "https://cs2cap.com";
-const ITEM_CHUNK_SIZE = 5000;
-const CATALOG_REVALIDATE = 86400;
-
-async function publicFetch<T>(path: string): Promise<T | null> {
-  try {
-    const response = await fetch(`${API_BASE_URL}${path}`, {
-      next: { revalidate: CATALOG_REVALIDATE },
-      signal: AbortSignal.timeout(15000),
-    });
-    if (!response.ok) {
-      return null;
-    }
-    return (await response.json()) as T;
-  } catch {
-    return null;
-  }
-}
 
 export async function generateSitemaps() {
-  const metadata = await publicFetch<ItemsMetadataResponse>("/v1/web/items/metadata");
-  const totalItems = metadata?.catalog.total_items ?? 0;
-  const itemChunkCount = Math.ceil(totalItems / ITEM_CHUNK_SIZE);
-  return Array.from({ length: itemChunkCount + 1 }, (_, id) => ({ id }));
+  return [{ id: 0 }];
 }
 
 export default async function sitemap(props: {
@@ -65,17 +41,5 @@ export default async function sitemap(props: {
     return [...staticPages, ...seoPages];
   }
 
-  const offset = (id - 1) * ITEM_CHUNK_SIZE;
-  const response = await publicFetch<ItemsResponse>(
-    `/v1/web/items${buildQuery({ limit: ITEM_CHUNK_SIZE, offset })}`,
-  );
-
-  return (response?.items ?? [])
-    .filter((item): item is typeof item & { item_id: number } => item.item_id != null)
-    .map((item) => ({
-      url: `${BASE}${buildItemPath(item.item_id, item.market_hash_name)}`,
-      lastModified,
-      changeFrequency: "weekly" as const,
-      priority: 0.4,
-    }));
+  return [];
 }

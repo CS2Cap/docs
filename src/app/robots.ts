@@ -1,46 +1,67 @@
 import type { MetadataRoute } from "next";
-import { API_BASE_URL } from "@/lib/api/config";
-import type { ItemsMetadataResponse } from "@/lib/api/types";
 
 const BASE = "https://cs2cap.com";
-const ITEM_CHUNK_SIZE = 5000;
-const REVALIDATE = 86400;
 
-async function publicFetch<T>(path: string): Promise<T | null> {
-  try {
-    const response = await fetch(`${API_BASE_URL}${path}`, {
-      next: { revalidate: REVALIDATE },
-      signal: AbortSignal.timeout(15000),
-    });
-    if (!response.ok) {
-      return null;
-    }
-    return (await response.json()) as T;
-  } catch {
-    return null;
-  }
-}
+const USER_DISALLOW = [
+  "/login",
+  "/dashboard",
+  "/account",
+  "/watchlist",
+  "/alerts",
+  "/item/",
+  "/verify-email",
+];
+
+const BOT_DISALLOW = [
+  "/item/",
+  "/api/",
+  "/_next/data/",
+  "/login",
+  "/dashboard",
+  "/account",
+  "/watchlist",
+  "/alerts",
+  "/verify-email",
+  "/auth/",
+];
+
+const META_BOTS = [
+  "meta-externalfetcher",
+  "meta-webindexer",
+  "meta-externalagent",
+  "facebookexternalhit",
+  "facebot",
+  "facebookbot",
+];
+
+const APPROVED_BOTS = [
+  "OAI-SearchBot",
+  "PerplexityBot",
+  "ClaudeBot",
+  "Googlebot",
+  "Applebot",
+  "Bingbot",
+  "DuckDuckBot",
+];
 
 export default async function robots(): Promise<MetadataRoute.Robots> {
-  const metadata = await publicFetch<ItemsMetadataResponse>("/v1/web/items/metadata");
-  const totalItems = metadata?.catalog.total_items ?? 0;
-  const itemChunkCount = Math.ceil(totalItems / ITEM_CHUNK_SIZE);
-  const sitemapUrls = [
-    `${BASE}/sitemap.xml`,
-    ...Array.from(
-      { length: itemChunkCount + 1 },
-      (_, id) => `${BASE}/sitemap/${id}.xml`,
-    ),
-  ];
-
   return {
     rules: [
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/dashboard", "/account", "/watchlist", "/alerts", "/verify-email"],
+        disallow: USER_DISALLOW,
       },
+      ...META_BOTS.map((userAgent) => ({
+        userAgent,
+        disallow: "/",
+      })),
+      ...APPROVED_BOTS.map((userAgent) => ({
+        userAgent,
+        allow: "/",
+        disallow: BOT_DISALLOW,
+      })),
     ],
-    sitemap: sitemapUrls,
+    sitemap: `${BASE}/sitemap.xml`,
   };
 }
