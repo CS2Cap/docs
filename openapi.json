@@ -27672,6 +27672,19 @@
             "title": "Highest Bid",
             "description": "Money amount in minor units of the response currency (for example USD cents when currency=USD). Divide by 100 for display."
           },
+          "highest_bid_decimal": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Highest Bid Decimal",
+            "description": "Price as a decimal string in the response currency, with precision that scales to magnitude: two decimal places at or above 1.0, eight below it. Use this field for currencies where the integer minor-units field would round to 0 (notably cryptocurrencies such as BTC, for example \"0.00041600\")."
+          },
           "num_bids": {
             "type": "integer",
             "title": "Num Bids",
@@ -27908,6 +27921,19 @@
             "type": "integer",
             "title": "Lowest Ask",
             "description": "Money amount in minor units of the response currency (for example USD cents when currency=USD). Divide by 100 for display."
+          },
+          "lowest_ask_decimal": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lowest Ask Decimal",
+            "description": "Price as a decimal string in the response currency, with precision that scales to magnitude: two decimal places at or above 1.0, eight below it. Use this field for currencies where the integer minor-units field would round to 0 (notably cryptocurrencies such as BTC, for example \"0.00041600\")."
           },
           "quantity": {
             "type": "integer",
@@ -28559,6 +28585,19 @@
             "type": "integer",
             "title": "Highest Bid",
             "description": "Money amount in minor units of the response currency (for example USD cents when currency=USD). Divide by 100 for display."
+          },
+          "highest_bid_decimal": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Highest Bid Decimal",
+            "description": "Price as a decimal string in the response currency, with precision that scales to magnitude: two decimal places at or above 1.0, eight below it. Use this field for currencies where the integer minor-units field would round to 0 (notably cryptocurrencies such as BTC, for example \"0.00041600\")."
           },
           "num_bids": {
             "type": "integer",
@@ -30998,6 +31037,19 @@
             "type": "integer",
             "title": "Lowest Ask",
             "description": "Money amount in minor units of the response currency (for example USD cents when currency=USD). Divide by 100 for display."
+          },
+          "lowest_ask_decimal": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lowest Ask Decimal",
+            "description": "Price as a decimal string in the response currency, with precision that scales to magnitude: two decimal places at or above 1.0, eight below it. Use this field for currencies where the integer minor-units field would round to 0 (notably cryptocurrencies such as BTC, for example \"0.00041600\")."
           },
           "quantity": {
             "type": "integer",
