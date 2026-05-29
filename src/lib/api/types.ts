@@ -446,6 +446,7 @@ export interface MarketItemsSnapshotResponse {
 }
 
 export type WebSearchSort =
+  | "relevance"
   | "rank"
   | "name"
   | "best_ask_usd"

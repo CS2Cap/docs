@@ -55,13 +55,14 @@ function numeric(value: string | number | null | undefined): number {
 
 function formatUsd(value: string | number | null | undefined, compact = false): string {
   const n = numeric(value);
-  if (!n) return compact ? "$0" : "$0.00";
+  if (!n) return "$0.00";
+  const useCompact = compact && Math.abs(n) >= 1000;
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
-    minimumFractionDigits: compact ? 0 : 2,
-    maximumFractionDigits: compact ? 1 : 2,
-    notation: compact ? "compact" : "standard",
+    minimumFractionDigits: useCompact ? 0 : 2,
+    maximumFractionDigits: useCompact ? 1 : 2,
+    notation: useCompact ? "compact" : "standard",
   }).format(n);
 }
 
