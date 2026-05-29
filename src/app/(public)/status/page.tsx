@@ -116,7 +116,7 @@ export default async function StatusPage() {
   );
 }
 
-}
+
 
 function Legend() {
   const items: { color: string; label: string }[] = [
