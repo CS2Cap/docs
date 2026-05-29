@@ -106,11 +106,16 @@ function normalizeSteamInput(raw: string): NormalizedTarget | null {
 }
 
 function getClientIp(request: NextRequest): string {
+  // Prefer x-real-ip: Vercel sets it to the true client IP and it can't be
+  // spoofed by the caller. The leftmost x-forwarded-for value is client-claimed,
+  // so fall back to the rightmost (proxy-appended) entry instead.
+  const realIp = request.headers.get("x-real-ip");
+  if (realIp) return realIp.trim() || "unknown";
   const forwarded = request.headers.get("x-forwarded-for");
   if (forwarded) {
-    return forwarded.split(",")[0].trim() || "unknown";
+    return forwarded.split(",").pop()?.trim() || "unknown";
   }
-  return request.headers.get("x-real-ip") ?? "unknown";
+  return "unknown";
 }
 
 interface UpstreamRequestOptions {

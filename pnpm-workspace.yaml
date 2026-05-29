@@ -8,3 +8,6 @@ minimumReleaseAgeExclude:
   - '@posthog/types@1.376.3'
   - posthog-js@1.376.3
   - lucide-react@1.17.0
+  - '@posthog/core@1.29.13'
+  - '@posthog/types@1.376.4'
+  - posthog-js@1.376.4
