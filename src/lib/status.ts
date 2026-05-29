@@ -191,8 +191,9 @@ export function computeOverall(monitors: MonitorSummary[]): OverallSummary {
   const uptimes: number[] = [];
   const pings: number[] = [];
   for (const m of monitors) {
-    if (m.state === "up") up++;
-    else if (m.state === "degraded") degraded++;
+    // Degraded counts toward "up" — slow but operational.
+    if (m.state === "up" || m.state === "degraded") up++;
+    if (m.state === "degraded") degraded++;
     else if (m.state === "down") down++;
     if (m.uptime24h != null) uptimes.push(m.uptime24h);
     if (m.lastPing != null) pings.push(m.lastPing);
@@ -210,3 +211,4 @@ export function computeOverall(monitors: MonitorSummary[]): OverallSummary {
     worst,
   };
 }
+

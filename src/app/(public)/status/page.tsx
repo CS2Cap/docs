@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { FooterSection } from "@/components/FooterSection";
 import { StatusAutoRefresh } from "@/components/status/StatusAutoRefresh";
 import { StatusBanner } from "@/components/status/StatusBanner";
+
 import { StatusGroup } from "@/components/status/StatusGroup";
 import {
   buildLogoMap,
@@ -79,37 +81,42 @@ export default async function StatusPage() {
       .pop() ?? null;
 
   return (
-    <main className="container py-16 md:py-20">
-      <StatusAutoRefresh />
+    <>
+      <main className="container py-16 md:py-20">
+        <StatusAutoRefresh />
 
-      <header className="mb-10 md:mb-12">
-        <div className="font-mono text-xs tracking-widest text-primary mb-3">// SYSTEM STATUS</div>
-        <h1 className="text-4xl md:text-5xl font-black tracking-tighter mb-4">
-          Platform &amp; marketplace uptime<span className="text-primary">.</span>
-        </h1>
-        <p className="font-mono text-sm text-muted-foreground max-w-2xl">
-          Real-time health for the CS2Cap API, surfaces, and every marketplace we index. Updated every 60 seconds.
-        </p>
-      </header>
-
-      <div className="space-y-8">
-        <StatusBanner overall={overall} />
-
-        {groups.map((g) => (
-          <StatusGroup key={g.name} name={g.name} monitors={g.monitors} />
-        ))}
-
-        <Legend />
-
-        {lastUpdated && (
-          <p className="font-mono text-xs tracking-widest text-muted-foreground text-center">
-            LAST BEAT · {lastUpdated} UTC · DATA FROM status.cs2c.app
+        <header className="mb-10 md:mb-12">
+          <div className="font-mono text-xs tracking-widest text-primary mb-3">// SYSTEM STATUS</div>
+          <h1 className="text-4xl md:text-5xl font-black tracking-tighter mb-4">
+            Platform &amp; marketplace uptime<span className="text-primary">.</span>
+          </h1>
+          <p className="font-mono text-sm text-muted-foreground max-w-2xl">
+            Real-time health for the CS2Cap API, surfaces, and every marketplace we index. Updated every 60 seconds.
           </p>
-        )}
-      </div>
-    </main>
+        </header>
+
+        <div className="space-y-8">
+          <StatusBanner overall={overall} />
+
+          {groups.map((g) => (
+            <StatusGroup key={g.name} name={g.name} monitors={g.monitors} />
+          ))}
+
+          <Legend />
+
+          {lastUpdated && (
+            <p className="font-mono text-xs tracking-widest text-muted-foreground text-center">
+              LAST BEAT · {lastUpdated} UTC · DATA FROM status.cs2c.app
+            </p>
+          )}
+        </div>
+      </main>
+      <FooterSection />
+    </>
   );
 }
+
+
 
 function Legend() {
   const items: { color: string; label: string }[] = [
