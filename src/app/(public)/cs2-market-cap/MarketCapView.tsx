@@ -55,11 +55,12 @@ function numeric(value: string | number | null | undefined): number {
 
 function formatUsd(value: string | number | null | undefined, compact = false): string {
   const n = numeric(value);
-  if (!n) return "$0";
+  if (!n) return compact ? "$0" : "$0.00";
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
-    maximumFractionDigits: compact ? 1 : 0,
+    minimumFractionDigits: compact ? 0 : 2,
+    maximumFractionDigits: compact ? 1 : 2,
     notation: compact ? "compact" : "standard",
   }).format(n);
 }
