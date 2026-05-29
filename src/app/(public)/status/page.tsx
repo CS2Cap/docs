@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import type { Metadata } from "next";
 import { FooterSection } from "@/components/FooterSection";
-
+import { StatusAutoRefresh } from "@/components/status/StatusAutoRefresh";
 import { StatusBanner } from "@/components/status/StatusBanner";
+
 import { StatusGroup } from "@/components/status/StatusGroup";
 import {
   buildLogoMap,
