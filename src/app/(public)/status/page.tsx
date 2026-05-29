@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
-import { StatusAutoRefresh } from "@/components/status/StatusAutoRefresh";
+import type { Metadata } from "next";
+import { FooterSection } from "@/components/FooterSection";
+
 import { StatusBanner } from "@/components/status/StatusBanner";
 import { StatusGroup } from "@/components/status/StatusGroup";
 import {
