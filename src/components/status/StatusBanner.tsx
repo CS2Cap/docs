@@ -38,7 +38,7 @@ export function StatusBanner({ overall }: { overall: OverallSummary }) {
             {headline}.
           </span>
         </div>
-        <span className="hidden sm:inline font-mono text-[10px] tracking-widest text-muted-foreground">
+        <span className="hidden sm:inline font-mono text-xs tracking-widest text-muted-foreground">
           LIVE · AUTO-REFRESH 60s
         </span>
       </div>
@@ -61,7 +61,7 @@ export function StatusBanner({ overall }: { overall: OverallSummary }) {
 function Tile({ label, value }: { label: string; value: string }) {
   return (
     <div className="bg-card px-5 py-4">
-      <div className="font-mono text-[10px] tracking-widest text-muted-foreground mb-2">{label}</div>
+      <div className="font-mono text-xs tracking-widest text-muted-foreground mb-2">{label}</div>
       <div className="font-mono text-2xl md:text-3xl font-black tracking-tight text-foreground tabular-nums">
         {value}
       </div>

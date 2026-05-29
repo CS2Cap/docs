@@ -14,10 +14,10 @@ export function StatusGroup({
   return (
     <section className="border-2 border-border bg-card">
       <header className="flex items-center justify-between px-5 py-3 border-b-2 border-border bg-secondary/40">
-        <h2 className="font-mono text-[11px] tracking-[0.18em] text-muted-foreground">
+        <h2 className="font-mono text-xs tracking-[0.18em] text-muted-foreground">
           // {name.toUpperCase()}
         </h2>
-        <span className="font-mono text-[10px] tracking-widest text-muted-foreground tabular-nums">
+        <span className="font-mono text-xs tracking-widest text-muted-foreground tabular-nums">
           {upCount}/{monitors.length} UP
         </span>
       </header>

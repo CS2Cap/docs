@@ -59,7 +59,7 @@ export function MarketplacesDirectory({ providers }: Props) {
                 <button
                   key={filter}
                   onClick={() => setActiveFilter(filter)}
-                  className={`border px-3 py-1.5 font-mono text-[10px] tracking-wider transition-colors ${
+                  className={`border px-3 py-1.5 font-mono text-xs tracking-wider transition-colors ${
                     activeFilter === filter
                       ? "border-primary bg-primary/10 text-primary"
                       : "border-border bg-transparent text-muted-foreground hover:text-foreground"

@@ -62,7 +62,7 @@ export function MonitorRow({ monitor }: { monitor: MonitorSummary }) {
         ) : (
           <span className="h-4.5 w-4.5 shrink-0 rounded-sm border border-border bg-secondary/50" aria-hidden="true" />
         )}
-        <span className="font-mono text-[13px] font-semibold tracking-wide text-foreground truncate">
+        <span className="font-mono text-sm font-semibold tracking-wide text-foreground truncate">
           {monitor.name}
         </span>
         <span className="sr-only">{STATE_LABEL[monitor.state]}</span>
@@ -82,7 +82,7 @@ export function MonitorRow({ monitor }: { monitor: MonitorSummary }) {
         ))}
       </div>
 
-      <div className="flex md:justify-end items-center gap-3 font-mono text-[11px] tabular-nums">
+      <div className="flex md:justify-end items-center gap-3 font-mono text-sm tabular-nums">
         <span className={monitor.state === "up" ? "text-success" : monitor.state === "down" ? "text-destructive" : monitor.state === "degraded" ? "text-warning" : "text-muted-foreground"}>
           {monitor.uptime24h != null ? `${(monitor.uptime24h * 100).toFixed(2)}%` : "—"}
         </span>

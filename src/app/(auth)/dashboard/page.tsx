@@ -88,13 +88,13 @@ export default function DashboardPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between gap-4">
                 <div className="min-w-0">
-                  <p className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+                  <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
                     {stat.label}
                   </p>
                   <p className="mt-2 font-mono text-3xl font-black tracking-tight text-foreground md:text-4xl">
                     {stat.value}
                   </p>
-                  <p className="mt-1.5 font-mono text-[11px] text-muted-foreground">
+                  <p className="mt-1.5 font-mono text-xs text-muted-foreground">
                     {stat.detail}
                   </p>
                 </div>
@@ -189,7 +189,7 @@ export default function DashboardPage() {
           <CardContent>
             <div className="grid gap-4 sm:grid-cols-3">
               <div className="rounded-lg border border-border/50 bg-secondary/20 p-5">
-                <p className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+                <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
                   Used
                 </p>
                 <p className="mt-2 font-mono text-3xl font-black text-foreground">
@@ -197,7 +197,7 @@ export default function DashboardPage() {
                 </p>
               </div>
               <div className="rounded-lg border border-border/50 bg-secondary/20 p-5">
-                <p className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+                <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
                   Limit
                 </p>
                 <p className="mt-2 font-mono text-3xl font-black text-foreground">
@@ -205,7 +205,7 @@ export default function DashboardPage() {
                 </p>
               </div>
               <div className="rounded-lg border border-border/50 bg-secondary/20 p-5">
-                <p className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+                <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
                   Resets
                 </p>
                 <p className="mt-2 font-mono text-3xl font-black text-foreground">

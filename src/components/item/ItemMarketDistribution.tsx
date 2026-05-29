@@ -36,7 +36,7 @@ function DonutTooltip({
 
   const datum = payload[0].payload;
   return (
-    <div className="border border-border bg-card px-2 py-1 font-mono text-[10px]">
+    <div className="border border-border bg-card px-2 py-1 font-mono text-xs">
       <div className="font-bold text-foreground">{datum.label}</div>
       <div className="text-muted-foreground">
         {datum.value.toLocaleString()} {datum.value === 1 ? "unit" : "units"} · {datum.pct}%
@@ -98,7 +98,7 @@ export function ItemMarketDistribution({
 
   return (
     <div className="border-brutal bg-card p-4">
-      <div className="mb-3 font-mono text-[10px] tracking-widest text-primary">
+      <div className="mb-3 font-mono text-xs tracking-widest text-primary">
         MARKET DISTRIBUTION
       </div>
       <div className="h-44">
@@ -125,7 +125,7 @@ export function ItemMarketDistribution({
         {data.map((datum) => (
           <div
             key={datum.label}
-            className="flex items-center justify-between gap-2 font-mono text-[10px]"
+            className="flex items-center justify-between gap-2 font-mono text-xs"
           >
             <span className="flex min-w-0 items-center gap-1.5">
               <span

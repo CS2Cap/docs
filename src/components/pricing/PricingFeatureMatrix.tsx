@@ -119,7 +119,7 @@ export function PricingFeatureMatrix() {
         <MatrixRow feature="FEATURE" values={HEADERS} header />
         {SECTIONS.map((sec) => (
           <div key={sec.name}>
-            <div className="border-b border-border bg-background px-4 py-2.5 font-mono text-[11px] font-bold tracking-widest text-primary md:px-5">
+            <div className="border-b border-border bg-background px-4 py-2.5 font-mono text-xs font-bold tracking-widest text-primary md:px-5">
               // {sec.name}
             </div>
             {sec.rows.map((row) => (

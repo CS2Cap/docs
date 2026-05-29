@@ -17,7 +17,7 @@ export function Top3FeaturesSection() {
   const features: Feature[] = [
     {
       tag: "PRICES + BUY ORDERS",
-      title: "BUFF163, YOUPIN +30 MORE",
+      title: "BUFF163, YOUPIN +40 MORE",
       blurb:
         "Live ask, bid, and recent sales across every market that moves CS2 prices.",
       cta: "VIEW MARKETS",
@@ -61,7 +61,7 @@ export function Top3FeaturesSection() {
               key={f.title}
               className="flex flex-col gap-5 bg-card p-7"
             >
-              <span className="inline-flex w-fit border border-primary/40 px-2 py-1 font-mono text-[10px] font-bold tracking-widest text-primary">
+              <span className="inline-flex w-fit border border-primary/40 px-2 py-1 font-mono text-xs font-bold tracking-widest text-primary">
                 {f.tag}
               </span>
               <div className="relative h-44 overflow-hidden border-2 border-border bg-background">
@@ -100,7 +100,7 @@ function PrimaryMarketsVisual() {
     { key: "buff163", label: "BUFF163" },
     { key: "youpin", label: "YOUPIN898" },
   ];
-  const satellites = ["csfloat", "skinport", "steam", "bitskins", "dmarket"];
+  const satellites = ["csfloat", "skinport", "steam", "bitskins", "dmarket", "gameboost"];
 
   return (
     <div className="absolute inset-0 flex flex-col justify-between p-3.5">
@@ -110,8 +110,8 @@ function PrimaryMarketsVisual() {
         <Headliner logoKey={headliners[1].key} label={headliners[1].label} />
       </div>
       <div className="flex items-center justify-center gap-2.5 border-t border-border pt-3">
-        <span className="font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
-          + 30 more markets
+        <span className="font-mono text-xs tracking-widest text-muted-foreground uppercase">
+          + 31 more markets
         </span>
         <div className="flex gap-1">
           {satellites.map((s) => (
@@ -181,7 +181,7 @@ function DopplerPhasesVisual() {
             key={p.label}
             className="bg-card px-1.5 py-1 text-center"
           >
-            <div className="font-mono text-[11px] font-bold" style={{ color: p.color }}>
+            <div className="font-mono text-xs font-bold" style={{ color: p.color }}>
               {p.price}
             </div>
           </div>
@@ -203,7 +203,7 @@ function Headliner({ logoKey, label }: { logoKey: string; label: string }) {
           className="h-auto w-auto object-contain"
         />
       </div>
-      <span className="font-mono text-[9px] font-bold tracking-widest text-foreground">
+      <span className="font-mono text-xs font-bold tracking-widest text-foreground">
         {label}
       </span>
     </div>

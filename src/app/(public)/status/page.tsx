@@ -48,7 +48,7 @@ export default async function StatusPage() {
           <h1 className="text-2xl font-black tracking-tighter mb-2">
             Status data temporarily unavailable<span className="text-primary">.</span>
           </h1>
-          <p className="font-mono text-xs text-muted-foreground">
+          <p className="font-mono text-sm leading-6 text-muted-foreground">
             Live monitoring is at{" "}
             <a href="https://status.cs2c.app" className="text-primary hover:underline">
               status.cs2c.app
@@ -102,7 +102,7 @@ export default async function StatusPage() {
         <Legend />
 
         {lastUpdated && (
-          <p className="font-mono text-[10px] tracking-widest text-muted-foreground text-center">
+          <p className="font-mono text-xs tracking-widest text-muted-foreground text-center">
             LAST BEAT · {lastUpdated} UTC · DATA FROM status.cs2c.app
           </p>
         )}
@@ -122,7 +122,7 @@ function Legend() {
   return (
     <div className="flex flex-wrap gap-x-6 gap-y-2 px-1">
       {items.map((i) => (
-        <span key={i.label} className="flex items-center gap-2 font-mono text-[10px] tracking-widest text-muted-foreground">
+        <span key={i.label} className="flex items-center gap-2 font-mono text-xs tracking-widest text-muted-foreground">
           <span className={`h-2 w-2 ${i.color} rounded-[1px]`} aria-hidden="true" />
           {i.label}
         </span>

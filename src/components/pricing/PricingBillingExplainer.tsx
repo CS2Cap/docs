@@ -34,7 +34,7 @@ export function PricingBillingExplainer() {
       </div>
 
       <div className="border-2 border-border bg-background p-5 md:p-6">
-        <div className="mb-3.5 font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
+        <div className="mb-3.5 font-mono text-xs tracking-widest text-muted-foreground uppercase">
           Example · PRO plan · month-to-date
         </div>
         <div className="flex flex-col gap-px bg-border border border-border">

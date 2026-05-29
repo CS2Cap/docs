@@ -102,6 +102,10 @@ export async function generateMetadata({ params }: ItemPageProps): Promise<Metad
   return {
     title,
     description,
+    robots: {
+      index: false,
+      follow: false,
+    },
     alternates: { canonical },
     openGraph: {
       title,
@@ -236,7 +240,7 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
               <div className="border-brutal bg-card">
                 <div className="px-4 pt-4 pb-2">
                   <span
-                    className={`inline-flex border px-2 py-0.5 font-mono text-[10px] tracking-wider ${rarityClass}`}
+                    className={`inline-flex border px-2 py-0.5 font-mono text-xs tracking-wider ${rarityClass}`}
                     style={rarityBadgeStyle}
                   >
                     {data.item.rarity_name ?? "Item"}
@@ -267,14 +271,14 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                   </h1>
                   {data.item.wear_name &&
                   !data.item.market_hash_name.includes(`(${data.item.wear_name})`) ? (
-                    <div className="mt-1 font-mono text-[11px] tracking-wider text-muted-foreground">
+                    <div className="mt-1 font-mono text-sm tracking-wider text-muted-foreground">
                       {data.item.wear_name}
                     </div>
                   ) : null}
 
                   {askRows.length > 0 ? (
                     <div className="mt-5">
-                      <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
+                      <div className="font-mono text-xs tracking-widest text-muted-foreground">
                         PRICE RANGE
                       </div>
                       <div className="mt-1 font-mono text-2xl font-bold">
@@ -291,7 +295,7 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
 
                   <div className="mt-5 grid grid-cols-2 gap-3">
                     <div>
-                      <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
+                      <div className="font-mono text-xs tracking-widest text-muted-foreground">
                         LOWEST ASK
                       </div>
                       <div className="mt-1 font-mono text-lg font-bold text-success">
@@ -299,7 +303,7 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                       </div>
                     </div>
                     <div>
-                      <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
+                      <div className="font-mono text-xs tracking-widest text-muted-foreground">
                         HIGHEST BID
                       </div>
                       <div className="mt-1 font-mono text-lg font-bold text-foreground">
@@ -310,7 +314,7 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
 
                   <div className="mt-3 grid grid-cols-2 gap-3">
                     <div>
-                      <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
+                      <div className="font-mono text-xs tracking-widest text-muted-foreground">
                         MARKETS WITH ASKS
                       </div>
                       <div className="mt-1 flex h-4.5 items-center font-mono text-base font-bold text-foreground">
@@ -318,7 +322,7 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                       </div>
                     </div>
                     <div>
-                      <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
+                      <div className="font-mono text-xs tracking-widest text-muted-foreground">
                         BEST ASK AT
                       </div>
                       <div className="mt-1 flex h-4.5 items-center text-base font-bold text-primary">
@@ -358,7 +362,7 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                     <Link
                       href={`/alerts?itemId=${numericItemId}`}
                       rel="nofollow"
-                      className="flex items-center justify-center gap-1.5 border-brutal px-3.5 py-2.5 font-mono text-[11px] tracking-wider brutalist-hover"
+                      className="flex h-10 items-center justify-center gap-1.5 border-brutal px-4 font-mono text-xs tracking-wider brutalist-hover"
                     >
                       <Bell className="h-3.5 w-3.5" />
                       ALERT
@@ -368,7 +372,7 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
               </div>
 
               <div className="border-brutal bg-card p-5">
-                <div className="mb-3.5 font-mono text-[11px] tracking-widest text-primary">
+                <div className="mb-3.5 font-mono text-xs tracking-widest text-primary">
                   FLOAT RANGE
                 </div>
                 <div className="relative mb-5 h-2.5 bg-linear-to-r from-success via-warning to-destructive">
@@ -384,7 +388,7 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                       />
                       {data.item.min_float > 0 ? (
                         <div
-                          className="absolute top-full mt-0.5 -translate-x-1/2 font-mono text-[9px] font-bold text-foreground"
+                          className="absolute top-full mt-0.5 -translate-x-1/2 font-mono text-xs font-bold text-foreground"
                           style={{ left: `${Math.min(1, data.item.min_float) * 100}%` }}
                         >
                           {data.item.min_float.toFixed(2)}
@@ -392,7 +396,7 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                       ) : null}
                       {data.item.max_float < 1 ? (
                         <div
-                          className="absolute top-full mt-0.5 -translate-x-1/2 font-mono text-[9px] font-bold text-foreground"
+                          className="absolute top-full mt-0.5 -translate-x-1/2 font-mono text-xs font-bold text-foreground"
                           style={{ left: `${Math.min(1, data.item.max_float) * 100}%` }}
                         >
                           {data.item.max_float.toFixed(2)}
@@ -401,7 +405,7 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                     </>
                   ) : null}
                 </div>
-                <div className="flex justify-between font-mono text-[10px] text-muted-foreground">
+                <div className="flex justify-between font-mono text-xs text-muted-foreground">
                   <span>0.00</span>
                   <span>1.00</span>
                 </div>
@@ -427,16 +431,16 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
               </div>
 
               <div className="border-brutal bg-card p-5">
-                <div className="mb-3.5 font-mono text-[11px] tracking-widest text-primary">
+                <div className="mb-3.5 font-mono text-xs tracking-widest text-primary">
                   DETAILS
                 </div>
                 <div className="space-y-2.5">
                   {itemFacts.map((fact) => (
                     <div key={fact.label} className="flex justify-between gap-4">
-                      <span className="font-mono text-[11px] text-muted-foreground">
+                      <span className="font-mono text-sm text-muted-foreground">
                         {fact.label}
                       </span>
-                      <span className="text-right font-mono text-[11px] font-bold text-foreground">
+                      <span className="text-right font-mono text-sm font-bold text-foreground">
                         {fact.value}
                       </span>
                     </div>
@@ -449,11 +453,11 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                   href={`/search?collection=${encodeURIComponent(data.item.collection)}`}
                   className="group block border-brutal bg-card p-4 transition-colors hover:border-primary"
                 >
-                  <div className="mb-3 font-mono text-[10px] tracking-widest text-primary">
+                  <div className="mb-3 font-mono text-xs tracking-widest text-primary">
                     COLLECTION
                   </div>
                   <div className="flex items-center justify-between px-2 py-2">
-                    <span className="font-mono text-[11px] text-foreground transition-colors group-hover:text-primary">
+                    <span className="font-mono text-sm text-foreground transition-colors group-hover:text-primary">
                       {data.item.collection}
                     </span>
                     <ChevronRight className="h-3 w-3 text-muted-foreground transition-colors group-hover:text-primary" />
@@ -469,10 +473,10 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
               >
                 <Code className="mt-0.5 h-4 w-4 shrink-0 text-primary" strokeWidth={1.5} />
                 <div className="min-w-0">
-                  <div className="font-mono text-[10px] tracking-widest text-primary">
+                  <div className="font-mono text-xs tracking-widest text-primary">
                     CS2 SKIN API
                   </div>
-                  <div className="mt-1 font-mono text-[11px] leading-5 text-foreground transition-colors group-hover:text-primary">
+                  <div className="mt-1 font-mono text-sm leading-6 text-foreground transition-colors group-hover:text-primary">
                     Access this pricing data via the CS2Cap API →
                   </div>
                 </div>

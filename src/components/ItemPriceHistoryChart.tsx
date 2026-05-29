@@ -134,7 +134,7 @@ export function ItemPriceHistoryChart({
                 {isPositive ? "+" : ""}
                 {stats.changePct.toFixed(2)}%)
               </div>
-              <div className="font-mono text-[10px] text-muted-foreground">
+              <div className="font-mono text-xs text-muted-foreground">
                 H {formatPrice(stats.high)} · L {formatPrice(stats.low)}
                 {hasVolume ? <> · VOL {formatCompact(stats.totalVolume)}</> : null}
               </div>
@@ -148,7 +148,7 @@ export function ItemPriceHistoryChart({
               key={r.id}
               type="button"
               onClick={() => setRange(r.id)}
-              className={`px-3 py-1 font-mono text-[10px] tracking-widest transition-colors ${range === r.id
+              className={`px-3 py-1 font-mono text-xs tracking-widest transition-colors ${range === r.id
                   ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:bg-secondary/40"
                 }`}
@@ -254,7 +254,7 @@ export function ItemPriceHistoryChart({
 
       {hasVolume ? (
         <div className="space-y-1">
-          <div className="flex items-center justify-between font-mono text-[10px] tracking-widest text-muted-foreground">
+          <div className="flex items-center justify-between font-mono text-xs tracking-widest text-muted-foreground">
             <span>TURNOVER</span>
           </div>
           <div className="h-20 w-full min-w-0">

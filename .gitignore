@@ -30,5 +30,6 @@ pnpm-debug.log*
 .vercel
 CLAUDE.md
 .lovable/
+.kilo/
 .env.local
 next-env.d.ts

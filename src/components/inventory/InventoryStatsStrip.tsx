@@ -12,11 +12,11 @@ export function InventoryStatsStrip({ stats }: { stats: StatCell[] }) {
           <div className="font-mono text-2xl md:text-3xl font-bold text-primary">
             {stat.value}
           </div>
-          <div className="mt-1 font-mono text-[10px] tracking-widest text-muted-foreground">
+          <div className="mt-1 font-mono text-xs tracking-widest text-muted-foreground">
             {stat.label}
           </div>
           {stat.hint ? (
-            <div className="mt-1 font-mono text-[10px] text-muted-foreground/80">
+            <div className="mt-1 font-mono text-xs text-muted-foreground/80">
               {stat.hint}
             </div>
           ) : null}

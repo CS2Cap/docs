@@ -97,7 +97,7 @@ function BuyOrderRow({
 
       {/* Mobile: bids count */}
       <div className="mt-1 md:hidden">
-        <span className="font-mono text-[10px] text-muted-foreground">
+        <span className="font-mono text-xs text-muted-foreground">
           {formatNumber(row.num_bids)} bids
         </span>
       </div>
@@ -198,7 +198,7 @@ export function BuyOrdersList({
 
       {flagged.length > 0 ? (
         <>
-          <div className="flex items-center gap-2 border-y-2 border-dashed border-amber-500/40 bg-amber-500/5 px-6 py-2 font-mono text-[10px] tracking-widest text-amber-500/90">
+          <div className="flex items-center gap-2 border-y-2 border-dashed border-amber-500/40 bg-amber-500/5 px-6 py-2 font-mono text-xs tracking-widest text-amber-500/90">
             <TriangleAlert className="h-3 w-3 shrink-0" />
             EXCLUDED FROM OTHER BIDS
           </div>

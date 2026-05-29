@@ -53,7 +53,7 @@ function SortHeader({
     <button
       type="button"
       onClick={onClick}
-      className={`flex w-full items-center gap-1.5 ${alignClass} font-mono text-[10px] uppercase tracking-widest transition-colors ${
+      className={`flex w-full items-center gap-1.5 ${alignClass} font-mono text-xs uppercase tracking-widest transition-colors ${
         active ? "text-primary" : "text-muted-foreground hover:text-foreground"
       }`}
     >
@@ -140,7 +140,7 @@ export function InventoryItemsTable({
           onClick={() => setSort("value")}
           align="right"
         />
-        <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+        <div className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
           Provider
         </div>
         <div />
@@ -186,25 +186,25 @@ export function InventoryItemsTable({
                 </Link>
                 <div className="mt-1 flex flex-wrap items-center gap-1.5">
                   {item.phase ? (
-                    <span className="border border-primary/30 px-1.5 py-0.5 font-mono text-[9px] tracking-widest text-primary">
+                    <span className="border border-primary/30 px-1.5 py-0.5 font-mono text-xs tracking-widest text-primary">
                       {item.phase.toUpperCase()}
                     </span>
                   ) : null}
                   {!item.tradable ? (
-                    <span className="border border-muted-foreground/30 px-1.5 py-0.5 font-mono text-[9px] tracking-widest text-muted-foreground">
+                    <span className="border border-muted-foreground/30 px-1.5 py-0.5 font-mono text-xs tracking-widest text-muted-foreground">
                       UNTRADABLE
                     </span>
                   ) : null}
                   {item.best_ask === null ? (
-                    <span className="border border-muted-foreground/30 px-1.5 py-0.5 font-mono text-[9px] tracking-widest text-muted-foreground">
+                    <span className="border border-muted-foreground/30 px-1.5 py-0.5 font-mono text-xs tracking-widest text-muted-foreground">
                       NO PRICE
                     </span>
                   ) : null}
-                  <span className="md:hidden font-mono text-[10px] text-muted-foreground">
+                  <span className="md:hidden font-mono text-xs text-muted-foreground">
                     × {item.quantity}
                   </span>
                 </div>
-                <div className="mt-1 md:hidden font-mono text-[11px] text-muted-foreground">
+                <div className="mt-1 md:hidden font-mono text-xs text-muted-foreground">
                   {formatUsd(item.best_ask)} × {item.quantity} ={" "}
                   <span className="text-foreground">{formatUsd(item.item_value)}</span>
                 </div>
@@ -219,7 +219,7 @@ export function InventoryItemsTable({
               <div className="hidden md:block text-right font-mono text-xs font-bold text-primary">
                 {formatUsd(item.item_value)}
               </div>
-              <div className="hidden md:block truncate font-mono text-[11px] text-muted-foreground">
+              <div className="hidden md:block truncate font-mono text-xs text-muted-foreground">
                 {provider}
               </div>
 

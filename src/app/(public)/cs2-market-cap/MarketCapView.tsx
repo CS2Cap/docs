@@ -55,11 +55,12 @@ function numeric(value: string | number | null | undefined): number {
 
 function formatUsd(value: string | number | null | undefined, compact = false): string {
   const n = numeric(value);
-  if (!n) return "$0";
+  if (!n) return compact ? "$0" : "$0.00";
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
-    maximumFractionDigits: compact ? 1 : 0,
+    minimumFractionDigits: compact ? 0 : 2,
+    maximumFractionDigits: compact ? 1 : 2,
     notation: compact ? "compact" : "standard",
   }).format(n);
 }
@@ -167,10 +168,11 @@ const ITEM_STRIP_SUFFIXES = [
   " (Battle-Scarred)",
 ];
 
-function formatItemDisplay(rawName: string): { prefix: string | null; name: string; tag: ItemNameTag } {
+function formatItemDisplay(rawName: string): { star: boolean; prefix: string | null; name: string; tag: ItemNameTag } {
   let name = rawName;
   let tag: ItemNameTag = null;
   let prefix: string | null = null;
+  let star = false;
 
   for (const p of ITEM_STRIP_PREFIXES) {
     if (name.startsWith(p)) {
@@ -179,7 +181,12 @@ function formatItemDisplay(rawName: string): { prefix: string | null; name: stri
     }
   }
 
-  if (name.startsWith("StatTrak™ ")) {
+  if (name.startsWith("★ StatTrak™ ")) {
+    name = name.slice("★ StatTrak™ ".length);
+    prefix = "ST";
+    tag = "st";
+    star = true;
+  } else if (name.startsWith("StatTrak™ ")) {
     name = name.slice("StatTrak™ ".length);
     prefix = "ST";
     tag = "st";
@@ -196,7 +203,7 @@ function formatItemDisplay(rawName: string): { prefix: string | null; name: stri
     }
   }
 
-  return { prefix, name, tag };
+  return { star, prefix, name, tag };
 }
 
 function itemTagFrameClass(tag: ItemNameTag): string {
@@ -528,7 +535,7 @@ function CategoryTreemap({
           ))}
         </div>
       </div>
-      <div className="grid h-96 grid-cols-2 auto-rows-fr gap-1 p-2">
+      <div className="grid h-112 grid-cols-2 auto-rows-fr gap-1 p-2">
         {visibleRows.map((row) => {
           const share = Math.max(row.share_pct, 1);
           const intensity = Math.max(0.15, Math.min(0.75, share / maxShare));
@@ -541,14 +548,14 @@ function CategoryTreemap({
                 opacity: 0.72 + intensity * 0.28,
               }}
             >
-              <div className="truncate font-mono text-sm font-black uppercase tracking-widest text-foreground">
+              <div className="truncate font-mono text-sm font-black uppercase leading-tight tracking-widest text-foreground">
                 {titleCase(row.group)}
               </div>
               <div>
-                <div className="font-mono text-base font-black text-primary">
+                <div className="font-mono text-base font-black leading-tight text-primary">
                   {row.share_pct.toFixed(2)}%
                 </div>
-                <div className="font-mono text-[10px] text-muted-foreground">
+                <div className="font-mono text-xs leading-tight text-muted-foreground">
                   {formatNumber(row.included_count)} items
                 </div>
               </div>
@@ -638,6 +645,7 @@ function ItemRow({
       </div>
       <div className="min-w-0">
         <div className="truncate font-mono text-base font-bold text-foreground">
+          {display.star ? "★ " : null}
           {display.prefix ? (
             <span className={itemTagTextClass(display.tag)}>{display.prefix} </span>
           ) : null}
@@ -743,7 +751,7 @@ function MarketplacePanel({ rows }: { rows: MarketOverviewMarketplace[] }) {
                   </span>
                 </span>
                 <div className="mt-1 font-mono text-xs text-muted-foreground">
-                  {hasListingCount ? `${formatNumber(row.listing_count)} listed units` : "listed units pending"}
+                  {hasListingCount ? `${formatNumber(row.listing_count)} listings` : "listings pending"}
                 </div>
               </div>
               <div className="text-right">
@@ -774,9 +782,9 @@ function MarketplacePanel({ rows }: { rows: MarketOverviewMarketplace[] }) {
                   Others
                 </span>
               </span>
-              <div className="mt-1 font-mono text-[10px] text-muted-foreground">
+              <div className="mt-1 font-mono text-xs text-muted-foreground">
                 {othersListingCount > 0
-                  ? `${formatNumber(othersListingCount)} listed units · ${overflow.length} marketplaces`
+                  ? `${formatNumber(othersListingCount)} listings · ${overflow.length} marketplaces`
                   : `${overflow.length} marketplaces`}
               </div>
             </div>
@@ -784,7 +792,7 @@ function MarketplacePanel({ rows }: { rows: MarketOverviewMarketplace[] }) {
               <div className="font-mono text-sm font-bold text-foreground">
                 {othersValue > 0 ? formatUsd(othersValue, true) : "—"}
               </div>
-              <div className="font-mono text-[10px] text-muted-foreground">
+              <div className="font-mono text-xs text-muted-foreground">
                 {othersShare.toFixed(1)}%
               </div>
             </div>
@@ -842,6 +850,7 @@ function MostValuablePanel({ rows }: { rows: MarketOverviewItem[] }) {
               </div>
               <div className="min-w-0">
                 <div className="truncate font-mono text-base font-bold text-foreground">
+                  {display.star ? "★ " : null}
                   {display.prefix ? (
                     <span className={itemTagTextClass(display.tag)}>{display.prefix} </span>
                   ) : null}
@@ -893,25 +902,25 @@ export function MarketCapView({ overview }: { overview: MarketOverviewResponse |
               CS2 MARKETCAP INDEX
             </div>
             </div>
-            <div className="flex flex-wrap items-center gap-2 font-mono text-[10px] font-bold tracking-widest">
+            <div className="flex flex-wrap items-center gap-2 font-mono text-xs font-bold tracking-widest">
               <a
                 href={csvHref}
                 download="cs2cap-market-overview.csv"
-                className="inline-flex h-8 items-center gap-1 border border-border px-3 text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
+                className="inline-flex h-10 items-center gap-1 border border-border px-3 text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
               >
                 <Download className="h-3 w-3" />
                 EXPORT CSV
               </a>
               <Link
                 href="/api-info"
-                className="inline-flex h-8 items-center gap-1 border border-border px-3 text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
+                className="inline-flex h-10 items-center gap-1 border border-border px-3 text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
               >
                 API
                 <ExternalLink className="h-3 w-3" />
               </Link>
             </div>
           </div>
-          <div className="px-3 py-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+          <div className="px-3 py-2 font-mono text-xs uppercase tracking-widest text-muted-foreground">
             Updated {formatFreshness(overview.meta.freshness_sec)}
           </div>
         </div>

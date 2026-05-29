@@ -51,17 +51,17 @@ export function EmailVerificationBanner() {
   return (
     <div className="relative flex items-center gap-3 border border-yellow-500/30 bg-yellow-500/12 px-3 py-2.5 text-xs">
       <AlertTriangle className="h-4 w-4 shrink-0 text-yellow-400" strokeWidth={1.5} />
-      <span className="font-mono text-[11px] font-bold text-yellow-400">
+      <span className="font-mono text-sm font-bold text-yellow-400">
         {needsEmail ? "EMAIL REQUIRED" : "EMAIL UNVERIFIED"}
       </span>
-      <span className="font-mono text-[10px] text-yellow-400/80">
+      <span className="font-mono text-xs text-yellow-400/80">
         {needsEmail
           ? "Set an email address to generate an API key."
           : "Verify your email to unlock API key generation."}
       </span>
       <Link
         href="/account/settings"
-        className="ml-1 font-mono text-[10px] font-bold tracking-wider text-yellow-400 underline underline-offset-2 hover:text-yellow-300 transition-colors"
+        className="ml-1 font-mono text-xs font-bold tracking-wider text-yellow-400 underline underline-offset-2 hover:text-yellow-300 transition-colors"
       >
         SETTINGS
       </Link>

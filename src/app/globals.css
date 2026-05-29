@@ -147,16 +147,6 @@
   ::selection {
     background: hsl(217 90% 55% / 0.3);
   }
-
-  /* Upscale tiny mono utility classes used everywhere
-     so labels, table headers, and meta text are readable. */
-  .font-mono.text-\[8px\] { font-size: 13px; letter-spacing: 0.06em; }
-  .font-mono.text-\[9px\] { font-size: 13.5px; letter-spacing: 0.05em; }
-  .font-mono.text-\[10px\] { font-size: 14px; letter-spacing: 0.04em; }
-  .font-mono.text-\[11px\] { font-size: 15px; }
-  /* text-xs (12px) and text-sm (14px) defaults are too small for mono labels */
-  .font-mono.text-xs { font-size: 15px; }
-  .font-mono.text-sm { font-size: 16px; }
 }
 
 @layer utilities {
@@ -211,13 +201,6 @@
       linear-gradient(90deg, hsl(217 40% 20% / 0.2) 1px, transparent 1px);
     background-size: 18px 18px;
   }
-
-  .terminal-page .font-mono.text-\[8px\] { font-size: 8px; letter-spacing: 0.1em; }
-  .terminal-page .font-mono.text-\[9px\] { font-size: 9px; letter-spacing: 0.09em; }
-  .terminal-page .font-mono.text-\[10px\] { font-size: 10px; letter-spacing: 0.08em; }
-  .terminal-page .font-mono.text-\[11px\] { font-size: 11px; letter-spacing: 0.06em; }
-  .terminal-page .font-mono.text-xs { font-size: 12px; letter-spacing: 0.02em; }
-  .terminal-page .font-mono.text-sm { font-size: 13px; letter-spacing: 0; }
 
   .terminal-panel {
     border: 1px solid var(--terminal-line);

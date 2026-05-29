@@ -38,10 +38,10 @@ function WearCell({ wear }: { wear: WearTab }) {
         aria-disabled="true"
         className="cursor-not-allowed bg-card px-2.5 py-2 text-center"
       >
-        <div className="font-mono text-[10px] font-bold tracking-wider text-muted-foreground/35">
+        <div className="font-mono text-xs font-bold tracking-wider text-muted-foreground/35">
           {wear.wearLabel}
         </div>
-        <div className="mt-0.5 font-mono text-[11px] text-muted-foreground/25">
+        <div className="mt-0.5 font-mono text-xs text-muted-foreground/25">
           &mdash;
         </div>
       </div>
@@ -50,10 +50,10 @@ function WearCell({ wear }: { wear: WearTab }) {
 
   const inner = (
     <>
-      <div className="font-mono text-[10px] font-bold tracking-wider">
+      <div className="font-mono text-xs font-bold tracking-wider">
         {wear.wearLabel}
       </div>
-      <div className="mt-0.5 font-mono text-[11px] font-bold text-success">
+      <div className="mt-0.5 font-mono text-xs font-bold text-success">
         <Price cents={wear.bestAsk} />
       </div>
     </>
@@ -102,7 +102,7 @@ export function ConditionVariantTabsView({
                 key={kind.label}
                 type="button"
                 onClick={() => setActiveKind(kind.label)}
-                className={`px-3 py-1.5 font-mono text-[10px] tracking-wider transition-colors ${
+                className={`px-3 py-1.5 font-mono text-xs tracking-wider transition-colors ${
                   kind.label === active.label
                     ? "bg-primary/15 text-primary"
                     : "bg-secondary text-muted-foreground hover:text-foreground"
@@ -125,7 +125,7 @@ export function ConditionVariantTabsView({
           >
             {active.phaseGroups.map((group) => (
               <Fragment key={group.phaseLabel ?? "_default"}>
-                <div className="flex items-center bg-card px-3 py-2 font-mono text-[9px] uppercase leading-tight tracking-widest text-muted-foreground">
+                <div className="flex items-center bg-card px-3 py-2 font-mono text-xs uppercase leading-tight tracking-widest text-muted-foreground">
                   {group.phaseLabel ?? "No phase"}
                 </div>
                 {group.wears.map((wear) => (
