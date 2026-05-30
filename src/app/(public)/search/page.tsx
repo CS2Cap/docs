@@ -327,11 +327,24 @@ function priceChangeClass(value: number | null | undefined) {
   return "text-foreground";
 }
 
+const WEAR_SUFFIXES = [
+  " (Factory New)",
+  " (Minimal Wear)",
+  " (Field-Tested)",
+  " (Well-Worn)",
+  " (Battle-Scarred)",
+];
+
+function stripWearSuffix(name: string) {
+  const suffix = WEAR_SUFFIXES.find((s) => name.endsWith(s));
+  return suffix ? name.slice(0, -suffix.length) : name;
+}
+
 function itemSubtitle(item: WebSearchItem) {
   return [
-    item.phase,
     item.rarity_name,
-    item.collection,
+    item.wear_name,
+    item.phase,
   ]
     .filter(Boolean)
     .join(" / ") || "Catalog item";
@@ -945,7 +958,7 @@ function SearchResultsTable({
                 </div>
                 <div className="min-w-0">
                   <div className="truncate font-mono text-sm font-bold text-foreground md:hover:text-primary">
-                    {item.market_hash_name}
+                    {stripWearSuffix(item.market_hash_name)}
                   </div>
                   <div className="truncate font-mono text-xs uppercase tracking-widest text-muted-foreground">
                     {item.rank ? `#${item.rank} · ` : ""}{itemSubtitle(item)}
