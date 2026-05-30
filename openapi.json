@@ -22877,6 +22877,50 @@
         ]
       }
     },
+    "/v1/web/auth/{provider}/link": {
+      "post": {
+        "tags": [
+          "Web"
+        ],
+        "summary": "Web Link Start",
+        "description": "Begin linking an additional OAuth provider to the authenticated user.",
+        "operationId": "webLinkStart",
+        "security": [],
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Provider"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProviderLinkStartResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/admin/users": {
       "post": {
         "tags": [
@@ -34325,6 +34369,20 @@
           "health"
         ],
         "title": "ProviderInfo"
+      },
+      "ProviderLinkStartResponse": {
+        "properties": {
+          "redirect_url": {
+            "type": "string",
+            "title": "Redirect Url",
+            "description": "Provider OAuth URL the browser should navigate to in order to link the account."
+          }
+        },
+        "type": "object",
+        "required": [
+          "redirect_url"
+        ],
+        "title": "ProviderLinkStartResponse"
       },
       "Providers": {
         "properties": {
