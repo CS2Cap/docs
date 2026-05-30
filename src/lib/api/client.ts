@@ -40,6 +40,7 @@ import type {
   MarketItemAnalyticsResponse,
   PendingChangeCancelResponse,
   PhaseName,
+  ProviderLinkStartResponse,
   PlansResponse,
   PortalResponse,
   PriceCandlesPage,
@@ -155,6 +156,10 @@ export const webApi = {
 
   unlinkProvider(provider: string): Promise<unknown> {
     return request(`/v1/web/auth/providers/${provider}`, { method: "DELETE" });
+  },
+
+  startProviderLink(provider: string): Promise<ProviderLinkStartResponse> {
+    return request(`/v1/web/auth/${provider}/link`, { method: "POST" });
   },
 
   // Public Inventory Value tool — talks to the app-owned route, NOT to /api/cs2c.

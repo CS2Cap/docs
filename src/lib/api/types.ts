@@ -587,6 +587,10 @@ export interface ActiveKeySummary {
   key?: APIKeyInfo | null;
 }
 
+export interface ProviderLinkStartResponse {
+  redirect_url: string;
+}
+
 export interface AccountLinkedProvider {
   provider: string;
   provider_user_id: string;
