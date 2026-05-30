@@ -513,11 +513,11 @@ function CategoryTreemap({
 
   return (
     <div className="terminal-panel">
-      <div className="flex flex-col gap-3 border-b terminal-rule px-4 py-3 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-3 border-b terminal-rule px-4 py-3">
         <div className="font-mono text-xs font-bold tracking-widest text-muted-foreground">
           TREEMAP · DISTRIBUTION
         </div>
-        <div className="flex flex-wrap gap-px bg-border" role="tablist" aria-label="Market cap category">
+        <div className="grid w-full grid-cols-2 gap-px bg-border" role="tablist" aria-label="Market cap category">
           {CATEGORY_TABS.map((tab) => (
             <button
               key={tab.key}
@@ -525,7 +525,7 @@ function CategoryTreemap({
               role="tab"
               aria-selected={category === tab.key}
               onClick={() => onCategoryChange(tab.key)}
-              className={`px-3 py-2 font-mono text-xs font-bold tracking-widest transition-colors ${
+              className={`min-w-0 px-3 py-2 text-center font-mono text-xs font-bold tracking-widest transition-colors ${
                 category === tab.key
                   ? "bg-primary text-primary-foreground"
                   : "bg-card text-muted-foreground hover:text-foreground"

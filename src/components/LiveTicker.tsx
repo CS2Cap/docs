@@ -45,7 +45,7 @@ export function LiveTicker({ items }: { items: TickerItem[] }) {
           <span className="shrink-0 font-mono text-xs text-muted-foreground transition-colors group-hover:text-foreground">
             {item.name}
           </span>
-          <span className="shrink-0 font-mono text-xs font-bold text-foreground">{item.price}</span>
+          <span className="shrink-0 font-mono text-xs font-bold text-success">{item.price}</span>
           {item.provider ? (
             <span className="inline-flex shrink-0 items-center gap-1.5">
               {item.provider.logo ? (

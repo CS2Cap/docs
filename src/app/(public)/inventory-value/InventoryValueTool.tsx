@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ChevronDown, Loader2, Search } from "lucide-react";
 import {
   Collapsible,
@@ -11,7 +11,7 @@ import posthog from "posthog-js";
 import { webApi } from "@/lib/api";
 import { APIError } from "@/lib/api/shared";
 import { steamIconUrl } from "@/lib/utils";
-import type { InventoryValueToolResponse } from "@/lib/api/types";
+import type { InventoryValueToolResponse, ProviderInfo } from "@/lib/api/types";
 import { InventoryStatsStrip } from "@/components/inventory/InventoryStatsStrip";
 import { InventoryItemsTable } from "@/components/inventory/InventoryItemsTable";
 
@@ -39,6 +39,23 @@ export function InventoryValueTool() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<InventoryValueToolResponse | null>(null);
   const [submittedTarget, setSubmittedTarget] = useState<string | null>(null);
+  const [providers, setProviders] = useState<ProviderInfo[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    webApi.getProviders()
+      .then((data) => {
+        if (!cancelled) setProviders(data);
+      })
+      .catch(() => {
+        if (!cancelled) setProviders([]);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function runLookup(value: string) {
     const trimmed = value.trim();
@@ -216,7 +233,7 @@ export function InventoryValueTool() {
             </div>
           ) : (
             <>
-              <InventoryItemsTable items={result.items} />
+              <InventoryItemsTable items={result.items} providers={providers} />
 
               {result.unmatched_items.length > 0 ? (
                 <Collapsible>

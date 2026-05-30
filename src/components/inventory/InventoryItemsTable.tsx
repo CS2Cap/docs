@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ArrowDown, ArrowUp, ArrowUpDown, ExternalLink } from "lucide-react";
-import type { InventoryValueResolvedItem } from "@/lib/api/types";
+import { ProviderIdentity } from "@/components/ProviderIdentity";
+import { getProvider, providerLabel } from "@/lib/api";
+import type { InventoryValueResolvedItem, ProviderInfo } from "@/lib/api/types";
 import { steamIconUrl } from "@/lib/utils";
 import { buildItemPath } from "@/lib/seo/itemSlug";
 
@@ -18,19 +20,18 @@ function formatUsd(minor: number | null | undefined): string {
   }).format(minor / 100);
 }
 
-function topProviderLabel(item: InventoryValueResolvedItem): string {
-  if (!item.providers || item.providers.length === 0) return "—";
+function topProvider(item: InventoryValueResolvedItem): InventoryValueResolvedItem["providers"][number] | null {
+  if (!item.providers || item.providers.length === 0) return null;
   // Pick the provider whose ask matches the best ask (the "winning" quote).
   // Falls back to the cheapest provider if no exact match (e.g. rounding).
   if (item.best_ask !== null) {
     const exact = item.providers.find((p) => p.lowest_ask === item.best_ask);
-    if (exact) return exact.provider;
+    if (exact) return exact;
   }
-  const cheapest = item.providers.reduce(
+  return item.providers.reduce(
     (min, p) => (min === null || p.lowest_ask < min.lowest_ask ? p : min),
     null as InventoryValueResolvedItem["providers"][number] | null,
-  );
-  return (cheapest ?? item.providers[0]).provider;
+  ) ?? item.providers[0];
 }
 
 function SortHeader({
@@ -65,8 +66,10 @@ function SortHeader({
 
 export function InventoryItemsTable({
   items,
+  providers,
 }: {
   items: InventoryValueResolvedItem[];
+  providers: ProviderInfo[];
 }) {
   const [sortKey, setSortKey] = useState<SortKey>("value");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
@@ -111,7 +114,7 @@ export function InventoryItemsTable({
   return (
     <div className="border-2 border-border bg-card overflow-hidden">
       {/* Header */}
-      <div className="hidden md:grid grid-cols-[64px_minmax(0,1fr)_80px_120px_140px_120px_40px] gap-3 border-b-2 border-border bg-secondary/30 px-4 py-3">
+      <div className="hidden md:grid grid-cols-[64px_minmax(0,1fr)_80px_120px_160px_40px] gap-3 border-b-2 border-border bg-secondary/30 px-4 py-3">
         <div />
         <SortHeader
           label="Item"
@@ -133,13 +136,6 @@ export function InventoryItemsTable({
           onClick={() => setSort("ask")}
           align="right"
         />
-        <SortHeader
-          label="Line value"
-          active={sortKey === "value"}
-          dir={sortDir}
-          onClick={() => setSort("value")}
-          align="right"
-        />
         <div className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
           Provider
         </div>
@@ -149,11 +145,14 @@ export function InventoryItemsTable({
       <ul className="divide-y-2 divide-border">
         {sorted.map((item) => {
           const href = buildItemPath(item.item_id, item.market_hash_name);
-          const provider = topProviderLabel(item);
+          const winningProvider = topProvider(item);
+          const providerKey = winningProvider?.provider;
+          const provider = providerKey ? getProvider(providerKey, providers) : null;
+          const providerFallback = providerKey ? providerLabel(providerKey, providers) : "—";
           return (
             <li
               key={`${item.item_id}-${item.phase ?? ""}`}
-              className="grid grid-cols-[56px_minmax(0,1fr)_auto] md:grid-cols-[64px_minmax(0,1fr)_80px_120px_140px_120px_40px] items-center gap-3 px-4 py-3 transition-colors hover:bg-secondary/40"
+              className="grid grid-cols-[56px_minmax(0,1fr)_auto] md:grid-cols-[64px_minmax(0,1fr)_80px_120px_160px_40px] items-center gap-3 px-4 py-3 transition-colors hover:bg-secondary/40"
             >
               <Link href={href} className="block">
                 {(() => {
@@ -205,27 +204,32 @@ export function InventoryItemsTable({
                   </span>
                 </div>
                 <div className="mt-1 md:hidden font-mono text-xs text-muted-foreground">
-                  {formatUsd(item.best_ask)} × {item.quantity} ={" "}
-                  <span className="text-foreground">{formatUsd(item.item_value)}</span>
+                  <span className="font-bold text-primary">{formatUsd(item.best_ask)}</span>
+                  {" × "}
+                  {item.quantity}
                 </div>
               </div>
 
               <div className="hidden md:block text-right font-mono text-xs text-foreground">
                 {item.quantity}
               </div>
-              <div className="hidden md:block text-right font-mono text-xs text-foreground">
+              <div className="hidden md:block text-right font-mono text-xs font-bold text-primary">
                 {formatUsd(item.best_ask)}
               </div>
-              <div className="hidden md:block text-right font-mono text-xs font-bold text-primary">
-                {formatUsd(item.item_value)}
-              </div>
-              <div className="hidden md:block truncate font-mono text-xs text-muted-foreground">
-                {provider}
+              <div className="hidden md:block min-w-0">
+                <ProviderIdentity
+                  provider={provider}
+                  fallback={providerFallback}
+                  logoSize={18}
+                  textClassName="font-mono text-xs text-muted-foreground"
+                />
               </div>
 
               <Link
                 href={href}
                 aria-label={`View price history for ${item.market_hash_name}`}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="ml-auto text-muted-foreground hover:text-primary"
               >
                 <ExternalLink className="h-3.5 w-3.5" strokeWidth={2} />
