@@ -10,7 +10,6 @@ export type PhaseName =
 
 export type AllProviders =
   | "avanmarket"
-  | "bitskins"
   | "buff163"
   | "buffmarket"
   | "c5"
