@@ -73,6 +73,7 @@ export function InventoryValueTool() {
         items_unpriced: data.stats.items_unpriced,
         providers_queried: data.stats.providers_queried_count,
         cache_hit: data.meta.cache_hit,
+        source: "public_tool",
       });
     } catch (err) {
       setResult(null);

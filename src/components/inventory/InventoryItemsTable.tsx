@@ -67,9 +67,11 @@ function SortHeader({
 export function InventoryItemsTable({
   items,
   providers,
+  formatPrice = formatUsd,
 }: {
   items: InventoryValueResolvedItem[];
   providers: ProviderInfo[];
+  formatPrice?: (minor: number | null | undefined) => string;
 }) {
   const [sortKey, setSortKey] = useState<SortKey>("value");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
@@ -204,7 +206,7 @@ export function InventoryItemsTable({
                   </span>
                 </div>
                 <div className="mt-1 md:hidden font-mono text-xs text-muted-foreground">
-                  <span className="font-bold text-primary">{formatUsd(item.best_ask)}</span>
+                  <span className="font-bold text-primary">{formatPrice(item.best_ask)}</span>
                   {" × "}
                   {item.quantity}
                 </div>
@@ -214,7 +216,7 @@ export function InventoryItemsTable({
                 {item.quantity}
               </div>
               <div className="hidden md:block text-right font-mono text-xs font-bold text-primary">
-                {formatUsd(item.best_ask)}
+                {formatPrice(item.best_ask)}
               </div>
               <div className="hidden md:block min-w-0">
                 <ProviderIdentity

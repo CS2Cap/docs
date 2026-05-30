@@ -12,6 +12,7 @@ import type {
   APIKeyGetResponse,
   BillingOverviewResponse,
   ChildAPIKeyListResponse,
+  InventoryValueToolResponse,
   PlansResponse,
   UsageDashboardResponse,
   ViewerResponse,
@@ -31,6 +32,7 @@ export const queryKeys = {
   billingPlans: ["billing-plans"] as const,
   billingOverview: ["billing-overview"] as const,
   usage: ["usage"] as const,
+  inventory: (steamId: string | null) => ["inventory", steamId] as const,
 };
 
 export function useViewer() {
@@ -132,6 +134,16 @@ export function useBillingOverview() {
   return useQuery<BillingOverviewResponse>({
     queryKey: queryKeys.billingOverview,
     queryFn: () => webApi.getBillingOverview(),
+    retry: false,
+    staleTime: 60_000,
+  });
+}
+
+export function useSteamInventory(steamId: string | null) {
+  return useQuery<InventoryValueToolResponse>({
+    queryKey: queryKeys.inventory(steamId),
+    queryFn: () => webApi.valueSteamInventory({ steam_id: steamId as string }),
+    enabled: steamId !== null,
     retry: false,
     staleTime: 60_000,
   });

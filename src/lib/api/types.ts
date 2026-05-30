@@ -694,6 +694,7 @@ export interface AlertDeliverySummary {
   delivery_id?: string;
   endpoint_id?: string;
   endpoint_label?: string;
+  platform?: string;
   attempt_count?: number;
   last_http_status?: number;
   next_attempt_at?: string;

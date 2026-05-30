@@ -8,11 +8,16 @@ import {
   AlertCircle,
   Bell,
   BellOff,
+  ExternalLink,
+  MessageCircle,
   MoreHorizontal,
   Plus,
+  Send,
+  Table2,
   Trash2,
   TrendingDown,
   TrendingUp,
+  Webhook,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -76,6 +81,13 @@ function formatThreshold(value: string, currency?: string) {
 
   return currency ? `${currency} ${parsed.toLocaleString()}` : parsed.toLocaleString();
 }
+
+const alertIntegrations = [
+  { label: "Discord", icon: MessageCircle },
+  { label: "Telegram", icon: Send },
+  { label: "Google Sheets", icon: Table2 },
+  { label: "Custom webhook", icon: Webhook },
+];
 
 export default function AlertsPage() {
   const searchParams = useSearchParams();
@@ -217,6 +229,31 @@ export default function AlertsPage() {
               <p className="text-sm text-destructive">{createAlertMutation.error.message}</p>
             )}
           </div>
+        </CardContent>
+      </Card>
+
+      <Card className="mb-8 border-border/50 bg-card/50">
+        <CardContent className="flex flex-col gap-4 pt-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0">
+            <div className="mb-3 flex flex-wrap gap-2">
+              {alertIntegrations.map(({ label, icon: Icon }) => (
+                <Badge key={label} variant="outline" className="gap-1.5 border-primary/20 bg-primary/5">
+                  <Icon className="h-3.5 w-3.5" />
+                  {label}
+                </Badge>
+              ))}
+            </div>
+            <h2 className="text-lg font-semibold text-foreground">Delivery Integrations</h2>
+            <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+              Send fired alerts to Discord, Telegram, Google Sheets, or your own webhook receiver.
+            </p>
+          </div>
+          <Button asChild variant="outline" className="w-full shrink-0 sm:w-auto">
+            <Link href="https://docs.cs2cap.com/guides/webhooks-alerts" target="_blank" rel="noreferrer">
+              Set up integrations
+              <ExternalLink className="h-4 w-4" />
+            </Link>
+          </Button>
         </CardContent>
       </Card>
 
