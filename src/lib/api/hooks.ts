@@ -13,10 +13,16 @@ import type {
   BillingOverviewResponse,
   ChildAPIKeyListResponse,
   InventoryValueToolResponse,
+  ItemOut,
+  ItemSearchResponse,
+  ItemSuggestion,
   PlansResponse,
   UsageDashboardResponse,
   ViewerResponse,
   WatchlistResponse,
+  WebhookCreateRequest,
+  WebhookEndpointsResponse,
+  WebhookUpdateRequest,
 } from "./types";
 
 export const queryKeys = {
@@ -29,10 +35,13 @@ export const queryKeys = {
   watchlist: (params: Record<string, unknown>) => ["watchlist", params] as const,
   alerts: (params: Record<string, unknown>) => ["alerts", params] as const,
   alertEvents: (params: Record<string, unknown>) => ["alert-events", params] as const,
+  webhooks: ["webhooks"] as const,
   billingPlans: ["billing-plans"] as const,
   billingOverview: ["billing-overview"] as const,
   usage: ["usage"] as const,
   inventory: (steamId: string | null) => ["inventory", steamId] as const,
+  itemSearch: (query: string) => ["item-search", query] as const,
+  item: (itemId: number | null) => ["item", itemId] as const,
 };
 
 export function useViewer() {
@@ -118,6 +127,48 @@ export function useAlertEvents(params: { limit?: number; offset?: number } = {})
     // Kept shorter than the rest: alert fires arrive passively, so lingering
     // stale data here can hide a just-triggered alert the user is waiting on.
     staleTime: 15_000,
+  });
+}
+
+// Typeahead search runs against the prewarmed catalog snapshot via our own
+// /api/item-search route (in-process, ranked there) — not the upstream
+// /v1/web/search endpoint, which rescans and rescores the whole catalog per
+// request and takes multiple seconds.
+async function fetchItemSuggestions(query: string): Promise<ItemSuggestion[]> {
+  const response = await fetch(`/api/item-search?q=${encodeURIComponent(query)}`);
+  if (!response.ok) {
+    throw new Error(`Item search failed: ${response.status}`);
+  }
+  const data = (await response.json()) as ItemSearchResponse;
+  return data.items;
+}
+
+export function useItemSearch(query: string) {
+  const trimmed = query.trim();
+  return useQuery({
+    queryKey: queryKeys.itemSearch(trimmed),
+    queryFn: () => fetchItemSuggestions(trimmed),
+    enabled: trimmed.length >= 2,
+    staleTime: 60_000,
+    placeholderData: (previous) => previous,
+  });
+}
+
+export function useItem(itemId: number | null) {
+  return useQuery<ItemOut>({
+    queryKey: queryKeys.item(itemId),
+    queryFn: () => webApi.getItem(itemId as number),
+    enabled: itemId != null && Number.isFinite(itemId),
+    staleTime: 5 * 60_000,
+  });
+}
+
+export function useWebhooks() {
+  return useQuery<WebhookEndpointsResponse>({
+    queryKey: queryKeys.webhooks,
+    queryFn: () => webApi.getWebhooks(),
+    retry: false,
+    staleTime: 30_000,
   });
 }
 
@@ -221,6 +272,55 @@ export function useDeleteAlertMutation() {
       queryClient.invalidateQueries({ queryKey: ["alert-events"] });
       queryClient.invalidateQueries({ queryKey: queryKeys.session });
       queryClient.invalidateQueries({ queryKey: queryKeys.account });
+    },
+  });
+}
+
+export function useCreateWebhookMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: WebhookCreateRequest) => webApi.createWebhook(input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.webhooks });
+      queryClient.invalidateQueries({ queryKey: queryKeys.viewer });
+      queryClient.invalidateQueries({ queryKey: queryKeys.account });
+    },
+  });
+}
+
+export function useUpdateWebhookMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ webhookId, data }: { webhookId: string; data: WebhookUpdateRequest }) =>
+      webApi.updateWebhook(webhookId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.webhooks });
+    },
+  });
+}
+
+export function useDeleteWebhookMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (webhookId: string) => webApi.deleteWebhook(webhookId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.webhooks });
+      queryClient.invalidateQueries({ queryKey: queryKeys.viewer });
+      queryClient.invalidateQueries({ queryKey: queryKeys.account });
+    },
+  });
+}
+
+export function useRotateWebhookSecretMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (webhookId: string) => webApi.rotateWebhookSecret(webhookId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.webhooks });
     },
   });
 }

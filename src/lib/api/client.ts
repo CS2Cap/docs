@@ -55,6 +55,11 @@ import type {
   VerifyEmailConfirmResponse,
   VerifyEmailSendResponse,
   WatchlistResponse,
+  WebhookCreateRequest,
+  WebhookEndpointSummary,
+  WebhookEndpointsResponse,
+  WebhookSecretResponse,
+  WebhookUpdateRequest,
   WebSessionLogoutResponse,
   WebSearchDirection,
   WebSearchResponse,
@@ -375,6 +380,31 @@ export const webApi = {
 
   getAlertEvents(params: { limit?: number; offset?: number } = {}): Promise<AlertEventsResponse> {
     return request(`/v1/web/account/alerts/events${buildQuery(params)}`);
+  },
+
+  getWebhooks(): Promise<WebhookEndpointsResponse> {
+    return request("/v1/web/account/webhooks");
+  },
+
+  createWebhook(data: WebhookCreateRequest): Promise<WebhookSecretResponse> {
+    return request("/v1/web/account/webhooks", { method: "POST", body: data });
+  },
+
+  updateWebhook(webhookId: string, data: WebhookUpdateRequest): Promise<WebhookEndpointSummary> {
+    return request(`/v1/web/account/webhooks/${webhookId}`, {
+      method: "PATCH",
+      body: data,
+    });
+  },
+
+  deleteWebhook(webhookId: string): Promise<unknown> {
+    return request(`/v1/web/account/webhooks/${webhookId}`, { method: "DELETE" });
+  },
+
+  rotateWebhookSecret(webhookId: string): Promise<WebhookSecretResponse> {
+    return request(`/v1/web/account/webhooks/${webhookId}/rotate-secret`, {
+      method: "POST",
+    });
   },
 
   getBillingPlans(): Promise<PlansResponse> {

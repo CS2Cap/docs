@@ -20,6 +20,7 @@
   ],
   "functions": {
     "src/app/api/cs2c/[...path]/route.ts": { "regions": ["fra1"] },
-    "src/app/api/inventory-value/route.ts": { "regions": ["fra1"] }
+    "src/app/api/inventory-value/route.ts": { "regions": ["fra1"] },
+    "src/app/api/item-search/route.ts": { "regions": ["fra1"] }
   }
 }
