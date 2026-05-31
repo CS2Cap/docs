@@ -10,6 +10,8 @@ const USER_DISALLOW = [
   "/alerts",
   "/item/",
   "/verify-email",
+  "/search",
+  "/api",
 ];
 
 const BOT_DISALLOW = [
@@ -23,6 +25,7 @@ const BOT_DISALLOW = [
   "/alerts",
   "/verify-email",
   "/auth/",
+  "/search",
 ];
 
 const META_BOTS = [
@@ -33,8 +36,6 @@ const META_BOTS = [
   "facebot",
   "facebookbot",
 ];
-
-const BLOCKED_BOTS = ["MJ12bot"];
 
 const APPROVED_BOTS = [
   "OAI-SearchBot",
@@ -54,7 +55,7 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
         allow: "/",
         disallow: USER_DISALLOW,
       },
-      ...[...META_BOTS, ...BLOCKED_BOTS].map((userAgent) => ({
+      ...META_BOTS.map((userAgent) => ({
         userAgent,
         disallow: "/",
       })),
