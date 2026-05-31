@@ -30928,6 +30928,18 @@
             "title": "Collection",
             "description": "Collection name the item belongs to, when known."
           },
+          "collection_image": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Collection Image",
+            "description": "Image URL for the item's collection, when known."
+          },
           "crates": {
             "anyOf": [
               {
@@ -30942,6 +30954,21 @@
             ],
             "title": "Crates",
             "description": "Case/crate sources associated with the item."
+          },
+          "crates_images": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Crates Images",
+            "description": "Image URLs for the associated cases/crates. Indexes align with the `crates` array."
           },
           "rarity_name": {
             "anyOf": [
