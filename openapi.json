@@ -20934,6 +20934,733 @@
         }
       }
     },
+    "/v1/web/account/webhooks": {
+      "get": {
+        "tags": [
+          "Account / Webhooks"
+        ],
+        "summary": "List Webhooks",
+        "description": "List outbound webhook destinations configured for the authenticated account.",
+        "operationId": "webListWebhooks",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookEndpointsResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "detail": "Missing Authorization header"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted to access this resource.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "FORBIDDEN",
+                  "detail": "Account is disabled"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (burst or monthly quota).",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying when present.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "X-RateLimit-Tier": {
+                "description": "Authenticated caller tier code.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Request limit for the rate-limit window that was exceeded.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0.0
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0.0
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Seconds until the rate-limit window resets.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0.0
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "burstRateLimit": {
+                    "summary": "Per-window rate limit exceeded",
+                    "value": {
+                      "code": "RATE_LIMIT_EXCEEDED",
+                      "detail": "Too Many Requests"
+                    }
+                  },
+                  "monthlyQuotaExceeded": {
+                    "summary": "Monthly quota exhausted",
+                    "value": {
+                      "code": "RATE_LIMIT_MONTHLY_QUOTA_EXCEEDED",
+                      "detail": "Monthly quota exceeded (500000/500000 requests)."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed. The detail list contains field-specific validation errors.",
+            "headers": {
+              "X-RateLimit-Tier": {
+                "description": "Authenticated caller tier code when available.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "WebSessionCookie": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Account / Webhooks"
+        ],
+        "summary": "Create Webhook",
+        "description": "Create one outbound webhook destination and return its signing secret once.",
+        "operationId": "webCreateWebhook",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookSecretResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "detail": "Missing Authorization header"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted to access this resource.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "FORBIDDEN",
+                  "detail": "Account is disabled"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (burst or monthly quota).",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying when present.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "X-RateLimit-Tier": {
+                "description": "Authenticated caller tier code.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Request limit for the rate-limit window that was exceeded.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0.0
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0.0
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Seconds until the rate-limit window resets.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0.0
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "burstRateLimit": {
+                    "summary": "Per-window rate limit exceeded",
+                    "value": {
+                      "code": "RATE_LIMIT_EXCEEDED",
+                      "detail": "Too Many Requests"
+                    }
+                  },
+                  "monthlyQuotaExceeded": {
+                    "summary": "Monthly quota exhausted",
+                    "value": {
+                      "code": "RATE_LIMIT_MONTHLY_QUOTA_EXCEEDED",
+                      "detail": "Monthly quota exceeded (500000/500000 requests)."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed. The detail list contains field-specific validation errors.",
+            "headers": {
+              "X-RateLimit-Tier": {
+                "description": "Authenticated caller tier code when available.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "WebSessionCookie": []
+          }
+        ]
+      }
+    },
+    "/v1/web/account/webhooks/{webhook_id}": {
+      "patch": {
+        "tags": [
+          "Account / Webhooks"
+        ],
+        "summary": "Update Webhook",
+        "description": "Update mutable outbound webhook destination fields.",
+        "operationId": "webUpdateWebhook",
+        "security": [
+          {
+            "WebSessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "webhook_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Webhook Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookEndpointSummary"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "detail": "Missing Authorization header"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted to access this resource.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "FORBIDDEN",
+                  "detail": "Account is disabled"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (burst or monthly quota).",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "burstRateLimit": {
+                    "summary": "Per-window rate limit exceeded",
+                    "value": {
+                      "code": "RATE_LIMIT_EXCEEDED",
+                      "detail": "Too Many Requests"
+                    }
+                  },
+                  "monthlyQuotaExceeded": {
+                    "summary": "Monthly quota exhausted",
+                    "value": {
+                      "code": "RATE_LIMIT_MONTHLY_QUOTA_EXCEEDED",
+                      "detail": "Monthly quota exceeded (500000/500000 requests)."
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying when present.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "X-RateLimit-Tier": {
+                "description": "Authenticated caller tier code.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Request limit for the rate-limit window that was exceeded.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Seconds until the rate-limit window resets.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed. The detail list contains field-specific validation errors.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Tier": {
+                "description": "Authenticated caller tier code when available.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Account / Webhooks"
+        ],
+        "summary": "Delete Webhook",
+        "description": "Delete one outbound webhook destination owned by the authenticated account.",
+        "operationId": "webDeleteWebhook",
+        "security": [
+          {
+            "WebSessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "webhook_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Webhook Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountMutationResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "detail": "Missing Authorization header"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted to access this resource.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "FORBIDDEN",
+                  "detail": "Account is disabled"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (burst or monthly quota).",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "burstRateLimit": {
+                    "summary": "Per-window rate limit exceeded",
+                    "value": {
+                      "code": "RATE_LIMIT_EXCEEDED",
+                      "detail": "Too Many Requests"
+                    }
+                  },
+                  "monthlyQuotaExceeded": {
+                    "summary": "Monthly quota exhausted",
+                    "value": {
+                      "code": "RATE_LIMIT_MONTHLY_QUOTA_EXCEEDED",
+                      "detail": "Monthly quota exceeded (500000/500000 requests)."
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying when present.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "X-RateLimit-Tier": {
+                "description": "Authenticated caller tier code.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Request limit for the rate-limit window that was exceeded.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Seconds until the rate-limit window resets.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed. The detail list contains field-specific validation errors.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Tier": {
+                "description": "Authenticated caller tier code when available.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/web/account/webhooks/{webhook_id}/rotate-secret": {
+      "post": {
+        "tags": [
+          "Account / Webhooks"
+        ],
+        "summary": "Rotate Webhook Secret",
+        "description": "Rotate one webhook destination signing secret and return the new secret once.",
+        "operationId": "webRotateWebhookSecret",
+        "security": [
+          {
+            "WebSessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "webhook_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Webhook Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookSecretResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "detail": "Missing Authorization header"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted to access this resource.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "FORBIDDEN",
+                  "detail": "Account is disabled"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (burst or monthly quota).",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "burstRateLimit": {
+                    "summary": "Per-window rate limit exceeded",
+                    "value": {
+                      "code": "RATE_LIMIT_EXCEEDED",
+                      "detail": "Too Many Requests"
+                    }
+                  },
+                  "monthlyQuotaExceeded": {
+                    "summary": "Monthly quota exhausted",
+                    "value": {
+                      "code": "RATE_LIMIT_MONTHLY_QUOTA_EXCEEDED",
+                      "detail": "Monthly quota exceeded (500000/500000 requests)."
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying when present.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "X-RateLimit-Tier": {
+                "description": "Authenticated caller tier code.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Request limit for the rate-limit window that was exceeded.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Seconds until the rate-limit window resets.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed. The detail list contains field-specific validation errors.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Tier": {
+                "description": "Authenticated caller tier code when available.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/web/auth/providers": {
       "get": {
         "tags": [
@@ -26330,6 +27057,14 @@
             "title": "Can Manage Webhooks",
             "description": "Whether webhook destination management is available."
           },
+          "allowed_webhook_platforms": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Allowed Webhook Platforms",
+            "description": "Webhook platforms this tier may configure."
+          },
           "can_export_account_data": {
             "type": "boolean",
             "title": "Can Export Account Data",
@@ -27348,6 +28083,18 @@
             ],
             "title": "Endpoint Label",
             "description": "Webhook destination label when this row represents a webhook delivery."
+          },
+          "platform": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Platform",
+            "description": "Delivery platform key for webhook-backed deliveries."
           },
           "attempt_count": {
             "anyOf": [
@@ -37738,6 +38485,12 @@
             "title": "Url",
             "description": "Destination URL. Must be HTTP or HTTPS."
           },
+          "platform": {
+            "type": "string",
+            "title": "Platform",
+            "description": "Delivery platform key: custom, discord, telegram, or google_sheets.",
+            "default": "custom"
+          },
           "is_active": {
             "type": "boolean",
             "title": "Is Active",
@@ -37867,6 +38620,11 @@
             "title": "Endpoint Url",
             "description": "Snapshot of the destination URL used for this delivery."
           },
+          "platform": {
+            "type": "string",
+            "title": "Platform",
+            "description": "Snapshot of the delivery platform used for this delivery."
+          },
           "event_type": {
             "type": "string",
             "title": "Event Type",
@@ -37960,6 +38718,7 @@
           "endpoint_id",
           "endpoint_label",
           "endpoint_url",
+          "platform",
           "event_type",
           "status",
           "attempt_count",
@@ -37996,6 +38755,11 @@
             "type": "string",
             "title": "Endpoint Url",
             "description": "Snapshot of the destination URL used for this delivery."
+          },
+          "platform": {
+            "type": "string",
+            "title": "Platform",
+            "description": "Snapshot of the delivery platform used for this delivery."
           },
           "event_type": {
             "type": "string",
@@ -38076,6 +38840,7 @@
           "endpoint_id",
           "endpoint_label",
           "endpoint_url",
+          "platform",
           "event_type",
           "status",
           "attempt_count",
@@ -38100,6 +38865,11 @@
             "type": "string",
             "title": "Url",
             "description": "Destination URL."
+          },
+          "platform": {
+            "type": "string",
+            "title": "Platform",
+            "description": "Delivery platform key for this destination."
           },
           "secret_last4": {
             "type": "string",
@@ -38167,6 +38937,7 @@
           "id",
           "label",
           "url",
+          "platform",
           "secret_last4",
           "is_active",
           "created_at",
@@ -38398,6 +39169,18 @@
             ],
             "title": "Url",
             "description": "Updated destination URL."
+          },
+          "platform": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Platform",
+            "description": "Updated delivery platform key."
           },
           "is_active": {
             "anyOf": [
