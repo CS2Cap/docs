@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   AlertTriangle,
@@ -36,7 +36,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { useAccountPreferences, useSession, webApi } from "@/lib/api";
+import { toast } from "sonner";
+import { useAccountPreferences, useSession, webApi, queryKeys } from "@/lib/api";
 
 const currencyOptions = [
   { value: "USD", label: "USD ($)" },
@@ -80,6 +81,21 @@ export default function AccountSettingsPage() {
   const [verifyMessage, setVerifyMessage] = useState<string | null>(null);
   const [verifyError, setVerifyError] = useState<string | null>(null);
 
+  // Link / unlink provider state
+  const ALL_PROVIDERS = ["steam", "google", "discord"] as const;
+  const [linkingProvider, setLinkingProvider] = useState<string | null>(null);
+
+  async function handleConnect(provider: string) {
+    setLinkingProvider(provider);
+    try {
+      const { redirect_url } = await webApi.startProviderLink(provider);
+      window.location.assign(redirect_url);
+    } catch {
+      toast.error("Couldn't start linking. Please try again.");
+      setLinkingProvider(null);
+    }
+  }
+
   // Unlink provider state
   const [unlinkingProvider, setUnlinkingProvider] = useState<string | null>(null);
   const [unlinkDialogOpen, setUnlinkDialogOpen] = useState(false);
@@ -101,6 +117,22 @@ export default function AccountSettingsPage() {
     setProductUpdateEmailsEnabled(preferences.product_update_emails_enabled);
     setBillingReminderEmailsEnabled(preferences.billing_reminder_emails_enabled);
   }, [preferences]);
+
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const linked = searchParams.get("linked");
+    const linkError = searchParams.get("link_error");
+    if (!linked && !linkError) return;
+    if (linked) {
+      toast.success(`${providerLabel(linked)} connected.`);
+    } else if (linkError === "already_linked") {
+      toast.error("That account is already linked to another user.");
+    } else if (linkError) {
+      toast.error("Couldn't link that account. Please try again.");
+    }
+    queryClient.invalidateQueries({ queryKey: queryKeys.session });
+    window.history.replaceState(null, "", window.location.pathname);
+  }, [searchParams, queryClient]);
 
   if (sessionLoading) {
     return (
@@ -473,6 +505,33 @@ export default function AccountSettingsPage() {
                   )}
                 </div>
               )}
+              {(() => {
+                const linkedKeys = new Set(linkedProviders.map((lp) => lp.provider));
+                const connectable = ALL_PROVIDERS.filter((p) => !linkedKeys.has(p));
+                if (connectable.length === 0) return null;
+                return (
+                  <div className="space-y-2 pt-1">
+                    {connectable.map((provider) => (
+                      <div
+                        key={provider}
+                        className="flex items-center justify-between rounded-lg border border-dashed border-border/40 px-3 py-2"
+                      >
+                        <span className="text-sm text-muted-foreground">
+                          {providerLabel(provider)}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleConnect(provider)}
+                          disabled={linkingProvider === provider}
+                        >
+                          {linkingProvider === provider ? "Redirecting…" : "Connect"}
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
             </div>
           </CardContent>
         </Card>

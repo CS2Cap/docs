@@ -10,7 +10,6 @@ export type PhaseName =
 
 export type AllProviders =
   | "avanmarket"
-  | "bitskins"
   | "buff163"
   | "buffmarket"
   | "c5"
@@ -133,6 +132,18 @@ export interface ItemsMetadataResponse {
 export interface ItemsResponse {
   items: ItemOut[];
   pagination: PaginationMeta;
+}
+
+export interface ItemSuggestion {
+  item_id: number;
+  market_hash_name: string;
+  image_url?: string | null;
+  item_type?: string | null;
+  wear_name?: string | null;
+}
+
+export interface ItemSearchResponse {
+  items: ItemSuggestion[];
 }
 
 export interface ItemIdLookupRequest {
@@ -446,6 +457,7 @@ export interface MarketItemsSnapshotResponse {
 }
 
 export type WebSearchSort =
+  | "relevance"
   | "rank"
   | "name"
   | "best_ask_usd"
@@ -587,6 +599,10 @@ export interface ActiveKeySummary {
   key?: APIKeyInfo | null;
 }
 
+export interface ProviderLinkStartResponse {
+  redirect_url: string;
+}
+
 export interface AccountLinkedProvider {
   provider: string;
   provider_user_id: string;
@@ -601,6 +617,7 @@ export interface AccountCapabilities {
   can_manage_watchlist: boolean;
   can_manage_alerts: boolean;
   can_manage_webhooks: boolean;
+  allowed_webhook_platforms: WebhookPlatform[];
   can_export_account_data: boolean;
   can_open_billing_portal: boolean;
 }
@@ -690,6 +707,7 @@ export interface AlertDeliverySummary {
   delivery_id?: string;
   endpoint_id?: string;
   endpoint_label?: string;
+  platform?: string;
   attempt_count?: number;
   last_http_status?: number;
   next_attempt_at?: string;
@@ -729,6 +747,45 @@ export interface AlertEventSummary {
 export interface AlertEventsResponse {
   events: AlertEventSummary[];
   pagination: PaginationMeta;
+}
+
+export type WebhookPlatform = "discord" | "telegram" | "google_sheets" | "custom";
+
+export interface WebhookEndpointSummary {
+  id: string;
+  label: string;
+  url: string;
+  platform: WebhookPlatform;
+  secret_last4: string;
+  is_active: boolean;
+  last_success_at?: string | null;
+  last_failure_at?: string | null;
+  last_failure_message?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WebhookEndpointsResponse {
+  webhooks: WebhookEndpointSummary[];
+}
+
+export interface WebhookCreateRequest {
+  label: string;
+  url: string;
+  platform: WebhookPlatform;
+  is_active?: boolean;
+}
+
+export interface WebhookUpdateRequest {
+  label?: string;
+  url?: string;
+  platform?: WebhookPlatform;
+  is_active?: boolean;
+}
+
+export interface WebhookSecretResponse {
+  webhook: WebhookEndpointSummary;
+  secret: string;
 }
 
 export interface AlertCreateRequest {

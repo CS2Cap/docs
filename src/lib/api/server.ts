@@ -5,6 +5,7 @@ import {
   WEB_SESSION_COOKIE_NAME,
 } from "./config";
 import { buildQuery } from "./shared";
+import { searchSnapshot } from "../search/snapshot-search";
 import {
   getCachedBidsSnapshot,
   getCachedItemsSnapshot,
@@ -15,6 +16,7 @@ import {
   setCachedItemsSnapshot,
   setCachedMarketItemsSnapshot,
 } from "../blob-snapshot-cache";
+import type { ItemsSnapshotData } from "../blob-snapshot-cache";
 import type {
   AccountInfo,
   BatchPricesResponse,
@@ -209,6 +211,55 @@ function filterItemsFromSnapshot(items: ItemOut[], query: URLSearchParams): Item
   return filtered;
 }
 
+// Distinct catalog filter values, derived from the items snapshot instead of
+// the upstream /v1/web/items/metadata call.
+const METADATA_FIELDS = [
+  "item_type",
+  "item_subtype",
+  "weapon_type",
+  "wear_name",
+  "phase",
+  "collection",
+  "rarity_name",
+  "rarity_color",
+  "style_name",
+] as const;
+
+function deriveItemsMetadata(snapshot: ItemsSnapshotData): ItemsMetadataResponse {
+  const sets: Record<(typeof METADATA_FIELDS)[number], Set<string>> = {
+    item_type: new Set(),
+    item_subtype: new Set(),
+    weapon_type: new Set(),
+    wear_name: new Set(),
+    phase: new Set(),
+    collection: new Set(),
+    rarity_name: new Set(),
+    rarity_color: new Set(),
+    style_name: new Set(),
+  };
+  for (const item of snapshot.items) {
+    for (const field of METADATA_FIELDS) {
+      const value = item[field];
+      if (typeof value === "string" && value) sets[field].add(value);
+    }
+  }
+  const sorted = (set: Set<string>) => [...set].sort((a, b) => a.localeCompare(b));
+  return {
+    catalog: { total_items: snapshot.total ?? snapshot.items.length },
+    filters: {
+      item_type: sorted(sets.item_type),
+      item_subtype: sorted(sets.item_subtype),
+      weapon_type: sorted(sets.weapon_type),
+      wear_name: sorted(sets.wear_name),
+      phase: sorted(sets.phase),
+      collection: sorted(sets.collection),
+      rarity_name: sorted(sets.rarity_name),
+      rarity_color: sorted(sets.rarity_color),
+      style_name: sorted(sets.style_name),
+    },
+  };
+}
+
 // ── serverApi ─────────────────────────────────────────────────────────────────
 
 export const serverApi = {
@@ -280,14 +331,22 @@ export const serverApi = {
     return fetched.filter((item): item is ItemOut => item != null);
   },
 
-  getItemsMetadata(revalidate: number | false = false, opts: { anon?: boolean } = {}) {
+  async getItemsMetadata(
+    revalidate: number | false = false,
+    opts: { anon?: boolean } = {},
+  ): Promise<ItemsMetadataResponse | null> {
+    const cached = await getCachedItemsSnapshot();
+    if (cached) {
+      if (cached.isStale) refreshItemsSnapshotInBackground(fetchAllItemsAndStore);
+      return deriveItemsMetadata(cached.snapshot);
+    }
     return serverFetch<ItemsMetadataResponse>("/v1/web/items/metadata", {
       revalidate,
       anon: opts.anon,
     });
   },
 
-  getSearch(
+  async getSearch(
     params: {
       q?: string;
       item_type?: string[];
@@ -308,7 +367,19 @@ export const serverApi = {
     } = {},
     revalidate: number | false = 30,
     opts: { anon?: boolean } = {},
-  ) {
+  ): Promise<WebSearchResponse | null> {
+    // Served in-process from the prewarmed catalog + market snapshots. The
+    // upstream /v1/web/search rescans and rescores the whole catalog per
+    // request (multi-second); this reads cached data and ranks locally.
+    const [items, market] = await Promise.all([
+      getCachedItemsSnapshot(),
+      getCachedMarketItemsSnapshot("24h"),
+    ]);
+    if (items && market) {
+      if (items.isStale) refreshItemsSnapshotInBackground(fetchAllItemsAndStore);
+      return searchSnapshot(items.snapshot, market.snapshot, params);
+    }
+    // Cold cache: fall through to the live endpoint.
     return serverFetch<WebSearchResponse>(`/v1/web/search${buildQuery(params)}`, {
       revalidate,
       anon: opts.anon,

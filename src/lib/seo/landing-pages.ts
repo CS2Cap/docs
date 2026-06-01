@@ -44,7 +44,6 @@ export interface SeoPageConfig {
 
 const PROVIDER_DISPLAY_NAMES: Record<string, string> = {
   avanmarket: "AvanMarket",
-  bitskins: "BitSkins",
   buff163: "BUFF163",
   buffmarket: "BuffMarket",
   c5: "C5Game",

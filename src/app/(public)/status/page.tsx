@@ -88,7 +88,7 @@ export default async function StatusPage() {
         <header className="mb-10 md:mb-12">
           <div className="font-mono text-xs tracking-widest text-primary mb-3">// SYSTEM STATUS</div>
           <h1 className="text-4xl md:text-5xl font-black tracking-tighter mb-4">
-            Platform &amp; marketplace uptime<span className="text-primary">.</span>
+            Platform &amp; <span className="glow-text text-gradient-brand">marketplace uptime.</span>
           </h1>
           <p className="font-mono text-sm text-muted-foreground max-w-2xl">
             Real-time health for the CS2Cap API, surfaces, and every marketplace we index. Updated every 60 seconds.
@@ -106,7 +106,7 @@ export default async function StatusPage() {
 
           {lastUpdated && (
             <p className="font-mono text-xs tracking-widest text-muted-foreground text-center">
-              LAST BEAT · {lastUpdated} UTC · DATA FROM status.cs2c.app
+              LAST BEAT · {lastUpdated} UTC · DATA FROM <a href="https://status.cs2c.app" target="_blank" className="text-primary hover:underline">status.cs2c.app</a>
             </p>
           )}
         </div>

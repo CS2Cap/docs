@@ -73,7 +73,6 @@ CS2Cap is a unified REST API for Counter-Strike 2 skin market data. Developers u
 - [/skinport-api](/skinport-api): Skinport prices and listings.
 - [/dmarket-api](/dmarket-api): DMarket prices and listings.
 - [/gameboost-api](/gameboost-api): GameBoost prices and listings.
-- [/bitskins-api](/bitskins-api): BitSkins prices and listings.
 - [/waxpeer-api](/waxpeer-api): Waxpeer prices and listings.
 - [/skinbaron-api](/skinbaron-api): SkinBaron prices and listings.
 - [/csdeals-api](/csdeals-api): CS.Deals prices and listings.

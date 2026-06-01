@@ -15,7 +15,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -35,11 +35,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import posthog from "posthog-js";
+import { DeliveryIntegrations } from "@/components/alerts/DeliveryIntegrations";
+import { ItemSearchInput, type AlertItemSelection } from "@/components/alerts/ItemSearchInput";
 import {
   useAlertEvents,
   useAlerts,
+  useAccount,
   useCreateAlertMutation,
   useDeleteAlertMutation,
+  useItem,
   useUpdateAlertMutation,
 } from "@/lib/api";
 import { buildItemPath } from "@/lib/seo/itemSlug";
@@ -79,32 +83,44 @@ function formatThreshold(value: string, currency?: string) {
 
 export default function AlertsPage() {
   const searchParams = useSearchParams();
-  const searchItemId = searchParams.get("itemId") ?? "";
+  const seedItemIdParam = searchParams.get("itemId");
+  const seedItemId = seedItemIdParam && Number.isFinite(Number(seedItemIdParam))
+    ? Number(seedItemIdParam)
+    : null;
   const { data: alerts, isLoading: alertsLoading } = useAlerts({ limit: 100 });
   const { data: events, isLoading: eventsLoading } = useAlertEvents({ limit: 100 });
+  const { data: account, isLoading: accountLoading } = useAccount();
+  const { data: seedItem } = useItem(seedItemId);
   const createAlertMutation = useCreateAlertMutation();
   const updateAlertMutation = useUpdateAlertMutation();
   const deleteAlertMutation = useDeleteAlertMutation();
 
-  const [itemIdOverride, setItemIdOverride] = useState<string | null>(null);
+  // `undefined` = user hasn't touched the field, fall back to the deep-link
+  // seed; an explicit value/null means the user picked or cleared it.
+  const [userSelection, setUserSelection] = useState<AlertItemSelection | null | undefined>(
+    undefined,
+  );
   const [kind, setKind] = useState("price_below");
   const [thresholdValue, setThresholdValue] = useState("");
   const [thresholdCurrency, setThresholdCurrency] = useState("USD");
 
-  const itemId = itemIdOverride ?? searchItemId;
-  const normalizedItemId = itemId.trim();
+  const seededSelection: AlertItemSelection | null =
+    seedItemId != null && seedItem?.market_hash_name
+      ? { item_id: seedItemId, market_hash_name: seedItem.market_hash_name }
+      : null;
+  const selectedItem = userSelection !== undefined ? userSelection : seededSelection;
+
   const normalizedThresholdValue = thresholdValue.trim();
-  const parsedItemId = Number(normalizedItemId);
-  const isItemIdValid = normalizedItemId !== "" && Number.isFinite(parsedItemId);
+  const isItemValid = selectedItem != null;
 
   function handleCreateAlert() {
-    if (!isItemIdValid || normalizedThresholdValue === "") {
+    if (!selectedItem || normalizedThresholdValue === "") {
       return;
     }
 
     createAlertMutation.mutate(
       {
-        item_id: parsedItemId,
+        item_id: selectedItem.item_id,
         kind,
         threshold_value: normalizedThresholdValue,
         threshold_currency: kind === "spread_exceeds" ? undefined : thresholdCurrency,
@@ -113,7 +129,7 @@ export default function AlertsPage() {
       {
         onSuccess: () => {
           posthog.capture("alert_created", {
-            item_id: parsedItemId,
+            item_id: selectedItem.item_id,
             kind,
             threshold_currency: kind === "spread_exceeds" ? undefined : thresholdCurrency,
           });
@@ -122,7 +138,7 @@ export default function AlertsPage() {
     );
   }
 
-  if (alertsLoading || eventsLoading) {
+  if (alertsLoading || eventsLoading || accountLoading) {
     return (
       <div className="p-6 lg:p-8">
         <div className="mb-4 h-8 w-48 animate-pulse rounded bg-secondary/50" />
@@ -141,10 +157,11 @@ export default function AlertsPage() {
 
   const enabledAlerts = alerts.alerts.filter((alert) => alert.is_enabled).length;
   const pausedAlerts = alerts.alerts.length - enabledAlerts;
+  const allowedWebhookPlatforms = account?.capabilities.allowed_webhook_platforms ?? [];
 
   return (
     <div className="p-6 lg:p-8">
-      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="font-mono text-xs tracking-widest text-primary mb-2">// ALERTS</div>
           <h1 className="text-3xl font-black tracking-tighter">YOUR ALERTS</h1>
@@ -157,120 +174,47 @@ export default function AlertsPage() {
         </Button>
       </div>
 
-      <Card className="mb-8 border-border/50 bg-card/50">
-        <CardContent className="pt-6">
-          <div className="grid gap-4 md:grid-cols-4">
-            <div className="space-y-2">
-              <Label htmlFor="itemId">Item ID</Label>
-              <Input
-                id="itemId"
-                value={itemId}
-                onChange={(event) => setItemIdOverride(event.target.value)}
-                placeholder="12345"
-              />
+      <Card className="mb-6 border-border/50 bg-card/50">
+        <CardContent className="grid grid-cols-1 divide-y divide-border/50 p-0 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+          <div className="flex items-center gap-3 p-5">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+              <Bell className="h-5 w-5 text-primary" />
             </div>
-            <div className="space-y-2">
-              <Label>Kind</Label>
-              <Select value={kind} onValueChange={setKind}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="price_below">Price Below</SelectItem>
-                  <SelectItem value="price_above">Price Above</SelectItem>
-                  <SelectItem value="spread_exceeds">Spread Exceeds</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="threshold">Threshold</Label>
-              <Input
-                id="threshold"
-                value={thresholdValue}
-                onChange={(event) => setThresholdValue(event.target.value)}
-                placeholder="10.00"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Currency</Label>
-              <Select value={thresholdCurrency} onValueChange={setThresholdCurrency} disabled={kind === "spread_exceeds"}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="USD">USD</SelectItem>
-                  <SelectItem value="EUR">EUR</SelectItem>
-                  <SelectItem value="GBP">GBP</SelectItem>
-                  <SelectItem value="CNY">CNY</SelectItem>
-                </SelectContent>
-              </Select>
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Active</p>
+              <p className="text-2xl font-bold text-foreground">{enabledAlerts}</p>
             </div>
           </div>
-          <div className="mt-4 flex items-center gap-3">
-            <Button
-              onClick={handleCreateAlert}
-              disabled={createAlertMutation.isPending || !isItemIdValid || normalizedThresholdValue === ""}
-            >
-              {createAlertMutation.isPending ? "Creating…" : "Create Alert"}
-            </Button>
-            {createAlertMutation.error && (
-              <p className="text-sm text-destructive">{createAlertMutation.error.message}</p>
-            )}
+          <div className="flex items-center gap-3 p-5">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-secondary">
+              <BellOff className="h-5 w-5 text-muted-foreground" />
+            </div>
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Paused</p>
+              <p className="text-2xl font-bold text-foreground">{pausedAlerts}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 p-5">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-green-500/10">
+              <AlertCircle className="h-5 w-5 text-green-400" />
+            </div>
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Triggered</p>
+              <p className="text-2xl font-bold text-foreground">{events.events.length}</p>
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      <div className="mb-8 grid gap-4 md:grid-cols-3">
-        <Card className="border-border/50 bg-card/50">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Active Alerts</p>
-                <p className="text-2xl font-bold text-foreground">{enabledAlerts}</p>
-              </div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                <Bell className="h-5 w-5 text-primary" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid gap-6 lg:grid-cols-3 lg:items-start">
+        <div className="lg:col-span-2">
+          <Tabs defaultValue="active" className="w-full">
+            <TabsList>
+              <TabsTrigger value="active">Alert Rules</TabsTrigger>
+              <TabsTrigger value="triggered">Fire History</TabsTrigger>
+            </TabsList>
 
-        <Card className="border-border/50 bg-card/50">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Paused Alerts</p>
-                <p className="text-2xl font-bold text-foreground">{pausedAlerts}</p>
-              </div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary">
-                <BellOff className="h-5 w-5 text-muted-foreground" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/50 bg-card/50">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Triggered Events</p>
-                <p className="text-2xl font-bold text-foreground">{events.events.length}</p>
-              </div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-500/10">
-                <AlertCircle className="h-5 w-5 text-green-400" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Tabs defaultValue="active" className="w-full">
-        <TabsList>
-          <TabsTrigger value="active">Alert Rules</TabsTrigger>
-          <TabsTrigger value="triggered">Fire History</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="active" className="mt-6">
+            <TabsContent value="active" className="mt-6">
           <div className="space-y-3">
             {alerts.alerts.length === 0 ? (
               <Card className="border-border/50 bg-card/50">
@@ -399,9 +343,84 @@ export default function AlertsPage() {
                 </Card>
               ))
             )}
-          </div>
-        </TabsContent>
-      </Tabs>
+            </div>
+          </TabsContent>
+          </Tabs>
+        </div>
+
+        <aside className="lg:sticky lg:top-6">
+          <Card className="border-border/50 bg-card/50">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Plus className="h-4 w-4 text-primary" />
+                New Alert
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="alert-item">Item</Label>
+                <ItemSearchInput
+                  id="alert-item"
+                  value={selectedItem}
+                  onSelect={(item) => setUserSelection(item)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Alert Type</Label>
+                <Select value={kind} onValueChange={setKind}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="price_below">Price Below</SelectItem>
+                    <SelectItem value="price_above">Price Above</SelectItem>
+                    <SelectItem value="spread_exceeds">Spread Exceeds</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="threshold">Threshold</Label>
+                  <Input
+                    id="threshold"
+                    value={thresholdValue}
+                    onChange={(event) => setThresholdValue(event.target.value)}
+                    placeholder="10.00"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Currency</Label>
+                  <Select value={thresholdCurrency} onValueChange={setThresholdCurrency} disabled={kind === "spread_exceeds"}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="USD">USD</SelectItem>
+                      <SelectItem value="EUR">EUR</SelectItem>
+                      <SelectItem value="GBP">GBP</SelectItem>
+                      <SelectItem value="CNY">CNY</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <Button
+                className="w-full"
+                onClick={handleCreateAlert}
+                disabled={createAlertMutation.isPending || !isItemValid || normalizedThresholdValue === ""}
+              >
+                {createAlertMutation.isPending ? "Creating…" : "Create Alert"}
+              </Button>
+              {createAlertMutation.error && (
+                <p className="text-sm text-destructive">{createAlertMutation.error.message}</p>
+              )}
+            </CardContent>
+          </Card>
+        </aside>
+      </div>
+
+      <div className="mt-8">
+        <DeliveryIntegrations allowedPlatforms={allowedWebhookPlatforms} />
+      </div>
     </div>
   );
 }

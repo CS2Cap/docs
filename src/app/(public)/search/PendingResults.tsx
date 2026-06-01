@@ -4,8 +4,11 @@ import { useSearchParams } from "next/navigation";
 import type { ReactNode } from "react";
 
 function snapshotFromParams(params: URLSearchParams): string {
+  const q = params.get("q") ?? "";
+  const sort = params.get("sort") ?? (q ? "relevance" : "rank");
+  const direction = params.get("direction") ?? (sort === "relevance" ? "desc" : "asc");
   return [
-    params.get("q") ?? "",
+    q,
     params.get("item_type") ?? "",
     params.get("base_name") ?? params.get("weapon_type") ?? "",
     params.get("wear_name") ?? "",
@@ -14,8 +17,8 @@ function snapshotFromParams(params: URLSearchParams): string {
     params.get("phase") ?? "",
     params.get("min_price_usd") ?? "",
     params.get("max_price_usd") ?? "",
-    params.get("sort") ?? "rank",
-    params.get("direction") ?? "asc",
+    sort,
+    direction,
     params.get("page") ?? "1",
   ].join("|");
 }

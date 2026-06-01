@@ -234,7 +234,7 @@ export default function ApisDirectoryPage() {
               // API DIRECTORY
             </div>
             <h1 className="display-heading mb-6 text-4xl font-black tracking-tighter sm:text-5xl md:text-6xl">
-              <span className="glow-text text-gradient-brand">CS2 API Directory</span>
+              CS2 <span className="glow-text text-gradient-brand">API Directory</span>
             </h1>
             <p className="max-w-2xl font-sans text-base leading-relaxed text-muted-foreground">
               Every endpoint in the CS2Cap API, grouped by domain. {totalEndpoints} routes across{" "}

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
-import { ArrowRight, BarChart3, Bell, Clock3, Heart } from "lucide-react";
+import { ArrowRight, BarChart3, Bell, Clock3, Heart, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -105,6 +105,28 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      <div className="mb-10">
+        <Card className="border-border/50 bg-card/50">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                <Package className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <CardTitle className="text-base">Inventory</CardTitle>
+                <CardDescription>Value your Steam inventory live</CardDescription>
+              </div>
+            </div>
+            <Button variant="ghost" size="sm" asChild>
+              <Link href="/inventory">
+                Open
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </CardHeader>
+        </Card>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">

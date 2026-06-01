@@ -100,7 +100,7 @@ function PrimaryMarketsVisual() {
     { key: "buff163", label: "BUFF163" },
     { key: "youpin", label: "YOUPIN898" },
   ];
-  const satellites = ["csfloat", "skinport", "steam", "bitskins", "dmarket", "gameboost"];
+  const satellites = ["csfloat", "skinport", "steam", "c5", "dmarket", "gameboost"];
 
   return (
     <div className="absolute inset-0 flex flex-col justify-between p-3.5">
@@ -111,7 +111,7 @@ function PrimaryMarketsVisual() {
       </div>
       <div className="flex items-center justify-center gap-2.5 border-t border-border pt-3">
         <span className="font-mono text-xs tracking-widest text-muted-foreground uppercase">
-          + 31 more markets
+          + 40 more markets
         </span>
         <div className="flex gap-1">
           {satellites.map((s) => (

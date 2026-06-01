@@ -71,6 +71,7 @@ const FACET_MAX_VISIBLE: Partial<Record<FilterField["key"], number>> = {
 const DEFAULT_FACET_MAX = 8;
 
 const SORT_OPTIONS: Array<{ value: WebSearchSort; label: string }> = [
+  { value: "relevance", label: "Relevance" },
   { value: "rank", label: "Rank" },
   { value: "best_ask_usd", label: "Ask" },
   { value: "best_bid_usd", label: "Bid" },
@@ -92,15 +93,29 @@ function clean(value: string | string[] | undefined): string | undefined {
   return normalized || undefined;
 }
 
-function sanitizeSort(value: string | string[] | undefined): WebSearchSort {
+function defaultSortFor(query: string): WebSearchSort {
+  return query ? "relevance" : "rank";
+}
+
+function defaultDirectionFor(sort: WebSearchSort): WebSearchDirection {
+  return sort === "relevance" ? "desc" : "asc";
+}
+
+function sanitizeSort(value: string | string[] | undefined, query: string): WebSearchSort {
   const normalized = clean(value);
   return SORT_OPTIONS.some((option) => option.value === normalized)
     ? (normalized as WebSearchSort)
-    : "rank";
+    : defaultSortFor(query);
 }
 
-function sanitizeDirection(value: string | string[] | undefined): WebSearchDirection {
-  return clean(value) === "desc" ? "desc" : "asc";
+function sanitizeDirection(
+  value: string | string[] | undefined,
+  sort: WebSearchSort,
+): WebSearchDirection {
+  const normalized = clean(value);
+  if (normalized === "desc") return "desc";
+  if (normalized === "asc") return "asc";
+  return defaultDirectionFor(sort);
 }
 
 function buildPendingSnapshot(
@@ -172,10 +187,14 @@ function buildSearchHref(
   if (merged.max_price_usd) {
     params.set("max_price_usd", merged.max_price_usd);
   }
-  if (merged.sort && merged.sort !== "rank") {
+  const defaultSort = defaultSortFor(query);
+  if (merged.sort && merged.sort !== defaultSort) {
     params.set("sort", merged.sort);
   }
-  if (merged.direction && merged.direction !== "asc") {
+  if (
+    merged.direction &&
+    merged.direction !== defaultDirectionFor(merged.sort ?? defaultSort)
+  ) {
     params.set("direction", merged.direction);
   }
   if (page > 1) {
@@ -308,11 +327,24 @@ function priceChangeClass(value: number | null | undefined) {
   return "text-foreground";
 }
 
+const WEAR_SUFFIXES = [
+  " (Factory New)",
+  " (Minimal Wear)",
+  " (Field-Tested)",
+  " (Well-Worn)",
+  " (Battle-Scarred)",
+];
+
+function stripWearSuffix(name: string) {
+  const suffix = WEAR_SUFFIXES.find((s) => name.endsWith(s));
+  return suffix ? name.slice(0, -suffix.length) : name;
+}
+
 function itemSubtitle(item: WebSearchItem) {
   return [
-    item.phase,
     item.rarity_name,
-    item.collection,
+    item.wear_name,
+    item.phase,
   ]
     .filter(Boolean)
     .join(" / ") || "Catalog item";
@@ -436,7 +468,14 @@ function activeChips(query: string, filters: SearchFilterValues) {
   return chips;
 }
 
-function HiddenFilterInputs({ filters }: { filters: SearchFilterValues }) {
+function HiddenFilterInputs({
+  filters,
+  query,
+}: {
+  filters: SearchFilterValues;
+  query: string;
+}) {
+  const defaultSort = defaultSortFor(query);
   return (
     <>
       {FILTER_FIELDS.map(({ key }) =>
@@ -450,10 +489,11 @@ function HiddenFilterInputs({ filters }: { filters: SearchFilterValues }) {
       {filters.max_price_usd ? (
         <input type="hidden" name="max_price_usd" value={filters.max_price_usd} />
       ) : null}
-      {filters.sort && filters.sort !== "rank" ? (
+      {filters.sort && filters.sort !== defaultSort ? (
         <input type="hidden" name="sort" value={filters.sort} />
       ) : null}
-      {filters.direction && filters.direction !== "asc" ? (
+      {filters.direction &&
+      filters.direction !== defaultDirectionFor(filters.sort ?? defaultSort) ? (
         <input type="hidden" name="direction" value={filters.direction} />
       ) : null}
     </>
@@ -550,7 +590,7 @@ function SearchTerminalHeader({
       </div>
 
       <form action="/search" className="grid gap-2 p-3 md:grid-cols-[1fr_auto]">
-        <HiddenFilterInputs filters={filters} />
+        <HiddenFilterInputs filters={filters} query={query} />
         <div className="flex min-w-0 items-center border border-border bg-background/80 px-3">
           <SearchIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
           <input
@@ -918,7 +958,7 @@ function SearchResultsTable({
                 </div>
                 <div className="min-w-0">
                   <div className="truncate font-mono text-sm font-bold text-foreground md:hover:text-primary">
-                    {item.market_hash_name}
+                    {stripWearSuffix(item.market_hash_name)}
                   </div>
                   <div className="truncate font-mono text-xs uppercase tracking-widest text-muted-foreground">
                     {item.rank ? `#${item.rank} · ` : ""}{itemSubtitle(item)}
@@ -1081,6 +1121,7 @@ async function SearchExperience({
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   const resolved = await searchParams;
   const query = clean(resolved.q) ?? "";
+  const sort = sanitizeSort(resolved.sort, query);
   const filters: SearchFilterValues = {
     item_type: clean(resolved.item_type),
     base_name: clean(resolved.base_name) ?? clean(resolved.weapon_type),
@@ -1090,8 +1131,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     phase: clean(resolved.phase),
     min_price_usd: clean(resolved.min_price_usd),
     max_price_usd: clean(resolved.max_price_usd),
-    sort: sanitizeSort(resolved.sort),
-    direction: sanitizeDirection(resolved.direction),
+    sort,
+    direction: sanitizeDirection(resolved.direction, sort),
   };
   const page = Number.parseInt(clean(resolved.page) ?? "1", 10);
   const currentPage = Number.isFinite(page) && page > 0 ? page : 1;

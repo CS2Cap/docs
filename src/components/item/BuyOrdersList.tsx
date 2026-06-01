@@ -19,7 +19,7 @@ const FLAG_TOOLTIP: Record<BuyOrderFlag, string> = {
   "unreliable-provider":
     "As Steam balance is not equal to real money (USD:STEAM = ~70%), Steam's buy orders often have an inflated value and are excluded from the main list.",
   "inverted-spread":
-    "This bid is higher than this marketplace's own lowest ask; likely due to a niche item variant (e.g. low float range) rather than this exact item.",
+    "This bid is higher than this marketplace's own lowest ask; likely due to a niche item variant (e.g. low float range) or a stale/unfillfable buy order.",
   "excessive-bid":
     "This bid is more than double the lowest ask across all markets — likely bad or niche-variant data.",
   "lowball-bid":

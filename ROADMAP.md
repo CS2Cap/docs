@@ -9,11 +9,13 @@ This catalog cross-references the report's recommendations against what cs2cap (
 **State at time of writing:**
 
 - Frontend: search w/ 6 facets, item detail (history, market distribution, similar items, variants, cases, asks), marketcap (treemap, sparkline, movers), auth (Steam/Google/Discord), inventory tracker, alerts, watchlist, API key/billing/usage UI, 22 marketplace landing pages, deal scanner absent on FE.
-- Backend: 40+ provider adapters, prices/sales/buy_orders services, liquidity scoring, portfolio + transactions + CSV import, account/api-key/webhook services, OAuth, Steam inventory parser, skinscanner/deals_service, 62 alembic migrations. Web search: snapshot scores wired into `/v1/web/search`, query understanding with alias dictionary + relevance sort, isolated rate-limit bucket.
+- Backend: 40+ provider adapters, prices/sales/buy_orders services, liquidity scoring, portfolio + transactions + CSV import, account/api-key/webhook services, OAuth, Steam inventory parser, skinscanner/deals_service, 65 alembic migrations. Web search: snapshot scores wired into `/v1/web/search`, query understanding with alias dictionary + relevance sort, isolated rate-limit bucket.
 
 ---
 
 ## Tier 1 — Item-page metadata depth (matches CSGOSKINS.GG)
+
+> **Deprioritized (2026-05-30).** Reviewed for promotion and deferred — there is no concrete metadata consumer driving any of these today, and the catalog's serving layer is a flat, wholesale-cached `tradable_items` blob (built by `src/database` against the separate `CATALOG_DATABASE_URL`, *not* alembic). An open key/value (`item_attribute`) table is the opposite shape from that blob — EAV rows would just be pivoted back to flat columns at build time — so it earns its keep only once a real field needs adding that a JSONB column on the existing pipeline can't cheaply absorb. Note also that the original examples don't survive scrutiny: "supported phases" already ships (`phase` column + per-phase variant rows), "drop odds" is really Tier 1 #2 (`drop_source`), and "sticker compatibility" is already in Rejected. Treat this whole tier as lower priority than the data-credibility and user-facing work the team is actually shipping; promote an item only when a named consumer appears.
 
 1. **`item_attribute` open key/value table** — Game-file vs provider-derived attributes separated by `source enum(gamefile, provider, derived)`. Lets us add new metadata (drop odds, supported phases, sticker compatibility) without schema churn.
 2. **`drop_source` table** — Collection / case / capsule / update with `odds` numeric. Backs an unboxing-odds view, "drops from" reverse lookups, and case-EV calculators.
@@ -252,7 +254,7 @@ The only piece that may or may not be wired is "alert delivery is suppressed whe
 - `cs2c-api/src/app/services/portfolio/{portfolio,transaction,history,csv_import}_service.py` (Tier 2)
 - `cs2c-api/src/app/services/auth/oauth_service.py` (Tier 2)
 - `cs2c-api/src/app/services/skinscanner/deals_service.py` (Tier 4)
-- `cs2c-api/alembic/versions/` (62 migrations; new ones for each Tier 1–5 entity)
+- `cs2c-api/alembic/versions/` (65 migrations; new ones for each Tier 1–5 entity)
 - `cs2cap/src/lib/api/{server,client,hooks,types,compositions,view-models}.ts` (Tier 6)
 - `cs2cap/src/app/api/cs2c/[...path]/route.ts` (Tier 6 — edge-cache policy parity)
 - `cs2cap/src/lib/seo/landing-pages.ts` (Tier 6 — landing-page generation)
@@ -264,7 +266,7 @@ This catalog is intentionally broad. **Do not implement straight through it.** F
 
 1. Open a focused planning session for *that single item*.
 2. Confirm current implementation state (the inventory above is best-effort; verify before changing schemas).
-3. Decide migration safety (the platform has 62 alembic migrations and live data — additive-then-backfill-then-cutover is the safe pattern).
+3. Decide migration safety (the platform has 65 alembic migrations and live data — additive-then-backfill-then-cutover is the safe pattern).
 4. Define success criteria (CLAUDE.md §4): a test or measurable outcome per change.
 
 The strongest practical recommendation from the report applies here too: **prioritize data credibility over feature theatrics**. Tiers 1–2 (item-page metadata depth + user-state hardening) are the next big content and retention investments; Tiers 4–5 (trader tools + sponsored) are visible but cheap only after the foundation is solid.

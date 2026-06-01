@@ -87,9 +87,7 @@ export default async function MarketplacesHubPage() {
               // MARKETPLACE DIRECTORY
             </div>
             <h1 className="display-heading mb-6 text-4xl font-black tracking-tighter sm:text-5xl md:text-6xl">
-              <span className="glow-text text-gradient-brand">
-                CS2 Marketplaces
-              </span>
+              CS2 <span className="glow-text text-gradient-brand">Marketplaces</span>
             </h1>
             <p className="max-w-xl font-mono text-sm leading-relaxed text-muted-foreground">
               CS2Cap aggregates skin market data from {providers.length}+{" "}

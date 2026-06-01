@@ -10,6 +10,8 @@ const USER_DISALLOW = [
   "/alerts",
   "/item/",
   "/verify-email",
+  "/search",
+  "/api",
 ];
 
 const BOT_DISALLOW = [
@@ -23,6 +25,7 @@ const BOT_DISALLOW = [
   "/alerts",
   "/verify-email",
   "/auth/",
+  "/search",
 ];
 
 const META_BOTS = [
