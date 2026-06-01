@@ -1,20 +1,22 @@
 import type { NextConfig } from "next";
 
-// Full intended Content-Security-Policy, shipped in Report-Only mode for now:
-// browsers report violations to /api/csp-report but block nothing. Promote to an
-// enforcing `Content-Security-Policy` header once the report window is clean.
-const cspReportOnly = [
+// Content-Security-Policy directives (no report directives — those are appended
+// per-request below once the report URL is known). Enforced in production,
+// Report-Only in dev/preview. See `headers()`.
+const cspDirectives = [
   "default-src 'self'",
   "base-uri 'self'",
   "object-src 'none'",
-  // 'unsafe-inline' covers Next.js App Router hydration/streaming scripts (no nonce setup).
-  "script-src 'self' 'unsafe-inline'",
+  // 'unsafe-inline' covers Next.js App Router hydration/streaming scripts (no nonce
+  // setup). e.cs2cap.com is the PostHog reverse proxy: posthog-js lazy-loads its
+  // extension scripts (e.g. exception autocapture) from the api_host.
+  "script-src 'self' 'unsafe-inline' https://e.cs2cap.com",
   // 'unsafe-inline' covers React inline style attributes (Recharts) + the chart <style> block.
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' data: https://fonts.gstatic.com",
   "img-src 'self' data: blob: https://cdn.cs2c.app https://community.akamai.steamstatic.com",
-  // PostHog rides the same-origin /ingest rewrite, so it needs no extra origin here.
-  "connect-src 'self' https://api.cs2c.app https://cdn.jsdelivr.net",
+  // e.cs2cap.com is the PostHog reverse proxy (api_host) that ingests analytics.
+  "connect-src 'self' https://api.cs2c.app https://cdn.jsdelivr.net https://e.cs2cap.com",
   "frame-ancestors 'self'",
   "frame-src 'self'",
   "form-action 'self'",
@@ -24,9 +26,7 @@ const cspReportOnly = [
   // own bundler & hydration script writes through Trusted Types policies and
   // expose no config to make them, so the directive cannot be satisfied.
   // Revisit when Next.js ships native Trusted Types support.
-  "report-uri /api/csp-report",
-  "report-to csp-endpoint",
-].join("; ");
+];
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
@@ -49,6 +49,30 @@ const nextConfig: NextConfig = {
     // (`pnpm dev`/`pnpm build`) and "preview" on preview deployments.
     const isProduction = process.env.VERCEL_ENV === "production";
 
+    // CSP violation reports are sent to PostHog through the e.cs2cap.com reverse
+    // proxy (ingested as `$csp_violation` events). The `/report/` trailing slash is
+    // required by PostHog; `v` versions the policy so violations can be attributed
+    // to CSP rule changes. Guarded so a missing build-time token never ships a
+    // `token=undefined` URL — without it, we emit the policy with no reporting.
+    const token = process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN;
+    const reportUrl = token
+      ? `https://e.cs2cap.com/report/?token=${token}&v=1`
+      : null;
+
+    const csp = [
+      ...cspDirectives,
+      ...(reportUrl ? [`report-uri ${reportUrl}`, "report-to posthog"] : []),
+    ].join("; ");
+
+    // Enforce in production; Report-Only in dev/preview so local workflows and
+    // preview tooling aren't blocked while violations are still being observed.
+    const cspHeader = {
+      key: isProduction
+        ? "Content-Security-Policy"
+        : "Content-Security-Policy-Report-Only",
+      value: csp,
+    };
+
     // Safe everywhere — these neither break local dev nor block embedding.
     const baseHeaders = [
       // Isolate the browsing context group. allow-popups keeps OAuth/popup flows working.
@@ -59,15 +83,10 @@ const nextConfig: NextConfig = {
       { key: "X-Content-Type-Options", value: "nosniff" },
       { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
       // Modern Reporting API endpoint for CSP violation reports.
-      {
-        key: "Reporting-Endpoints",
-        value: 'csp-endpoint="/api/csp-report"',
-      },
-      // Full content policy in Report-Only mode — reports, never blocks.
-      {
-        key: "Content-Security-Policy-Report-Only",
-        value: cspReportOnly,
-      },
+      ...(reportUrl
+        ? [{ key: "Reporting-Endpoints", value: `posthog="${reportUrl}"` }]
+        : []),
+      cspHeader,
     ];
 
     // Production-only. In dev these actively break things without adding value:
@@ -81,12 +100,9 @@ const nextConfig: NextConfig = {
             key: "Strict-Transport-Security",
             value: "max-age=63072000; includeSubDomains; preload",
           },
-          // Disallow framing by other origins (legacy + modern).
+          // Disallow framing by other origins (legacy). Modern `frame-ancestors`
+          // ships in the enforced Content-Security-Policy above (`baseHeaders`).
           { key: "X-Frame-Options", value: "SAMEORIGIN" },
-          {
-            key: "Content-Security-Policy",
-            value: "frame-ancestors 'self'",
-          },
         ]
       : [];
 
