@@ -29,6 +29,7 @@ const cspReportOnly = [
 ].join("; ");
 
 const nextConfig: NextConfig = {
+  poweredByHeader: false,
   images: {
     dangerouslyAllowSVG: true,
     contentDispositionType: "attachment",
