@@ -10,13 +10,15 @@ const cspDirectives = [
   // 'unsafe-inline' covers Next.js App Router hydration/streaming scripts (no nonce
   // setup). e.cs2cap.com is the PostHog reverse proxy: posthog-js lazy-loads its
   // extension scripts (e.g. exception autocapture) from the api_host.
-  "script-src 'self' 'unsafe-inline' https://e.cs2cap.com",
+  // analytics.ahrefs.com serves the Ahrefs Web Analytics tag (see app/layout.tsx).
+  "script-src 'self' 'unsafe-inline' https://e.cs2cap.com https://analytics.ahrefs.com",
   // 'unsafe-inline' covers React inline style attributes (Recharts) + the chart <style> block.
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' data: https://fonts.gstatic.com",
   "img-src 'self' data: blob: https://cdn.cs2c.app https://community.akamai.steamstatic.com",
   // e.cs2cap.com is the PostHog reverse proxy (api_host) that ingests analytics.
-  "connect-src 'self' https://api.cs2c.app https://cdn.jsdelivr.net https://e.cs2cap.com",
+  // analytics.ahrefs.com is where the Ahrefs tag beacons pageview data.
+  "connect-src 'self' https://api.cs2c.app https://cdn.jsdelivr.net https://e.cs2cap.com https://analytics.ahrefs.com",
   "frame-ancestors 'self'",
   "frame-src 'self'",
   "form-action 'self'",
