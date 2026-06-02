@@ -5,7 +5,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Menu, X, Search, LayoutDashboard, Eye, Bell, User, Key, BarChart3, CreditCard, Settings, LogOut } from "lucide-react";
+import { Menu, X, Search, LayoutDashboard, Eye, Bell, User, Key, BarChart3, CreditCard, Settings, LogOut, ChevronDown } from "lucide-react";
 import { useSession, webApi } from "@/lib/api";
 import {
   DropdownMenu,
@@ -15,6 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { BROWSE_HREFS, BrowseMegaMenu } from "@/components/browse/BrowseMegaMenu";
 
 const navItems = [
   { label: "SEARCH", href: "/search" },
@@ -47,6 +48,7 @@ export function Navbar() {
   const { data: session } = useSession();
 
   const isActive = (href: string) => pathname === href;
+  const isBrowseActive = BROWSE_HREFS.some((href) => pathname.startsWith(href));
   const isAuthed = Boolean(session);
 
   const avatarUrl = session?.linked_providers?.find((p) => p.avatar_url)?.avatar_url;
@@ -114,6 +116,24 @@ export function Navbar() {
               </Link>
             )
           )}
+
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              className={`flex items-center gap-1 px-3 py-1.5 font-mono text-sm font-semibold tracking-wider transition-colors focus:outline-none ${
+                isBrowseActive ? "text-primary" : "text-foreground/90 hover:text-primary"
+              }`}
+              aria-label="Browse menu"
+            >
+              BROWSE
+              <ChevronDown className="h-3 w-3" strokeWidth={2.5} />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="start"
+              className="w-md rounded-none border-2 border-border bg-popover p-0"
+            >
+              <BrowseMegaMenu />
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         <div className="hidden md:flex items-center gap-3 ml-auto">
@@ -238,6 +258,12 @@ export function Navbar() {
                 </Link>
               )
             )}
+            <div className="mt-2 border-t border-border pt-3">
+              <div className="px-3 pb-2 font-mono text-xs uppercase tracking-widest text-muted-foreground/70">
+                Browse
+              </div>
+              <BrowseMegaMenu onNavigate={() => setMobileOpen(false)} />
+            </div>
             {isAuthed ? (
               <button
                 type="button"
