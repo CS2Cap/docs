@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 export const BROWSE_HREFS = [
+  "/browse",
   "/weapons",
   "/knives",
   "/gloves",
