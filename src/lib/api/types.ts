@@ -526,6 +526,8 @@ export interface WebSearchItem {
 export interface WebSearchFacetBucket {
   value: string;
   count: number;
+  // Hex color (without leading "#"), only populated for rarity_name buckets.
+  color?: string;
 }
 
 export interface WebSearchFacets {

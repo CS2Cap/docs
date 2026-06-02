@@ -15,7 +15,9 @@ const cspDirectives = [
   // 'unsafe-inline' covers React inline style attributes (Recharts) + the chart <style> block.
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' data: https://fonts.gstatic.com",
-  "img-src 'self' data: blob: https://cdn.cs2c.app https://community.akamai.steamstatic.com",
+  // Avatar hosts for linked OAuth providers (rendered in the navbar): Steam
+  // (`avatarfull`), Google (`picture`), Discord (CDN avatar URL).
+  "img-src 'self' data: blob: https://cdn.cs2c.app https://community.akamai.steamstatic.com https://avatars.steamstatic.com https://avatars.akamai.steamstatic.com https://*.googleusercontent.com https://cdn.discordapp.com",
   // e.cs2cap.com is the PostHog reverse proxy (api_host) that ingests analytics.
   // analytics.ahrefs.com is where the Ahrefs tag beacons pageview data.
   "connect-src 'self' https://api.cs2c.app https://cdn.jsdelivr.net https://e.cs2cap.com https://analytics.ahrefs.com",
