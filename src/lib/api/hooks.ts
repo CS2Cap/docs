@@ -24,6 +24,7 @@ import type {
   WebhookEndpointsResponse,
   WebhookUpdateRequest,
 } from "./types";
+import type { BrowseNavData } from "@/lib/browse/nav-types";
 
 export const queryKeys = {
   viewer: ["viewer"] as const,
@@ -42,7 +43,21 @@ export const queryKeys = {
   inventory: (steamId: string | null) => ["inventory", steamId] as const,
   itemSearch: (query: string) => ["item-search", query] as const,
   item: (itemId: number | null) => ["item", itemId] as const,
+  browseNav: ["browse-nav"] as const,
 };
+
+export function useBrowseNav(enabled: boolean) {
+  return useQuery<BrowseNavData>({
+    queryKey: queryKeys.browseNav,
+    queryFn: async () => {
+      const res = await fetch("/api/browse-nav");
+      if (!res.ok) throw new Error("Failed to load browse nav");
+      return (await res.json()) as BrowseNavData;
+    },
+    enabled,
+    staleTime: 60 * 60_000, // 1h — catalog changes at most daily
+  });
+}
 
 export function useViewer() {
   return useQuery<ViewerResponse>({

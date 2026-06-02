@@ -30,6 +30,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { BROWSE_HREFS, BrowseMegaMenu } from "@/components/browse/BrowseMegaMenu";
+import { BrowseMegaMenuDesktop } from "@/components/browse/BrowseMegaMenuDesktop";
 
 const navItems = [
   { label: "SEARCH", href: "/search" },
@@ -148,9 +149,9 @@ export function Navbar() {
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="start"
-              className="w-md rounded-none border-2 border-border bg-popover p-0"
+              className="w-[min(900px,calc(100vw-2rem))] rounded-none border-2 border-border bg-popover p-0"
             >
-              <BrowseMegaMenu />
+              <BrowseMegaMenuDesktop />
             </DropdownMenuContent>
           </DropdownMenu>
 
