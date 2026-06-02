@@ -96,7 +96,9 @@ export interface ItemOut {
   def_index?: string;
   paint_index?: number;
   collection?: string;
+  collection_image?: string | null;
   crates?: string[];
+  crates_images?: (string | null)[];
   rarity_name?: string;
   rarity_color?: string;
   style_name?: string;
