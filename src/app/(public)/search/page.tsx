@@ -666,7 +666,12 @@ function FacetList({
               >
                 X
               </span>
-              <span className="truncate">{bucket.value}</span>
+              <span
+                className="truncate"
+                style={bucket.color ? { color: `#${bucket.color}` } : undefined}
+              >
+                {bucket.value}
+              </span>
               <span className="text-muted-foreground/80">{bucket.count.toLocaleString()}</span>
             </Link>
           );
@@ -907,7 +912,7 @@ function SearchResultsTable({
       <div className="mb-3 flex flex-col gap-2 terminal-panel px-3 py-2 md:flex-row md:items-center md:justify-between">
         <div>
           <div className="font-mono text-xs font-bold tracking-widest text-primary">
-            {totalDisplay} VARIANTS
+            {totalDisplay} ITEMS
           </div>
           <div className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
             Showing {resultWindow(data)} · page {currentPage} / {totalPages}
