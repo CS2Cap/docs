@@ -7,10 +7,12 @@ import {
   type DetailResult,
   type GroupSummary,
   type WeaponSubtype,
+  WEAPON_SUBTYPES,
   dedupToCards,
   resolveBySlug,
   slugifyName,
 } from "./taxonomy";
+import type { BrowseNavData, BrowseNavItem } from "./nav-types";
 
 interface NamedGroup {
   name: string;
@@ -182,5 +184,36 @@ export function baseDetail(ix: BrowseIndex, slug: string): DetailResult | null {
     subtitle: b.subtype || null,
     count: skins.length,
     skins,
+  };
+}
+
+// ── Browse-nav payload (mega-menu) ────────────────────────────────────────────
+
+const NAV_CAP = 16;
+
+function toNavItems(groups: GroupSummary[], base: string): BrowseNavItem[] {
+  return groups.slice(0, NAV_CAP).map((g) => ({
+    name: g.name,
+    href: `${base}/${g.slug}`,
+    image: g.image,
+  }));
+}
+
+// Compact catalog slice for the BROWSE mega-menu. Each list capped at NAV_CAP;
+// the full set lives behind the menu's "View all" links.
+export function buildBrowseNav(ix: BrowseIndex): BrowseNavData {
+  const weapons = {} as Record<WeaponSubtype, BrowseNavItem[]>;
+  for (const subtype of WEAPON_SUBTYPES) {
+    weapons[subtype] = toNavItems(listWeapons(ix, subtype), "/weapons");
+  }
+  return {
+    weapons,
+    knives: toNavItems(listKnives(ix), "/knives"),
+    gloves: toNavItems(listGloves(ix), "/gloves"),
+    agents: listAgentGroups(ix)
+      .slice(0, NAV_CAP)
+      .map((g) => ({ name: g.name, href: "/agents", image: g.image })),
+    cases: toNavItems(listCases(ix), "/cases"),
+    collections: toNavItems(listCollections(ix), "/collections"),
   };
 }
