@@ -160,6 +160,41 @@ export function dedupToCards(
   return cards;
 }
 
+// ── Rarity grouping ───────────────────────────────────────────────────────────
+
+export interface RarityGroup {
+  rarityName: string | null;
+  rarityColor: string | null;
+  skins: SkinCard[];
+}
+
+// True for knife & glove cards (the "rare special" items in a case), detected
+// via the up-link baseHref builds for those subtypes.
+export function isSpecialCard(card: SkinCard): boolean {
+  return (
+    card.weaponHref?.startsWith("/knives/") === true ||
+    card.weaponHref?.startsWith("/gloves/") === true
+  );
+}
+
+// Bucket cards by rarity, rarest group first. Card order within a group is
+// preserved (callers pass cards already sorted by dedupToCards).
+export function groupByRarity(cards: SkinCard[]): RarityGroup[] {
+  const groups = new Map<string, RarityGroup>();
+  for (const card of cards) {
+    const key = card.rarityName ?? "";
+    let g = groups.get(key);
+    if (!g) {
+      g = { rarityName: card.rarityName, rarityColor: card.rarityColor, skins: [] };
+      groups.set(key, g);
+    }
+    g.skins.push(card);
+  }
+  return [...groups.values()].sort(
+    (a, b) => rarityRank(b.rarityName) - rarityRank(a.rarityName),
+  );
+}
+
 function pickRepresentative(variants: ItemOut[]): ItemOut {
   return [...variants].sort((a, b) => {
     const stA = a.is_stattrak || a.is_souvenir ? 1 : 0;
