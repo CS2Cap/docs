@@ -3,6 +3,7 @@ import "server-only";
 import { NextRequest, NextResponse } from "next/server";
 import { API_BASE_URL } from "@/lib/api/config";
 import { setCachedBidsSnapshot } from "@/lib/blob-snapshot-cache";
+import { groupNdjsonByItemId } from "@/lib/ndjson";
 import type { BuyOrderItem } from "@/lib/api/types";
 
 export const dynamic = "force-dynamic";
@@ -43,13 +44,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ ok: false, reason: `upstream ${response.status}` }, { status: 502 });
     }
 
-    const text = await response.text();
-    const items = text.trim().split("\n").filter(Boolean).map((l) => JSON.parse(l) as BuyOrderItem);
-
-    const byItemId: Record<number, BuyOrderItem[]> = {};
-    for (const item of items) {
-      (byItemId[item.item_id] ??= []).push(item);
-    }
+    const { byItemId, count } = await groupNdjsonByItemId<BuyOrderItem>(response);
 
     const snapshot = { byItemId, timestamp: new Date().toISOString() };
     const stored = await setCachedBidsSnapshot(snapshot);
@@ -57,7 +52,7 @@ export async function GET(request: NextRequest) {
     console.log(JSON.stringify({
       event: "cron.prewarm_bids_snapshot.completed",
       upstream_status: upstreamStatus,
-      item_count: items.length,
+      item_count: count,
       unique_items: Object.keys(byItemId).length,
       stored,
       duration_ms: Date.now() - startedAt,
@@ -65,7 +60,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       ok: stored,
-      item_count: items.length,
+      item_count: count,
       unique_items: Object.keys(byItemId).length,
       timestamp: snapshot.timestamp,
       duration_ms: Date.now() - startedAt,
