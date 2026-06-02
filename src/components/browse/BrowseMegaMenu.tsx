@@ -3,9 +3,11 @@ import Link from "next/link";
 export const BROWSE_HREFS = [
   "/browse",
   "/weapons",
+  "/gear",
   "/knives",
   "/gloves",
   "/agents",
+  "/containers",
   "/collections",
   "/cases",
 ];
@@ -24,7 +26,7 @@ const COLUMNS: Array<{ heading: string; href: string; links: Array<{ label: stri
   },
   {
     heading: "Gear",
-    href: "/knives",
+    href: "/gear",
     links: [
       { label: "Knives", href: "/knives" },
       { label: "Gloves", href: "/gloves" },
@@ -33,7 +35,7 @@ const COLUMNS: Array<{ heading: string; href: string; links: Array<{ label: stri
   },
   {
     heading: "Containers",
-    href: "/collections",
+    href: "/containers",
     links: [
       { label: "Collections", href: "/collections" },
       { label: "Cases", href: "/cases" },
