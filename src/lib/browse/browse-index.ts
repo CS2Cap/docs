@@ -7,7 +7,6 @@ import {
   type DetailResult,
   type GroupSummary,
   type WeaponSubtype,
-  baseHref,
   dedupToCards,
   resolveBySlug,
   slugifyName,
