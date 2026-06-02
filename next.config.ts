@@ -116,6 +116,27 @@ const nextConfig: NextConfig = {
         headers: [...productionHeaders, ...baseHeaders],
       },
       {
+        // /search is dynamically rendered (reads searchParams) but fetches its
+        // data anonymously (getSearchPageData → anon: true), so every visitor
+        // gets identical HTML for a given query and the response sets no cookies.
+        // Cache it on Vercel's Edge so bot/crawler traffic is absorbed by the CDN
+        // instead of invoking the function per request. We set the CDN-specific
+        // headers rather than plain Cache-Control: Next.js overwrites
+        // `Cache-Control` on dynamically-rendered pages, but `Vercel-CDN-Cache-Control`
+        // / `CDN-Cache-Control` are left untouched and take precedence for the Edge cache.
+        source: "/search",
+        headers: [
+          {
+            key: "Vercel-CDN-Cache-Control",
+            value: "public, s-maxage=60, stale-while-revalidate=300",
+          },
+          {
+            key: "CDN-Cache-Control",
+            value: "public, s-maxage=60, stale-while-revalidate=300",
+          },
+        ],
+      },
+      {
         source: "/login",
         headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
       },
