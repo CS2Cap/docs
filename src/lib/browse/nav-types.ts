@@ -15,4 +15,11 @@ export interface BrowseNavData {
   agents: BrowseNavItem[];
   cases: BrowseNavItem[];
   collections: BrowseNavItem[];
+  stickers: BrowseNavItem[];
+  slabs: BrowseNavItem[];
+  charms: BrowseNavItem[];
+  graffiti: BrowseNavItem[];
+  musicKits: BrowseNavItem[];
+  patches: BrowseNavItem[];
+  collectibles: BrowseNavItem[];
 }

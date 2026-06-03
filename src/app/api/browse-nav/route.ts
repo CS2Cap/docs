@@ -11,6 +11,13 @@ const EMPTY: BrowseNavData = {
   agents: [],
   cases: [],
   collections: [],
+  stickers: [],
+  slabs: [],
+  charms: [],
+  graffiti: [],
+  musicKits: [],
+  patches: [],
+  collectibles: [],
 };
 
 export async function GET() {

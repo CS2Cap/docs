@@ -345,6 +345,14 @@ function toNavItems(groups: GroupSummary[], base: string): BrowseNavItem[] {
   }));
 }
 
+function flatNavItems(cards: SkinCard[], href: string): BrowseNavItem[] {
+  return cards.slice(0, NAV_CAP).map((c) => ({
+    name: c.skinName ?? c.baseName,
+    href,
+    image: c.image,
+  }));
+}
+
 // Compact catalog slice for the BROWSE mega-menu. Each list capped at NAV_CAP;
 // the full set lives behind the menu's "View all" links.
 export function buildBrowseNav(ix: BrowseIndex): BrowseNavData {
@@ -361,5 +369,15 @@ export function buildBrowseNav(ix: BrowseIndex): BrowseNavData {
       .map((g) => ({ name: g.name, href: "/agents", image: g.image })),
     cases: toNavItems(listCases(ix), "/cases"),
     collections: toNavItems(listCollections(ix), "/collections"),
+    stickers: toNavItems(listStickerGroups(ix), "/stickers"),
+    slabs: toNavItems(listSlabGroups(ix), "/sticker-slabs"),
+    charms: toNavItems(listCharmGroups(ix), "/charms"),
+    graffiti: toNavItems(listGraffitiGroups(ix), "/graffiti"),
+    musicKits: flatNavItems(musicKitCards(ix), "/music-kits"),
+    patches: flatNavItems(patchSections(ix).flatMap((s) => s.skins), "/patches"),
+    collectibles: flatNavItems(
+      collectibleSections(ix).flatMap((s) => s.skins),
+      "/collectibles",
+    ),
   };
 }
