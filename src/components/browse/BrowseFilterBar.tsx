@@ -85,53 +85,6 @@ export function BrowseFilterBar({
           })}
         </div>
       )}
-
-      {facets.wears.length > 0 && (
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span className="mr-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground/70">
-            Wear
-          </span>
-          {facets.wears.map((w) => (
-            <button
-              key={w}
-              type="button"
-              aria-pressed={filters.wears.has(w)}
-              onClick={() => setFilters({ ...filters, wears: toggle(filters.wears, w) })}
-              className={chipClass(filters.wears.has(w))}
-            >
-              {w}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {(facets.hasStatTrak || facets.hasSouvenir) && (
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span className="mr-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground/70">
-            Special
-          </span>
-          {facets.hasStatTrak && (
-            <button
-              type="button"
-              aria-pressed={filters.stattrakOnly}
-              onClick={() => setFilters({ ...filters, stattrakOnly: !filters.stattrakOnly })}
-              className={chipClass(filters.stattrakOnly)}
-            >
-              StatTrak™
-            </button>
-          )}
-          {facets.hasSouvenir && (
-            <button
-              type="button"
-              aria-pressed={filters.souvenirOnly}
-              onClick={() => setFilters({ ...filters, souvenirOnly: !filters.souvenirOnly })}
-              className={chipClass(filters.souvenirOnly)}
-            >
-              Souvenir
-            </button>
-          )}
-        </div>
-      )}
     </div>
   );
 }
