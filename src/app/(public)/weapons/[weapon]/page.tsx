@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { FooterSection } from "@/components/FooterSection";
-import { SkinGrid } from "@/components/browse/SkinGrid";
+import { FilterableSkinGrid } from "@/components/browse/FilterableSkinGrid";
 import { baseDetail, listWeapons, loadBrowseIndex } from "@/lib/browse/browse-index";
 import { WEAPON_SUBTYPES } from "@/lib/browse/taxonomy";
 
@@ -44,7 +44,7 @@ export default async function WeaponDetailPage({
       <main className="container py-8">
         <h1 className="mb-1 font-mono text-2xl font-bold">{detail.title}</h1>
         <p className="mb-6 font-mono text-sm text-muted-foreground">{detail.count} skins</p>
-        <SkinGrid skins={detail.skins} />
+        <FilterableSkinGrid skins={detail.skins} />
       </main>
       <FooterSection />
     </>

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { FooterSection } from "@/components/FooterSection";
-import { SkinGrid } from "@/components/browse/SkinGrid";
+import { FilterableSkinGrid } from "@/components/browse/FilterableSkinGrid";
 import { baseDetail, listGloves, loadBrowseIndex } from "@/lib/browse/browse-index";
 
 export const revalidate = 86400;
@@ -42,7 +42,7 @@ export default async function GloveDetailPage({
       <main className="container py-8">
         <h1 className="mb-1 font-mono text-2xl font-bold">{detail.title}</h1>
         <p className="mb-6 font-mono text-sm text-muted-foreground">{detail.count} finishes</p>
-        <SkinGrid skins={detail.skins} />
+        <FilterableSkinGrid skins={detail.skins} />
       </main>
       <FooterSection />
     </>

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { FooterSection } from "@/components/FooterSection";
-import { RaritySections } from "@/components/browse/RaritySections";
+import { FilterableRaritySections } from "@/components/browse/FilterableRaritySections";
 import { caseDetail, listCases, loadBrowseIndex } from "@/lib/browse/browse-index";
-import { groupByRarity, isSpecialCard } from "@/lib/browse/taxonomy";
+import { isSpecialCard } from "@/lib/browse/taxonomy";
 
 export const revalidate = 86400;
 
@@ -49,15 +49,7 @@ export default async function CaseDetailPage({
         <p className="mb-8 font-mono text-sm text-muted-foreground">
           {detail.subtitle} · {detail.count} skins
         </p>
-        <div className="flex flex-col gap-10">
-          <RaritySections groups={groupByRarity(skins)} />
-          {specials.length > 0 && (
-            <section>
-              <h2 className="mb-4 font-mono text-lg font-bold">Knives &amp; Gloves</h2>
-              <RaritySections groups={groupByRarity(specials)} />
-            </section>
-          )}
-        </div>
+        <FilterableRaritySections skins={skins} specials={specials} />
       </main>
       <FooterSection />
     </>

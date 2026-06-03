@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { FooterSection } from "@/components/FooterSection";
-import { SkinGrid } from "@/components/browse/SkinGrid";
+import { FilterableSkinGrid } from "@/components/browse/FilterableSkinGrid";
 import { collectionDetail, listCollections, loadBrowseIndex } from "@/lib/browse/browse-index";
 
 export const revalidate = 86400;
@@ -44,7 +44,7 @@ export default async function CollectionDetailPage({
         <p className="mb-6 font-mono text-sm text-muted-foreground">
           {detail.subtitle} · {detail.count} skins
         </p>
-        <SkinGrid skins={detail.skins} />
+        <FilterableSkinGrid skins={detail.skins} />
       </main>
       <FooterSection />
     </>

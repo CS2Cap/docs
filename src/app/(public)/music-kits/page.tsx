@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { FooterSection } from "@/components/FooterSection";
-import { SkinGrid } from "@/components/browse/SkinGrid";
+import { FilterableSkinGrid } from "@/components/browse/FilterableSkinGrid";
 import { musicKitCards, loadBrowseIndex } from "@/lib/browse/browse-index";
 
 export const revalidate = 86400;
@@ -20,7 +20,7 @@ export default async function MusicKitsPage() {
       <main className="container py-8">
         <h1 className="mb-1 font-mono text-2xl font-bold">Music Kits</h1>
         <p className="mb-6 font-mono text-sm text-muted-foreground">{kits.length} music kits</p>
-        <SkinGrid skins={kits} />
+        <FilterableSkinGrid skins={kits} />
       </main>
       <FooterSection />
     </>
