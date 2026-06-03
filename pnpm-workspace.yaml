@@ -4,7 +4,7 @@ allowBuilds:
   sharp: true
   unrs-resolver: true
 minimumReleaseAgeExclude:
-  - '@posthog/core@1.29.12'
-  - '@posthog/types@1.376.3'
-  - posthog-js@1.376.3
+  - '@posthog/core@1.30.4'
+  - '@posthog/types@1.379.1'
+  - posthog-js@1.379.1
   - lucide-react@1.17.0
