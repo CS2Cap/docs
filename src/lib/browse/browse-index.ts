@@ -99,6 +99,20 @@ function buildIndex(snap: ItemsSnapshotData): BrowseIndex {
   };
 
   for (const item of snap.items) {
+    // Crates and collections are cross-cutting: stickers, patches, charms,
+    // agents, etc. all belong to cases/capsules (crates) and named collections,
+    // not just weapons. Index them for every item so /cases/<slug> and
+    // /collections/<slug> resolve for all item types.
+    if (item.collection) {
+      upsertNamed(collections, item.collection, firstImage(item.collection_image), item);
+    }
+    const crates = item.crates ?? [];
+    const crateImages = item.crates_images ?? [];
+    for (let i = 0; i < crates.length; i++) {
+      const crate = crates[i];
+      if (crate) upsertNamed(cases, crate, firstImage(crateImages[i]), item);
+    }
+
     if (item.item_type === "Weapon" && item.base_name) {
       let bg = bases.get(item.base_name);
       if (!bg) {
@@ -106,16 +120,6 @@ function buildIndex(snap: ItemsSnapshotData): BrowseIndex {
         bases.set(item.base_name, bg);
       }
       bg.items.push(item);
-
-      if (item.collection) {
-        upsertNamed(collections, item.collection, firstImage(item.collection_image), item);
-      }
-      const crates = item.crates ?? [];
-      const crateImages = item.crates_images ?? [];
-      for (let i = 0; i < crates.length; i++) {
-        const crate = crates[i];
-        if (crate) upsertNamed(cases, crate, firstImage(crateImages[i]), item);
-      }
     } else if (item.item_type === "Agent" && item.collection) {
       upsertNamed(agents, item.collection, firstImage(item.collection_image), item);
     } else if (item.item_type === "Sticker") {
