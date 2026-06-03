@@ -6,11 +6,13 @@ export function GroupCard({
   name,
   image,
   count,
+  noun = "skin",
 }: {
   href: string;
   name: string;
   image: string | null;
   count: number;
+  noun?: string;
 }) {
   return (
     <Link
@@ -35,7 +37,7 @@ export function GroupCard({
           {name}
         </span>
         <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-          {count} {count === 1 ? "skin" : "skins"}
+          {count} {count === 1 ? noun : `${noun}s`}
         </span>
       </div>
     </Link>

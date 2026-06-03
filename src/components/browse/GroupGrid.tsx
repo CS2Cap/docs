@@ -4,9 +4,11 @@ import { GroupCard } from "./GroupCard";
 export function GroupGrid({
   groups,
   hrefBase,
+  noun,
 }: {
   groups: GroupSummary[];
   hrefBase: string; // e.g. "/collections"
+  noun?: string;
 }) {
   if (groups.length === 0) {
     return <p className="font-mono text-sm text-muted-foreground">Nothing here yet.</p>;
@@ -20,6 +22,7 @@ export function GroupGrid({
           name={g.name}
           image={g.image}
           count={g.count}
+          noun={noun}
         />
       ))}
     </div>
