@@ -147,13 +147,31 @@ Flat pages (`/music-kits`, `/patches`, `/collectibles`) mirror `/agents/page.tsx
 load index, render one or more `SkinGrid`s (music kits = single grid; patches /
 collectibles = one `<section>` per subtype).
 
-## Navbar & hub
+## Navbar & hub (matches the current data-driven mega-menu)
 
-- `BrowseMegaMenu`: add a 4th column "Stickers & More" with links Stickers,
-  Sticker Slabs, Charms, Graffiti, Music Kits, Patches, Collectibles. Widen
-  `DropdownMenuContent` (`grid-cols-3` → `grid-cols-4`, `w-md` → `w-3xl` =
-  48rem, which fits 4 columns). Add the 7 new paths to `BROWSE_HREFS`.
-- `/browse` hub: add the 7 categories to its `CATEGORIES` list.
+The desktop menu is **data-driven**: `buildBrowseNav(ix)` → `BrowseNavData`
+(client-safe `nav-types.ts`) → cached `/api/browse-nav` → `useBrowseNav` hook →
+`BrowseMegaMenuDesktop` hover-rail (a `RAIL` of department headings, each row a
+category whose hovered panel shows capped thumbnails). The mobile menu is the
+static 3-column `BrowseMegaMenu`. Both must be extended.
+
+- **`nav-types.ts`**: extend `BrowseNavData` with `stickers`, `slabs`, `charms`,
+  `graffiti`, `musicKits`, `patches`, `collectibles: BrowseNavItem[]`.
+- **`buildBrowseNav`**: populate the 7 new lists (capped at `NAV_CAP`). The four
+  grouped categories use `toNavItems(listStickerGroups(ix), "/stickers")` etc.;
+  the three flat categories map their deduped cards to nav items whose `href` is
+  the category page (e.g. all music-kit nav items → `/music-kits`), mirroring how
+  agents are handled today.
+- **`/api/browse-nav` route**: add the 7 empty lists to its `EMPTY` fallback.
+- **`BrowseMegaMenuDesktop`**: add a 4th `RAIL` department — heading
+  "Stickers & More" → `/extras` hub — with rows Stickers, Sticker Slabs, Charms,
+  Graffiti, Music Kits, Patches, Collectibles; extend `CategoryKey`, `VIEW_ALL`,
+  and `itemsFor` accordingly.
+- **`BrowseMegaMenu` (mobile)**: add a 4th column "Stickers & More" with the 7
+  links; add the 7 routes + `/extras` to `BROWSE_HREFS`.
+- **Hubs**: add a new `/extras` hub page (mirroring `/gear` and `/containers`)
+  listing the 7 categories, and add the 7 categories to the `/browse` hub's
+  `CATEGORIES` list.
 
 ## Rendering & caching
 
