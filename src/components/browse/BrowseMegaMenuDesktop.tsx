@@ -16,12 +16,24 @@ type CategoryKey =
   | "Gloves"
   | "Agents"
   | "Cases"
-  | "Collections";
+  | "Collections"
+  | "Stickers"
+  | "Sticker Slabs"
+  | "Charms"
+  | "Graffiti"
+  | "Music Kits"
+  | "Patches"
+  | "Collectibles";
 
 const RAIL: Array<{ heading: string; href: string; rows: CategoryKey[] }> = [
   { heading: "Weapons", href: "/weapons", rows: ["Pistols", "Rifles", "SMGs", "Heavy", "Equipment"] },
   { heading: "Gear", href: "/gear", rows: ["Knives", "Gloves", "Agents"] },
   { heading: "Containers", href: "/containers", rows: ["Cases", "Collections"] },
+  {
+    heading: "Stickers & More",
+    href: "/extras",
+    rows: ["Stickers", "Sticker Slabs", "Charms", "Graffiti", "Music Kits", "Patches", "Collectibles"],
+  },
 ];
 
 const VIEW_ALL: Record<CategoryKey, { href: string; label: string }> = {
@@ -35,6 +47,13 @@ const VIEW_ALL: Record<CategoryKey, { href: string; label: string }> = {
   Agents: { href: "/agents", label: "View all agents" },
   Cases: { href: "/cases", label: "View all cases" },
   Collections: { href: "/collections", label: "View all collections" },
+  Stickers: { href: "/stickers", label: "View all stickers" },
+  "Sticker Slabs": { href: "/sticker-slabs", label: "View all sticker slabs" },
+  Charms: { href: "/charms", label: "View all charms" },
+  Graffiti: { href: "/graffiti", label: "View all graffiti" },
+  "Music Kits": { href: "/music-kits", label: "View all music kits" },
+  Patches: { href: "/patches", label: "View all patches" },
+  Collectibles: { href: "/collectibles", label: "View all collectibles" },
 };
 
 function itemsFor(data: BrowseNavData | undefined, cat: CategoryKey): BrowseNavItem[] {
@@ -56,6 +75,20 @@ function itemsFor(data: BrowseNavData | undefined, cat: CategoryKey): BrowseNavI
       return data.cases;
     case "Collections":
       return data.collections;
+    case "Stickers":
+      return data.stickers;
+    case "Sticker Slabs":
+      return data.slabs;
+    case "Charms":
+      return data.charms;
+    case "Graffiti":
+      return data.graffiti;
+    case "Music Kits":
+      return data.musicKits;
+    case "Patches":
+      return data.patches;
+    case "Collectibles":
+      return data.collectibles;
   }
 }
 
