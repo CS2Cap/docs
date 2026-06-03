@@ -6,7 +6,8 @@ export const revalidate = 86400;
 
 export const metadata: Metadata = {
   title: "Browse CS2 Items by Category",
-  description: "Browse Counter-Strike 2 weapons, knives, gloves, agents, collections, and cases.",
+  description:
+    "Browse Counter-Strike 2 weapons, knives, gloves, agents, collections, cases, stickers, charms, graffiti, and more.",
 };
 
 const CATEGORIES = [

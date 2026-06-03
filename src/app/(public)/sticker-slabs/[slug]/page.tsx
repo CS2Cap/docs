@@ -22,7 +22,7 @@ export async function generateMetadata({
   const detail = ix ? slabGroupDetail(ix, slug) : null;
   if (!detail) return { title: "Sticker Slabs Not Found" };
   return {
-    title: `${detail.title} Sticker Slabs — CS2`,
+    title: `${detail.title} — CS2 Sticker Slabs`,
     description: `All ${detail.count} sticker slabs in ${detail.title}.`,
   };
 }
