@@ -10,6 +10,14 @@ export const BROWSE_HREFS = [
   "/containers",
   "/collections",
   "/cases",
+  "/extras",
+  "/stickers",
+  "/sticker-slabs",
+  "/charms",
+  "/graffiti",
+  "/music-kits",
+  "/patches",
+  "/collectibles",
 ];
 
 const COLUMNS: Array<{ heading: string; href: string; links: Array<{ label: string; href: string }> }> = [
@@ -41,11 +49,24 @@ const COLUMNS: Array<{ heading: string; href: string; links: Array<{ label: stri
       { label: "Cases", href: "/cases" },
     ],
   },
+  {
+    heading: "Stickers & More",
+    href: "/extras",
+    links: [
+      { label: "Stickers", href: "/stickers" },
+      { label: "Sticker Slabs", href: "/sticker-slabs" },
+      { label: "Charms", href: "/charms" },
+      { label: "Graffiti", href: "/graffiti" },
+      { label: "Music Kits", href: "/music-kits" },
+      { label: "Patches", href: "/patches" },
+      { label: "Collectibles", href: "/collectibles" },
+    ],
+  },
 ];
 
 export function BrowseMegaMenu({ onNavigate }: { onNavigate?: () => void }) {
   return (
-    <div className="grid grid-cols-3 gap-6 p-4">
+    <div className="grid grid-cols-2 gap-6 p-4">
       {COLUMNS.map((col) => (
         <div key={col.heading} className="flex flex-col gap-2">
           <Link
