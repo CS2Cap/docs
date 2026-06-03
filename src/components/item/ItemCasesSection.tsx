@@ -1,9 +1,12 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import type { ItemOut } from "@/lib/api/types";
+import { slugifyMarketHashName } from "@/lib/seo/itemSlug";
 
 export function ItemCasesSection({ item }: { item: ItemOut }) {
   const crates = item.crates ?? [];
+  const cratesImages = item.crates_images ?? [];
 
   if (crates.length === 0) {
     return null;
@@ -19,28 +22,36 @@ export function ItemCasesSection({ item }: { item: ItemOut }) {
       </div>
       <div
         className={
-          crates.length > 1
-            ? "grid gap-px bg-border md:grid-cols-2 xl:grid-cols-3"
-            : "bg-card"
+          crates.length > 1 ? "grid gap-px bg-border sm:grid-cols-2" : "bg-card"
         }
       >
-        {crates.map((crate) => (
-          <Link
-            key={crate}
-            href={`/search?q=${encodeURIComponent(crate)}`}
-            className="flex items-center justify-between gap-3 bg-card p-4 transition-colors hover:bg-secondary/30"
-          >
-            <div className="min-w-0">
-              <div className="font-mono text-xs tracking-widest text-muted-foreground">
-                CONTAINER
-              </div>
-              <div className="mt-1 truncate font-mono text-xs font-bold text-foreground">
+        {crates.map((crate, index) => {
+          const crateImage = cratesImages[index];
+          return (
+            <Link
+              key={crate}
+              href={`/cases/${slugifyMarketHashName(crate)}`}
+              title={crate}
+              className="group flex items-center gap-4 bg-card px-4 py-3.5 transition-colors hover:bg-secondary/30"
+            >
+              {crateImage ? (
+                <Image
+                  src={crateImage}
+                  alt={crate}
+                  width={96}
+                  height={72}
+                  className="h-12 w-16 shrink-0 object-contain transition-transform duration-200 group-hover:scale-105"
+                />
+              ) : (
+                <div className="h-12 w-16 shrink-0" />
+              )}
+              <span className="min-w-0 flex-1 font-mono text-xs font-bold leading-snug text-foreground line-clamp-2 transition-colors group-hover:text-primary">
                 {crate}
-              </div>
-            </div>
-            <ChevronRight className="h-3 w-3 shrink-0 text-muted-foreground" />
-          </Link>
-        ))}
+              </span>
+              <ChevronRight className="h-3 w-3 shrink-0 text-muted-foreground transition-colors group-hover:text-primary" />
+            </Link>
+          );
+        })}
       </div>
     </div>
   );

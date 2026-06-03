@@ -346,14 +346,21 @@ function buildFacets(candidates: Candidate[], tokens: string[], params: Snapshot
   for (const field of FACET_FIELDS) {
     const { rows } = applyFilters(candidates, { tokens, params, excludeFacet: field });
     const counts = new Map<string, number>();
+    const colors = new Map<string, string>();
     for (const row of rows) {
       const value = facetValue(row, field);
       if (!value) continue;
       counts.set(value, (counts.get(value) ?? 0) + 1);
+      if (field === "rarity_name" && row.catalog?.rarity_color && !colors.has(value)) {
+        colors.set(value, row.catalog.rarity_color);
+      }
     }
     result[field] = [...counts.entries()]
       .sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0))
-      .map(([value, count]) => ({ value, count }));
+      .map(([value, count]) => {
+        const color = colors.get(value);
+        return color ? { value, count, color } : { value, count };
+      });
   }
   return result as WebSearchFacets;
 }

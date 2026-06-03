@@ -98,19 +98,24 @@ const readInflights = new Map<string, Promise<unknown>>();
 
 async function readBlob<T>(pathname: string): Promise<{ data: T; uploadedAt: number } | null> {
   if (!process.env.BLOB_READ_WRITE_TOKEN) return null;
-  try {
-    const { blobs } = await list({ prefix: pathname, limit: 1 });
-    const blob = blobs.find((b) => b.pathname === pathname);
-    if (!blob) return null;
-    const res = await fetch(blob.url, { cache: "no-store", signal: AbortSignal.timeout(15000) });
-    if (!res.ok) return null;
-    const data = JSON.parse(
-      gunzipSync(Buffer.from(await res.arrayBuffer())).toString("utf8"),
-    ) as T;
-    return { data, uploadedAt: blob.uploadedAt.getTime() };
-  } catch {
-    return null;
+  const MAX_ATTEMPTS = 3;
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    try {
+      const { blobs } = await list({ prefix: pathname, limit: 1 });
+      const blob = blobs.find((b) => b.pathname === pathname);
+      if (!blob) return null; // genuinely absent (e.g. before first prewarm) — not transient
+      const res = await fetch(blob.url, { cache: "no-store", signal: AbortSignal.timeout(15000) });
+      if (!res.ok) throw new Error(`blob fetch failed: ${res.status}`);
+      const data = JSON.parse(
+        gunzipSync(Buffer.from(await res.arrayBuffer())).toString("utf8"),
+      ) as T;
+      return { data, uploadedAt: blob.uploadedAt.getTime() };
+    } catch {
+      if (attempt === MAX_ATTEMPTS) return null;
+      await new Promise((resolve) => setTimeout(resolve, 250 * attempt));
+    }
   }
+  return null;
 }
 
 async function writeBlob<T>(data: T, pathname: string): Promise<boolean> {

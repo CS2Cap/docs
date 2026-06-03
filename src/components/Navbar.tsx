@@ -8,7 +8,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import {
   Menu,
   X,
-  Search,
   LayoutDashboard,
   Eye,
   Bell,
@@ -19,6 +18,8 @@ import {
   Settings,
   LogOut,
   ChevronDown,
+  TrendingUp,
+  Package,
 } from "lucide-react";
 import { useSession, webApi } from "@/lib/api";
 import {
@@ -29,6 +30,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { BROWSE_HREFS, BrowseMegaMenu } from "@/components/browse/BrowseMegaMenu";
+import { BrowseMegaMenuDesktop } from "@/components/browse/BrowseMegaMenuDesktop";
+import { GlobalSearchInput } from "@/components/GlobalSearchInput";
 
 const navItems = [
   { label: "SEARCH", href: "/search" },
@@ -38,8 +42,8 @@ const navItems = [
 ];
 
 const toolsItems = [
-  { label: "MARKET CAP", href: "/cs2-market-cap" },
-  { label: "INVENTORY", href: "/inventory-value" },
+  { label: "MARKET CAP", href: "/cs2-market-cap", icon: TrendingUp },
+  { label: "INVENTORY", href: "/inventory-value", icon: Package },
 ];
 
 const accountMenuItems = [
@@ -60,11 +64,11 @@ export function Navbar() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const { data: session } = useSession();
 
   const isActive = (href: string) => pathname === href;
   const isToolsActive = toolsItems.some((t) => pathname === t.href);
+  const isBrowseActive = BROWSE_HREFS.some((href) => pathname.startsWith(href));
   const isAuthed = Boolean(session);
 
   const avatarUrl = session?.linked_providers?.find((p) => p.avatar_url)?.avatar_url;
@@ -80,14 +84,6 @@ export function Navbar() {
     .slice(0, 2)
     .join("")
     .toUpperCase();
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery("");
-    }
-  };
 
   const handleLogout = async () => {
     try {
@@ -110,29 +106,23 @@ export function Navbar() {
         </Link>
 
         <div className="hidden md:flex items-center gap-1">
-          {navItems.map((item) =>
-            item.external ? (
-              <a
-                key={item.label}
-                href={item.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-3 py-1.5 font-mono text-sm font-semibold tracking-wider text-foreground/90 hover:text-primary transition-colors"
-              >
-                {item.label}
-              </a>
-            ) : (
-              <Link
-                key={item.label}
-                href={item.href}
-                className={`px-3 py-1.5 font-mono text-sm font-semibold tracking-wider transition-colors ${
-                  isActive(item.href) ? "text-primary" : "text-foreground/90 hover:text-primary"
-                }`}
-              >
-                {item.label}
-              </Link>
-            )
-          )}
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              className={`flex items-center gap-1 px-3 py-1.5 font-mono text-sm font-semibold tracking-wider transition-colors focus:outline-none ${
+                isBrowseActive ? "text-primary" : "text-foreground/90 hover:text-primary"
+              }`}
+              aria-label="Browse menu"
+            >
+              BROWSE
+              <ChevronDown className="h-3 w-3" strokeWidth={2.5} />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="start"
+              className="w-[min(900px,calc(100vw-2rem))] rounded-none border-2 border-border bg-popover p-0"
+            >
+              <BrowseMegaMenuDesktop />
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <DropdownMenu>
             <DropdownMenuTrigger
@@ -156,27 +146,43 @@ export function Navbar() {
                 >
                   <Link
                     href={item.href}
-                    className="flex w-full cursor-pointer items-center px-3 py-2 font-mono text-xs tracking-wider hover:text-primary focus:text-primary"
+                    className="flex w-full cursor-pointer items-center gap-3 px-3 py-2 font-mono text-xs tracking-wider hover:text-primary focus:text-primary"
                   >
+                    <item.icon className="h-3.5 w-3.5 shrink-0" strokeWidth={1.5} />
                     {item.label}
                   </Link>
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
+
+          {navItems.map((item) =>
+            item.external ? (
+              <a
+                key={item.label}
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3 py-1.5 font-mono text-sm font-semibold tracking-wider text-foreground/90 hover:text-primary transition-colors"
+              >
+                {item.label}
+              </a>
+            ) : (
+              <Link
+                key={item.label}
+                href={item.href}
+                className={`px-3 py-1.5 font-mono text-sm font-semibold tracking-wider transition-colors ${
+                  isActive(item.href) ? "text-primary" : "text-foreground/90 hover:text-primary"
+                }`}
+              >
+                {item.label}
+              </Link>
+            )
+          )}
         </div>
 
         <div className="flex items-center gap-3 ml-auto">
-          <form onSubmit={handleSearch} className="relative hidden md:block">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search items..."
-              className="h-10 w-44 bg-muted/50 border border-border pl-8 pr-3 font-mono text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
-            />
-          </form>
+          <GlobalSearchInput className="hidden w-80 md:block" />
 
           {isAuthed ? (
             <DropdownMenu>
@@ -254,16 +260,7 @@ export function Navbar() {
       {mobileOpen && (
         <div className="md:hidden border-t-2 border-border bg-background">
           <div className="container py-4 flex flex-col gap-2">
-            <form onSubmit={handleSearch} className="relative mb-2">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search items..."
-                className="h-10 w-full bg-muted/50 border border-border pl-8 pr-3 font-mono text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
-              />
-            </form>
+            <GlobalSearchInput className="mb-2" onNavigate={() => setMobileOpen(false)} />
             {navItems.map((item) =>
               item.external ? (
                 <a
@@ -291,6 +288,12 @@ export function Navbar() {
             )}
             <div className="mt-2 border-t border-border pt-3">
               <div className="px-3 pb-2 font-mono text-xs uppercase tracking-widest text-muted-foreground/70">
+                Browse
+              </div>
+              <BrowseMegaMenu onNavigate={() => setMobileOpen(false)} />
+            </div>
+            <div className="mt-2 border-t border-border pt-3">
+              <div className="px-3 pb-2 font-mono text-xs uppercase tracking-widest text-muted-foreground/70">
                 Tools
               </div>
               {toolsItems.map((item) => (
@@ -298,10 +301,11 @@ export function Navbar() {
                   key={item.href}
                   href={item.href}
                   onClick={() => setMobileOpen(false)}
-                  className={`block px-3 py-2 font-mono text-xs tracking-wider ${
+                  className={`flex items-center gap-3 px-3 py-2 font-mono text-xs tracking-wider ${
                     isActive(item.href) ? "text-primary" : "text-muted-foreground"
                   }`}
                 >
+                  <item.icon className="h-3.5 w-3.5 shrink-0" strokeWidth={1.5} />
                   {item.label}
                 </Link>
               ))}

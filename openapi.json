@@ -23806,6 +23806,32 @@
             "description": "Filter by active status"
           },
           {
+            "name": "account_stage",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "inactive",
+                    "oauth_no_email",
+                    "email_unverified",
+                    "verified_no_key",
+                    "api_user_idle",
+                    "api_user_active"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by admin-only account lifecycle segment.",
+              "title": "Account Stage"
+            },
+            "description": "Filter by admin-only account lifecycle segment."
+          },
+          {
             "name": "limit",
             "in": "query",
             "required": false,
@@ -37227,6 +37253,24 @@
             "title": "Requests By Tier",
             "description": "Request counts grouped by subscription tier."
           },
+          "users_by_account_stage": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "propertyNames": {
+              "enum": [
+                "inactive",
+                "oauth_no_email",
+                "email_unverified",
+                "verified_no_key",
+                "api_user_idle",
+                "api_user_active"
+              ]
+            },
+            "type": "object",
+            "title": "Users By Account Stage",
+            "description": "User counts grouped by admin-only account lifecycle segment."
+          },
           "top_endpoints": {
             "items": {
               "additionalProperties": true,
@@ -37250,6 +37294,7 @@
           "total_requests_24h",
           "total_requests_month",
           "requests_by_tier",
+          "users_by_account_stage",
           "top_endpoints",
           "generated_at"
         ],
@@ -37315,6 +37360,19 @@
             "title": "Last Login At",
             "description": "ISO 8601 UTC timestamp of the most recent successful login event."
           },
+          "account_stage": {
+            "type": "string",
+            "enum": [
+              "inactive",
+              "oauth_no_email",
+              "email_unverified",
+              "verified_no_key",
+              "api_user_idle",
+              "api_user_active"
+            ],
+            "title": "Account Stage",
+            "description": "Admin-only account lifecycle segment."
+          },
           "api_key_count": {
             "type": "integer",
             "title": "Api Key Count",
@@ -37335,6 +37393,7 @@
           "is_active",
           "created_at",
           "last_login_at",
+          "account_stage",
           "api_key_count",
           "requests_this_month"
         ],
