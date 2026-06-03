@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { FooterSection } from "@/components/FooterSection";
+import { BrowseUnavailable } from "@/components/browse/BrowseUnavailable";
 import { FilterableSkinGrid } from "@/components/browse/FilterableSkinGrid";
 import { collectionDetail, listCollections, loadBrowseIndex } from "@/lib/browse/browse-index";
 
@@ -34,7 +35,7 @@ export default async function CollectionDetailPage({
 }) {
   const { slug } = await params;
   const ix = await loadBrowseIndex();
-  if (!ix) notFound();
+  if (!ix) return <BrowseUnavailable />;
   const detail = collectionDetail(ix, slug);
   if (!detail) notFound();
   return (

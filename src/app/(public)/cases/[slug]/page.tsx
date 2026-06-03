@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { FooterSection } from "@/components/FooterSection";
+import { BrowseUnavailable } from "@/components/browse/BrowseUnavailable";
 import { FilterableRaritySections } from "@/components/browse/FilterableRaritySections";
 import { caseDetail, listCases, loadBrowseIndex } from "@/lib/browse/browse-index";
 import { isSpecialCard } from "@/lib/browse/taxonomy";
@@ -35,7 +36,7 @@ export default async function CaseDetailPage({
 }) {
   const { slug } = await params;
   const ix = await loadBrowseIndex();
-  if (!ix) notFound();
+  if (!ix) return <BrowseUnavailable />;
   const detail = caseDetail(ix, slug);
   if (!detail) notFound();
 

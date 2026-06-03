@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { FooterSection } from "@/components/FooterSection";
+import { BrowseUnavailable } from "@/components/browse/BrowseUnavailable";
 import { FilterableSkinGrid } from "@/components/browse/FilterableSkinGrid";
 import { baseDetail, listWeapons, loadBrowseIndex } from "@/lib/browse/browse-index";
 import { WEAPON_SUBTYPES } from "@/lib/browse/taxonomy";
@@ -35,7 +36,7 @@ export default async function WeaponDetailPage({
 }) {
   const { weapon } = await params;
   const ix = await loadBrowseIndex();
-  if (!ix) notFound();
+  if (!ix) return <BrowseUnavailable />;
   const detail = baseDetail(ix, weapon);
   // Guard: knives/gloves are served by their own routes.
   if (!detail || detail.subtitle === "Knives" || detail.subtitle === "Gloves") notFound();

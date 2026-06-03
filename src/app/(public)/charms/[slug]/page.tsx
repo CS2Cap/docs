@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { FooterSection } from "@/components/FooterSection";
+import { BrowseUnavailable } from "@/components/browse/BrowseUnavailable";
 import { FilterableSkinGrid } from "@/components/browse/FilterableSkinGrid";
 import { listCharmGroups, charmGroupDetail, loadBrowseIndex } from "@/lib/browse/browse-index";
 
@@ -34,7 +35,7 @@ export default async function CharmGroupPage({
 }) {
   const { slug } = await params;
   const ix = await loadBrowseIndex();
-  if (!ix) notFound();
+  if (!ix) return <BrowseUnavailable />;
   const detail = charmGroupDetail(ix, slug);
   if (!detail) notFound();
   return (
