@@ -32,7 +32,7 @@ export function FilterableRaritySections({
         <p className="font-mono text-sm text-muted-foreground">No items match these filters.</p>
       ) : (
         <div className="flex flex-col gap-10">
-          <RaritySections groups={groupByRarity(filteredSkins)} />
+          {filteredSkins.length > 0 && <RaritySections groups={groupByRarity(filteredSkins)} />}
           {filteredSpecials.length > 0 && (
             <section>
               <h2 className="mb-4 font-mono text-lg font-bold">Knives &amp; Gloves</h2>

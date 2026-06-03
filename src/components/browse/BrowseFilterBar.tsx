@@ -68,6 +68,7 @@ export function BrowseFilterBar({
               <button
                 key={r.name}
                 type="button"
+                aria-pressed={selected}
                 onClick={() => setFilters({ ...filters, rarities: toggle(filters.rarities, r.name) })}
                 className={chipClass(selected)}
                 style={
@@ -94,6 +95,7 @@ export function BrowseFilterBar({
             <button
               key={w}
               type="button"
+              aria-pressed={filters.wears.has(w)}
               onClick={() => setFilters({ ...filters, wears: toggle(filters.wears, w) })}
               className={chipClass(filters.wears.has(w))}
             >
@@ -111,6 +113,7 @@ export function BrowseFilterBar({
           {facets.hasStatTrak && (
             <button
               type="button"
+              aria-pressed={filters.stattrakOnly}
               onClick={() => setFilters({ ...filters, stattrakOnly: !filters.stattrakOnly })}
               className={chipClass(filters.stattrakOnly)}
             >
@@ -120,6 +123,7 @@ export function BrowseFilterBar({
           {facets.hasSouvenir && (
             <button
               type="button"
+              aria-pressed={filters.souvenirOnly}
               onClick={() => setFilters({ ...filters, souvenirOnly: !filters.souvenirOnly })}
               className={chipClass(filters.souvenirOnly)}
             >
