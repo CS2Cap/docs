@@ -6,7 +6,8 @@ export const revalidate = 86400;
 
 export const metadata: Metadata = {
   title: "Browse CS2 Items by Category",
-  description: "Browse Counter-Strike 2 weapons, knives, gloves, agents, collections, and cases.",
+  description:
+    "Browse Counter-Strike 2 weapons, knives, gloves, agents, collections, cases, stickers, charms, graffiti, and more.",
 };
 
 const CATEGORIES = [
@@ -16,6 +17,13 @@ const CATEGORIES = [
   { label: "Agents", href: "/agents", blurb: "T & CT operators" },
   { label: "Collections", href: "/collections", blurb: "Skins grouped by collection" },
   { label: "Cases", href: "/cases", blurb: "Weapon cases & contents" },
+  { label: "Stickers", href: "/stickers", blurb: "Every sticker by collection" },
+  { label: "Sticker Slabs", href: "/sticker-slabs", blurb: "Slabs by tournament" },
+  { label: "Charms", href: "/charms", blurb: "Charm collections" },
+  { label: "Graffiti", href: "/graffiti", blurb: "Sealed graffiti" },
+  { label: "Music Kits", href: "/music-kits", blurb: "Every music kit" },
+  { label: "Patches", href: "/patches", blurb: "Agent patches" },
+  { label: "Collectibles", href: "/collectibles", blurb: "Pins & passes" },
 ];
 
 export default function BrowsePage() {

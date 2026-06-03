@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import { FooterSection } from "@/components/FooterSection";
+import { BrowseUnavailable } from "@/components/browse/BrowseUnavailable";
 import { GroupGrid } from "@/components/browse/GroupGrid";
 import { listWeapons, loadBrowseIndex } from "@/lib/browse/browse-index";
 import { WEAPON_SUBTYPES } from "@/lib/browse/taxonomy";
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 
 export default async function WeaponsPage() {
   const ix = await loadBrowseIndex();
-  if (!ix) notFound();
+  if (!ix) return <BrowseUnavailable />;
   return (
     <>
       <main className="container py-8">
@@ -24,7 +24,7 @@ export default async function WeaponsPage() {
             const weapons = listWeapons(ix, subtype);
             if (weapons.length === 0) return null;
             return (
-              <section key={subtype} id={subtype.toLowerCase()}>
+              <section key={subtype} id={subtype.toLowerCase()} className="scroll-mt-20">
                 <h2 className="mb-3 font-mono text-lg font-semibold text-primary">{subtype}</h2>
                 <GroupGrid groups={weapons} hrefBase="/weapons" />
               </section>

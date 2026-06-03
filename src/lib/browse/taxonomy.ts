@@ -2,6 +2,10 @@ import "server-only";
 
 import type { ItemOut } from "@/lib/api/types";
 import { buildItemPath, slugifyMarketHashName } from "@/lib/seo/itemSlug";
+import { rarityRank, wearRank, groupByRarity, isSpecialCard } from "./rarity";
+
+export { rarityRank, groupByRarity, isSpecialCard };
+export type { RarityGroup } from "./rarity";
 
 // Weapon subtypes surfaced under /weapons (Knives & Gloves are their own
 // top-level categories and are intentionally excluded here).
@@ -13,48 +17,6 @@ export const WEAPON_SUBTYPES: WeaponSubtype[] = [
   "Heavy",
   "Equipment",
 ];
-
-// Rarity order from metadata_schema.json (low → high). Higher rank = rarer.
-const RARITY_ORDER = [
-  "Base Grade",
-  "Consumer Grade",
-  "Industrial Grade",
-  "Mil-Spec Grade",
-  "High Grade",
-  "Distinguished",
-  "Restricted",
-  "Remarkable",
-  "Exceptional",
-  "Classified",
-  "Exotic",
-  "Superior",
-  "Covert",
-  "Extraordinary",
-  "Master",
-  "Contraband",
-];
-const RARITY_RANK: Record<string, number> = Object.fromEntries(
-  RARITY_ORDER.map((name, i) => [name, i]),
-);
-export function rarityRank(name: string | null | undefined): number {
-  if (!name) return -1;
-  return RARITY_RANK[name] ?? -1;
-}
-
-// Wear order (Factory New → Battle-Scarred); used to pick a representative
-// variant for a deduped skin.
-const WEAR_ORDER = [
-  "Factory New",
-  "Minimal Wear",
-  "Field-Tested",
-  "Well-Worn",
-  "Battle-Scarred",
-];
-function wearRank(name: string | null | undefined): number {
-  if (!name) return -1;
-  const i = WEAR_ORDER.indexOf(name);
-  return i === -1 ? WEAR_ORDER.length : i;
-}
 
 // Reuse the existing item slugifier so group slugs are consistent site-wide.
 export function slugifyName(name: string): string {
@@ -98,7 +60,10 @@ export interface SkinCard {
   rarityColor: string | null;
   itemHref: string; // down-link → /item/[itemId]
   weaponHref: string | null; // up-link → /weapons|knives|gloves/[base]
-  faction: string | null; // agents only
+  topLabel: string | null; // small label above the title
+  wears: string[]; // distinct wears this skin covers (FN→BS), empty for non-weapons
+  hasStatTrak: boolean;
+  hasSouvenir: boolean;
 }
 
 export interface DetailResult {
@@ -138,6 +103,11 @@ export function dedupToCards(
   for (const variants of groups.values()) {
     const rep = pickRepresentative(variants);
     if (rep.item_id == null) continue;
+    const wears = [...new Set(variants.map((v) => v.wear_name).filter((w): w is string => !!w))].sort(
+      (a, b) => wearRank(a) - wearRank(b),
+    );
+    const hasStatTrak = variants.some((v) => v.is_stattrak === true);
+    const hasSouvenir = variants.some((v) => v.is_souvenir === true);
     cards.push({
       itemId: rep.item_id,
       baseName: rep.base_name ?? "",
@@ -147,7 +117,15 @@ export function dedupToCards(
       rarityColor: rep.rarity_color ?? null,
       itemHref: buildItemPath(rep.item_id, rep.market_hash_name),
       weaponHref: includeWeaponHref ? baseHref(rep.item_subtype, rep.base_name ?? "") : null,
-      faction: rep.item_type === "Agent" ? rep.item_subtype ?? null : null,
+      topLabel:
+        rep.item_type === "Agent"
+          ? rep.item_subtype ?? null // faction (CT/T) — unchanged for agents
+          : rep.skin_name == null
+            ? rep.item_subtype ?? null // collectibles/keys: subtype, not the name
+            : rep.base_name ?? null,
+      wears,
+      hasStatTrak,
+      hasSouvenir,
     });
   }
 

@@ -3,11 +3,21 @@ import Link from "next/link";
 export const BROWSE_HREFS = [
   "/browse",
   "/weapons",
+  "/gear",
   "/knives",
   "/gloves",
   "/agents",
+  "/containers",
   "/collections",
   "/cases",
+  "/extras",
+  "/stickers",
+  "/sticker-slabs",
+  "/charms",
+  "/graffiti",
+  "/music-kits",
+  "/patches",
+  "/collectibles",
 ];
 
 const COLUMNS: Array<{ heading: string; href: string; links: Array<{ label: string; href: string }> }> = [
@@ -24,7 +34,7 @@ const COLUMNS: Array<{ heading: string; href: string; links: Array<{ label: stri
   },
   {
     heading: "Gear",
-    href: "/knives",
+    href: "/gear",
     links: [
       { label: "Knives", href: "/knives" },
       { label: "Gloves", href: "/gloves" },
@@ -33,17 +43,30 @@ const COLUMNS: Array<{ heading: string; href: string; links: Array<{ label: stri
   },
   {
     heading: "Containers",
-    href: "/collections",
+    href: "/containers",
     links: [
       { label: "Collections", href: "/collections" },
       { label: "Cases", href: "/cases" },
+    ],
+  },
+  {
+    heading: "Stickers & More",
+    href: "/extras",
+    links: [
+      { label: "Stickers", href: "/stickers" },
+      { label: "Sticker Slabs", href: "/sticker-slabs" },
+      { label: "Charms", href: "/charms" },
+      { label: "Graffiti", href: "/graffiti" },
+      { label: "Music Kits", href: "/music-kits" },
+      { label: "Patches", href: "/patches" },
+      { label: "Collectibles", href: "/collectibles" },
     ],
   },
 ];
 
 export function BrowseMegaMenu({ onNavigate }: { onNavigate?: () => void }) {
   return (
-    <div className="grid grid-cols-3 gap-6 p-4">
+    <div className="grid grid-cols-2 gap-6 p-4">
       {COLUMNS.map((col) => (
         <div key={col.heading} className="flex flex-col gap-2">
           <Link

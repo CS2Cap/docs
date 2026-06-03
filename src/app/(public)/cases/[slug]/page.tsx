@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { FooterSection } from "@/components/FooterSection";
-import { SkinGrid } from "@/components/browse/SkinGrid";
+import { BrowseUnavailable } from "@/components/browse/BrowseUnavailable";
+import { FilterableRaritySections } from "@/components/browse/FilterableRaritySections";
 import { caseDetail, listCases, loadBrowseIndex } from "@/lib/browse/browse-index";
+import { isSpecialCard } from "@/lib/browse/taxonomy";
 
 export const revalidate = 86400;
 
@@ -34,17 +36,21 @@ export default async function CaseDetailPage({
 }) {
   const { slug } = await params;
   const ix = await loadBrowseIndex();
-  if (!ix) notFound();
+  if (!ix) return <BrowseUnavailable />;
   const detail = caseDetail(ix, slug);
   if (!detail) notFound();
+
+  const specials = detail.skins.filter(isSpecialCard);
+  const skins = detail.skins.filter((c) => !isSpecialCard(c));
+
   return (
     <>
       <main className="container py-8">
         <h1 className="mb-1 font-mono text-2xl font-bold">{detail.title}</h1>
-        <p className="mb-6 font-mono text-sm text-muted-foreground">
+        <p className="mb-8 font-mono text-sm text-muted-foreground">
           {detail.subtitle} · {detail.count} skins
         </p>
-        <SkinGrid skins={detail.skins} />
+        <FilterableRaritySections skins={skins} specials={specials} />
       </main>
       <FooterSection />
     </>
