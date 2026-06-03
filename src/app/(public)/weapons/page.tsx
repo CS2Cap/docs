@@ -24,7 +24,7 @@ export default async function WeaponsPage() {
             const weapons = listWeapons(ix, subtype);
             if (weapons.length === 0) return null;
             return (
-              <section key={subtype} id={subtype.toLowerCase()}>
+              <section key={subtype} id={subtype.toLowerCase()} className="scroll-mt-20">
                 <h2 className="mb-3 font-mono text-lg font-semibold text-primary">{subtype}</h2>
                 <GroupGrid groups={weapons} hrefBase="/weapons" />
               </section>

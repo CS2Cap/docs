@@ -450,17 +450,26 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
 
               {data.item.collection ? (
                 <Link
-                  href={`/search?collection=${encodeURIComponent(data.item.collection)}`}
+                  href={`/collections/${slugifyMarketHashName(data.item.collection)}`}
                   className="group block border-brutal bg-card p-4 transition-colors hover:border-primary"
                 >
                   <div className="mb-3 font-mono text-xs tracking-widest text-primary">
                     COLLECTION
                   </div>
-                  <div className="flex items-center justify-between px-2 py-2">
-                    <span className="font-mono text-sm text-foreground transition-colors group-hover:text-primary">
+                  <div className="flex items-center gap-3 px-1">
+                    {data.item.collection_image ? (
+                      <Image
+                        src={data.item.collection_image}
+                        alt={data.item.collection}
+                        width={56}
+                        height={56}
+                        className="h-12 w-12 shrink-0 object-contain transition-transform duration-200 group-hover:scale-105"
+                      />
+                    ) : null}
+                    <span className="min-w-0 flex-1 font-mono text-sm leading-snug text-foreground line-clamp-2 transition-colors group-hover:text-primary">
                       {data.item.collection}
                     </span>
-                    <ChevronRight className="h-3 w-3 text-muted-foreground transition-colors group-hover:text-primary" />
+                    <ChevronRight className="h-3 w-3 shrink-0 text-muted-foreground transition-colors group-hover:text-primary" />
                   </div>
                 </Link>
               ) : null}
