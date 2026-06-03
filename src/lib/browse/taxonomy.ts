@@ -61,6 +61,9 @@ export interface SkinCard {
   itemHref: string; // down-link → /item/[itemId]
   weaponHref: string | null; // up-link → /weapons|knives|gloves/[base]
   topLabel: string | null; // small label above the title
+  wears: string[]; // distinct wears this skin covers (FN→BS), empty for non-weapons
+  hasStatTrak: boolean;
+  hasSouvenir: boolean;
 }
 
 export interface DetailResult {
@@ -100,6 +103,11 @@ export function dedupToCards(
   for (const variants of groups.values()) {
     const rep = pickRepresentative(variants);
     if (rep.item_id == null) continue;
+    const wears = [...new Set(variants.map((v) => v.wear_name).filter((w): w is string => !!w))].sort(
+      (a, b) => wearRank(a) - wearRank(b),
+    );
+    const hasStatTrak = variants.some((v) => v.is_stattrak === true);
+    const hasSouvenir = variants.some((v) => v.is_souvenir === true);
     cards.push({
       itemId: rep.item_id,
       baseName: rep.base_name ?? "",
@@ -115,6 +123,9 @@ export function dedupToCards(
           : rep.skin_name == null
             ? rep.item_subtype ?? null // collectibles/keys: subtype, not the name
             : rep.base_name ?? null,
+      wears,
+      hasStatTrak,
+      hasSouvenir,
     });
   }
 
