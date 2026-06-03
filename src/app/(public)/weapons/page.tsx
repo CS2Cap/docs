@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import { FooterSection } from "@/components/FooterSection";
+import { BrowseUnavailable } from "@/components/browse/BrowseUnavailable";
 import { GroupGrid } from "@/components/browse/GroupGrid";
 import { listWeapons, loadBrowseIndex } from "@/lib/browse/browse-index";
 import { WEAPON_SUBTYPES } from "@/lib/browse/taxonomy";
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 
 export default async function WeaponsPage() {
   const ix = await loadBrowseIndex();
-  if (!ix) notFound();
+  if (!ix) return <BrowseUnavailable />;
   return (
     <>
       <main className="container py-8">

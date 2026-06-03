@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import { FooterSection } from "@/components/FooterSection";
+import { BrowseUnavailable } from "@/components/browse/BrowseUnavailable";
 import { SkinGrid } from "@/components/browse/SkinGrid";
 import { listAgentGroups, loadBrowseIndex } from "@/lib/browse/browse-index";
 
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default async function AgentsPage() {
   const ix = await loadBrowseIndex();
-  if (!ix) notFound();
+  if (!ix) return <BrowseUnavailable />;
   const groups = listAgentGroups(ix);
   return (
     <>

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import { FooterSection } from "@/components/FooterSection";
+import { BrowseUnavailable } from "@/components/browse/BrowseUnavailable";
 import { FilterableSkinGrid } from "@/components/browse/FilterableSkinGrid";
 import { musicKitCards, loadBrowseIndex } from "@/lib/browse/browse-index";
 
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default async function MusicKitsPage() {
   const ix = await loadBrowseIndex();
-  if (!ix) notFound();
+  if (!ix) return <BrowseUnavailable />;
   const kits = musicKitCards(ix);
   return (
     <>

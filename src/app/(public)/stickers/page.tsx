@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import { FooterSection } from "@/components/FooterSection";
+import { BrowseUnavailable } from "@/components/browse/BrowseUnavailable";
 import { GroupGrid } from "@/components/browse/GroupGrid";
 import { listStickerGroups, loadBrowseIndex } from "@/lib/browse/browse-index";
 
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default async function StickersPage() {
   const ix = await loadBrowseIndex();
-  if (!ix) notFound();
+  if (!ix) return <BrowseUnavailable />;
   const groups = listStickerGroups(ix);
   return (
     <>
