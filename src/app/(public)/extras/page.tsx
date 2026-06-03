@@ -5,17 +5,12 @@ import { FooterSection } from "@/components/FooterSection";
 export const revalidate = 86400;
 
 export const metadata: Metadata = {
-  title: "Browse CS2 Items by Category",
-  description: "Browse Counter-Strike 2 weapons, knives, gloves, agents, collections, and cases.",
+  title: "CS2 Stickers, Charms, Graffiti & More",
+  description:
+    "Browse Counter-Strike 2 stickers, sticker slabs, charms, graffiti, music kits, patches, and collectibles.",
 };
 
 const CATEGORIES = [
-  { label: "Weapons", href: "/weapons", blurb: "Pistols, rifles, SMGs & more" },
-  { label: "Knives", href: "/knives", blurb: "Every knife finish" },
-  { label: "Gloves", href: "/gloves", blurb: "Every glove finish" },
-  { label: "Agents", href: "/agents", blurb: "T & CT operators" },
-  { label: "Collections", href: "/collections", blurb: "Skins grouped by collection" },
-  { label: "Cases", href: "/cases", blurb: "Weapon cases & contents" },
   { label: "Stickers", href: "/stickers", blurb: "Every sticker by collection" },
   { label: "Sticker Slabs", href: "/sticker-slabs", blurb: "Slabs by tournament" },
   { label: "Charms", href: "/charms", blurb: "Charm collections" },
@@ -25,11 +20,11 @@ const CATEGORIES = [
   { label: "Collectibles", href: "/collectibles", blurb: "Pins & passes" },
 ];
 
-export default function BrowsePage() {
+export default function ExtrasPage() {
   return (
     <>
       <main className="container py-8">
-        <h1 className="mb-6 font-mono text-2xl font-bold">Browse</h1>
+        <h1 className="mb-6 font-mono text-2xl font-bold">Stickers &amp; More</h1>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
           {CATEGORIES.map((c) => (
             <Link
