@@ -267,6 +267,72 @@ export function baseDetail(ix: BrowseIndex, slug: string): DetailResult | null {
   };
 }
 
+// ── New category groupings (reuse toSummaries/namedDetail generics) ───────────
+
+export function listStickerGroups(ix: BrowseIndex): GroupSummary[] {
+  return toSummaries(ix.stickers);
+}
+export function stickerGroupDetail(ix: BrowseIndex, slug: string): DetailResult | null {
+  return namedDetail(ix.stickers, slug, "Stickers");
+}
+
+export function listSlabGroups(ix: BrowseIndex): GroupSummary[] {
+  return toSummaries(ix.slabs);
+}
+export function slabGroupDetail(ix: BrowseIndex, slug: string): DetailResult | null {
+  return namedDetail(ix.slabs, slug, "Sticker Slabs");
+}
+
+export function listCharmGroups(ix: BrowseIndex): GroupSummary[] {
+  return toSummaries(ix.charms);
+}
+export function charmGroupDetail(ix: BrowseIndex, slug: string): DetailResult | null {
+  return namedDetail(ix.charms, slug, "Charms");
+}
+
+export function listGraffitiGroups(ix: BrowseIndex): GroupSummary[] {
+  return toSummaries(ix.graffiti);
+}
+export function graffitiGroupDetail(ix: BrowseIndex, slug: string): DetailResult | null {
+  return namedDetail(ix.graffiti, slug, "Graffiti");
+}
+
+// ── Flat categories (single page, optional subtype sections) ──────────────────
+
+export interface SubtypeSection {
+  title: string;
+  skins: SkinCard[];
+}
+
+function sectionsBySubtype(items: ItemOut[], order: string[]): SubtypeSection[] {
+  const by = new Map<string, ItemOut[]>();
+  for (const it of items) {
+    const key = it.item_subtype ?? "Other";
+    const arr = by.get(key);
+    if (arr) arr.push(it);
+    else by.set(key, [it]);
+  }
+  const rank = (k: string) => {
+    const i = order.indexOf(k);
+    return i === -1 ? order.length : i;
+  };
+  return [...by.keys()]
+    .sort((a, b) => rank(a) - rank(b) || a.localeCompare(b))
+    .map((title) => ({ title, skins: dedupToCards(by.get(title)!) }));
+}
+
+export function musicKitCards(ix: BrowseIndex): SkinCard[] {
+  return dedupToCards(ix.musicKits);
+}
+
+export function patchSections(ix: BrowseIndex): SubtypeSection[] {
+  return sectionsBySubtype(ix.patches, ["Team Logo", "Other"]);
+}
+
+export function collectibleSections(ix: BrowseIndex): SubtypeSection[] {
+  return sectionsBySubtype(ix.collectibles, ["Pin", "Operation Pass", "Tournament Pass"]);
+}
+
 // ── Browse-nav payload (mega-menu) ────────────────────────────────────────────
 
 const NAV_CAP = 16;
