@@ -33,7 +33,7 @@ export function SkinCard({ skin }: { skin: SkinCardData }) {
           </Link>
         ) : (
           <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-            {skin.faction ?? skin.baseName}
+            {skin.topLabel ?? skin.baseName}
           </span>
         )}
         <Link

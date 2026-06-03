@@ -98,7 +98,7 @@ export interface SkinCard {
   rarityColor: string | null;
   itemHref: string; // down-link → /item/[itemId]
   weaponHref: string | null; // up-link → /weapons|knives|gloves/[base]
-  faction: string | null; // agents only
+  topLabel: string | null; // small label above the title
 }
 
 export interface DetailResult {
@@ -147,7 +147,12 @@ export function dedupToCards(
       rarityColor: rep.rarity_color ?? null,
       itemHref: buildItemPath(rep.item_id, rep.market_hash_name),
       weaponHref: includeWeaponHref ? baseHref(rep.item_subtype, rep.base_name ?? "") : null,
-      faction: rep.item_type === "Agent" ? rep.item_subtype ?? null : null,
+      topLabel:
+        rep.item_type === "Agent"
+          ? rep.item_subtype ?? null // faction (CT/T) — unchanged for agents
+          : rep.skin_name == null
+            ? rep.item_subtype ?? null // collectibles/keys: subtype, not the name
+            : rep.base_name ?? null,
     });
   }
 
