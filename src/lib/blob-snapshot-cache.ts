@@ -9,6 +9,7 @@ import type {
   MarketItemsSnapshotResponse,
   MarketTimeframe,
 } from "./api/types";
+import type { BrowseNavData } from "./browse/nav-types";
 
 // ── Exported snapshot data types ──────────────────────────────────────────────
 
@@ -40,6 +41,7 @@ export type CachedSnapshotResult<T> = {
 const PRICES_BLOB = "snapshots/prices.json.gz";
 const BIDS_BLOB = "snapshots/bids.json.gz";
 const ITEMS_BLOB = "snapshots/items.json.gz";
+const BROWSE_NAV_BLOB = "snapshots/browse-nav.json.gz";
 const marketBlobPath = (tf: MarketTimeframe) => `snapshots/market-${tf}.json.gz`;
 
 // ── Freshness windows ─────────────────────────────────────────────────────────
@@ -48,6 +50,7 @@ const MARKET_FRESH_MS = 5 * 60 * 1000;
 const PRICES_FRESH_MS = 30 * 60 * 1000;
 const BIDS_FRESH_MS = 30 * 60 * 1000;
 const ITEMS_FRESH_MS = 24 * 60 * 60 * 1000;
+const BROWSE_NAV_FRESH_MS = 24 * 60 * 60 * 1000;
 
 // ── Distributed refresh lock (Upstash Redis SET NX) ──────────────────────────
 
@@ -87,6 +90,7 @@ const MEMORY_TTL_BY_PATH: Record<string, number> = {
   [ITEMS_BLOB]: ITEMS_FRESH_MS,
   [PRICES_BLOB]: PRICES_FRESH_MS,
   [BIDS_BLOB]: BIDS_FRESH_MS,
+  [BROWSE_NAV_BLOB]: BROWSE_NAV_FRESH_MS,
 };
 
 type Entry<T> = { data: T; uploadedAt: number; expiresAt: number };
@@ -250,4 +254,17 @@ export async function setCachedItemsSnapshot(data: ItemsSnapshotData): Promise<b
 
 export function refreshItemsSnapshotInBackground(refresher: () => Promise<void>) {
   refreshInBackground(ITEMS_BLOB, refresher);
+}
+
+// ── Browse-nav snapshot ───────────────────────────────────────────────────────
+
+// Precomputed mega-menu payload (a few KB). Written by the items cron so the
+// /api/browse-nav route serves it without downloading + deduping the full
+// multi-MB catalog on each cache miss.
+export async function getCachedBrowseNav(): Promise<CachedSnapshotResult<BrowseNavData> | null> {
+  return getCached<BrowseNavData>(BROWSE_NAV_BLOB, BROWSE_NAV_FRESH_MS);
+}
+
+export async function setCachedBrowseNav(data: BrowseNavData): Promise<boolean> {
+  return setCached(data, BROWSE_NAV_BLOB);
 }

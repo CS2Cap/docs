@@ -2,7 +2,8 @@ import "server-only";
 
 import { NextRequest, NextResponse } from "next/server";
 import { API_BASE_URL } from "@/lib/api/config";
-import { setCachedItemsSnapshot } from "@/lib/blob-snapshot-cache";
+import { setCachedBrowseNav, setCachedItemsSnapshot } from "@/lib/blob-snapshot-cache";
+import { buildBrowseNav, loadBrowseIndex } from "@/lib/browse/browse-index";
 import type { ItemOut, ItemsResponse } from "@/lib/api/types";
 
 export const dynamic = "force-dynamic";
@@ -53,11 +54,26 @@ export async function GET(request: NextRequest) {
     const snapshot = { items, byItemId, total: items.length, timestamp: new Date().toISOString() };
     const stored = await setCachedItemsSnapshot(snapshot);
 
+    // Precompute the mega-menu payload from the just-cached snapshot (served via
+    // L1, no extra Blob read) so /api/browse-nav never deduplicates the full
+    // catalog at request time. Non-fatal: items snapshot is the primary output.
+    let navStored = false;
+    try {
+      const ix = await loadBrowseIndex();
+      if (ix) navStored = await setCachedBrowseNav(buildBrowseNav(ix));
+    } catch (navError) {
+      console.warn(JSON.stringify({
+        event: "cron.prewarm_items_snapshot.browse_nav_failed",
+        error: navError instanceof Error ? navError.message : "unknown error",
+      }));
+    }
+
     console.log(JSON.stringify({
       event: "cron.prewarm_items_snapshot.completed",
       upstream_status: upstreamStatus,
       total_items: items.length,
       stored,
+      nav_stored: navStored,
       duration_ms: Date.now() - startedAt,
     }));
 

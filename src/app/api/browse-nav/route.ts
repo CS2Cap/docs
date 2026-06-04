@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getCachedBrowseNav } from "@/lib/blob-snapshot-cache";
 import { buildBrowseNav, loadBrowseIndex } from "@/lib/browse/browse-index";
 import type { BrowseNavData } from "@/lib/browse/nav-types";
 
@@ -21,8 +22,12 @@ const EMPTY: BrowseNavData = {
 };
 
 export async function GET() {
-  const ix = await loadBrowseIndex();
-  const data = ix ? buildBrowseNav(ix) : EMPTY;
+  // Prefer the precomputed nav blob (a few KB) written by the items cron — it
+  // avoids downloading + deduping the full multi-MB catalog at request time.
+  // Fall back to on-demand compute only before the first cron has run.
+  const precomputed = await getCachedBrowseNav();
+  const data =
+    precomputed?.snapshot ?? (await loadBrowseIndex().then((ix) => (ix ? buildBrowseNav(ix) : EMPTY)));
   return NextResponse.json(data, {
     headers: {
       "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=43200",

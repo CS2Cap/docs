@@ -15,7 +15,7 @@
     },
     {
       "path": "/api/cron/prewarm-items-snapshot",
-      "schedule": "15 * * * *"
+      "schedule": "15 5 * * *"
     }
   ],
   "functions": {
