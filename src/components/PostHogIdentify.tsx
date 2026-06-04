@@ -10,10 +10,6 @@ export function PostHogIdentify() {
   useEffect(() => {
     if (!session) return;
 
-    if (session.email === "zaaroxyt@gmail.com") {
-      posthog.opt_out_capturing();
-    }
-
     posthog.identify(session.user_id, {
       email: session.email ?? undefined,
       display_name: session.display_name ?? undefined,

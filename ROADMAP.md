@@ -6,10 +6,10 @@
 
 This catalog cross-references the report's recommendations against what cs2cap (frontend) and cs2c-api (FastAPI backend) already have. Its purpose is to surface enhancements and optimizations worth implementing to **prepare the codebase for future feature additions** — not to commit to building any specific feature now. Each item is a candidate; promotion to an implementation plan should happen one feature at a time.
 
-**State at time of writing:**
+**Current state (last refreshed 2026-06-04):**
 
-- Frontend: search w/ 6 facets, item detail (history, market distribution, similar items, variants, cases, asks), marketcap (treemap, sparkline, movers), auth (Steam/Google/Discord), inventory tracker, alerts, watchlist, API key/billing/usage UI, 22 marketplace landing pages, deal scanner absent on FE.
-- Backend: 40+ provider adapters, prices/sales/buy_orders services, liquidity scoring, portfolio + transactions + CSV import, account/api-key/webhook services, OAuth, Steam inventory parser, skinscanner/deals_service, 65 alembic migrations. Web search: snapshot scores wired into `/v1/web/search`, query understanding with alias dictionary + relevance sort, isolated rate-limit bucket.
+- Frontend: faceted search, item detail (history, market distribution, similar items, variants, cases, asks, images), marketcap (treemap, sparkline, movers), auth (Steam/Google/Discord), inventory tracker, alerts, watchlist, API key/billing/usage UI, ~40 marketplace landing pages, and a data-driven browse navigation system — cached `/api/browse-nav` + hover-rail mega-menu with Containers/Gear/Stickers-&-More hubs and index/detail pages for crates, collections, stickers, slabs, charms, graffiti, music kits, patches, collectibles (rarity/text facet filtering, `BrowseUnavailable` graceful degradation). Deal scanner still absent on FE.
+- Backend: 40+ provider adapters, prices/sales/buy_orders services, liquidity scoring, cross-provider price-outlier rejection, portfolio + transactions + CSV import, account/api-key/webhook services, OAuth (with `/v1/web/auth/{provider}/link` account linking) over an `oauth_accounts` identity table + `account_merge_service`, Steam inventory parser, skinscanner/deals_service, 67 alembic migrations (latest `0067`). Web search: snapshot scores on `/v1/web/search`, query understanding with alias dictionary + relevance sort, isolated rate-limit bucket. Alerts: `user_alerts`→`user_alert_events`→`user_alert_deliveries` split with window-based dedupe, plus multi-channel delivery (custom/Discord/Telegram/Google Sheets). Sales ingest is a background service feeding a cache-only `/sales` endpoint.
 
 ---
 
@@ -19,24 +19,20 @@ This catalog cross-references the report's recommendations against what cs2cap (
 
 1. **`item_attribute` open key/value table** — Game-file vs provider-derived attributes separated by `source enum(gamefile, provider, derived)`. Lets us add new metadata (drop odds, supported phases, sticker compatibility) without schema churn.
 2. **`drop_source` table** — Collection / case / capsule / update with `odds` numeric. Backs an unboxing-odds view, "drops from" reverse lookups, and case-EV calculators.
-3. **`media_asset` per-variant table** — `media_kind enum(image, video, wear_preview, screenshot, inspect_preview)`. Today only `cdn.cs2c.app` images are wired; this enables wear-preview videos, inspect renders, and 3D viewers later.
+3. **`media_asset` per-variant table** — `media_kind enum(image, video, wear_preview, screenshot, inspect_preview)`. Today only `cdn.cs2c.app` images are wired; this enables wear-preview videos, inspect renders, and 3D viewers later. *(Partially addressed: flat image columns were added to the `tradable_items` blob + `/v1/items` and wired into the FE — see "Item-page image fields" under Recently shipped. The table itself is only justified by the non-image media kinds, which remain deferred.)*
 4. **Hide canonical static metadata from per-asset instance data** — Asset-instance rows (float, paint seed, applied stickers) must be scoped to the owning inventory snapshot with retention lifecycles — a privacy obligation as soon as inventories are stored.
 
 ## Tier 2 — User-state hardening (unlocks portfolio/alert depth)
 
-1. **`auth_identity` table separate from `user_account`** — Multiple providers per user (currently auth.py likely couples them). Required before account-merge and SSO additions become safe.
-2. **`session` table with revocation + device fingerprint** — Today sessions live in Redis; backing them with an auditable durable table enables "sign out all devices", anomaly alerts, and forensic trails.
-3. **`consent_record` + retention policies** — Versioned policy acceptance, prerequisite for GDPR-clean data export/delete (`account_export_service.py` exists; consent is the missing companion).
-4. **`portfolio_position` distinct from `inventory_item`** — Inventory = "what I physically own"; portfolio = "cost basis, strategy tag, P/L". Currently `portfolio_service.py` and `transaction_service.py` straddle both. Splitting unlocks DCA tracking, strategy buckets, and tax reporting.
-5. **`inventory_import_job` idempotency keys** — Dedup imports by `(steam_id, window)` so re-syncs are safe; required before public scheduled refresh (e.g. SteamLedger's 15-min cadence).
-6. **`transaction_ledger` kind-enum normalization** — Today CSV import + manual + buy/sell live in `transaction_service.py`; canonicalize into one ledger with `txn_kind enum(buy, sell, trade, manual_adjustment, import_basis)` so reports/analytics don't duplicate logic.
+1. **`session` table with revocation + device fingerprint** — Today sessions live in Redis; backing them with an auditable durable table enables "sign out all devices", anomaly alerts, and forensic trails.
+2. **`consent_record` + retention policies** — Versioned policy acceptance, prerequisite for GDPR-clean data export/delete (`account_export_service.py` exists; consent is the missing companion).
+3. **`portfolio_position` distinct from `inventory_item`** — Inventory = "what I physically own"; portfolio = "cost basis, strategy tag, P/L". Currently `portfolio_service.py` and `transaction_service.py` straddle both. Splitting unlocks DCA tracking, strategy buckets, and tax reporting. *(Note: there is no persisted inventory table today — Steam inventory is parsed ephemerally — so the "they straddle both" framing is partly moot; the portfolio tables already carry cost-basis via `user_portfolio_transactions`.)*
+4. **`inventory_import_job` idempotency keys** — Dedup imports by `(steam_id, window)` so re-syncs are safe; required before public scheduled refresh (e.g. SteamLedger's 15-min cadence).
+5. **`transaction_ledger` kind-enum normalization** — Today CSV import + manual + buy/sell live in `transaction_service.py`; canonicalize into one ledger with `txn_kind enum(buy, sell, trade, manual_adjustment, import_basis)` so reports/analytics don't duplicate logic. *(Partial: `user_portfolio_transactions` is already a single ledger with a `type` `String(4)` field, but not the full 5-value enum — `import_basis` / `trade` / `manual_adjustment` aren't distinguished.)*
 
 ## Tier 3 — Alerts, watchlists, notifications (unlocks retention plays)
 
-1. **`alert_rule` ↔ `alert_event` split with dedupe_key** — Prevents alert storms when several providers cross a threshold simultaneously. Currently `alerts/page.tsx` exists but storage shape unknown — verify before adding Telegram/Discord channels.
-2. **`notification_endpoint` table with verification + webhook secrets** — Backs multi-channel alerts (browser, email, telegram, discord, webhook). Today only browser/email are visible.
-3. **`watchlist` ↔ `watchlist_item` distinct from alert rules** — A user can favorite without alerting and vice versa; collapsing them blocks UX patterns competitors already have.
-4. **Centralized notification scheduler/worker** — Separate from the SSE / push fanout for deal signals so alerting and live UI streams don't share back-pressure.
+1. **Centralized notification scheduler/worker** — Separate from the SSE / push fanout for deal signals so alerting and live UI streams don't share back-pressure.
 
 ## Tier 4 — Trader tools
 
@@ -71,7 +67,16 @@ These items shipped to `main` and are no longer candidates. Listed here briefly 
 - **Rate-limit isolation for `/v1/web/search`** *(was Tier 2 #5)* — Scrape-prone faceted search lives in its own `search:`-namespaced Redis bucket; limit is the stricter of `SEARCH_RATE_REQUESTS_PER_MINUTE` (default 60) and the user's tier rpm. Commit `7063be3af`.
 - **Snapshot scores on `/v1/web/search`** *(was Tier 1 #1)* — `WebSearchItem` now carries `liquidity`, `listing_score`, `gap_score`, `volume_score`, `stability_score`, `external_score`; new `liquidity` sort key. (Skipped `total_volume_24h` — already exposed as `sales_1d`.) Commit `78dbac294`.
 - **Query understanding for search** *(was Tier 2 #3)* — New `query_parser.py` with alias dictionary (`ak`→`AK-47`, `ft`→`Field-Tested`, …), tokenization, weighted-field scoring. Drops zero-score candidates, adds `relevance` sort key (auto-default when `q` is set). Trigram typo tolerance deferred. Commit `fbb39c45f` (+ follow-up `75e649009`).
-- **Taxonomy DAG (containers MVP)** *(was Tier 1, search/catalog)* — `taxonomy_node` / `taxonomy_edge` / `item_taxonomy` tables (migration `0062`), `taxonomy_service.py` with descendant/ancestor walks + cycle guard, `seed_container_taxonomy.py` deriving container nodes from catalog `crates`, and a `/v1/web/search?container_slug=` filter. Two deliberate MVP simplifications vs the original plan: recursive CTE instead of a `taxonomy_closure` table (simpler, fine at current scale), and `item_taxonomy` has no `relation_kind` column yet (containers-only). Seeding is wired into the catalog rebuild behind an optional `seed_taxonomy` flag. Commits `86f624ff6` + follow-ups (`9ea9a3464`, `dea2190e5`). Not migrated: existing string-based collection/rarity/wear filters; tournament/player/team seeding; FE container navigation.
+- **Taxonomy DAG (containers MVP)** *(was Tier 1, search/catalog)* — `taxonomy_node` / `taxonomy_edge` / `item_taxonomy` tables (migration `0062`), `taxonomy_service.py` with descendant/ancestor walks + cycle guard, `seed_container_taxonomy.py` deriving container nodes from catalog `crates`, and a `/v1/web/search?container_slug=` filter. Two deliberate MVP simplifications vs the original plan: recursive CTE instead of a `taxonomy_closure` table (simpler, fine at current scale), and `item_taxonomy` has no `relation_kind` column yet (containers-only). Seeding is wired into the catalog rebuild behind an optional `seed_taxonomy` flag. Commits `86f624ff6` + follow-ups (`9ea9a3464`, `dea2190e5`). Not migrated: existing string-based collection/rarity/wear filters; tournament/player/team seeding. ~~FE container navigation~~ → now shipped (see "FE browse navigation" below).
+- **Multi-channel alert delivery** *(was Tier 3 #2)* — `notification_endpoint`-style multi-platform delivery: a `platform` column on `user_webhook_endpoints` / `user_webhook_delivery_jobs` (enum: `custom`, `discord`, `telegram`, `google_sheets`) with native payload formatting (Discord embeds, Telegram `sendMessage` + `chat_id` validation, Google Sheets), platform snapshots in delivery jobs, and a unique active-platform-per-user index. Migrations `0066_add_alert_delivery_platforms` + `0067_open_managed_webhook_platforms` (the latter opens platforms to all tiers). cs2c-api commits `af89755cd5` + `5b0a62724f`. Replaces the prior browser/email-only surface. (The Tier 3 #1 `alert_rule` ↔ `alert_event` dedupe split it builds on was already in place — see "Alert rule/event/delivery split" below.)
+- **FE browse navigation** *(was the open "FE container navigation" follow-up to the Taxonomy DAG)* — Cached `/api/browse-nav` route + `useBrowseNav` hook, desktop hover-rail mega-menu, Containers/Gear/Stickers-&-More hub pages, and index/detail pages for crates, collections, stickers, slabs, charms, graffiti, music kits, patches, and collectibles, with per-page rarity/text facet filtering. Resilient to snapshot gaps via `BrowseUnavailable`. cs2cap commits `f491bf8`…`56e5d43`, `8daeb15`, `398de54` (caching) and follow-ups.
+- **Item-page image fields** *(partial — was Tier 1 #3 `media_asset`)* — Instead of a per-variant `media_asset` table, flat image columns were added to the existing wholesale-cached `tradable_items` blob and exposed through `/v1/items` (cs2c-api `e230b47ea5`, `d10e84dd27`); the frontend wires them into item-detail and cases sections (cs2cap `c765500`). This is the cheap flat-column path the 2026-05-30 Tier 1 deferral note anticipated. Still deferred: video / wear-preview / inspect-render media kinds, which are what would actually justify the `media_asset` table.
+
+The next three predate this catalog — they were already built when it was written and were never candidates; recorded here so they aren't re-proposed.
+
+- **Alert rule/event/delivery split** *(was Tier 3 #1)* — `user_alerts` (rule: `kind` / `threshold_value` / `is_enabled` / `last_triggered_at`), `user_alert_events` (event), and `user_alert_deliveries` (per-channel) are three distinct tables in `db_base.py`. The dedupe key is `UniqueConstraint("alert_id", "window_start_at")` (`uq_user_alert_event_window`), enforced in code — `account_domain_service.py` checks for an existing event on `(alert_id, window_start)` before insert, so simultaneous provider crossings collapse to one event. Per-channel delivery deduped via `UniqueConstraint("event_id", "channel")`.
+- **Watchlist distinct from alerts** *(was Tier 3 #3)* — `user_watchlist_items` is a table distinct from `user_alerts`, so a user can favorite without alerting and vice versa. (No separate `watchlist` parent table — items hang directly off `user_id` — but the favorite-vs-alert separation the item was about already exists.)
+- **OAuth identity separation** *(was Tier 2 #1 `auth_identity`)* — `oauth_accounts` is a table distinct from `api_users`, with `UniqueConstraint("provider", "provider_user_id")` and a `user_id` FK (multiple providers per user), wired into `oauth_service.py`. The account-merge it was meant to unlock already exists (`account_merge_service.py`, which reassigns/dedupes `oauth_accounts` rows on merge). The OAuth *linking endpoint* (`/v1/web/auth/{provider}/link`) landed later, on top of this existing model.
 
 ## Dropped
 
@@ -254,7 +259,7 @@ The only piece that may or may not be wired is "alert delivery is suppressed whe
 - `cs2c-api/src/app/services/portfolio/{portfolio,transaction,history,csv_import}_service.py` (Tier 2)
 - `cs2c-api/src/app/services/auth/oauth_service.py` (Tier 2)
 - `cs2c-api/src/app/services/skinscanner/deals_service.py` (Tier 4)
-- `cs2c-api/alembic/versions/` (65 migrations; new ones for each Tier 1–5 entity)
+- `cs2c-api/alembic/versions/` (67 migrations; new ones for each Tier 1–5 entity)
 - `cs2cap/src/lib/api/{server,client,hooks,types,compositions,view-models}.ts` (Tier 6)
 - `cs2cap/src/app/api/cs2c/[...path]/route.ts` (Tier 6 — edge-cache policy parity)
 - `cs2cap/src/lib/seo/landing-pages.ts` (Tier 6 — landing-page generation)
@@ -266,7 +271,7 @@ This catalog is intentionally broad. **Do not implement straight through it.** F
 
 1. Open a focused planning session for *that single item*.
 2. Confirm current implementation state (the inventory above is best-effort; verify before changing schemas).
-3. Decide migration safety (the platform has 65 alembic migrations and live data — additive-then-backfill-then-cutover is the safe pattern).
+3. Decide migration safety (the platform has 67 alembic migrations and live data — additive-then-backfill-then-cutover is the safe pattern).
 4. Define success criteria (CLAUDE.md §4): a test or measurable outcome per change.
 
 The strongest practical recommendation from the report applies here too: **prioritize data credibility over feature theatrics**. Tiers 1–2 (item-page metadata depth + user-state hardening) are the next big content and retention investments; Tiers 4–5 (trader tools + sponsored) are visible but cheap only after the foundation is solid.
