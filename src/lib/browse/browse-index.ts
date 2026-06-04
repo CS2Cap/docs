@@ -357,14 +357,18 @@ function flatNavItems(cards: SkinCard[], href: string): BrowseNavItem[] {
   }));
 }
 
+let navCache: { timestamp: string; data: BrowseNavData } | null = null;
+
 // Compact catalog slice for the BROWSE mega-menu. Each list capped at NAV_CAP;
-// the full set lives behind the menu's "View all" links.
+// the full set lives behind the menu's "View all" links. Memoized by snapshot
+// timestamp so warm instances skip the full per-group dedup/sort on repeat calls.
 export function buildBrowseNav(ix: BrowseIndex): BrowseNavData {
+  if (navCache && navCache.timestamp === ix.timestamp) return navCache.data;
   const weapons = {} as Record<WeaponSubtype, BrowseNavItem[]>;
   for (const subtype of WEAPON_SUBTYPES) {
     weapons[subtype] = toNavItems(listWeapons(ix, subtype), "/weapons");
   }
-  return {
+  const data: BrowseNavData = {
     weapons,
     knives: toNavItems(listKnives(ix), "/knives"),
     gloves: toNavItems(listGloves(ix), "/gloves"),
@@ -384,4 +388,6 @@ export function buildBrowseNav(ix: BrowseIndex): BrowseNavData {
       "/collectibles",
     ),
   };
+  navCache = { timestamp: ix.timestamp, data };
+  return data;
 }
