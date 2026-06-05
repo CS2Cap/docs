@@ -346,6 +346,7 @@ export function useSessions() {
   return useQuery({
     queryKey: queryKeys.sessions,
     queryFn: () => webApi.listSessions(),
+    staleTime: 30_000,
   });
 }
 
