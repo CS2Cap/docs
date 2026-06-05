@@ -2231,7 +2231,7 @@
           "Sales"
         ],
         "summary": "List Recent Sales",
-        "description": "Return recent sales history from providers with recent-sales support.\n\nFilters:\n- `item_id` or `market_hash_name` is required\n- optional `phase`\n- `providers` limited to sales-capable provider keys\n- `currency` and `limit`\n\nBehavior:\n- responses are served from background-ingested Redis sales caches\n- cache misses do not trigger live provider fetches during the request\n- each item/provider pair is refreshed by the rolling ingest job about once per 24 hours\n- response is single-page only with a maximum of 50 rows\n\nResponse:\n- request metadata and providers queried\n- sales records with sticker, charm, and inspect metadata when available\n- per-provider cache status for hit, stale, pending, error, or unavailable",
+        "description": "Return recent sales history from providers with recent-sales support.\n\nFilters:\n- `item_id` or `market_hash_name` is required\n- optional `phase`\n- `providers` limited to sales-capable provider keys\n- `currency` and `limit`\n\nBehavior:\n- responses are served from background-ingested Redis sales caches\n- each item/provider pair is refreshed by the rolling ingest job about once per 24 hours\n- response is single-page only with a maximum of 50 rows\n\nResponse:\n- request metadata and providers queried\n- sales records with sticker, charm, and inspect metadata when available",
         "operationId": "listRecentSales",
         "security": [
           {
@@ -16679,39 +16679,15 @@
             "type": "array",
             "title": "Items",
             "description": "List of returned items."
-          },
-          "cache_status": {
-            "additionalProperties": {
-              "type": "string",
-              "enum": [
-                "hit",
-                "stale",
-                "pending",
-                "error",
-                "unavailable"
-              ]
-            },
-            "type": "object",
-            "title": "Cache Status",
-            "description": "Per-provider cache outcome map keyed by provider key. `hit` = served from fresh Redis sales cache; `stale` = served from the longer-lived stale sales cache; `pending` = the item/provider has not been ingested yet; `error` = the latest background ingest failed and no cached data is available; `unavailable` = provider requested but not available.",
-            "examples": [
-              {
-                "buff163": "stale",
-                "csfloat": "hit",
-                "csgoempire": "error",
-                "dmarket": "unavailable"
-              }
-            ]
           }
         },
         "type": "object",
         "required": [
           "meta",
-          "items",
-          "cache_status"
+          "items"
         ],
         "title": "SalesHistoryResponse",
-        "description": "Recent Sales response with request metadata and cache status."
+        "description": "Recent Sales response with request metadata."
       },
       "SalesMeta": {
         "properties": {

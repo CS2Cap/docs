@@ -3,7 +3,7 @@ title: "Sales API: Recent CS2 Sales with Float and Stickers"
 description: "Retrieve recent CS2 sale records across marketplaces, including float, paint seed, stickers, charms, and inspect links where available."
 ---
 
-The Sales API returns the most recent completed transactions for a CS2 item across the supported marketplaces. Results include per-item detail that goes beyond price alone: float values, paint seeds, sticker wear, charm patterns, and inspect links when the provider exposes them. Sales data is refreshed by background ingestion and served from cache; requests do not trigger live marketplace fetches. Some catalog categories may be intentionally excluded from sales ingestion and remain pending.
+The Sales API returns the most recent completed transactions for a CS2 item across the supported marketplaces. Results include per-item detail that goes beyond price alone: float values, paint seeds, sticker wear, charm patterns, and inspect links when the provider exposes them. Sales data is refreshed by background ingestion and served from cache. Some catalog categories may be intentionally excluded from sales ingestion.
 
 ---
 
@@ -155,8 +155,7 @@ console.log(await response.json());
         "screenshot_back": "https://spect.fp.ps.netease.com/file/69aadbc88046f513e7f7de78TiWERWCN07"
       }
     }
-  ],
-  "cache_status": {...}
+  ]
 }
 ```
 
@@ -243,12 +242,8 @@ console.log(await response.json());
   </Expandable>
 </ResponseField>
 
-<ResponseField name="cache_status" type="object">
-  Per-provider cache state. `hit` means fresh ingested data was served, `stale` means older cached data was served, `pending` means the item/provider pair has not been ingested yet, `error` means the latest background ingest failed and no cached data is available, and `unavailable` means the provider is not active in the runtime registry.
-</ResponseField>
-
 <Note>
-  Background ingestion targets a 24 hour refresh interval per item/provider pair. A cold item/provider pair may return `pending` until the rolling sales job reaches it.
+  Background ingestion targets a 24 hour refresh interval per item/provider pair.
 </Note>
 
 <Note>
