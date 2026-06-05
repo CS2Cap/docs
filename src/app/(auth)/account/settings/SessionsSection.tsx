@@ -55,6 +55,7 @@ function SessionRow({
           size="sm"
           className="shrink-0 text-destructive hover:text-destructive"
           disabled={revoking}
+          aria-label={revoking ? `Revoking ${session.device_label}` : `Revoke ${session.device_label}`}
           onClick={() => onRevoke(session.id)}
         >
           {revoking ? "Revoking…" : "Revoke"}
@@ -93,7 +94,7 @@ export function SessionsSection() {
 
   return (
     <Card className="border-border/50 bg-card/50">
-      <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0">
+      <CardHeader className="flex flex-col items-start gap-3 space-y-0 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1.5">
           <CardTitle className="flex items-center gap-2 text-base">
             <ShieldCheck className="h-4 w-4" />
@@ -131,8 +132,12 @@ export function SessionsSection() {
               Try again
             </Button>
           </div>
+        ) : sessions.length === 0 ? (
+          <p className="py-3 text-xs text-muted-foreground">No active sessions found.</p>
         ) : (
           <div className="divide-y divide-border/50">
+            {/* Single mutation instance: only the most-recently triggered row
+                shows pending. Fine here — optimistic removal hides the row on click. */}
             {sessions.map((session) => (
               <SessionRow
                 key={session.id}
@@ -141,7 +146,7 @@ export function SessionsSection() {
                 revoking={revoke.isPending && revoke.variables === session.id}
               />
             ))}
-            {otherCount === 0 && sessions.length > 0 && (
+            {otherCount === 0 && (
               <p className="pt-3 text-xs text-muted-foreground">
                 You&apos;re only signed in on this device.
               </p>
