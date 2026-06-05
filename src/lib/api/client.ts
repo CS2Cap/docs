@@ -48,7 +48,9 @@ import type {
   PricesPaginatedResponse,
   ProviderInfo,
   ProvidersResponse,
+  RevokeSessionsResponse,
   SalesHistoryResponse,
+  SessionListResponse,
   SubscriptionStatus,
   UsageDashboardResponse,
   ViewerResponse,
@@ -495,6 +497,18 @@ export const webApi = {
 
   reissueSubKey(keyId: string): Promise<ChildAPIKeyCreateResponse> {
     return request(`/v1/account/sub-keys/${keyId}/reissue`, { method: "POST" });
+  },
+
+  listSessions(): Promise<SessionListResponse> {
+    return request("/v1/account/sessions");
+  },
+
+  revokeSession(id: string): Promise<RevokeSessionsResponse> {
+    return request(`/v1/account/sessions/${id}`, { method: "DELETE" });
+  },
+
+  revokeOtherSessions(): Promise<RevokeSessionsResponse> {
+    return request("/v1/account/sessions", { method: "DELETE" });
   },
 
   deleteAccount(): Promise<DeleteAccountResponse> {
