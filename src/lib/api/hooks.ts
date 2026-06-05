@@ -17,6 +17,7 @@ import type {
   ItemSearchResponse,
   ItemSuggestion,
   PlansResponse,
+  SessionListResponse,
   UsageDashboardResponse,
   ViewerResponse,
   WatchlistResponse,
@@ -44,6 +45,7 @@ export const queryKeys = {
   itemSearch: (query: string) => ["item-search", query] as const,
   item: (itemId: number | null) => ["item", itemId] as const,
   browseNav: ["browse-nav"] as const,
+  sessions: ["sessions"] as const,
 };
 
 export function useBrowseNav(enabled: boolean) {
@@ -336,6 +338,65 @@ export function useRotateWebhookSecretMutation() {
     mutationFn: (webhookId: string) => webApi.rotateWebhookSecret(webhookId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.webhooks });
+    },
+  });
+}
+
+export function useSessions() {
+  return useQuery({
+    queryKey: queryKeys.sessions,
+    queryFn: () => webApi.listSessions(),
+  });
+}
+
+export function useRevokeSessionMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => webApi.revokeSession(id),
+    onMutate: async (id: string) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.sessions });
+      const previous = queryClient.getQueryData<SessionListResponse>(queryKeys.sessions);
+      if (previous) {
+        queryClient.setQueryData<SessionListResponse>(queryKeys.sessions, {
+          sessions: previous.sessions.filter((s) => s.id !== id),
+        });
+      }
+      return { previous };
+    },
+    onError: (_err, _id, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(queryKeys.sessions, context.previous);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.sessions });
+    },
+  });
+}
+
+export function useRevokeOtherSessionsMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => webApi.revokeOtherSessions(),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.sessions });
+      const previous = queryClient.getQueryData<SessionListResponse>(queryKeys.sessions);
+      if (previous) {
+        queryClient.setQueryData<SessionListResponse>(queryKeys.sessions, {
+          sessions: previous.sessions.filter((s) => s.current),
+        });
+      }
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(queryKeys.sessions, context.previous);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.sessions });
     },
   });
 }
