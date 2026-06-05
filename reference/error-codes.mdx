@@ -1,0 +1,98 @@
+---
+title: "Error Codes and HTTP Status Reference"
+description: "Reference for every HTTP status code and machine-readable error code returned by the CS2Cap API, with descriptions and retry guidance."
+---
+
+Every error response from the CS2Cap API includes two fields: a stable machine-readable `code` you can branch on in code, and a human-readable `detail` string you can surface to users or log for debugging. You never have to parse error message text to determine what went wrong.
+
+## HTTP status codes
+
+| Status | Meaning |
+| --- | --- |
+| `400` | Bad request — the request was malformed or missing required parameters. |
+| `401` | Missing or invalid API key — no `Authorization` header was sent, or the key is not recognized. |
+| `403` | Insufficient permissions — the key is valid but your tier does not have access to this endpoint or feature. |
+| `404` | Not found — the requested resource does not exist. |
+| `409` | Conflict — the request conflicts with the current state of your account or a resource, for example exceeding portfolio limits. |
+| `422` | Validation error — the request was well-formed but failed semantic validation (for example, an invalid field value). |
+| `429` | Rate limit exceeded — you have hit either the per-minute or monthly request quota for your tier. |
+| `500` | Internal server error — an unexpected error occurred on the CS2Cap side. |
+| `503` | Service temporarily unavailable — the service or a specific data source is temporarily down. |
+
+## Error payload format
+
+Every error response uses the same JSON structure:
+
+```json
+{
+  "code": "AUTH_INVALID_API_KEY",
+  "detail": "Invalid API key"
+}
+```
+
+Use `code` for programmatic error handling. Use `detail` for logging or displaying context to users.
+
+## Error codes by category
+
+<AccordionGroup>
+  <Accordion title="Authentication errors">
+    | Code | HTTP Status | Description |
+    | --- | --- | --- |
+    | `AUTH_INVALID_API_KEY` | 401 | The API key in the `Authorization` header is not recognized or is malformed. Check that you are sending `Authorization: Bearer <your_key>`. |
+    | `AUTH_API_KEY_REVOKED` | 401 | The API key has been revoked. Issue a new key from your account settings. |
+    | `AUTH_ACCOUNT_DISABLED` | 401 | Your account has been disabled. Contact support for assistance. |
+  </Accordion>
+
+  <Accordion title="Rate limit errors">
+    | Code | HTTP Status | Description |
+    | --- | --- | --- |
+    | `RATE_LIMIT_EXCEEDED` | 429 | You have exceeded the per-minute request limit for your tier. Check the `Retry-After` header and wait before retrying. |
+    | `RATE_LIMIT_MONTHLY_QUOTA_EXCEEDED` | 429 | You have consumed your monthly request quota. Quota resets at the start of the next billing period or you can upgrade your tier. |
+
+    <Warning>
+      When you receive a `429`, read the `Retry-After` header. It contains the number of seconds you must wait before the next request will succeed. Retrying before that time will return another `429`.
+
+      The response also includes `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`, and `X-RateLimit-Tier` headers for monitoring your usage.
+    </Warning>
+  </Accordion>
+
+  <Accordion title="Data index errors">
+    | Code | HTTP Status | Description |
+    | --- | --- | --- |
+    | `PRICES_INDEX_UNAVAILABLE` | 503 | The prices index is temporarily unavailable. This is a transient condition — retry the request after a short delay. |
+    | `BIDS_INDEX_UNAVAILABLE` | 503 | The bids index is temporarily unavailable. This is a transient condition — retry the request after a short delay. |
+
+    <Note>
+      Index unavailability errors are temporary. They typically resolve within minutes. Implement an exponential backoff retry strategy with a cap of a few minutes.
+    </Note>
+  </Accordion>
+
+  <Accordion title="Portfolio errors">
+    | Code | HTTP Status | Description |
+    | --- | --- | --- |
+    | `PORTFOLIO_NOT_FOUND` | 404 | The requested portfolio does not exist or does not belong to your account. |
+    | `PORTFOLIO_LIMIT_REACHED` | 409 | Your account has reached the maximum number of portfolios allowed on your current tier. |
+    | `PORTFOLIO_ITEM_LIMIT_REACHED` | 409 | The portfolio has reached its maximum item count. Remove items or upgrade your tier to add more. |
+  </Accordion>
+
+  <Accordion title="Validation errors">
+    | Code | HTTP Status | Description |
+    | --- | --- | --- |
+    | `VALIDATION_ERROR` | 422 | One or more request parameters failed validation. The `detail` field describes which parameter is invalid and why. |
+  </Accordion>
+</AccordionGroup>
+
+## Retry guidance
+
+**For `429` responses:** Read the `Retry-After` response header. It contains the number of seconds to wait before retrying. Do not retry before that window expires.
+
+```http
+HTTP/1.1 429 Too Many Requests
+Retry-After: 12345
+X-RateLimit-Limit: 500000
+X-RateLimit-Remaining: 0
+X-RateLimit-Reset: 12345
+X-RateLimit-Tier: pro
+```
+
+**For `503` responses:** The service or a specific index is temporarily unavailable. These errors are transient — retry after a short delay using exponential backoff. If the error persists beyond a few minutes, check the CS2Cap status page.

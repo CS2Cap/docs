@@ -1,0 +1,131 @@
+---
+title: "Building Portfolio Valuation and P&L Workflows"
+description: "Use CS2Cap to value customer inventories, maintain saved CS2 portfolios, track buy and sell transactions, and build daily portfolio performance reporting."
+---
+
+CS2Cap portfolios are useful when your product needs to turn CS2 item holdings into business data: current inventory value, cost basis, daily portfolio value, and realized or unrealized performance.
+
+This guide is written for trading apps, inventory tools, marketplace CRMs, accounting workflows, and analytics products that manage portfolios for customers. Individual collectors can use the same pattern for personal tracking, but the main model is an application that owns the user experience and uses CS2Cap for market data, item normalization, and portfolio valuation.
+
+## The basic model
+
+```text
+Your customer
+  -> your app
+  -> CS2Cap portfolio or stateless valuation
+  -> CS2Cap resolves catalog items and market prices
+  -> your app stores, displays, reconciles, or exports the result
+```
+
+CS2Cap gives you two portfolio modes. Choose the mode based on whether you need persistence.
+
+| Mode | Use it when | Main endpoint |
+| --- | --- | --- |
+| Stateless valuation | Your app already has item IDs and quantities and only needs a live value now. | [`POST /portfolio/value`](/api-reference/portfolio#post-/portfolio/value) |
+| Saved portfolios | Your app needs named portfolios, stored holdings, imports, transactions, exports, or historical valuation. | [`POST /portfolio`](/api-reference/portfolio#post-/portfolio) |
+
+## Workflow 1: Value a submitted basket
+
+Use stateless valuation when a customer gives you an inventory snapshot and you do not need CS2Cap to store it.
+
+Typical examples:
+
+- A trade calculator values both sides of a proposed deal.
+- A marketplace CRM estimates the value of a customer's submitted inventory.
+- A risk workflow checks whether a basket is large enough to require manual review.
+- A quoting engine calculates a buyout offer using a specific provider set.
+
+Your app sends normalized `item_id` and `quantity` pairs to [`POST /portfolio/value`](/api-reference/portfolio#post-/portfolio/value). CS2Cap returns line-item values and a total using current best ask prices across the selected providers.
+
+```text
+Customer inventory snapshot
+  -> map names/assets to CS2Cap item IDs
+  -> POST /portfolio/value
+  -> total_value + line_items
+  -> quote, risk decision, dashboard, or report
+```
+
+This is the lightest integration path. Your app owns the submitted inventory, customer identity, quote history, and any downstream business logic. CS2Cap only performs the current valuation.
+
+## Workflow 2: Maintain saved customer portfolios
+
+Use saved portfolios when your product needs to keep a durable record of a customer's holdings.
+
+Start by creating a named portfolio with [`POST /portfolio`](/api-reference/portfolio#post-/portfolio). Then populate it from whichever source your product supports:
+
+| Source | How to load it | Good fit |
+| --- | --- | --- |
+| Linked Steam inventory | [`POST /portfolio/{id}/import`](/api-reference/portfolio#post-/portfolio/id/import) | Consumer inventory tracking or customer onboarding. |
+| CSV upload | [`POST /portfolio/{id}/import/csv`](/api-reference/portfolio#post-/portfolio/id/import/csv) | Backfills, accounting exports, marketplace statements, or migrations from another tool. |
+| Manual item add | [`POST /portfolio/{id}/items`](/api-reference/portfolio#post-/portfolio/id/items) | Admin edits, OTC deals, unsupported import flows, or corrections. |
+
+Once holdings are stored, call [`GET /portfolio/{id}/value`](/api-reference/portfolio#get-/portfolio/id/value) whenever you need the live portfolio value. Provider filters let you value the same holdings against different markets, such as a Buff163-focused trading workflow or a Steam-focused consumer display.
+
+Saved portfolios work well when your app needs repeatable reads:
+
+- Customer-facing inventory dashboards
+- Internal account-manager views
+- Stored quote or loan collateral records
+- Periodic portfolio reports
+- CSV exports for customer support or finance teams
+
+## Workflow 3: Build cost basis and P&L reporting
+
+Holdings alone tell you what a customer owns now. Transactions tell you how the portfolio got there.
+
+Record buys and sells with [`POST /portfolio/{id}/transactions`](/api-reference/portfolio#post-/portfolio/id/transactions). Each transaction captures the item, direction, quantity, unit price, date, currency, marketplace, and optional fees or notes.
+
+Use the transaction ledger when you need:
+
+- Cost basis by item or portfolio
+- Realized P&L from sells
+- Unrealized P&L from current value minus cost basis
+- Daily portfolio value charts
+- Customer or account-manager performance reports
+
+For historical reporting, call [`GET /portfolio/{id}/history`](/api-reference/portfolio#get-/portfolio/id/history). CS2Cap replays the transaction ledger into daily holdings and values those holdings from available market history.
+
+```text
+Buy and sell ledger
+  -> daily holdings replay
+  -> daily market valuation
+  -> performance chart or P&L report
+```
+
+Historical valuation is ledger-based. Current portfolio item rows are not used as opening balances for history, so import or record the transactions you want represented in historical reports.
+
+## How the API supports this
+
+| Need | Endpoint |
+| --- | --- |
+| Value a one-off item list | [`POST /portfolio/value`](/api-reference/portfolio#post-/portfolio/value) |
+| Create or list saved portfolios | [`POST /portfolio`](/api-reference/portfolio#post-/portfolio), [`GET /portfolio`](/api-reference/portfolio#get-/portfolio) |
+| Import Steam inventory | [`POST /portfolio/{id}/import`](/api-reference/portfolio#post-/portfolio/id/import) |
+| Import transactions or snapshot holdings from CSV | [`POST /portfolio/{id}/import/csv`](/api-reference/portfolio#post-/portfolio/id/import/csv) |
+| Add or inspect saved items | [`POST /portfolio/{id}/items`](/api-reference/portfolio#post-/portfolio/id/items), [`GET /portfolio/{id}/items`](/api-reference/portfolio#get-/portfolio/id/items) |
+| Record, edit, or audit buys and sells | [`POST /portfolio/{id}/transactions`](/api-reference/portfolio#post-/portfolio/id/transactions), [`GET /portfolio/{id}/transactions`](/api-reference/portfolio#get-/portfolio/id/transactions) |
+| Get current saved-portfolio value | [`GET /portfolio/{id}/value`](/api-reference/portfolio#get-/portfolio/id/value) |
+| Build daily historical valuation | [`GET /portfolio/{id}/history`](/api-reference/portfolio#get-/portfolio/id/history) |
+| Export customer data | [`GET /portfolio/{id}/export`](/api-reference/portfolio#get-/portfolio/id/export) |
+
+## Operational notes
+
+- Monetary values are returned in minor units. For USD, `2550` means `$25.50`.
+- Live portfolio value uses current indexed prices, so it reflects the market data CS2Cap has available now.
+- Historical portfolio value is replayed from the transaction ledger, not from current portfolio item rows.
+- Provider filters are useful when your workflow values holdings against a specific marketplace or provider subset.
+- Portfolio count and item limits are tier-scoped. Check account limits before creating many portfolios or large customer books.
+- CSV imports are best for bulk onboarding, but your app should still reconcile imported rows against your own customer records.
+
+## When this is a good fit
+
+- You want CS2Cap to handle catalog normalization and market valuation.
+- You want your own app to own customers, reporting, permissions, billing, and UI.
+- You need repeatable portfolio value checks without re-sending the full inventory every time.
+- You need a transaction ledger for daily value history or P&L.
+
+## When this is not a good fit
+
+- You need sub-day historical portfolio replay. Portfolio history is daily.
+- You want CS2Cap to manage your end-customer accounts or business rules.
+- You only need a one-time quote and do not need persistence; use stateless valuation instead.

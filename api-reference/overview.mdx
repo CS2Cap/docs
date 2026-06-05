@@ -1,0 +1,145 @@
+---
+title: "CS2Cap API: Base URL, Auth, and Rate Limits"
+description: "Base URL, Bearer authentication, per-tier rate limits, response envelope conventions, and error handling for the CS2Cap market-data API."
+---
+
+The CS2Cap API gives you programmatic access to CS2 market prices, buy orders, recent sales, and item catalog data. All endpoints are served from a single base URL, secured with a Bearer token, and return JSON (or NDJSON for streaming endpoints). This page covers everything you need to start making requests: authentication, rate limits, response conventions, and error handling.
+
+## Base URL
+
+```
+https://api.cs2c.app/v1
+```
+
+## Authentication
+
+Every market-data endpoint requires your API key in the `Authorization` header:
+
+```http
+Authorization: Bearer <your_api_key>
+```
+
+### Getting an API key
+
+<Steps>
+  <Step title="Sign up with OAuth">Create a CS2Cap account using OAuth.</Step>
+  <Step title="Verify your email">Add and verify an email address on the account. Verification is required before a key is issued or reissued.</Step>
+  <Step title="Save your API key">Copy your initial API key from the account dashboard, or reissue a new one at any time from the account flow.</Step>
+  <Step title="Send the key with requests">Include `Authorization: Bearer {api_key}` in every request to a market-data endpoint.</Step>
+</Steps>
+
+<Note>
+  You can have at most one active API key per account. Reissuing a key immediately invalidates the previous one.
+</Note>
+
+## Rate limits
+
+Rate limits are enforced per API key based on your subscription tier:
+
+| Tier | Requests/Minute | Requests/Month |
+| --- | --- | --- |
+| `free` | 20 | 1,000 |
+| `starter` | 40 | 50,000 |
+| `pro` | 100 | 500,000 |
+| `quant` | 300 | 1,000,000 |
+
+### Special limits
+
+[`POST /prices`](/api-reference/prices#post-/prices-—-stream-full-prices-snapshot) and [`POST /bids`](/api-reference/bids#post-/bids-—-stream-full-bids-snapshot) (the full-snapshot streaming endpoints) each have an additional **1 request per 5 minutes** cooldown per API key, regardless of tier.
+
+### Rate limit response headers
+
+When you hit a rate limit you receive a `429` response. The following headers tell you when you can retry and how much quota remains:
+
+```http
+Retry-After: 12345
+X-RateLimit-Limit: 500000
+X-RateLimit-Remaining: 0
+X-RateLimit-Reset: 12345
+X-RateLimit-Tier: pro
+```
+
+| Header | Description |
+| --- | --- |
+| `Retry-After` | Seconds to wait before retrying. |
+| `X-RateLimit-Limit` | Your monthly request quota. |
+| `X-RateLimit-Remaining` | Requests remaining in the current period. |
+| `X-RateLimit-Reset` | Unix timestamp when the quota resets. |
+| `X-RateLimit-Tier` | Your current subscription tier. |
+
+<Note>
+  Monthly quota applies only to public core market-data endpoints. Account, billing, verification, recovery, and alert routes are still rate-limited, but they do not consume your advertised monthly quota.
+</Note>
+
+## Response conventions
+
+- Most list endpoints return an `items` array, plus `meta` and `pagination` objects when relevant.
+- [`GET /items`](/api-reference/catalog#get-/items-—-list-items) returns all matches in a single response when you omit the `limit` parameter.
+- Cursor-paginated endpoints always return `pagination.total = -1`. Use `has_next` and `next_cursor` to paginate.
+- Price fields—`lowest_ask`, `highest_bid`, and `price`—are always returned in **minor units** of the response currency. For example, `531143` in USD means $5,311.43. Divide by 100 for display.
+- `providers`, `providers_buy`, and `providers_sell` are **repeatable** query parameters. Pass them multiple times to include more than one provider: `providers=steam&providers=buff163`.
+- `provider` (singular) always accepts a single provider key.
+
+## Error handling
+
+Every error response includes a stable machine-readable `code` and a human-readable `detail` string.
+
+```json
+{
+  "code": "AUTH_INVALID_API_KEY",
+  "detail": "Invalid API key"
+}
+```
+
+### Status codes
+
+| Status | Meaning |
+| --- | --- |
+| `400` | Bad request |
+| `401` | Missing or invalid API key |
+| `403` | Valid credentials but insufficient permissions |
+| `404` | Resource not found |
+| `409` | Conflict with the current account or resource state |
+| `422` | Validation error |
+| `429` | Rate limit exceeded |
+| `500` | Internal server error |
+| `503` | Service temporarily unavailable |
+
+### Common error codes
+
+| Code | Description |
+| --- | --- |
+| `AUTH_INVALID_API_KEY` | The API key is missing or does not exist. |
+| `AUTH_API_KEY_REVOKED` | The API key has been revoked. |
+| `AUTH_ACCOUNT_DISABLED` | The account associated with this key is disabled. |
+| `RATE_LIMIT_EXCEEDED` | You have exceeded the per-minute request limit. |
+| `RATE_LIMIT_MONTHLY_QUOTA_EXCEEDED` | You have exhausted your monthly request quota. |
+| `PRICES_INDEX_UNAVAILABLE` | The live price index is temporarily unavailable. |
+| `BIDS_INDEX_UNAVAILABLE` | The live bids index is temporarily unavailable. |
+| `PORTFOLIO_NOT_FOUND` | The requested portfolio does not exist. |
+| `PORTFOLIO_LIMIT_REACHED` | You have reached the maximum number of portfolios. |
+| `PORTFOLIO_ITEM_LIMIT_REACHED` | You have reached the maximum number of items in a portfolio. |
+| `VALIDATION_ERROR` | One or more request parameters failed validation. |
+
+## Explore the API
+
+<CardGroup cols={3}>
+  <Card title="Prices" icon="tag" href="/api-reference/prices">
+    Current lowest asks, historical records, OHLCV candles, and full-catalog streaming.
+  </Card>
+  <Card title="Bids" icon="arrow-up" href="/api-reference/bids">
+    Highest buy orders across CS2 marketplaces, with streaming and batch lookup.
+  </Card>
+  <Card title="Sales" icon="receipt" href="/api-reference/sales">
+    Recent transaction history with float, stickers, charms, and inspect links.
+  </Card>
+  <Card title="Catalog" icon="book" href="/api-reference/catalog">
+    Item search, provider metadata, and FX rates.
+  </Card>
+  <Card title="Market Analytics" icon="chart-line" href="/api-reference/market-analytics">
+    Aggregated market signals and trend data.
+  </Card>
+  <Card title="Portfolio" icon="briefcase" href="/api-reference/portfolio">
+    Track and value your CS2 inventory across marketplaces.
+  </Card>
+</CardGroup>

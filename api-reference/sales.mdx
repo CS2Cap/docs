@@ -1,0 +1,256 @@
+---
+title: "Sales API: Recent CS2 Sales with Float and Stickers"
+description: "Retrieve recent CS2 sale records across marketplaces, including float, paint seed, stickers, charms, and inspect links where available."
+---
+
+The Sales API returns the most recent completed transactions for a CS2 item across the supported marketplaces. Results include per-item detail that goes beyond price alone: float values, paint seeds, sticker wear, charm patterns, and inspect links when the provider exposes them. Sales data is refreshed by background ingestion and served from cache; requests do not trigger live marketplace fetches. Some catalog categories may be intentionally excluded from sales ingestion and remain pending.
+
+---
+
+## GET /sales — List recent sales
+
+Returns recent sale records for one item across the selected providers.
+
+**Tiers:** `pro` · `quant`
+
+<CodeGroup>
+
+```bash cURL
+curl -sS \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  "$CS2C_API_BASE/sales?item_id=4994&providers=csfloat&currency=USD&limit=20"
+```
+
+```python Python
+import os
+import requests
+
+base = os.environ["CS2C_API_BASE"]
+key = os.environ["CS2C_API_KEY"]
+
+response = requests.get(
+    f"{base}/sales",
+    headers={"Authorization": f"Bearer {key}"},
+    params={
+        "item_id": 4994,
+        "providers": "csfloat",
+        "currency": "USD",
+        "limit": 20,
+    },
+    timeout=20,
+)
+response.raise_for_status()
+print(response.json())
+```
+
+```javascript JavaScript
+const base = process.env.CS2C_API_BASE;
+const key = process.env.CS2C_API_KEY;
+
+const url = new URL(`${base}/sales`);
+url.searchParams.set('item_id', '4994');
+url.searchParams.set('providers', 'csfloat');
+url.searchParams.set('currency', 'USD');
+url.searchParams.set('limit', '20');
+
+const response = await fetch(url, {
+  headers: { Authorization: `Bearer ${key}` },
+});
+
+if (!response.ok) {
+  throw new Error(`${response.status} ${await response.text()}`);
+}
+
+console.log(await response.json());
+```
+
+</CodeGroup>
+
+### Parameters
+
+<ParamField query="item_id" type="integer" required>
+  Required if `market_hash_name` is not provided. Filter by item ID. Takes precedence over `market_hash_name` and `phase` when provided.
+</ParamField>
+
+<ParamField query="market_hash_name" type="string" required>
+  Required if `item_id` is not provided. Exact item name as it appears in inventory. Ignored when `item_id` is provided.
+</ParamField>
+
+<ParamField query="phase" type="string">
+  Doppler or Gamma Doppler phase filter. One of: `Phase 1`, `Phase 2`, `Phase 3`, `Phase 4`, `Ruby`, `Sapphire`, `Black Pearl`, `Emerald`. Ignored when `item_id` is provided.
+</ParamField>
+
+<ParamField query="providers" type="string[]">
+  Provider keys to include. Repeat to pass multiple values: `providers=buff163&providers=csfloat`. Valid keys: `buff163`, `c5`, `csfloat`, `csgo500`, `csgoempire`, `dmarket`, `youpin`.
+</ParamField>
+
+<ParamField query="currency" type="string" default="USD">
+  Target currency. Accepts 160+ ISO 4217 codes. See [`GET /fx`](/api-reference/catalog#get-/fx-—-fx-rates) for the full list.
+</ParamField>
+
+<ParamField query="limit" type="integer">
+  Maximum number of results to return. Capped at 50. This endpoint is single-page only — there is no cursor or offset pagination.
+</ParamField>
+
+### Response example
+
+```json
+{
+  "meta": {...},
+  "items": [
+    {
+      "date": "2026-03-13T01:31:47.752001Z",
+      "provider": "csfloat",
+      "price": 846105,
+      "currency": "USD",
+      "item_id": 6154,
+      "market_hash_name": "AWP | Gungnir (Field-Tested)",
+      "phase": null,
+      "float": 0.2155461460351944,
+      "paint_seed": 815,
+      "stickers": [
+        {
+          "name": "Sticker | zevy | Budapest 2025",
+          "slot": 2,
+          "wear": 0.74
+        },
+        {
+          "name": "Sticker | zont1x | Budapest 2025",
+          "slot": 0,
+          "wear": 0.73
+        }
+      ],
+      "charms": [
+        {
+          "name": "Charm | Semi-Precious",
+          "pattern_id": 66122
+        }
+      ],
+      "inspect": {
+        "in_game": "steam://rungame/730/76561202255233023/+csgo_econ_action_preview%20...",
+        "screenshot_front": "https://csfloat.pics/m/1640912832771024139/playside.png?v=3",
+        "screenshot_back": "https://csfloat.pics/m/1640912832771024139/backside.png?v=3"
+      }
+    },
+    {
+      "date": "2026-03-05T16:00:00+00:00",
+      "provider": "buff163",
+      "price": 942052,
+      "currency": "USD",
+      "item_id": 6154,
+      "market_hash_name": "AWP | Gungnir (Field-Tested)",
+      "phase": null,
+      "float": 0.15253503620624542,
+      "paint_seed": 105,
+      "stickers": null,
+      "charms": [
+        {
+          "name": "Charm | Semi-Precious",
+          "pattern_id": 79972
+        }
+      ],
+      "inspect": {
+        "in_game": "steam://rungame/730/76561202255233023/+csgo_econ_action_preview%20...",
+        "screenshot_front": "https://spect.fp.ps.netease.com/file/69aadbc88046f513e7f7de78TiWERWCN07",
+        "screenshot_back": "https://spect.fp.ps.netease.com/file/69aadbc88046f513e7f7de78TiWERWCN07"
+      }
+    }
+  ],
+  "cache_status": {...}
+}
+```
+
+### Response fields
+
+<ResponseField name="date" type="string">
+  ISO 8601 timestamp of the sale.
+</ResponseField>
+
+<ResponseField name="provider" type="string">
+  Provider key where the sale occurred.
+</ResponseField>
+
+<ResponseField name="price" type="integer">
+  Sale price in minor units of the response currency. For example, `846105` in USD = $8,461.05.
+</ResponseField>
+
+<ResponseField name="currency" type="string">
+  ISO 4217 currency code for the returned price.
+</ResponseField>
+
+<ResponseField name="item_id" type="integer">
+  Catalog item ID.
+</ResponseField>
+
+<ResponseField name="market_hash_name" type="string">
+  Full item name as it appears in the Steam economy.
+</ResponseField>
+
+<ResponseField name="phase" type="string">
+  Doppler phase, or `null` for non-phased items.
+</ResponseField>
+
+<ResponseField name="float" type="number">
+  Float value of the sold item. May be `null` if not provided by the source.
+</ResponseField>
+
+<ResponseField name="paint_seed" type="integer">
+  Paint seed (pattern index) of the sold item. May be `null` if not provided by the source.
+</ResponseField>
+
+<ResponseField name="stickers" type="object[]">
+  Array of stickers applied to the item. May be `null` if not available.
+
+  <Expandable title="sticker properties">
+    <ResponseField name="name" type="string">
+      Full sticker name.
+    </ResponseField>
+    <ResponseField name="slot" type="integer">
+      Slot position (0–4).
+    </ResponseField>
+    <ResponseField name="wear" type="number">
+      Sticker wear value from 0 (pristine) to 1 (fully worn).
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="charms" type="object[]">
+  Array of charms attached to the item. May be `null` if not available.
+
+  <Expandable title="charm properties">
+    <ResponseField name="name" type="string">
+      Full charm name.
+    </ResponseField>
+    <ResponseField name="pattern_id" type="integer">
+      Charm pattern identifier.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="inspect" type="object">
+  Inspect links for the sold item. May be `null` if not provided by the source.
+
+  <Expandable title="inspect properties">
+    <ResponseField name="in_game" type="string">
+      Steam in-game inspect link.
+    </ResponseField>
+    <ResponseField name="screenshot_front" type="string">
+      URL to a front-side screenshot of the item.
+    </ResponseField>
+    <ResponseField name="screenshot_back" type="string">
+      URL to a back-side screenshot of the item.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="cache_status" type="object">
+  Per-provider cache state. `hit` means fresh ingested data was served, `stale` means older cached data was served, `pending` means the item/provider pair has not been ingested yet, `error` means the latest background ingest failed and no cached data is available, and `unavailable` means the provider is not active in the runtime registry.
+</ResponseField>
+
+<Note>
+  Background ingestion targets a 24 hour refresh interval per item/provider pair. A cold item/provider pair may return `pending` until the rolling sales job reaches it.
+</Note>
+
+<Note>
+  `stickers`, `charms`, `float`, `paint_seed`, and `inspect` depend on the provider's data and may be `null`. Not all providers expose full item details on completed sales.
+</Note>

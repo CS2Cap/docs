@@ -1,0 +1,213 @@
+---
+title: "Account API: View and Rotate Your CS2Cap API Key"
+description: "Retrieve metadata for your active CS2Cap API key, check effective rate limits and quota, and reissue the key to rotate credentials and revoke child keys."
+---
+
+The Account API lets you inspect your current API key's metadata — including tier, rate limits, and quota details — and reissue the key when you need to rotate your credentials. Reissuing a root key immediately revokes all child keys issued from your account — a single step to rotate all credentials.
+
+## GET /account/key
+
+Returns metadata for the authenticated key. When called with a session JWT, it resolves to the account's active root key. When called with a child (sub-key) token, it returns that child key's own metadata.
+
+**Tiers:** Free, Starter, Pro, Quant · **Auth:** Session JWT or API key · **Rate limit:** Standard per-tier RPM
+
+<CodeGroup>
+
+```bash cURL
+curl -sS \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  "$CS2C_API_BASE/account/key"
+```
+
+```python Python
+import os
+import requests
+
+base = os.environ["CS2C_API_BASE"]
+key = os.environ["CS2C_API_KEY"]
+
+response = requests.get(
+    f"{base}/account/key",
+    headers={"Authorization": f"Bearer {key}"},
+    timeout=20,
+)
+response.raise_for_status()
+print(response.json())
+```
+
+```javascript JavaScript
+const base = process.env.CS2C_API_BASE;
+const key = process.env.CS2C_API_KEY;
+
+const response = await fetch(`${base}/account/key`, {
+  headers: { Authorization: `Bearer ${key}` },
+});
+
+if (!response.ok) {
+  throw new Error(`${response.status} ${await response.text()}`);
+}
+
+console.log(await response.json());
+```
+
+</CodeGroup>
+
+```json Response example
+{
+  "key": {
+    "id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+    "key_prefix": "sk_live_root",
+    "name": null,
+    "root_key_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+    "is_root_key": true,
+    "is_active": true,
+    "created_at": "2026-03-02T10:30:00Z",
+    "last_used_at": "2026-03-02T11:15:00Z",
+    "expires_at": null,
+    "quota_requests_per_month_override": null,
+    "rate_requests_per_minute_override": null,
+    "effective_quota_requests_per_month": 500000,
+    "effective_rate_requests_per_minute": 300
+  }
+}
+```
+
+<ResponseField name="key.id" type="string">
+  UUID for this key record.
+</ResponseField>
+
+<ResponseField name="key.key_prefix" type="string">
+  Human-readable prefix indicating key type. Root keys use `sk_live_root`; child keys use `sk_live_child`.
+</ResponseField>
+
+<ResponseField name="key.name" type="string | null">
+  Optional display name. `null` for root keys unless one has been set.
+</ResponseField>
+
+<ResponseField name="key.root_key_id" type="string">
+  UUID of the parent root key. Equal to `id` for root keys.
+</ResponseField>
+
+<ResponseField name="key.is_root_key" type="boolean">
+  `true` for root keys, `false` for child keys.
+</ResponseField>
+
+<ResponseField name="key.is_active" type="boolean">
+  `false` for revoked or expired keys.
+</ResponseField>
+
+<ResponseField name="key.created_at" type="string">
+  ISO 8601 timestamp when the key was created.
+</ResponseField>
+
+<ResponseField name="key.last_used_at" type="string | null">
+  ISO 8601 timestamp of the most recent authenticated request, or `null` if the key has never been used.
+</ResponseField>
+
+<ResponseField name="key.expires_at" type="string | null">
+  ISO 8601 expiry timestamp, or `null` for non-expiring keys.
+</ResponseField>
+
+<ResponseField name="key.quota_requests_per_month_override" type="integer | null">
+  Child-specific monthly request cap, or `null` if the tier default applies.
+</ResponseField>
+
+<ResponseField name="key.rate_requests_per_minute_override" type="integer | null">
+  Child-specific per-minute rate limit, or `null` if the tier default applies.
+</ResponseField>
+
+<ResponseField name="key.effective_quota_requests_per_month" type="integer">
+  The quota actually enforced for this key, accounting for any override.
+</ResponseField>
+
+<ResponseField name="key.effective_rate_requests_per_minute" type="integer">
+  The RPM limit actually enforced for this key, accounting for any override.
+</ResponseField>
+
+<Note>
+  Child keys can authenticate normal data requests. Calling this endpoint with a child key token returns that child key's own metadata, not the root key's.
+</Note>
+
+---
+
+## POST /account/key/reissue
+
+Replaces your active root key and immediately revokes all child keys issued from your account. Use this whenever you need to rotate credentials or suspect a key has been compromised.
+
+**Tiers:** Free, Starter, Pro, Quant · **Auth:** Session JWT or root API key · **Rate limit:** Standard per-tier RPM
+
+<CodeGroup>
+
+```bash cURL
+curl -sS -X POST \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  "$CS2C_API_BASE/account/key/reissue"
+```
+
+```python Python
+import os
+import requests
+
+base = os.environ["CS2C_API_BASE"]
+key = os.environ["CS2C_API_KEY"]
+
+response = requests.post(
+    f"{base}/account/key/reissue",
+    headers={"Authorization": f"Bearer {key}"},
+    timeout=20,
+)
+response.raise_for_status()
+print(response.json())
+```
+
+```javascript JavaScript
+const base = process.env.CS2C_API_BASE;
+const key = process.env.CS2C_API_KEY;
+
+const response = await fetch(`${base}/account/key/reissue`, {
+  method: 'POST',
+  headers: { Authorization: `Bearer ${key}` },
+});
+
+if (!response.ok) {
+  throw new Error(`${response.status} ${await response.text()}`);
+}
+
+console.log(await response.json());
+```
+
+</CodeGroup>
+
+```json Response example
+{
+  "key": "sk_live_<xxxx>",
+  "key_prefix": "sk_live_root",
+  "id": "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+  "created_at": "2026-03-02T11:20:00Z",
+  "message": "Store this key securely. It will not be shown again."
+}
+```
+
+<ResponseField name="key" type="string">
+  The new plaintext API key. Shown only once in this response.
+</ResponseField>
+
+<ResponseField name="key_prefix" type="string">
+  Key type prefix. Always `sk_live_root` for root keys.
+</ResponseField>
+
+<ResponseField name="id" type="string">
+  UUID for the new key record.
+</ResponseField>
+
+<ResponseField name="created_at" type="string">
+  ISO 8601 timestamp when the new key was created.
+</ResponseField>
+
+<Warning>
+  The new key value is returned **once only**. Copy and store it securely before closing the response. You cannot retrieve the plaintext key again after this. All previously issued child keys are immediately revoked when you reissue the root key.
+</Warning>
+
+<Note>
+  Email verification is required before a key can be issued or reissued. Child keys cannot call this route — you must authenticate with a session JWT or the root API key.
+</Note>

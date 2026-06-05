@@ -1,0 +1,514 @@
+---
+title: "Sub-Keys API: Create Child API Keys (Quant)"
+description: "Create and manage up to 25 child API keys under your Quant root key, each with optional per-key quota and rate limit overrides for access delegation."
+---
+
+The Sub-Keys API lets Quant accounts create up to 25 child API keys under a single active root key. Child keys inherit the Quant tier and can access all data endpoints, but they cannot create, update, revoke, or rotate keys. You can optionally apply per-child quota and RPM overrides to limit usage — overrides can only reduce limits below the parent tier ceiling, never increase them.
+
+<Note>
+  Sub-keys are available on Quant accounts only. All management routes require authentication with a session JWT or the root API key. Child keys cannot call management routes.
+</Note>
+
+## GET /account/sub-keys
+
+Returns all active child keys with their current-month request counts.
+
+**Tier:** Quant · **Rate limit:** Standard per-tier RPM
+
+<CodeGroup>
+
+```bash cURL
+curl -sS \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  "$CS2C_API_BASE/account/sub-keys?limit=10&offset=0"
+```
+
+```python Python
+import os
+import requests
+
+base = os.environ["CS2C_API_BASE"]
+key = os.environ["CS2C_API_KEY"]
+
+response = requests.get(
+    f"{base}/account/sub-keys",
+    headers={"Authorization": f"Bearer {key}"},
+    params={"limit": 10, "offset": 0},
+    timeout=20,
+)
+response.raise_for_status()
+print(response.json())
+```
+
+```javascript JavaScript
+const base = process.env.CS2C_API_BASE;
+const key = process.env.CS2C_API_KEY;
+
+const url = new URL(`${base}/account/sub-keys`);
+url.searchParams.set('limit', '10');
+url.searchParams.set('offset', '0');
+
+const response = await fetch(url, {
+  headers: { Authorization: `Bearer ${key}` },
+});
+
+if (!response.ok) {
+  throw new Error(`${response.status} ${await response.text()}`);
+}
+
+console.log(await response.json());
+```
+
+</CodeGroup>
+
+<ParamField query="limit" type="integer" default="25">
+  Page size, clamped to 1–100.
+</ParamField>
+
+<ParamField query="offset" type="integer" default="0">
+  Zero-based starting position.
+</ParamField>
+
+
+```json Response example
+{
+  "keys": [
+    {
+      "key": {
+        "id": "cccccccc-cccc-cccc-cccc-cccccccccccc",
+        "key_prefix": "sk_live_child",
+        "name": "research-bot",
+        "root_key_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+        "is_root_key": false,
+        "is_active": true,
+        "created_at": "2026-03-02T12:00:00Z",
+        "last_used_at": "2026-03-03T08:10:00Z",
+        "expires_at": null,
+        "quota_requests_per_month_override": 50000,
+        "rate_requests_per_minute_override": 120,
+        "effective_quota_requests_per_month": 50000,
+        "effective_rate_requests_per_minute": 120
+      },
+      "requests_this_month": 812
+    }
+  ],
+  "pagination": {
+    "limit": 25,
+    "offset": 0,
+    "total": 1
+  }
+}
+```
+
+<ResponseField name="keys[].key" type="object">
+  Key metadata object. Fields are identical to those returned by `GET /account/key`.
+</ResponseField>
+
+<ResponseField name="keys[].requests_this_month" type="integer">
+  Number of requests made with this child key in the current calendar month.
+</ResponseField>
+
+<ResponseField name="pagination.total" type="integer">
+  Total number of active child keys.
+</ResponseField>
+
+---
+
+## POST /account/sub-keys
+
+Creates a new child API key and returns the plaintext key value once.
+
+**Tier:** Quant · **Rate limit:** Standard per-tier RPM
+
+<CodeGroup>
+
+```bash cURL
+curl -sS -X POST \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"analytics-worker","quota_requests_per_month_override":100000}' \
+  "$CS2C_API_BASE/account/sub-keys"
+```
+
+```python Python
+import os
+import requests
+
+base = os.environ["CS2C_API_BASE"]
+key = os.environ["CS2C_API_KEY"]
+
+response = requests.post(
+    f"{base}/account/sub-keys",
+    headers={"Authorization": f"Bearer {key}"},
+    json={
+        "name": "analytics-worker",
+        "quota_requests_per_month_override": 100000,
+    },
+    timeout=20,
+)
+response.raise_for_status()
+print(response.json())
+```
+
+```javascript JavaScript
+const base = process.env.CS2C_API_BASE;
+const key = process.env.CS2C_API_KEY;
+
+const response = await fetch(`${base}/account/sub-keys`, {
+  method: 'POST',
+  headers: {
+    Authorization: `Bearer ${key}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    name: 'analytics-worker',
+    quota_requests_per_month_override: 100000,
+  }),
+});
+
+if (!response.ok) {
+  throw new Error(`${response.status} ${await response.text()}`);
+}
+
+console.log(await response.json());
+```
+
+</CodeGroup>
+
+<ParamField body="name" type="string" required>
+  Display name for the child key (e.g., `research-bot`).
+</ParamField>
+
+<ParamField body="quota_requests_per_month_override" type="integer">
+  Optional monthly request cap for this child key. Must be less than or equal to the parent tier quota. Omit to inherit the parent tier ceiling with no additional child-specific cap.
+</ParamField>
+
+<ParamField body="rate_requests_per_minute_override" type="integer">
+  Optional per-minute rate limit for this child key. Must be less than or equal to the parent tier RPM. Omit to inherit the parent ceiling.
+</ParamField>
+
+```json Request body
+{
+  "name": "research-bot",
+  "quota_requests_per_month_override": 50000,
+  "rate_requests_per_minute_override": 120
+}
+```
+
+<Warning>
+  The plaintext key is returned **once only** in the creation response. Copy and store it securely immediately. You cannot retrieve the plaintext value again after this response. Attempting to create more than 25 child keys returns `409`.
+</Warning>
+
+---
+
+## GET /account/sub-keys/:id
+
+Returns one active child key and its current-month request count.
+
+**Tier:** Quant · **Rate limit:** Standard per-tier RPM
+
+<CodeGroup>
+
+```bash cURL
+curl -sS \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  "$CS2C_API_BASE/account/sub-keys/YOUR_KEY_ID"
+```
+
+```python Python
+import os
+import requests
+
+base = os.environ["CS2C_API_BASE"]
+key = os.environ["CS2C_API_KEY"]
+key_id = "YOUR_KEY_ID"
+
+response = requests.get(
+    f"{base}/account/sub-keys/{key_id}",
+    headers={"Authorization": f"Bearer {key}"},
+    timeout=20,
+)
+response.raise_for_status()
+print(response.json())
+```
+
+```javascript JavaScript
+const base = process.env.CS2C_API_BASE;
+const key = process.env.CS2C_API_KEY;
+const keyId = 'YOUR_KEY_ID';
+
+const response = await fetch(`${base}/account/sub-keys/${keyId}`, {
+  headers: { Authorization: `Bearer ${key}` },
+});
+
+if (!response.ok) {
+  throw new Error(`${response.status} ${await response.text()}`);
+}
+
+console.log(await response.json());
+```
+
+</CodeGroup>
+
+<ParamField path="key_id" type="string" required>
+  UUID of the child key to retrieve.
+</ParamField>
+
+---
+
+## PATCH /account/sub-keys/:id
+
+Updates a child key's name and optional quota or RPM overrides.
+
+**Tier:** Quant · **Rate limit:** Standard per-tier RPM
+
+<CodeGroup>
+
+```bash cURL
+curl -sS -X PATCH \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"analytics-worker-v2","quota_requests_per_month_override":200000}' \
+  "$CS2C_API_BASE/account/sub-keys/YOUR_KEY_ID"
+```
+
+```python Python
+import os
+import requests
+
+base = os.environ["CS2C_API_BASE"]
+key = os.environ["CS2C_API_KEY"]
+key_id = "YOUR_KEY_ID"
+
+response = requests.patch(
+    f"{base}/account/sub-keys/{key_id}",
+    headers={"Authorization": f"Bearer {key}"},
+    json={
+        "name": "analytics-worker-v2",
+        "quota_requests_per_month_override": 200000,
+    },
+    timeout=20,
+)
+response.raise_for_status()
+print(response.json())
+```
+
+```javascript JavaScript
+const base = process.env.CS2C_API_BASE;
+const key = process.env.CS2C_API_KEY;
+const keyId = 'YOUR_KEY_ID';
+
+const response = await fetch(`${base}/account/sub-keys/${keyId}`, {
+  method: 'PATCH',
+  headers: {
+    Authorization: `Bearer ${key}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    name: 'analytics-worker-v2',
+    quota_requests_per_month_override: 200000,
+  }),
+});
+
+if (!response.ok) {
+  throw new Error(`${response.status} ${await response.text()}`);
+}
+
+console.log(await response.json());
+```
+
+</CodeGroup>
+
+<ParamField path="key_id" type="string" required>
+  UUID of the child key to update.
+</ParamField>
+
+<ParamField body="name" type="string">
+  Updated display name.
+</ParamField>
+
+<ParamField body="quota_requests_per_month_override" type="integer | null">
+  Updated monthly quota cap, or `null` to remove the child-specific cap and fall back to the parent tier ceiling.
+</ParamField>
+
+<ParamField body="rate_requests_per_minute_override" type="integer | null">
+  Updated RPM limit, or `null` to remove the child-specific cap and fall back to the parent tier ceiling.
+</ParamField>
+
+```json Request body
+{
+  "name": "research-bot-v2",
+  "quota_requests_per_month_override": 25000,
+  "rate_requests_per_minute_override": 60
+}
+```
+
+<Tip>
+  Set an override field to `null` to remove that child-specific cap. The child key will then use the full parent tier ceiling for that limit.
+</Tip>
+
+---
+
+## DELETE /account/sub-keys/:id
+
+Revokes an active child key. The key immediately stops authenticating requests.
+
+**Tier:** Quant · **Rate limit:** Standard per-tier RPM
+
+<CodeGroup>
+
+```bash cURL
+curl -sS -X DELETE \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  "$CS2C_API_BASE/account/sub-keys/YOUR_KEY_ID"
+```
+
+```python Python
+import os
+import requests
+
+base = os.environ["CS2C_API_BASE"]
+key = os.environ["CS2C_API_KEY"]
+key_id = "YOUR_KEY_ID"
+
+response = requests.delete(
+    f"{base}/account/sub-keys/{key_id}",
+    headers={"Authorization": f"Bearer {key}"},
+    timeout=20,
+)
+response.raise_for_status()
+print(response.json())
+```
+
+```javascript JavaScript
+const base = process.env.CS2C_API_BASE;
+const key = process.env.CS2C_API_KEY;
+const keyId = 'YOUR_KEY_ID';
+
+const response = await fetch(`${base}/account/sub-keys/${keyId}`, {
+  method: 'DELETE',
+  headers: { Authorization: `Bearer ${key}` },
+});
+
+if (!response.ok) {
+  throw new Error(`${response.status} ${await response.text()}`);
+}
+
+console.log(await response.json());
+```
+
+</CodeGroup>
+
+<ParamField path="key_id" type="string" required>
+  UUID of the child key to revoke.
+</ParamField>
+
+```json Response example
+{
+  "ok": true,
+  "key_id": "cccccccc-cccc-cccc-cccc-cccccccccccc",
+  "revoked_at": "2026-03-03T08:12:00+00:00"
+}
+```
+
+<ResponseField name="ok" type="boolean">
+  Always `true` on success.
+</ResponseField>
+
+<ResponseField name="key_id" type="string">
+  UUID of the revoked key.
+</ResponseField>
+
+<ResponseField name="revoked_at" type="string">
+  ISO 8601 timestamp when the key was revoked.
+</ResponseField>
+
+---
+
+## POST /account/sub-keys/:id/reissue
+
+Replaces an active child key and returns the new plaintext key once. The old child key is immediately revoked.
+
+**Tier:** Quant · **Rate limit:** Standard per-tier RPM
+
+<CodeGroup>
+
+```bash cURL
+curl -sS -X POST \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  "$CS2C_API_BASE/account/sub-keys/YOUR_KEY_ID/reissue"
+```
+
+```python Python
+import os
+import requests
+
+base = os.environ["CS2C_API_BASE"]
+key = os.environ["CS2C_API_KEY"]
+key_id = "YOUR_KEY_ID"
+
+response = requests.post(
+    f"{base}/account/sub-keys/{key_id}/reissue",
+    headers={"Authorization": f"Bearer {key}"},
+    timeout=20,
+)
+response.raise_for_status()
+print(response.json())
+```
+
+```javascript JavaScript
+const base = process.env.CS2C_API_BASE;
+const key = process.env.CS2C_API_KEY;
+const keyId = 'YOUR_KEY_ID';
+
+const response = await fetch(`${base}/account/sub-keys/${keyId}/reissue`, {
+  method: 'POST',
+  headers: { Authorization: `Bearer ${key}` },
+});
+
+if (!response.ok) {
+  throw new Error(`${response.status} ${await response.text()}`);
+}
+
+console.log(await response.json());
+```
+
+</CodeGroup>
+
+<ParamField path="key_id" type="string" required>
+  UUID of the child key to reissue.
+</ParamField>
+
+```json Response example
+{
+  "key": "sk_live_<xxxx>",
+  "key_info": {
+    "id": "dddddddd-dddd-dddd-dddd-dddddddddddd",
+    "key_prefix": "sk_live_child",
+    "name": "research-bot",
+    "root_key_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+    "is_root_key": false,
+    "is_active": true,
+    "created_at": "2026-03-03T08:15:00Z",
+    "last_used_at": null,
+    "expires_at": null,
+    "quota_requests_per_month_override": 50000,
+    "rate_requests_per_minute_override": 120,
+    "effective_quota_requests_per_month": 50000,
+    "effective_rate_requests_per_minute": 120
+  },
+  "message": "Store this key securely. It will not be shown again."
+}
+```
+
+<ResponseField name="key" type="string">
+  The new plaintext child key value. Shown only once.
+</ResponseField>
+
+<ResponseField name="key_info" type="object">
+  Updated metadata for the reissued key. Overrides and name are preserved from the old key.
+</ResponseField>
+
+<Warning>
+  The new plaintext key is returned **once only**. Copy and store it securely before closing the response.
+</Warning>

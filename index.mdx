@@ -1,0 +1,54 @@
+---
+title: "CS2Cap: Unified CS2 Market Data API Documentation"
+description: "CS2Cap aggregates prices, buy orders, sales, and analytics from 41 CS2 marketplaces into one unified API. Start querying in minutes."
+---
+
+CS2Cap gives you normalized market data from 41 CS2 marketplaces — including BUFF163, CSFloat, GameBoost, Skinport, Steam, and more — through a single REST API. Whether you're building a trading bot, pricing tool, or portfolio tracker, CS2Cap handles the data aggregation so you don't have to.
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="bolt" href="/quickstart">
+    Make your first API call in under 5 minutes with cURL, Python, or JavaScript.
+  </Card>
+  <Card title="Authentication" icon="key" href="/authentication">
+    Get your API key and learn how to authenticate every request.
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/overview">
+    Explore all endpoints: prices, bids, sales, analytics, and more.
+  </Card>
+  <Card title="Pricing & Plans" icon="credit-card" href="/guides/pricing-plans">
+    Compare Free, Starter, Pro, and Quant tiers by endpoint access and quotas.
+  </Card>
+</CardGroup>
+
+## What you can build
+
+CS2Cap powers a wide range of CS2 applications:
+
+<CardGroup cols={2}>
+  <Card title="Price Aggregation" icon="chart-line" href="/api-reference/prices">
+    Query lowest asks across all providers at once with 5–10 minute data freshness.
+  </Card>
+  <Card title="Buy Order Tracking" icon="arrow-up" href="/api-reference/bids">
+    Monitor highest buy orders across 11 buy-order-enabled marketplaces.
+  </Card>
+  <Card title="Market Analytics" icon="magnifying-glass-chart" href="/api-reference/market-analytics">
+    Arbitrage scanning, technical indicators, and market cap indexes for Quant users.
+  </Card>
+  <Card title="Portfolio Management" icon="briefcase" href="/api-reference/portfolio">
+    Track holdings, import from Steam, record transactions, and value portfolios in real time.
+  </Card>
+</CardGroup>
+
+## Get started in 3 steps
+
+<Steps>
+  <Step title="Create an account">
+    Sign up at [cs2cap.com](https://cs2cap.com?utm_source=docs&utm_medium=referral&utm_campaign=docs), verify your email address, and generate your API key from the Account page.
+  </Step>
+  <Step title="Make your first request">
+    Pass your key in the `Authorization: Bearer` header and query [`/prices`](/api-reference/prices) to get live prices for any CS2 item.
+  </Step>
+  <Step title="Explore the API">
+    Browse the [API Reference](/api-reference/overview) to discover endpoints for bids, sales, portfolio management, and advanced analytics.
+  </Step>
+</Steps>

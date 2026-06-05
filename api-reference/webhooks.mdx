@@ -1,0 +1,699 @@
+---
+title: "Webhooks API: Real-Time Event Delivery (Quant)"
+description: "Register HTTPS endpoints to receive CS2Cap alert events in real time, rotate signing secrets, and inspect delivery history and retry attempts."
+---
+
+The Webhooks API lets Quant accounts register outbound alert destinations that receive real-time `alert.triggered` events. Custom and Google Sheets destinations receive the signed CS2Cap event JSON. Discord and Telegram destinations receive native message payloads formatted for those platforms. You can inspect delivery history, check retry attempts, and rotate signing secrets without downtime.
+
+<Note>
+  Webhooks are available on Quant accounts only.
+</Note>
+
+## GET /account/webhooks
+
+Returns all outbound webhook destinations configured for your account.
+
+**Auth:** Bearer token · **Rate limit:** Standard per-tier RPM
+
+<CodeGroup>
+
+```bash cURL
+curl -sS \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  "$CS2C_API_BASE/account/webhooks"
+```
+
+```python Python
+import os
+import requests
+
+base = os.environ["CS2C_API_BASE"]
+key = os.environ["CS2C_API_KEY"]
+
+response = requests.get(
+    f"{base}/account/webhooks",
+    headers={"Authorization": f"Bearer {key}"},
+    timeout=20,
+)
+response.raise_for_status()
+print(response.json())
+```
+
+```javascript JavaScript
+const base = process.env.CS2C_API_BASE;
+const key = process.env.CS2C_API_KEY;
+
+const response = await fetch(`${base}/account/webhooks`, {
+  headers: { Authorization: `Bearer ${key}` },
+});
+
+if (!response.ok) {
+  throw new Error(`${response.status} ${await response.text()}`);
+}
+
+console.log(await response.json());
+```
+
+</CodeGroup>
+
+```json Response example
+{
+  "webhooks": [
+    {
+      "id": "3b1f1d4c-7b8e-4cc8-bb7b-5d8d0d2a7e11",
+      "label": "Production alerts",
+      "url": "https://hooks.example.com/cs2c",
+      "platform": "custom",
+      "secret_last4": "9f2a",
+      "is_active": true,
+      "last_success_at": "2026-04-12T18:20:11Z",
+      "last_failure_at": null,
+      "last_failure_message": null,
+      "created_at": "2026-04-01T12:00:00Z",
+      "updated_at": "2026-04-12T18:20:11Z"
+    }
+  ]
+}
+```
+
+<ResponseField name="webhooks[].id" type="string">
+  UUID for this webhook destination.
+</ResponseField>
+
+<ResponseField name="webhooks[].label" type="string">
+  Display name for the webhook.
+</ResponseField>
+
+<ResponseField name="webhooks[].url" type="string">
+  Delivery URL.
+</ResponseField>
+
+<ResponseField name="webhooks[].platform" type="string">
+  Delivery platform key: `custom`, `discord`, `telegram`, or `google_sheets`.
+</ResponseField>
+
+<ResponseField name="webhooks[].secret_last4" type="string">
+  Last four characters of the signing secret. The full secret is shown only at creation or rotation.
+</ResponseField>
+
+<ResponseField name="webhooks[].is_active" type="boolean">
+  Whether the webhook is currently receiving deliveries.
+</ResponseField>
+
+<ResponseField name="webhooks[].last_success_at" type="string | null">
+  ISO 8601 timestamp of the most recent successful delivery, or `null` if none has occurred yet.
+</ResponseField>
+
+<ResponseField name="webhooks[].last_failure_at" type="string | null">
+  ISO 8601 timestamp of the most recent failed delivery, or `null`.
+</ResponseField>
+
+<ResponseField name="webhooks[].last_failure_message" type="string | null">
+  Error message from the most recent failure, or `null`.
+</ResponseField>
+
+---
+
+## POST /account/webhooks
+
+Creates one outbound webhook destination and returns its signing secret.
+
+**Auth:** Bearer token · **Rate limit:** Standard per-tier RPM
+
+<CodeGroup>
+
+```bash cURL
+curl -sS -X POST \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"label":"Production alerts","url":"https://hooks.example.com/cs2c","platform":"custom","is_active":true}' \
+  "$CS2C_API_BASE/account/webhooks"
+```
+
+```python Python
+import os
+import requests
+
+base = os.environ["CS2C_API_BASE"]
+key = os.environ["CS2C_API_KEY"]
+
+response = requests.post(
+    f"{base}/account/webhooks",
+    headers={"Authorization": f"Bearer {key}"},
+    json={
+        "label": "Production alerts",
+        "url": "https://hooks.example.com/cs2c",
+        "platform": "custom",
+        "is_active": True,
+    },
+    timeout=20,
+)
+response.raise_for_status()
+print(response.json())
+```
+
+```javascript JavaScript
+const base = process.env.CS2C_API_BASE;
+const key = process.env.CS2C_API_KEY;
+
+const response = await fetch(`${base}/account/webhooks`, {
+  method: 'POST',
+  headers: {
+    Authorization: `Bearer ${key}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    label: 'Production alerts',
+    url: 'https://hooks.example.com/cs2c',
+    platform: 'custom',
+    is_active: true,
+  }),
+});
+
+if (!response.ok) {
+  throw new Error(`${response.status} ${await response.text()}`);
+}
+
+console.log(await response.json());
+```
+
+</CodeGroup>
+
+<ParamField body="label" type="string" required>
+  Display name for the webhook (e.g., `Production alerts`).
+</ParamField>
+
+<ParamField body="url" type="string" required>
+  Delivery URL. Must be a valid HTTP or HTTPS endpoint.
+</ParamField>
+
+<ParamField body="platform" type="string" default="custom">
+  Delivery platform key. Use `custom` for signed CS2Cap JSON, `discord` for Discord webhooks, `telegram` for Telegram Bot API `sendMessage` URLs, or `google_sheets` for Apps Script-style receivers. Telegram URLs must include a `chat_id` query parameter.
+</ParamField>
+
+<ParamField body="is_active" type="boolean" default="true">
+  Set to `false` to register the webhook in a paused state.
+</ParamField>
+
+```json Request body
+{
+  "label": "Production alerts",
+  "url": "https://hooks.example.com/cs2c",
+  "platform": "custom",
+  "is_active": true
+}
+```
+
+```json Response example
+{
+  "webhook": {
+    "id": "3b1f1d4c-7b8e-4cc8-bb7b-5d8d0d2a7e11",
+    "label": "Production alerts",
+    "url": "https://hooks.example.com/cs2c",
+    "platform": "custom",
+    "secret_last4": "9f2a",
+    "is_active": true,
+    "last_success_at": null,
+    "last_failure_at": null,
+    "last_failure_message": null,
+    "created_at": "2026-04-12T18:20:11Z",
+    "updated_at": "2026-04-12T18:20:11Z"
+  },
+  "secret": "whsec_live_8f4f4f4c"
+}
+```
+
+<ResponseField name="secret" type="string">
+  Full plaintext signing secret for this webhook. Use this to verify the `X-CS2Cap-Signature` header on incoming deliveries.
+</ResponseField>
+
+<Warning>
+  The signing secret is returned **once only** at creation. Copy and store it securely before closing the response. After this, only `secret_last4` is available. To get a new secret, use the rotate-secret endpoint.
+</Warning>
+
+---
+
+## GET /account/webhooks/deliveries
+
+Returns outbound webhook delivery jobs for your account, newest first.
+
+**Auth:** Bearer token · **Rate limit:** Standard per-tier RPM
+
+<CodeGroup>
+
+```bash cURL
+curl -sS \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  "$CS2C_API_BASE/account/webhooks/deliveries?limit=25&offset=0"
+```
+
+```python Python
+import os
+import requests
+
+base = os.environ["CS2C_API_BASE"]
+key = os.environ["CS2C_API_KEY"]
+
+response = requests.get(
+    f"{base}/account/webhooks/deliveries",
+    headers={"Authorization": f"Bearer {key}"},
+    params={"limit": 25, "offset": 0},
+    timeout=20,
+)
+response.raise_for_status()
+print(response.json())
+```
+
+```javascript JavaScript
+const base = process.env.CS2C_API_BASE;
+const key = process.env.CS2C_API_KEY;
+
+const url = new URL(`${base}/account/webhooks/deliveries`);
+url.searchParams.set('limit', '25');
+url.searchParams.set('offset', '0');
+
+const response = await fetch(url, {
+  headers: { Authorization: `Bearer ${key}` },
+});
+
+if (!response.ok) {
+  throw new Error(`${response.status} ${await response.text()}`);
+}
+
+console.log(await response.json());
+```
+
+</CodeGroup>
+
+<ParamField query="limit" type="integer" default="25">
+  Page size, clamped to 1–100.
+</ParamField>
+
+<ParamField query="offset" type="integer" default="0">
+  Zero-based starting position.
+</ParamField>
+
+```json Response example
+{
+  "deliveries": [
+    {
+      "id": "deliv_01J0Y8QYVQW4H6Q3S9JX3B4G6H",
+      "event_id": "evt_01J0Y8QYVQW4H6Q3S9JX3B4G6H",
+      "endpoint_id": "3b1f1d4c-7b8e-4cc8-bb7b-5d8d0d2a7e11",
+      "endpoint_label": "Production alerts",
+      "endpoint_url": "https://hooks.example.com/cs2c",
+      "platform": "custom",
+      "event_type": "alert.triggered",
+      "status": "succeeded",
+      "attempt_count": 1,
+      "last_http_status": 200,
+      "error": null,
+      "next_attempt_at": null,
+      "created_at": "2026-04-12T18:20:11Z",
+      "completed_at": "2026-04-12T18:20:12Z"
+    }
+  ],
+  "pagination": {
+    "limit": 25,
+    "offset": 0,
+    "total": 1
+  }
+}
+```
+
+<ResponseField name="deliveries[].id" type="string">
+  Delivery job ID.
+</ResponseField>
+
+<ResponseField name="deliveries[].event_id" type="string">
+  ID of the alert event that triggered this delivery.
+</ResponseField>
+
+<ResponseField name="deliveries[].endpoint_id" type="string">
+  UUID of the webhook destination.
+</ResponseField>
+
+<ResponseField name="deliveries[].platform" type="string">
+  Platform snapshot used for this delivery.
+</ResponseField>
+
+<ResponseField name="deliveries[].event_type" type="string">
+  Event type. Currently always `alert.triggered`.
+</ResponseField>
+
+<ResponseField name="deliveries[].status" type="string">
+  Delivery status: `pending`, `succeeded`, or `failed`.
+</ResponseField>
+
+<ResponseField name="deliveries[].attempt_count" type="integer">
+  Total number of delivery attempts made.
+</ResponseField>
+
+<ResponseField name="deliveries[].last_http_status" type="integer | null">
+  HTTP status code returned by your endpoint on the last attempt.
+</ResponseField>
+
+<ResponseField name="deliveries[].next_attempt_at" type="string | null">
+  ISO 8601 timestamp for the next retry, or `null` if no retry is scheduled.
+</ResponseField>
+
+---
+
+## GET /account/webhooks/deliveries/:id
+
+Returns one webhook delivery job and its full attempt history.
+
+**Auth:** Bearer token · **Rate limit:** Standard per-tier RPM
+
+<CodeGroup>
+
+```bash cURL
+curl -sS \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  "$CS2C_API_BASE/account/webhooks/deliveries/YOUR_DELIVERY_ID"
+```
+
+```python Python
+import os
+import requests
+
+base = os.environ["CS2C_API_BASE"]
+key = os.environ["CS2C_API_KEY"]
+delivery_id = "YOUR_DELIVERY_ID"
+
+response = requests.get(
+    f"{base}/account/webhooks/deliveries/{delivery_id}",
+    headers={"Authorization": f"Bearer {key}"},
+    timeout=20,
+)
+response.raise_for_status()
+print(response.json())
+```
+
+```javascript JavaScript
+const base = process.env.CS2C_API_BASE;
+const key = process.env.CS2C_API_KEY;
+const deliveryId = 'YOUR_DELIVERY_ID';
+
+const response = await fetch(`${base}/account/webhooks/deliveries/${deliveryId}`, {
+  headers: { Authorization: `Bearer ${key}` },
+});
+
+if (!response.ok) {
+  throw new Error(`${response.status} ${await response.text()}`);
+}
+
+console.log(await response.json());
+```
+
+</CodeGroup>
+
+<ParamField path="delivery_id" type="string" required>
+  Delivery job ID to retrieve.
+</ParamField>
+
+```json Response example
+{
+  "id": "deliv_01J0Y8QYVQW4H6Q3S9JX3B4G6H",
+  "event_id": "evt_01J0Y8QYVQW4H6Q3S9JX3B4G6H",
+  "endpoint_id": "3b1f1d4c-7b8e-4cc8-bb7b-5d8d0d2a7e11",
+  "endpoint_label": "Production alerts",
+  "endpoint_url": "https://hooks.example.com/cs2c",
+  "platform": "custom",
+  "event_type": "alert.triggered",
+  "status": "succeeded",
+  "attempt_count": 1,
+  "last_http_status": 200,
+  "error": null,
+  "next_attempt_at": null,
+  "created_at": "2026-04-12T18:20:11Z",
+  "completed_at": "2026-04-12T18:20:12Z",
+  "payload": {
+    "alert_id": "6a49b4bc-95c6-4c98-8d40-5e3fca7b15e4",
+    "item_id": 156,
+    "market_hash_name": "AK-47 | Redline (Field-Tested)"
+  },
+  "attempts": [
+    {
+      "attempt_number": 1,
+      "status": "succeeded",
+      "http_status": 200,
+      "error": null,
+      "response_body_excerpt": null,
+      "created_at": "2026-04-12T18:20:12Z"
+    }
+  ]
+}
+```
+
+<ResponseField name="payload" type="object">
+  The JSON body that was sent to your endpoint for this delivery.
+</ResponseField>
+
+<ResponseField name="attempts" type="array">
+  Ordered list of delivery attempts for this job.
+  <Expandable title="attempt properties">
+    <ResponseField name="attempt_number" type="integer">Sequential attempt number starting at 1.</ResponseField>
+    <ResponseField name="status" type="string">Attempt outcome: `succeeded` or `failed`.</ResponseField>
+    <ResponseField name="http_status" type="integer | null">HTTP status code your endpoint returned.</ResponseField>
+    <ResponseField name="error" type="string | null">Internal error message if the attempt could not reach your endpoint.</ResponseField>
+    <ResponseField name="response_body_excerpt" type="string | null">Excerpt of your endpoint's response body, if available.</ResponseField>
+    <ResponseField name="created_at" type="string">ISO 8601 timestamp of this attempt.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+## PATCH /account/webhooks/:id
+
+Updates the editable fields of a webhook destination.
+
+**Auth:** Bearer token · **Rate limit:** Standard per-tier RPM
+
+<CodeGroup>
+
+```bash cURL
+curl -sS -X PATCH \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"label":"Production alerts v2","is_active":false}' \
+  "$CS2C_API_BASE/account/webhooks/YOUR_WEBHOOK_ID"
+```
+
+```python Python
+import os
+import requests
+
+base = os.environ["CS2C_API_BASE"]
+key = os.environ["CS2C_API_KEY"]
+webhook_id = "YOUR_WEBHOOK_ID"
+
+response = requests.patch(
+    f"{base}/account/webhooks/{webhook_id}",
+    headers={"Authorization": f"Bearer {key}"},
+    json={"label": "Production alerts v2", "is_active": False},
+    timeout=20,
+)
+response.raise_for_status()
+print(response.json())
+```
+
+```javascript JavaScript
+const base = process.env.CS2C_API_BASE;
+const key = process.env.CS2C_API_KEY;
+const webhookId = 'YOUR_WEBHOOK_ID';
+
+const response = await fetch(`${base}/account/webhooks/${webhookId}`, {
+  method: 'PATCH',
+  headers: {
+    Authorization: `Bearer ${key}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({ label: 'Production alerts v2', is_active: false }),
+});
+
+if (!response.ok) {
+  throw new Error(`${response.status} ${await response.text()}`);
+}
+
+console.log(await response.json());
+```
+
+</CodeGroup>
+
+<ParamField path="webhook_id" type="string" required>
+  UUID of the webhook to update.
+</ParamField>
+
+<ParamField body="label" type="string">
+  Updated display name.
+</ParamField>
+
+<ParamField body="url" type="string">
+  Updated delivery URL (HTTP or HTTPS).
+</ParamField>
+
+<ParamField body="platform" type="string">
+  Updated delivery platform key. If set to `telegram`, the delivery URL must include a `chat_id` query parameter.
+</ParamField>
+
+<ParamField body="is_active" type="boolean">
+  Updated active state. Set to `false` to pause deliveries without deleting the webhook.
+</ParamField>
+
+```json Request body
+{
+  "label": "Production alerts v2",
+  "url": "https://hooks.example.com/cs2c-v2",
+  "platform": "custom",
+  "is_active": true
+}
+```
+
+<Note>
+  Omit any field to leave it unchanged.
+</Note>
+
+---
+
+## DELETE /account/webhooks/:id
+
+Deletes an outbound webhook destination. Pending deliveries for this destination are cancelled.
+
+**Auth:** Bearer token · **Rate limit:** Standard per-tier RPM
+
+<CodeGroup>
+
+```bash cURL
+curl -sS -X DELETE \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  "$CS2C_API_BASE/account/webhooks/YOUR_WEBHOOK_ID"
+```
+
+```python Python
+import os
+import requests
+
+base = os.environ["CS2C_API_BASE"]
+key = os.environ["CS2C_API_KEY"]
+webhook_id = "YOUR_WEBHOOK_ID"
+
+response = requests.delete(
+    f"{base}/account/webhooks/{webhook_id}",
+    headers={"Authorization": f"Bearer {key}"},
+    timeout=20,
+)
+response.raise_for_status()
+print(response.json())
+```
+
+```javascript JavaScript
+const base = process.env.CS2C_API_BASE;
+const key = process.env.CS2C_API_KEY;
+const webhookId = 'YOUR_WEBHOOK_ID';
+
+const response = await fetch(`${base}/account/webhooks/${webhookId}`, {
+  method: 'DELETE',
+  headers: { Authorization: `Bearer ${key}` },
+});
+
+if (!response.ok) {
+  throw new Error(`${response.status} ${await response.text()}`);
+}
+
+console.log(await response.json());
+```
+
+</CodeGroup>
+
+<ParamField path="webhook_id" type="string" required>
+  UUID of the webhook to delete.
+</ParamField>
+
+```json Response example
+{
+  "ok": true
+}
+```
+
+---
+
+## POST /account/webhooks/:id/rotate-secret
+
+Rotates the signing secret for a webhook destination and returns the new secret once.
+
+**Auth:** Bearer token · **Rate limit:** Standard per-tier RPM
+
+<CodeGroup>
+
+```bash cURL
+curl -sS -X POST \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  "$CS2C_API_BASE/account/webhooks/YOUR_WEBHOOK_ID/rotate-secret"
+```
+
+```python Python
+import os
+import requests
+
+base = os.environ["CS2C_API_BASE"]
+key = os.environ["CS2C_API_KEY"]
+webhook_id = "YOUR_WEBHOOK_ID"
+
+response = requests.post(
+    f"{base}/account/webhooks/{webhook_id}/rotate-secret",
+    headers={"Authorization": f"Bearer {key}"},
+    timeout=20,
+)
+response.raise_for_status()
+print(response.json())
+```
+
+```javascript JavaScript
+const base = process.env.CS2C_API_BASE;
+const key = process.env.CS2C_API_KEY;
+const webhookId = 'YOUR_WEBHOOK_ID';
+
+const response = await fetch(`${base}/account/webhooks/${webhookId}/rotate-secret`, {
+  method: 'POST',
+  headers: { Authorization: `Bearer ${key}` },
+});
+
+if (!response.ok) {
+  throw new Error(`${response.status} ${await response.text()}`);
+}
+
+console.log(await response.json());
+```
+
+</CodeGroup>
+
+<ParamField path="webhook_id" type="string" required>
+  UUID of the webhook whose secret you want to rotate.
+</ParamField>
+
+```json Response example
+{
+  "webhook": {
+    "id": "3b1f1d4c-7b8e-4cc8-bb7b-5d8d0d2a7e11",
+    "label": "Production alerts",
+    "url": "https://hooks.example.com/cs2c",
+    "secret_last4": "4c11",
+    "is_active": true,
+    "last_success_at": "2026-04-12T18:20:11Z",
+    "last_failure_at": null,
+    "last_failure_message": null,
+    "created_at": "2026-04-01T12:00:00Z",
+    "updated_at": "2026-04-12T18:20:11Z"
+  },
+  "secret": "whsec_live_9b1e2c3d"
+}
+```
+
+<ResponseField name="secret" type="string">
+  The new plaintext signing secret. Replace your stored secret with this value immediately.
+</ResponseField>
+
+<Warning>
+  The rotated secret is returned **once only**. Update your application's secret value before closing the response. Any deliveries signed with the old secret will fail verification after rotation.
+</Warning>
