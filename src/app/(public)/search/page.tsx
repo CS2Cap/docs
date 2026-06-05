@@ -13,6 +13,7 @@ import type {
   WebSearchSort,
 } from "@/lib/api/types";
 import { buildItemPath } from "@/lib/seo/itemSlug";
+import { formatItemDisplay, itemTagFrameClass, itemTagTextClass } from "@/lib/item-display";
 import { PendingResults } from "./PendingResults";
 
 type SearchParams = {
@@ -325,19 +326,6 @@ function priceChangeClass(value: number | null | undefined) {
   }
 
   return "text-foreground";
-}
-
-const WEAR_SUFFIXES = [
-  " (Factory New)",
-  " (Minimal Wear)",
-  " (Field-Tested)",
-  " (Well-Worn)",
-  " (Battle-Scarred)",
-];
-
-function stripWearSuffix(name: string) {
-  const suffix = WEAR_SUFFIXES.find((s) => name.endsWith(s));
-  return suffix ? name.slice(0, -suffix.length) : name;
 }
 
 function itemSubtitle(item: WebSearchItem) {
@@ -940,7 +928,9 @@ function SearchResultsTable({
           </div>
         </div>
       ) : (
-        data.items.map((item) => (
+        data.items.map((item) => {
+          const display = formatItemDisplay(item.market_hash_name);
+          return (
           <Link
             key={item.item_id}
             href={buildItemPath(item.item_id, item.market_hash_name)}
@@ -948,7 +938,7 @@ function SearchResultsTable({
           >
             <div className="md:grid md:grid-cols-[minmax(240px,1.4fr)_88px_88px_72px_72px_82px_52px] md:items-center md:gap-3">
               <div className="flex min-w-0 items-center gap-3">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden border border-border bg-secondary/50">
+                <div className={`flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden border bg-secondary/50 ${itemTagFrameClass(display.tag)}`}>
                   {item.image_url ? (
                     <Image
                       src={item.image_url}
@@ -963,7 +953,11 @@ function SearchResultsTable({
                 </div>
                 <div className="min-w-0">
                   <div className="truncate font-mono text-sm font-bold text-foreground md:hover:text-primary">
-                    {stripWearSuffix(item.market_hash_name)}
+                    {display.star ? "★ " : null}
+                    {display.prefix ? (
+                      <span className={itemTagTextClass(display.tag)}>{display.prefix} </span>
+                    ) : null}
+                    {display.name}
                   </div>
                   <div className="truncate font-mono text-xs uppercase tracking-widest text-muted-foreground">
                     {item.rank ? `#${item.rank} · ` : ""}{itemSubtitle(item)}
@@ -1019,7 +1013,8 @@ function SearchResultsTable({
               </div>
             </div>
           </Link>
-        ))
+          );
+        })
       )}
 
       <div className="mt-4 flex flex-col gap-3 terminal-panel px-3 py-3 md:flex-row md:items-center md:justify-between">
