@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/dialog";
 import posthog from "posthog-js";
 import { useBillingOverview, useBillingPlans, webApi } from "@/lib/api";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { queryKeys } from "@/lib/api/hooks";
 import { formatPriceMinor, planFeatureList } from "@/lib/api/view-models";
 import type { PlanInfo } from "@/lib/api/types";
@@ -76,7 +77,7 @@ export default function AccountBillingPage() {
   async function startCheckout(priceId: string, code: string) {
     setCheckoutLoadingCode(code);
     try {
-      posthog.capture("checkout_initiated", {
+      posthog.capture(ANALYTICS_EVENTS.checkoutInitiated, {
         plan_code: code,
         billing_cycle: cycleChoice,
         payment_method: "card",
@@ -98,7 +99,7 @@ export default function AccountBillingPage() {
   ) {
     setCheckoutLoadingCode(tierCode);
     try {
-      posthog.capture("checkout_initiated", {
+      posthog.capture(ANALYTICS_EVENTS.checkoutInitiated, {
         plan_code: tierCode,
         billing_cycle: interval,
         payment_method: "crypto",
@@ -126,7 +127,7 @@ export default function AccountBillingPage() {
       } else {
         setChangePlanMessage("Change scheduled for your next billing cycle.");
       }
-      posthog.capture("plan_changed", {
+      posthog.capture(ANALYTICS_EVENTS.planChanged, {
         new_plan_code: code,
         billing_cycle: cycleChoice,
         outcome: response.outcome,

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Loader2, RefreshCw } from "lucide-react";
 import posthog from "posthog-js";
 import { useSession, useSteamInventory, webApi } from "@/lib/api";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { useCurrency } from "@/lib/CurrencyContext";
 import { Button } from "@/components/ui/button";
 import { InventoryStatsStrip } from "@/components/inventory/InventoryStatsStrip";
@@ -29,7 +30,7 @@ export default function InventoryPage() {
 
   async function handleConnectSteam() {
     setLinking(true);
-    posthog.capture("provider_link_started", { provider: "steam", source: "inventory" });
+    posthog.capture(ANALYTICS_EVENTS.providerLinkStarted, { provider: "steam", source: "inventory" });
     try {
       const { redirect_url } = await webApi.startProviderLink("steam");
       window.location.assign(redirect_url);

@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import posthog from "posthog-js";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -268,7 +269,7 @@ export function DeliveryIntegrations({
                     platform: platform.id,
                     is_active: true,
                   });
-                  posthog.capture("webhook_created", { platform: platform.id });
+                  posthog.capture(ANALYTICS_EVENTS.webhookCreated, { platform: platform.id });
                   setRevealedSecret({ platform: platform.id, secret: response.secret });
                 }}
                 onToggle={(checked) => {
@@ -277,7 +278,7 @@ export function DeliveryIntegrations({
                     webhookId: existing.id,
                     data: { is_active: checked },
                   });
-                  posthog.capture("webhook_toggled", {
+                  posthog.capture(ANALYTICS_EVENTS.webhookToggled, {
                     platform: platform.id,
                     enabled: checked,
                   });
@@ -285,12 +286,12 @@ export function DeliveryIntegrations({
                 onDelete={() => {
                   if (!existing) return;
                   deleteMutation.mutate(existing.id);
-                  posthog.capture("webhook_deleted", { platform: platform.id });
+                  posthog.capture(ANALYTICS_EVENTS.webhookDeleted, { platform: platform.id });
                 }}
                 onRotate={async () => {
                   if (!existing) return;
                   const response = await rotateMutation.mutateAsync(existing.id);
-                  posthog.capture("webhook_secret_rotated", { platform: platform.id });
+                  posthog.capture(ANALYTICS_EVENTS.webhookSecretRotated, { platform: platform.id });
                   setRevealedSecret({ platform: platform.id, secret: response.secret });
                 }}
               />
@@ -464,7 +465,7 @@ function PlatformRow({
           <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
             <Link
               href="/pricing"
-              onClick={() => posthog.capture("webhook_upgrade_clicked", { platform: platform.id })}
+              onClick={() => posthog.capture(ANALYTICS_EVENTS.webhookUpgradeClicked, { platform: platform.id })}
             >
               Upgrade
             </Link>
