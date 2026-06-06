@@ -52,6 +52,16 @@ type ItemPageProps = {
 
 const SITE_URL = "https://cs2cap.com";
 
+function DeferredSection({
+  fallback,
+  children,
+}: {
+  fallback: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return <Suspense fallback={fallback}>{children}</Suspense>;
+}
+
 export async function generateMetadata({ params }: ItemPageProps): Promise<Metadata> {
   const { itemId } = await params;
   const parsed = parseItemRouteParam(itemId);
@@ -493,12 +503,12 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
             </div>
 
             <div className="space-y-6 lg:col-span-8 xl:col-span-9">
-              <Suspense fallback={<ItemConditionVariantTabsFallback />}>
+              <DeferredSection fallback={<ItemConditionVariantTabsFallback />}>
                 <ItemConditionVariantTabs
                   item={data.item}
                   currentItemId={numericItemId}
                 />
-              </Suspense>
+              </DeferredSection>
 
               <div className="border-brutal bg-card">
                 <div className="flex items-center justify-between border-b-2 border-border px-6 py-5">
@@ -551,26 +561,26 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                 />
               </div>
 
-              <Suspense fallback={<ItemPriceHistoryFallback />}>
+              <DeferredSection fallback={<ItemPriceHistoryFallback />}>
                 <ItemPriceHistorySection itemId={numericItemId} />
-              </Suspense>
+              </DeferredSection>
 
-              <Suspense fallback={<ItemMarketInsightsFallback />}>
+              <DeferredSection fallback={<ItemMarketInsightsFallback />}>
                 <ItemMarketInsightsSection
                   itemId={numericItemId}
                   listingProvidersCount={data.coverage.askProviders}
                 />
-              </Suspense>
+              </DeferredSection>
 
               <ItemCasesSection item={data.item} />
 
-              <Suspense fallback={<ItemRecentSalesFallback />}>
+              <DeferredSection fallback={<ItemRecentSalesFallback />}>
                 <ItemRecentSalesSection itemId={numericItemId} providers={data.providers} />
-              </Suspense>
+              </DeferredSection>
 
-              <Suspense fallback={<ItemRelatedItemsFallback />}>
+              <DeferredSection fallback={<ItemRelatedItemsFallback />}>
                 <ItemRelatedItemsSection item={data.item} />
-              </Suspense>
+              </DeferredSection>
             </div>
           </div>
         </div>

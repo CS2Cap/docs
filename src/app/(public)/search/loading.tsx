@@ -1,6 +1,4 @@
-function SkeletonLine({ className = "" }: { className?: string }) {
-  return <div className={`animate-pulse rounded-sm bg-secondary/70 ${className}`.trim()} />;
-}
+import { SkeletonLine } from "@/components/ui/skeleton";
 
 export default function Loading() {
   return (

@@ -34,8 +34,11 @@ export const queryKeys = {
   preferences: ["viewer"] as const,
   apiKey: ["api-key"] as const,
   subKeys: (params: Record<string, unknown>) => ["sub-keys", params] as const,
+  watchlistRoot: ["watchlist"] as const,
   watchlist: (params: Record<string, unknown>) => ["watchlist", params] as const,
+  alertsRoot: ["alerts"] as const,
   alerts: (params: Record<string, unknown>) => ["alerts", params] as const,
+  alertEventsRoot: ["alert-events"] as const,
   alertEvents: (params: Record<string, unknown>) => ["alert-events", params] as const,
   webhooks: ["webhooks"] as const,
   billingPlans: ["billing-plans"] as const,
@@ -232,7 +235,7 @@ export function useAddToWatchlistMutation() {
   return useMutation({
     mutationFn: (itemId: number) => webApi.addToWatchlist(itemId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["watchlist"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.watchlistRoot });
       queryClient.invalidateQueries({ queryKey: queryKeys.session });
       queryClient.invalidateQueries({ queryKey: queryKeys.account });
     },
@@ -245,7 +248,7 @@ export function useRemoveFromWatchlistMutation() {
   return useMutation({
     mutationFn: (itemId: number) => webApi.removeFromWatchlist(itemId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["watchlist"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.watchlistRoot });
       queryClient.invalidateQueries({ queryKey: queryKeys.session });
       queryClient.invalidateQueries({ queryKey: queryKeys.account });
     },
@@ -258,8 +261,8 @@ export function useCreateAlertMutation() {
   return useMutation({
     mutationFn: (input: AlertCreateRequest) => webApi.createAlert(input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["alerts"] });
-      queryClient.invalidateQueries({ queryKey: ["alert-events"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.alertsRoot });
+      queryClient.invalidateQueries({ queryKey: queryKeys.alertEventsRoot });
       queryClient.invalidateQueries({ queryKey: queryKeys.session });
       queryClient.invalidateQueries({ queryKey: queryKeys.account });
     },
@@ -273,8 +276,8 @@ export function useUpdateAlertMutation() {
     mutationFn: ({ alertId, data }: { alertId: string; data: AlertUpdateRequest }) =>
       webApi.updateAlert(alertId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["alerts"] });
-      queryClient.invalidateQueries({ queryKey: ["alert-events"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.alertsRoot });
+      queryClient.invalidateQueries({ queryKey: queryKeys.alertEventsRoot });
     },
   });
 }
@@ -285,8 +288,8 @@ export function useDeleteAlertMutation() {
   return useMutation({
     mutationFn: (alertId: string) => webApi.deleteAlert(alertId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["alerts"] });
-      queryClient.invalidateQueries({ queryKey: ["alert-events"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.alertsRoot });
+      queryClient.invalidateQueries({ queryKey: queryKeys.alertEventsRoot });
       queryClient.invalidateQueries({ queryKey: queryKeys.session });
       queryClient.invalidateQueries({ queryKey: queryKeys.account });
     },

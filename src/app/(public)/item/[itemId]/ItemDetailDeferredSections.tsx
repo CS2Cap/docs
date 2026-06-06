@@ -5,6 +5,7 @@ import { ProviderIdentity } from "@/components/ProviderIdentity";
 import { SimilarItemsGrid, type SimilarItem } from "@/components/item/SimilarItemsGrid";
 import { formatCompact, getProvider, providerLabel } from "@/lib/api";
 import { Price } from "@/components/Price";
+import { SkeletonLine } from "@/components/ui/skeleton";
 import { serverApi } from "@/lib/api/server";
 import { WEB_AUTH_TOKEN_COOKIE_NAME, WEB_SESSION_COOKIE_NAME } from "@/lib/api/config";
 import { buildQuery } from "@/lib/api/shared";
@@ -66,10 +67,6 @@ function getBestAskFromPrices(prices: MarketItem[], itemId: number): number | nu
     }
   }
   return best;
-}
-
-function SkeletonLine({ className = "" }: { className?: string }) {
-  return <div className={`animate-pulse rounded-sm bg-secondary/70 ${className}`.trim()} />;
 }
 
 export function ItemPriceHistoryFallback() {
