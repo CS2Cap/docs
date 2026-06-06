@@ -4,6 +4,7 @@ import {
   WEB_AUTH_TOKEN_COOKIE_NAME,
   WEB_SESSION_COOKIE_NAME,
 } from "@/lib/api/config";
+import { matchApiCachePolicy } from "@/lib/api/cache-policy";
 
 export const maxDuration = 30;
 
@@ -29,33 +30,6 @@ function isProtectedWebPath(pathname: string): boolean {
     || pathname === "v1/web/auth/providers"
     || pathname.startsWith("v1/web/auth/providers/")
   );
-}
-
-type EdgeCachePolicy = {
-  sMaxAge: number;
-  staleWhileRevalidate: number;
-};
-
-// Edge-cache policy for public, non-user-scoped catalog/price data.
-// Mirrors the per-endpoint revalidate values used by serverFetch in src/lib/api/server.ts,
-// so both server-rendered pages and proxy consumers share the same staleness model.
-function matchEdgeCachePolicy(pathname: string): EdgeCachePolicy | null {
-  const normalized = pathname.replace(/^v1\/web\//, "v1/");
-
-  if (normalized === "v1/items/metadata") return { sMaxAge: 300, staleWhileRevalidate: 900 };
-  if (normalized === "v1/search") return { sMaxAge: 15, staleWhileRevalidate: 60 };
-  if (normalized === "v1/market/overview") return { sMaxAge: 60, staleWhileRevalidate: 300 };
-  if (/^v1\/items\/\d+$/.test(normalized)) return { sMaxAge: 120, staleWhileRevalidate: 600 };
-  if (normalized === "v1/items") return { sMaxAge: 300, staleWhileRevalidate: 900 };
-  if (normalized === "v1/providers") return { sMaxAge: 300, staleWhileRevalidate: 1800 };
-  if (normalized === "v1/prices/history") return { sMaxAge: 120, staleWhileRevalidate: 600 };
-  if (normalized === "v1/prices/candles") return { sMaxAge: 300, staleWhileRevalidate: 1800 };
-  if (normalized === "v1/prices") return { sMaxAge: 30, staleWhileRevalidate: 120 };
-  if (normalized === "v1/fx") return { sMaxAge: 300, staleWhileRevalidate: 1800 };
-  if (normalized === "v1/sales") return { sMaxAge: 60, staleWhileRevalidate: 300 };
-  if (normalized === "v1/bids") return { sMaxAge: 30, staleWhileRevalidate: 120 };
-
-  return null;
 }
 
 async function proxyRequest(request: NextRequest, { params }: RouteContext) {
@@ -125,7 +99,7 @@ async function proxyRequest(request: NextRequest, { params }: RouteContext) {
   const isAnonymous = !authToken && !sessionCookie;
   const cachePolicy =
     request.method === "GET" && isAnonymous && upstreamResponse.ok
-      ? matchEdgeCachePolicy(pathname)
+      ? matchApiCachePolicy(pathname)
       : null;
 
   for (const headerName of PASSTHROUGH_RESPONSE_HEADERS) {
