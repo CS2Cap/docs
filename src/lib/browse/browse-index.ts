@@ -9,6 +9,7 @@ import {
   type SkinCard,
   type WeaponSubtype,
   WEAPON_SUBTYPES,
+  WEAPON_PAGE_SUBTYPES,
   dedupToCards,
   resolveBySlug,
   slugifyName,
@@ -30,6 +31,7 @@ export interface BrowseIndex {
   timestamp: string;
   collections: Map<string, NamedGroup>; // key: collection name
   cases: Map<string, NamedGroup>; // key: crate name
+  crateSubtypes: Map<string, string>; // key: crate market_hash_name → item_subtype
   bases: Map<string, BaseGroup>; // key: base_name (guns + knives + gloves)
   agents: Map<string, NamedGroup>; // key: collection name
   stickers: Map<string, NamedGroup>; // key: collection | capsule | "Other"
@@ -82,6 +84,7 @@ function buildIndex(snap: ItemsSnapshotData): BrowseIndex {
   const musicKits: ItemOut[] = [];
   const patches: ItemOut[] = [];
   const collectibles: ItemOut[] = [];
+  const crateSubtypes = new Map<string, string>();
 
   const upsertNamed = (
     map: Map<string, NamedGroup>,
@@ -153,6 +156,10 @@ function buildIndex(snap: ItemsSnapshotData): BrowseIndex {
       patches.push(item);
     } else if (item.item_type === "Collectible") {
       collectibles.push(item);
+    } else if (item.item_type === "Crate") {
+      if (item.market_hash_name && item.item_subtype) {
+        crateSubtypes.set(item.market_hash_name, item.item_subtype);
+      }
     }
   }
 
@@ -160,6 +167,7 @@ function buildIndex(snap: ItemsSnapshotData): BrowseIndex {
     timestamp: snap.timestamp,
     collections,
     cases,
+    crateSubtypes,
     bases,
     agents,
     stickers,
@@ -181,15 +189,29 @@ export async function loadBrowseIndex(): Promise<BrowseIndex | null> {
 
 // ── Index listings ───────────────────────────────────────────────────────────
 
-function toSummaries(map: Map<string, NamedGroup>): GroupSummary[] {
+function toSummaries(
+  map: Map<string, NamedGroup>,
+  subtypesOf?: (g: NamedGroup) => string[],
+): GroupSummary[] {
   return [...map.values()]
     .map((g) => ({
       name: g.name,
       slug: slugifyName(g.name),
       image: g.image,
       count: dedupToCards(g.items).length,
+      subtypes: subtypesOf ? subtypesOf(g) : [],
     }))
     .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+// Distinct item subtypes within a group's items (slabs → "Sticker Slab").
+function distinctSubtypes(items: ItemOut[]): string[] {
+  const set = new Set<string>();
+  for (const it of items) {
+    const st = it.base_name === "Sticker Slab" ? "Sticker Slab" : it.item_subtype;
+    if (st) set.add(st);
+  }
+  return [...set];
 }
 
 export function listCollections(ix: BrowseIndex): GroupSummary[] {
@@ -197,7 +219,10 @@ export function listCollections(ix: BrowseIndex): GroupSummary[] {
 }
 
 export function listCases(ix: BrowseIndex): GroupSummary[] {
-  return toSummaries(ix.cases);
+  return toSummaries(ix.cases, (g) => {
+    const st = ix.crateSubtypes.get(g.name);
+    return st ? [st] : [];
+  });
 }
 
 function listBases(ix: BrowseIndex, predicate: (subtype: string) => boolean): GroupSummary[] {
@@ -208,6 +233,7 @@ function listBases(ix: BrowseIndex, predicate: (subtype: string) => boolean): Gr
       slug: slugifyName(b.base),
       image: b.items[0]?.image_url ?? null,
       count: dedupToCards(b.items).length,
+      subtypes: b.subtype ? [b.subtype] : [],
     }))
     .sort((a, b) => a.name.localeCompare(b.name));
 }
@@ -222,6 +248,19 @@ export function listKnives(ix: BrowseIndex): GroupSummary[] {
 
 export function listGloves(ix: BrowseIndex): GroupSummary[] {
   return listBases(ix, (s) => s === "Gloves");
+}
+
+export interface WeaponPageSection {
+  subtype: string;
+  groups: GroupSummary[];
+}
+
+// Weapon browse page sections in display order, including Knives & Gloves.
+export function listWeaponPageSections(ix: BrowseIndex): WeaponPageSection[] {
+  return WEAPON_PAGE_SUBTYPES.map((subtype) => ({
+    subtype,
+    groups: listBases(ix, (s) => s === subtype),
+  })).filter((sec) => sec.groups.length > 0);
 }
 
 export function listAgentGroups(ix: BrowseIndex): AgentGroup[] {
@@ -274,7 +313,7 @@ export function baseDetail(ix: BrowseIndex, slug: string): DetailResult | null {
 // ── New category groupings (reuse toSummaries/namedDetail generics) ───────────
 
 export function listStickerGroups(ix: BrowseIndex): GroupSummary[] {
-  return toSummaries(ix.stickers);
+  return toSummaries(ix.stickers, (g) => distinctSubtypes(g.items));
 }
 export function stickerGroupDetail(ix: BrowseIndex, slug: string): DetailResult | null {
   return namedDetail(ix.stickers, slug, "Stickers");
@@ -292,6 +331,17 @@ export function listCharmGroups(ix: BrowseIndex): GroupSummary[] {
 }
 export function charmGroupDetail(ix: BrowseIndex, slug: string): DetailResult | null {
   return namedDetail(ix.charms, slug, "Charms");
+}
+
+// Charm browse page: real charm collections plus slab event groups (subtype
+// "Sticker Slab"). Slab cards link to their own /sticker-slabs route.
+export function listCharmPageGroups(ix: BrowseIndex): GroupSummary[] {
+  const charmGroups = toSummaries(ix.charms, (g) => distinctSubtypes(g.items));
+  const slabGroups = toSummaries(ix.slabs, () => ["Sticker Slab"]).map((g) => ({
+    ...g,
+    href: `/sticker-slabs/${g.slug}`,
+  }));
+  return [...charmGroups, ...slabGroups].sort((a, b) => a.name.localeCompare(b.name));
 }
 
 export function listGraffitiGroups(ix: BrowseIndex): GroupSummary[] {
