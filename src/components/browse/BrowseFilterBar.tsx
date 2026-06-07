@@ -85,6 +85,27 @@ export function BrowseFilterBar({
           })}
         </div>
       )}
+      {facets.subtypes.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="mr-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground/70">
+            Type
+          </span>
+          {facets.subtypes.map((s) => {
+            const selected = filters.subtypes.has(s);
+            return (
+              <button
+                key={s}
+                type="button"
+                aria-pressed={selected}
+                onClick={() => setFilters({ ...filters, subtypes: toggle(filters.subtypes, s) })}
+                className={chipClass(selected)}
+              >
+                {s}
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
