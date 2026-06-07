@@ -220,6 +220,8 @@ export function listCollections(ix: BrowseIndex): GroupSummary[] {
 
 export function listCases(ix: BrowseIndex): GroupSummary[] {
   return toSummaries(ix.cases, (g) => {
+    // cases map key === the Crate item's market_hash_name by convention; a miss
+    // falls back to [] (no chip), so a future data divergence degrades safely.
     const st = ix.crateSubtypes.get(g.name);
     return st ? [st] : [];
   });
