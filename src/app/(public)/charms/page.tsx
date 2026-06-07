@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { FooterSection } from "@/components/FooterSection";
 import { BrowseUnavailable } from "@/components/browse/BrowseUnavailable";
-import { GroupGrid } from "@/components/browse/GroupGrid";
-import { listCharmGroups, loadBrowseIndex } from "@/lib/browse/browse-index";
+import { FilterableGroupGrid } from "@/components/browse/FilterableGroupGrid";
+import { listCharmPageGroups, loadBrowseIndex } from "@/lib/browse/browse-index";
+import { CHARM_SUBTYPES } from "@/lib/browse/taxonomy";
 
 export const revalidate = 86400;
 
@@ -14,13 +15,13 @@ export const metadata: Metadata = {
 export default async function CharmsPage() {
   const ix = await loadBrowseIndex();
   if (!ix) return <BrowseUnavailable />;
-  const groups = listCharmGroups(ix);
+  const groups = listCharmPageGroups(ix);
   return (
     <>
       <main className="container py-8">
         <h1 className="mb-1 font-mono text-2xl font-bold">Charms</h1>
-        <p className="mb-6 font-mono text-sm text-muted-foreground">{groups.length} collections</p>
-        <GroupGrid groups={groups} hrefBase="/charms" noun="charm" />
+        <p className="mb-6 font-mono text-sm text-muted-foreground">{groups.length} groups</p>
+        <FilterableGroupGrid groups={groups} hrefBase="/charms" noun="charm" subtypeOrder={CHARM_SUBTYPES} />
       </main>
       <FooterSection />
     </>
