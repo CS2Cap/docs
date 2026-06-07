@@ -88,6 +88,16 @@ function ItemDeferredSectionError({
   );
 }
 
+function logSectionFailure(section: string, itemId: number, error: unknown) {
+  console.warn(
+    JSON.stringify({
+      event: `item_section.${section}_failed`,
+      item_id: itemId,
+      error: error instanceof Error ? error.message : "unknown error",
+    }),
+  );
+}
+
 export function ItemPriceHistoryFallback() {
   return (
     <div className="border-brutal bg-card">
@@ -112,7 +122,8 @@ export async function ItemPriceHistorySection({ itemId }: { itemId: number }) {
 
   try {
     priceCandles = await getLongRangePriceCandles(itemId);
-  } catch {
+  } catch (error) {
+    logSectionFailure("price_history", itemId, error);
     return (
       <ItemDeferredSectionError
         title="Price history unavailable"
@@ -232,7 +243,8 @@ export async function ItemMarketInsightsSection({
         tag: spread.tag,
       },
     ];
-  } catch {
+  } catch (error) {
+    logSectionFailure("market_insights", itemId, error);
     return (
       <ItemDeferredSectionError
         title="Market insights unavailable"
@@ -299,7 +311,8 @@ export async function ItemRecentSalesSection({
     const cookieStore = await cookies();
     isAuthenticated =
       cookieStore.has(WEB_SESSION_COOKIE_NAME) || cookieStore.has(WEB_AUTH_TOKEN_COOKIE_NAME);
-  } catch {
+  } catch (error) {
+    logSectionFailure("recent_sales", itemId, error);
     return (
       <ItemDeferredSectionError
         title="Recent sales unavailable"
@@ -329,7 +342,8 @@ export async function ItemRecentSalesSection({
 
   try {
     sales = await serverApi.getSales(`/v1/web/sales?item_id=${itemId}&limit=10`, 600);
-  } catch {
+  } catch (error) {
+    logSectionFailure("recent_sales", itemId, error);
     return (
       <ItemDeferredSectionError
         title="Recent sales unavailable"
@@ -451,7 +465,8 @@ export async function ItemRelatedItemsSection({ item }: { item: ItemOut }) {
       bestAsk: getBestAskFromPrices(relatedPriceItems, related.item_id),
       href: buildItemPath(related.item_id, related.market_hash_name),
     }));
-  } catch {
+  } catch (error) {
+    logSectionFailure("related_items", item.item_id, error);
     return (
       <ItemDeferredSectionError
         title="Similar items unavailable"

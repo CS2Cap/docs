@@ -17,7 +17,16 @@ export default function ItemDetailError({
       <ErrorState
         eyebrow="ITEM"
         title="Item page unavailable"
-        message={error.message || "Couldn't load this item page. Please try again."}
+        message={
+          <>
+            Couldn&apos;t load this item page. Please try again.
+            {error.digest ? (
+              <span className="mt-2 block text-xs text-muted-foreground/70">
+                Reference: {error.digest}
+              </span>
+            ) : null}
+          </>
+        }
         action={
           <div className="flex flex-wrap gap-3">
             <Button type="button" onClick={reset}>
