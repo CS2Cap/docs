@@ -3,6 +3,7 @@ import { FooterSection } from "@/components/FooterSection";
 import { BrowseUnavailable } from "@/components/browse/BrowseUnavailable";
 import { FilterableSubtypeSections } from "@/components/browse/FilterableSubtypeSections";
 import { patchSections, loadBrowseIndex } from "@/lib/browse/browse-index";
+import { PATCH_SUBTYPES } from "@/lib/browse/taxonomy";
 
 export const revalidate = 86400;
 
@@ -19,7 +20,7 @@ export default async function PatchesPage() {
     <>
       <main className="container py-8">
         <h1 className="mb-6 font-mono text-2xl font-bold">Patches</h1>
-        <FilterableSubtypeSections sections={sections} />
+        <FilterableSubtypeSections sections={sections} subtypeOrder={PATCH_SUBTYPES} />
       </main>
       <FooterSection />
     </>
