@@ -1,6 +1,6 @@
 # AGENTS.md / CLAUDE.md
 
-This file provides guidance to AI agents (e.g. GPT, Claude, etc.) working in this repository.
+This file provides guidance to AI agents (e.g. Codex, Claude, etc.) working in this repository.
 
 ---
 
