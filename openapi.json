@@ -27190,6 +27190,48 @@
         ]
       }
     },
+    "/admin/abuse/email-bans": {
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Create Email Abuse Ban",
+        "description": "Ban an email identity and auto-ban safe attributed API-usage IPs.",
+        "operationId": "adminCreateEmailAbuseBan",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmailAbuseBanRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailAbuseBanResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/service/skinscanner/deals": {
       "get": {
         "tags": [
@@ -30651,6 +30693,83 @@
           "user_id"
         ],
         "title": "DeleteUserResponse"
+      },
+      "EmailAbuseBanRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email",
+            "description": "Email address to ban."
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note",
+            "description": "Optional internal note for the ban."
+          }
+        },
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "title": "EmailAbuseBanRequest"
+      },
+      "EmailAbuseBanResponse": {
+        "properties": {
+          "email_identity": {
+            "type": "string",
+            "title": "Email Identity",
+            "description": "Canonical email identity that was banned."
+          },
+          "matched_user_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Matched User Ids",
+            "description": "Existing users disabled by this ban."
+          },
+          "revoked_key_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Revoked Key Ids",
+            "description": "Active API keys revoked by this ban."
+          },
+          "banned_ips": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Banned Ips",
+            "description": "API-usage IPs auto-banned from this email ban."
+          },
+          "skipped_ips": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Skipped Ips",
+            "description": "Candidate API-usage IPs skipped with machine-readable reasons."
+          }
+        },
+        "type": "object",
+        "required": [
+          "email_identity",
+          "matched_user_ids",
+          "revoked_key_ids",
+          "banned_ips",
+          "skipped_ips"
+        ],
+        "title": "EmailAbuseBanResponse"
       },
       "EmailChangeRequest": {
         "properties": {
