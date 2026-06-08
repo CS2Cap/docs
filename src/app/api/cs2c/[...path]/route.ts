@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   API_BASE_URL,
   WEB_AUTH_TOKEN_COOKIE_NAME,
+  WEB_DEVICE_ID_COOKIE_NAME,
   WEB_SESSION_COOKIE_NAME,
 } from "@/lib/api/config";
 import { matchApiCachePolicy } from "@/lib/api/cache-policy";
@@ -54,6 +55,11 @@ async function proxyRequest(request: NextRequest, { params }: RouteContext) {
 
   if (sessionCookie) {
     headers.set("cookie", `${WEB_SESSION_COOKIE_NAME}=${sessionCookie}`);
+  }
+
+  const deviceId = request.cookies.get(WEB_DEVICE_ID_COOKIE_NAME)?.value;
+  if (deviceId) {
+    headers.set("x-cs2c-device-id", deviceId);
   }
 
   if (!authToken && !sessionCookie && isProtectedWebPath(pathname)) {
@@ -148,6 +154,18 @@ async function proxyRequest(request: NextRequest, { params }: RouteContext) {
       path: "/",
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
+    });
+  }
+
+  if (!deviceId) {
+    response.cookies.set({
+      name: WEB_DEVICE_ID_COOKIE_NAME,
+      value: crypto.randomUUID(),
+      httpOnly: true,
+      path: "/",
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 60 * 60 * 24 * 400,
     });
   }
 
