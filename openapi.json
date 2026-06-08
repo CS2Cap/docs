@@ -27122,6 +27122,74 @@
         }
       }
     },
+    "/admin/email-domain-rules": {
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Create Email Domain Rule",
+        "description": "Add (or update) an email-domain blocklist rule.\n\nIdempotent on ``domain``: re-posting an existing domain updates its action/note.\nTakes effect for new email verifications within ~60s (override cache TTL).",
+        "operationId": "adminCreateEmailDomainRule",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmailDomainRuleCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailDomainRuleResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid admin token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "detail": "Missing x-admin-token header"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Admin authentication is not configured correctly.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "INTERNAL_SERVER_ERROR",
+                  "detail": "Admin authentication not configured"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The supplied domain is not a plausible bare domain."
+          }
+        },
+        "security": [
+          {
+            "AdminTokenAuth": []
+          }
+        ]
+      }
+    },
     "/service/skinscanner/deals": {
       "get": {
         "tags": [
@@ -30598,6 +30666,84 @@
           "new_email"
         ],
         "title": "EmailChangeRequest"
+      },
+      "EmailDomainRuleCreateRequest": {
+        "properties": {
+          "domain": {
+            "type": "string",
+            "title": "Domain",
+            "description": "Email domain to add to the blocklist, e.g. 'web-library.net'."
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "deny",
+              "allow"
+            ],
+            "title": "Action",
+            "description": "Rule action. 'deny' blocks the domain from email verification / key issuance; 'allow' whitelists it, overriding the static disposable denylist.",
+            "default": "deny"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note",
+            "description": "Optional human-readable note explaining why the rule was added."
+          }
+        },
+        "type": "object",
+        "required": [
+          "domain"
+        ],
+        "title": "EmailDomainRuleCreateRequest",
+        "description": "Request body for adding or updating an email-domain blocklist rule."
+      },
+      "EmailDomainRuleResponse": {
+        "properties": {
+          "domain": {
+            "type": "string",
+            "title": "Domain",
+            "description": "Normalized email domain the rule applies to."
+          },
+          "action": {
+            "type": "string",
+            "title": "Action",
+            "description": "Rule action: 'deny' or 'allow'."
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note",
+            "description": "Human-readable note stored with the rule, if any."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "UTC timestamp when the rule row was created."
+          }
+        },
+        "type": "object",
+        "required": [
+          "domain",
+          "action",
+          "note",
+          "created_at"
+        ],
+        "title": "EmailDomainRuleResponse",
+        "description": "A persisted email-domain override rule."
       },
       "EmailSetRequest": {
         "properties": {
