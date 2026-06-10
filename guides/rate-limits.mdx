@@ -16,7 +16,7 @@ CS2Cap enforces two independent rate limits on every API key: a per-minute burst
 
 ### Special limits for bulk snapshot endpoints
 
-[`POST /prices`](/api-reference/prices#post-/prices-—-stream-full-prices-snapshot) and [`POST /bids`](/api-reference/bids#post-/bids-—-stream-full-bids-snapshot) stream a full snapshot of all indexed items as NDJSON. In addition to the standard per-minute limit, each of these endpoints enforces a **1 request per 5 minutes** cooldown per API key. Build this cooldown into any scheduler that calls these endpoints in a loop.
+[`POST /prices`](/api-reference/prices#post-/prices-—-stream-full-prices-snapshot) and [`POST /bids`](/api-reference/bids#post-/bids-—-stream-full-bids-snapshot) stream a full NDJSON snapshot of current listings/bids across specified providers. Each call counts as one request against your monthly quota (like any core endpoint) and is **additionally** subject to a **rolling 24-hour cap on successful stream starts** per API key — **50/day on Pro, 300/day on Quant**, tracked per endpoint. Only one stream may be active per API key per endpoint; a second concurrent request returns `409`. Only successful starts count toward the 24-hour cap; pace loops with `X-RateLimit-Remaining` and `X-RateLimit-Reset`.
 
 ## Which endpoints consume monthly quota
 
@@ -52,6 +52,10 @@ X-RateLimit-Reset: 12345
 X-RateLimit-Tier: pro
 ```
 
+<Note>
+  On the bulk streaming endpoints the `X-RateLimit-*` headers describe that endpoint's 24-hour stream-start quota (not the monthly quota) and appear on successful `200` responses too.
+</Note>
+
 ## Error codes
 
 Both rate limit conditions return HTTP `429` with a machine-readable `code` field in the response body.
@@ -60,6 +64,8 @@ Both rate limit conditions return HTTP `429` with a machine-readable `code` fiel
 | --- | :-: | --- |
 | `RATE_LIMIT_EXCEEDED` | 429 | Per-minute burst limit hit. Wait for the number of seconds in `Retry-After`. |
 | `RATE_LIMIT_MONTHLY_QUOTA_EXCEEDED` | 429 | Monthly quota exhausted. Requests will resume at the start of the next billing period. |
+| `RATE_LIMIT_STREAM_QUOTA_EXCEEDED` | 429 | Rolling 24-hour bulk-stream-start quota exhausted on `POST /prices` or `POST /bids`. Retry after `Retry-After` seconds, when the next slot frees. |
+| `STREAM_ALREADY_ACTIVE` | 409 | A bulk stream is already active for this API key on this endpoint. Wait for it to finish (or for `Retry-After` seconds) before starting another. |
 
 ```json
 {
@@ -76,6 +82,6 @@ Both rate limit conditions return HTTP `429` with a machine-readable `code` fiel
 
 - **Check `X-RateLimit-Remaining` proactively.** If your remaining monthly quota is low, throttle your request rate rather than waiting for a hard block.
 - **Batch requests wherever possible.** Use [`POST /prices/batch`](/api-reference/prices#post-/prices/batch-—-batch-prices-lookup) and [`POST /bids/batch`](/api-reference/bids#post-/bids/batch-—-batch-bids-lookup) (Starter, Pro, and Quant) to fetch up to 100 items in a single request instead of making one request per item.
-- **Use [`POST /prices`](/api-reference/prices#post-/prices-—-stream-full-prices-snapshot) for bulk data only when your tier includes it.** When you need a full market snapshot, one call to [`POST /prices`](/api-reference/prices#post-/prices-—-stream-full-prices-snapshot) costs a single request against your quota, regardless of how many items it returns. Schedule it no more than once every 5 minutes.
+- **Use [`POST /prices`](/api-reference/prices#post-/prices-—-stream-full-prices-snapshot) for bulk data.** One call returns the entire catalog. Pace your scheduler against the rolling 24-hour stream-start quota (50/day Pro, 300/day Quant, per endpoint) and don't run two streams of the same endpoint at once.
 - **Treat monthly quota as a budget.** Allocate quota across your use cases. On Free (1,000 requests/month), keep calls exploratory; on Starter (50,000 requests/month), use batch lookups for known item sets instead of per-item polling loops.
 - **Handle `429` with exponential backoff** when `Retry-After` is not present, adding jitter to avoid synchronized retry storms across multiple keys.

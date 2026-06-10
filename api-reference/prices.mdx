@@ -189,7 +189,7 @@ console.log(await response.json());
 Streams the complete live prices catalog as NDJSON, with one JSON object per line. The snapshot is captured once at request start and then streamed in full.
 
 **Tiers:** `pro` · `quant`  
-**Rate limit:** 1 request per 5 minutes per API key
+**Rate limit:** rolling 24h quota of successful stream starts per API key — **50/day on `pro`, 300/day on `quant`**, counted separately from [`POST /bids`](/api-reference/bids#post-/bids-—-stream-full-bids-snapshot). One active stream per API key at a time (`409` otherwise). Responses carry `X-RateLimit-Limit`, `X-RateLimit-Remaining`, and `X-RateLimit-Reset`. See [Rate Limits](/guides/rate-limits#special-limits-for-bulk-snapshot-endpoints).
 
 ### Query parameters
 

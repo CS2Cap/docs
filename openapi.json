@@ -357,7 +357,7 @@
           "Prices"
         ],
         "summary": "Stream Full Prices Snapshot",
-        "description": "Return the full live prices snapshot as an NDJSON stream.\n\nBehavior:\n- pro and quant tiers only\n- requires an API key (not a session token)\n- optional `providers` filter; omit to stream all providers\n- fixed USD output\n- `lowest_ask` values are returned in USD minor units\n- one JSON object per line using the `MarketItem` field set\n- per-API-key cooldown of 5 minutes for this POST operation",
+        "description": "Return the full live prices snapshot as an NDJSON stream.\n\nBehavior:\n- pro and quant tiers only\n- requires an API key (not a session token)\n- optional `providers` filter; omit to stream all providers\n- fixed USD output\n- `lowest_ask` values are returned in USD minor units\n- one JSON object per line using the `MarketItem` field set\n- per-API-key rolling 24h quota of successful stream starts (pro: 50, quant: 300, per endpoint)\n- max 1 concurrent stream per API key for this endpoint (409 otherwise)",
         "operationId": "streamFullPricesSnapshot",
         "security": [
           {
@@ -409,6 +409,27 @@
                   "type": "integer",
                   "minimum": 0
                 }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Daily quota of successful stream starts for this endpoint.",
+                "schema": {
+                  "type": "integer",
+                  "example": 300
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Remaining stream starts in the rolling 24h window.",
+                "schema": {
+                  "type": "integer",
+                  "example": 299
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Seconds until the oldest counted start leaves the window.",
+                "schema": {
+                  "type": "integer",
+                  "example": 86400
+                }
               }
             },
             "content": {
@@ -449,21 +470,42 @@
             }
           },
           "429": {
-            "description": "Bulk snapshot cooldown active for this API key.",
+            "description": "Daily bulk stream quota exhausted for this API key.",
             "headers": {
               "Retry-After": {
-                "description": "Seconds until this API key may request another prices snapshot.",
+                "description": "Seconds until this API key may start another prices stream.",
                 "schema": {
                   "type": "integer",
                   "minimum": 1
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Daily quota of successful stream starts for this endpoint.",
+                "schema": {
+                  "type": "integer",
+                  "example": 300
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Remaining stream starts in the rolling 24h window.",
+                "schema": {
+                  "type": "integer",
+                  "example": 0
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Seconds until the oldest counted start leaves the window.",
+                "schema": {
+                  "type": "integer",
+                  "example": 1800
                 }
               }
             },
             "content": {
               "application/json": {
                 "example": {
-                  "code": "RATE_LIMIT_EXCEEDED",
-                  "detail": "Bulk snapshot cooldown active for /v1/prices. Retry after 300 seconds."
+                  "code": "RATE_LIMIT_STREAM_QUOTA_EXCEEDED",
+                  "detail": "Bulk stream quota exhausted for /v1/prices. Limit 300 per 24 hours."
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -519,6 +561,29 @@
                 "example": {
                   "code": "PRICES_INDEX_UNAVAILABLE",
                   "detail": "Indexed prices data unavailable. reason=index_missing. Try again shortly."
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "A streaming request is already active for this API key.",
+            "headers": {
+              "Retry-After": {
+                "description": "Suggested seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "STREAM_ALREADY_ACTIVE",
+                  "detail": "A streaming request is already active for this API key."
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -1870,7 +1935,7 @@
           "Bids"
         ],
         "summary": "Stream Full Bids Snapshot",
-        "description": "Return the full live bids snapshot as an NDJSON stream.\n\nBehavior:\n- pro and quant tiers only\n- requires an API key (not a session token)\n- optional `providers` filter; omit to stream all providers\n- fixed USD output\n- `highest_bid` values are returned in USD minor units\n- one JSON object per line using the `BuyOrderItem` field set\n- per-API-key cooldown of 5 minutes for this POST operation",
+        "description": "Return the full live bids snapshot as an NDJSON stream.\n\nBehavior:\n- pro and quant tiers only\n- requires an API key (not a session token)\n- optional `providers` filter; omit to stream all providers\n- fixed USD output\n- `highest_bid` values are returned in USD minor units\n- one JSON object per line using the `BuyOrderItem` field set\n- per-API-key rolling 24h quota of successful stream starts (pro: 50, quant: 300, per endpoint)\n- max 1 concurrent stream per API key for this endpoint (409 otherwise)",
         "operationId": "streamFullBidsSnapshot",
         "security": [
           {
@@ -1922,6 +1987,27 @@
                   "type": "integer",
                   "minimum": 0
                 }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Daily quota of successful stream starts for this endpoint.",
+                "schema": {
+                  "type": "integer",
+                  "example": 300
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Remaining stream starts in the rolling 24h window.",
+                "schema": {
+                  "type": "integer",
+                  "example": 299
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Seconds until the oldest counted start leaves the window.",
+                "schema": {
+                  "type": "integer",
+                  "example": 86400
+                }
               }
             },
             "content": {
@@ -1962,21 +2048,42 @@
             }
           },
           "429": {
-            "description": "Bulk snapshot cooldown active for this API key.",
+            "description": "Daily bulk stream quota exhausted for this API key.",
             "headers": {
               "Retry-After": {
-                "description": "Seconds until this API key may request another bids snapshot.",
+                "description": "Seconds until this API key may start another bids stream.",
                 "schema": {
                   "type": "integer",
                   "minimum": 1
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Daily quota of successful stream starts for this endpoint.",
+                "schema": {
+                  "type": "integer",
+                  "example": 300
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Remaining stream starts in the rolling 24h window.",
+                "schema": {
+                  "type": "integer",
+                  "example": 0
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Seconds until the oldest counted start leaves the window.",
+                "schema": {
+                  "type": "integer",
+                  "example": 1800
                 }
               }
             },
             "content": {
               "application/json": {
                 "example": {
-                  "code": "RATE_LIMIT_EXCEEDED",
-                  "detail": "Bulk snapshot cooldown active for /v1/bids. Retry after 300 seconds."
+                  "code": "RATE_LIMIT_STREAM_QUOTA_EXCEEDED",
+                  "detail": "Bulk stream quota exhausted for /v1/bids. Limit 300 per 24 hours."
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -2032,6 +2139,29 @@
                 "example": {
                   "code": "BIDS_INDEX_UNAVAILABLE",
                   "detail": "Indexed bids data unavailable. reason=index_missing. Try again shortly."
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "A streaming request is already active for this API key.",
+            "headers": {
+              "Retry-After": {
+                "description": "Suggested seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "STREAM_ALREADY_ACTIVE",
+                  "detail": "A streaming request is already active for this API key."
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
