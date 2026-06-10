@@ -85,6 +85,11 @@ export function InventoryItemsTable({
     }
   }
 
+  const maxValue = useMemo(
+    () => items.reduce((max, it) => Math.max(max, it.item_value ?? 0), 0) || 1,
+    [items],
+  );
+
   const sorted = useMemo(() => {
     const copy = [...items];
     const dir = sortDir === "asc" ? 1 : -1;
@@ -113,10 +118,13 @@ export function InventoryItemsTable({
     );
   }
 
+  const COLS =
+    "md:grid-cols-[64px_minmax(0,1fr)_64px_180px_120px_150px_40px]";
+
   return (
     <div className="border-2 border-border bg-card overflow-hidden">
       {/* Header */}
-      <div className="hidden md:grid grid-cols-[64px_minmax(0,1fr)_80px_120px_160px_40px] gap-3 border-b-2 border-border bg-secondary/30 px-4 py-3">
+      <div className={`hidden md:grid ${COLS} gap-3 border-b-2 border-border bg-secondary/30 px-4 py-3`}>
         <div />
         <SortHeader
           label="Item"
@@ -129,6 +137,13 @@ export function InventoryItemsTable({
           active={sortKey === "qty"}
           dir={sortDir}
           onClick={() => setSort("qty")}
+          align="center"
+        />
+        <SortHeader
+          label="Value"
+          active={sortKey === "value"}
+          dir={sortDir}
+          onClick={() => setSort("value")}
           align="right"
         />
         <SortHeader
@@ -151,11 +166,17 @@ export function InventoryItemsTable({
           const providerKey = winningProvider?.provider;
           const provider = providerKey ? getProvider(providerKey, providers) : null;
           const providerFallback = providerKey ? providerLabel(providerKey, providers) : "—";
+          const sharePct = ((item.item_value ?? 0) / maxValue) * 100;
           return (
             <li
               key={`${item.item_id}-${item.phase ?? ""}`}
-              className="grid grid-cols-[56px_minmax(0,1fr)_auto] md:grid-cols-[64px_minmax(0,1fr)_80px_120px_160px_40px] items-center gap-3 px-4 py-3 transition-colors hover:bg-secondary/40"
+              className={`relative grid grid-cols-[56px_minmax(0,1fr)_auto] ${COLS} items-center gap-3 px-4 py-3 transition-colors hover:bg-secondary/40`}
             >
+              <span
+                className="absolute left-0 top-0 bottom-0 w-[3px] bg-primary"
+                style={{ opacity: 0.35 + (sharePct / 100) * 0.65 }}
+                aria-hidden="true"
+              />
               <Link href={href} className="block">
                 {(() => {
                   const src = steamIconUrl(item.icon_url);
@@ -206,14 +227,25 @@ export function InventoryItemsTable({
                   </span>
                 </div>
                 <div className="mt-1 md:hidden font-mono text-xs text-muted-foreground">
-                  <span className="font-bold text-primary">{formatPrice(item.best_ask)}</span>
-                  {" × "}
-                  {item.quantity}
+                  <span className="font-bold text-primary">{formatPrice(item.item_value)}</span>
+                  {" · "}
+                  {formatPrice(item.best_ask)} ask × {item.quantity}
                 </div>
               </div>
 
-              <div className="hidden md:block text-right font-mono text-xs text-foreground">
+              <div className="hidden md:block text-center font-mono text-xs text-foreground">
                 {item.quantity}
+              </div>
+              <div className="hidden md:block text-right">
+                <div className="font-mono text-sm font-bold text-foreground">
+                  {formatPrice(item.item_value)}
+                </div>
+                <div className="ml-auto mt-1.5 h-[3px] w-[70%] bg-secondary">
+                  <div
+                    className="ml-auto h-full bg-primary/60"
+                    style={{ width: `${sharePct}%` }}
+                  />
+                </div>
               </div>
               <div className="hidden md:block text-right font-mono text-xs font-bold text-primary">
                 {formatPrice(item.best_ask)}
@@ -240,6 +272,16 @@ export function InventoryItemsTable({
           );
         })}
       </ul>
+
+      {/* Footer */}
+      <div className="flex items-center justify-between border-t-2 border-border bg-secondary/20 px-4 py-3">
+        <span className="font-mono text-xs tracking-widest text-muted-foreground">
+          SHOWING {sorted.length} PRICED ITEM{sorted.length === 1 ? "" : "S"}
+        </span>
+        <span className="font-mono text-xs font-bold tracking-widest text-primary">
+          SORTED BY {sortKey.toUpperCase()} {sortDir === "asc" ? "↑" : "↓"}
+        </span>
+      </div>
     </div>
   );
 }
