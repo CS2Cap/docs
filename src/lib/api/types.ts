@@ -1020,6 +1020,25 @@ export interface DeleteAccountResponse {
   ok: boolean;
 }
 
+// Sessions
+export interface SessionInfo {
+  id: string;
+  created_at: string;
+  last_seen_at: string;
+  expires_at: string;
+  ip_address: string | null;
+  device_label: string;
+  current: boolean;
+}
+
+export interface SessionListResponse {
+  sessions: SessionInfo[];
+}
+
+export interface RevokeSessionsResponse {
+  revoked: number;
+}
+
 // ============================================================================
 // Steam inventory + stateless portfolio valuation (public Inventory Value tool)
 // ============================================================================

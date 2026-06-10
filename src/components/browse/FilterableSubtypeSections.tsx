@@ -8,11 +8,16 @@ import { useBrowseFilter } from "./useBrowseFilter";
 
 export function FilterableSubtypeSections({
   sections,
+  subtypeOrder,
 }: {
   sections: { title: string; skins: SkinCard[] }[];
+  subtypeOrder?: readonly string[];
 }) {
   const all = useMemo(() => sections.flatMap((s) => s.skins), [sections]);
-  const { facets, filters, setFilters, filtered, total, active, matches } = useBrowseFilter(all);
+  const { facets, filters, setFilters, filtered, total, active, matches } = useBrowseFilter(
+    all,
+    subtypeOrder,
+  );
   return (
     <>
       <BrowseFilterBar

@@ -18,7 +18,7 @@ export function GroupGrid({
       {groups.map((g) => (
         <GroupCard
           key={g.slug}
-          href={`${hrefBase}/${g.slug}`}
+          href={g.href ?? `${hrefBase}/${g.slug}`}
           name={g.name}
           image={g.image}
           count={g.count}

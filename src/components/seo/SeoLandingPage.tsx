@@ -34,6 +34,14 @@ import { getSeoCodeExample } from "@/lib/seo/code-examples";
 import { serverApi } from "@/lib/api/server";
 import { formatCompact } from "@/lib/api";
 import type { ProviderInfo } from "@/lib/api/types";
+import { RelativeTime } from "@/components/RelativeTime";
+import {
+  pickPrimaryFee,
+  formatFee,
+  FEE_LABELS,
+  normalizeMarketType,
+  statusDotClass,
+} from "@/components/marketplaces/marketplaces-utils";
 
 const ICON_MAP: Record<string, LucideIcon> = {
   Database,
@@ -166,30 +174,49 @@ export async function SeoLandingPage({ config }: { config: SeoPageConfig }) {
     }
   }
 
-  const heroStats = providerHealth
-    ? [
-        {
-          icon: Package,
-          value: formatCompact(providerHealth.health.total_offers),
-          label: "TOTAL OFFERS",
-        },
-        {
-          icon: Boxes,
-          value: formatCompact(providerHealth.health.unique_items),
-          label: "UNIQUE ITEMS",
-        },
-        {
-          icon: Activity,
-          value: formatPct(providerHealth.health.market_coverage),
-          label: "MARKET COVERAGE",
-        },
-        {
-          icon: Wallet,
-          value: formatUsdCents(providerHealth.health.total_value_usd),
-          label: "TOTAL VALUE",
-        },
-      ]
-    : null;
+  const primaryFee = providerHealth ? pickPrimaryFee(providerHealth.fees) : null;
+
+  const heroStats: { icon: LucideIcon; value: string; label: string; sub?: string }[] | null =
+    providerHealth
+      ? [
+          {
+            icon: Package,
+            value: formatCompact(providerHealth.health.total_offers),
+            label: "TOTAL OFFERS",
+          },
+          {
+            icon: Boxes,
+            value: formatCompact(providerHealth.health.unique_items),
+            label: "UNIQUE ITEMS",
+          },
+          {
+            icon: Activity,
+            value: formatPct(providerHealth.health.market_coverage),
+            label: "MARKET COVERAGE",
+          },
+          {
+            icon: Wallet,
+            value: formatUsdCents(providerHealth.health.total_value_usd),
+            label: "TOTAL VALUE",
+          },
+          // Fee + market-type tiles are appended as a pair so the 2-col grid stays even.
+          ...(primaryFee
+            ? [
+                {
+                  icon: Receipt,
+                  value: formatFee(primaryFee.value),
+                  label: FEE_LABELS[primaryFee.key].toUpperCase(),
+                  sub: `YOU KEEP ${formatFee(1 - primaryFee.value)}`,
+                },
+                {
+                  icon: Layers,
+                  value: normalizeMarketType(providerHealth.market_type),
+                  label: "MARKET TYPE",
+                },
+              ]
+            : []),
+        ]
+      : null;
 
   // For feature pages, render an OpenAPI-derived code example in the hero.
   const codeExample = config.type === "feature" ? getSeoCodeExample(config.slug) : undefined;
@@ -272,20 +299,36 @@ export async function SeoLandingPage({ config }: { config: SeoPageConfig }) {
             </div>
 
             {heroStats && (
-              <div className="grid grid-cols-2 gap-px bg-border">
-                {heroStats.map((stat, i) => (
-                  <div
-                    key={stat.label}
-                    className="bg-card p-5 md:p-6 animate-fade-in-up-sm"
-                    style={{ animationDelay: `${0.3 + i * 0.08}s`, animationFillMode: "both" }}
-                  >
-                    <stat.icon className="mb-3 h-4 w-4 text-primary" strokeWidth={1.5} />
-                    <div className="font-mono text-2xl font-bold text-foreground">{stat.value}</div>
-                    <div className="font-mono text-xs tracking-widest text-muted-foreground">
-                      {stat.label}
+              <div>
+                <div className="grid grid-cols-2 gap-px bg-border">
+                  {heroStats.map((stat, i) => (
+                    <div
+                      key={stat.label}
+                      className="bg-card p-5 md:p-6 animate-fade-in-up-sm"
+                      style={{ animationDelay: `${0.3 + i * 0.08}s`, animationFillMode: "both" }}
+                    >
+                      <stat.icon className="mb-3 h-4 w-4 text-primary" strokeWidth={1.5} />
+                      <div className="font-mono text-2xl font-bold text-foreground">{stat.value}</div>
+                      <div className="font-mono text-xs tracking-widest text-muted-foreground">
+                        {stat.label}
+                      </div>
+                      {stat.sub && (
+                        <div className="mt-1 font-mono text-[10px] tracking-wider text-muted-foreground/70">
+                          {stat.sub}
+                        </div>
+                      )}
                     </div>
+                  ))}
+                </div>
+                {providerHealth?.health?.last_checked_at && (
+                  <div className="mt-3 flex items-center gap-2 font-mono text-xs text-muted-foreground">
+                    <span
+                      className={`inline-block h-1.5 w-1.5 rounded-full ${statusDotClass(providerHealth.health.status)}`}
+                    />
+                    <span>synced</span>
+                    <RelativeTime value={providerHealth.health.last_checked_at} />
                   </div>
-                ))}
+                )}
               </div>
             )}
 

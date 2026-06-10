@@ -1,5 +1,6 @@
 import "server-only";
 
+import { checkBotId } from "botid/server";
 import { NextRequest, NextResponse } from "next/server";
 import { API_BASE_URL } from "@/lib/api/config";
 import {
@@ -322,6 +323,14 @@ async function valueResolvedItems(
 
 export async function POST(request: NextRequest) {
   const startedAt = Date.now();
+
+  // 0. Bot check first — before parsing, rate limiting, cache, or any upstream
+  // call. A detected bot costs us nothing: no paid lookup, no valuation compute.
+  const verification = await checkBotId();
+  if (verification.isBot) {
+    logEvent("bot_blocked", {});
+    return jsonError(403, "BOT_DETECTED", "Automated access is not allowed.");
+  }
 
   // 1. Parse + validate body.
   let bodyJson: unknown;

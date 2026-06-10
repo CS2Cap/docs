@@ -33,6 +33,7 @@ import type {
   MarketOverviewResponse,
 } from "@/lib/api/types";
 import { buildItemPath } from "@/lib/seo/itemSlug";
+import { formatItemDisplay, itemTagFrameClass, itemTagTextClass } from "@/lib/item-display";
 
 const RANGE_TABS: { key: MarketOverviewRange; label: string }[] = [
   { key: "24h", label: "24H" },
@@ -156,67 +157,6 @@ function titleCase(raw: string | null | undefined): string {
 function changeClass(value: number | null | undefined): string {
   if (value == null) return "text-muted-foreground";
   return value >= 0 ? "text-emerald-400" : "text-red-400";
-}
-
-type ItemNameTag = "st" | "sv" | null;
-
-const ITEM_STRIP_PREFIXES = ["Sticker | ", "Souvenir Charm | ", "Graffiti | ", "Music Kit | ", "Autograph Capsule | "];
-const ITEM_STRIP_SUFFIXES = [
-  " (Factory New)",
-  " (Minimal Wear)",
-  " (Field-Tested)",
-  " (Well-Worn)",
-  " (Battle-Scarred)",
-];
-
-function formatItemDisplay(rawName: string): { star: boolean; prefix: string | null; name: string; tag: ItemNameTag } {
-  let name = rawName;
-  let tag: ItemNameTag = null;
-  let prefix: string | null = null;
-  let star = false;
-
-  for (const p of ITEM_STRIP_PREFIXES) {
-    if (name.startsWith(p)) {
-      name = name.slice(p.length);
-      break;
-    }
-  }
-
-  if (name.startsWith("★ StatTrak™ ")) {
-    name = name.slice("★ StatTrak™ ".length);
-    prefix = "ST";
-    tag = "st";
-    star = true;
-  } else if (name.startsWith("StatTrak™ ")) {
-    name = name.slice("StatTrak™ ".length);
-    prefix = "ST";
-    tag = "st";
-  } else if (name.startsWith("Souvenir ")) {
-    name = name.slice("Souvenir ".length);
-    prefix = "SV";
-    tag = "sv";
-  }
-
-  for (const suffix of ITEM_STRIP_SUFFIXES) {
-    if (name.endsWith(suffix)) {
-      name = name.slice(0, -suffix.length);
-      break;
-    }
-  }
-
-  return { star, prefix, name, tag };
-}
-
-function itemTagFrameClass(tag: ItemNameTag): string {
-  if (tag === "st") return "border-orange-500/70";
-  if (tag === "sv") return "border-yellow-400/70";
-  return "border-border";
-}
-
-function itemTagTextClass(tag: ItemNameTag): string {
-  if (tag === "st") return "text-orange-400";
-  if (tag === "sv") return "text-yellow-400";
-  return "";
 }
 
 function MetricCell({

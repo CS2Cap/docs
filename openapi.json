@@ -361,7 +361,7 @@
           "Prices"
         ],
         "summary": "Stream Full Prices Snapshot",
-        "description": "Return the full live prices snapshot as an NDJSON stream.\n\nBehavior:\n- pro and quant tiers only\n- requires an API key (not a session token)\n- optional `providers` filter; omit to stream all providers\n- fixed USD output\n- `lowest_ask` values are returned in USD minor units\n- one JSON object per line using the `MarketItem` field set\n- per-API-key cooldown of 5 minutes for this POST operation",
+        "description": "Return the full live prices snapshot as an NDJSON stream.\n\nBehavior:\n- pro and quant tiers only\n- requires an API key (not a session token)\n- optional `providers` filter; omit to stream all providers\n- fixed USD output\n- `lowest_ask` values are returned in USD minor units\n- one JSON object per line using the `MarketItem` field set\n- per-API-key rolling 24h quota of successful stream starts (pro: 50, quant: 300, per endpoint)\n- max 1 concurrent stream per API key for this endpoint (409 otherwise)",
         "operationId": "streamFullPricesSnapshot",
         "security": [
           {
@@ -413,6 +413,27 @@
                   "type": "integer",
                   "minimum": 0
                 }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Daily quota of successful stream starts for this endpoint.",
+                "schema": {
+                  "type": "integer",
+                  "example": 300
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Remaining stream starts in the rolling 24h window.",
+                "schema": {
+                  "type": "integer",
+                  "example": 299
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Seconds until the oldest counted start leaves the window.",
+                "schema": {
+                  "type": "integer",
+                  "example": 86400
+                }
               }
             },
             "content": {
@@ -453,21 +474,42 @@
             }
           },
           "429": {
-            "description": "Bulk snapshot cooldown active for this API key.",
+            "description": "Daily bulk stream quota exhausted for this API key.",
             "headers": {
               "Retry-After": {
-                "description": "Seconds until this API key may request another prices snapshot.",
+                "description": "Seconds until this API key may start another prices stream.",
                 "schema": {
                   "type": "integer",
                   "minimum": 1
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Daily quota of successful stream starts for this endpoint.",
+                "schema": {
+                  "type": "integer",
+                  "example": 300
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Remaining stream starts in the rolling 24h window.",
+                "schema": {
+                  "type": "integer",
+                  "example": 0
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Seconds until the oldest counted start leaves the window.",
+                "schema": {
+                  "type": "integer",
+                  "example": 1800
                 }
               }
             },
             "content": {
               "application/json": {
                 "example": {
-                  "code": "RATE_LIMIT_EXCEEDED",
-                  "detail": "Bulk snapshot cooldown active for /v1/prices. Retry after 300 seconds."
+                  "code": "RATE_LIMIT_STREAM_QUOTA_EXCEEDED",
+                  "detail": "Bulk stream quota exhausted for /v1/prices. Limit 300 per 24 hours."
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -523,6 +565,29 @@
                 "example": {
                   "code": "PRICES_INDEX_UNAVAILABLE",
                   "detail": "Indexed prices data unavailable. reason=index_missing. Try again shortly."
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "A streaming request is already active for this API key.",
+            "headers": {
+              "Retry-After": {
+                "description": "Suggested seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "STREAM_ALREADY_ACTIVE",
+                  "detail": "A streaming request is already active for this API key."
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -1874,7 +1939,7 @@
           "Bids"
         ],
         "summary": "Stream Full Bids Snapshot",
-        "description": "Return the full live bids snapshot as an NDJSON stream.\n\nBehavior:\n- pro and quant tiers only\n- requires an API key (not a session token)\n- optional `providers` filter; omit to stream all providers\n- fixed USD output\n- `highest_bid` values are returned in USD minor units\n- one JSON object per line using the `BuyOrderItem` field set\n- per-API-key cooldown of 5 minutes for this POST operation",
+        "description": "Return the full live bids snapshot as an NDJSON stream.\n\nBehavior:\n- pro and quant tiers only\n- requires an API key (not a session token)\n- optional `providers` filter; omit to stream all providers\n- fixed USD output\n- `highest_bid` values are returned in USD minor units\n- one JSON object per line using the `BuyOrderItem` field set\n- per-API-key rolling 24h quota of successful stream starts (pro: 50, quant: 300, per endpoint)\n- max 1 concurrent stream per API key for this endpoint (409 otherwise)",
         "operationId": "streamFullBidsSnapshot",
         "security": [
           {
@@ -1926,6 +1991,27 @@
                   "type": "integer",
                   "minimum": 0
                 }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Daily quota of successful stream starts for this endpoint.",
+                "schema": {
+                  "type": "integer",
+                  "example": 300
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Remaining stream starts in the rolling 24h window.",
+                "schema": {
+                  "type": "integer",
+                  "example": 299
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Seconds until the oldest counted start leaves the window.",
+                "schema": {
+                  "type": "integer",
+                  "example": 86400
+                }
               }
             },
             "content": {
@@ -1966,21 +2052,42 @@
             }
           },
           "429": {
-            "description": "Bulk snapshot cooldown active for this API key.",
+            "description": "Daily bulk stream quota exhausted for this API key.",
             "headers": {
               "Retry-After": {
-                "description": "Seconds until this API key may request another bids snapshot.",
+                "description": "Seconds until this API key may start another bids stream.",
                 "schema": {
                   "type": "integer",
                   "minimum": 1
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Daily quota of successful stream starts for this endpoint.",
+                "schema": {
+                  "type": "integer",
+                  "example": 300
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Remaining stream starts in the rolling 24h window.",
+                "schema": {
+                  "type": "integer",
+                  "example": 0
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Seconds until the oldest counted start leaves the window.",
+                "schema": {
+                  "type": "integer",
+                  "example": 1800
                 }
               }
             },
             "content": {
               "application/json": {
                 "example": {
-                  "code": "RATE_LIMIT_EXCEEDED",
-                  "detail": "Bulk snapshot cooldown active for /v1/bids. Retry after 300 seconds."
+                  "code": "RATE_LIMIT_STREAM_QUOTA_EXCEEDED",
+                  "detail": "Bulk stream quota exhausted for /v1/bids. Limit 300 per 24 hours."
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -2036,6 +2143,29 @@
                 "example": {
                   "code": "BIDS_INDEX_UNAVAILABLE",
                   "detail": "Indexed bids data unavailable. reason=index_missing. Try again shortly."
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "A streaming request is already active for this API key.",
+            "headers": {
+              "Retry-After": {
+                "description": "Suggested seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "STREAM_ALREADY_ACTIVE",
+                  "detail": "A streaming request is already active for this API key."
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -2235,7 +2365,7 @@
           "Sales"
         ],
         "summary": "List Recent Sales",
-        "description": "Return recent sales history from providers with recent-sales support.\n\nFilters:\n- `item_id` or `market_hash_name` is required\n- optional `phase`\n- `providers` limited to sales-capable provider keys\n- `currency` and `limit`\n\nBehavior:\n- responses are served from background-ingested Redis sales caches\n- cache misses do not trigger live provider fetches during the request\n- each item/provider pair is refreshed by the rolling ingest job about once per 24 hours\n- response is single-page only with a maximum of 50 rows\n\nResponse:\n- request metadata and providers queried\n- sales records with sticker, charm, and inspect metadata when available\n- per-provider cache status for hit, stale, pending, error, or unavailable",
+        "description": "Return recent sales history from providers with recent-sales support.\n\nFilters:\n- `item_id` or `market_hash_name` is required\n- optional `phase`\n- `providers` limited to sales-capable provider keys\n- `currency` and `limit`\n\nBehavior:\n- responses are served from background-ingested Redis sales caches\n- each item/provider pair is refreshed by the rolling ingest job about once per 24 hours\n- response is single-page only with a maximum of 50 rows\n\nResponse:\n- request metadata and providers queried\n- sales records with sticker, charm, and inspect metadata when available",
         "operationId": "listRecentSales",
         "security": [
           {
@@ -9334,6 +9464,421 @@
         }
       }
     },
+    "/v1/account/sessions": {
+      "get": {
+        "tags": [
+          "Account / Sessions"
+        ],
+        "summary": "List Sessions",
+        "description": "List the authenticated user's active browser sessions.",
+        "operationId": "listSessions",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "detail": "Missing Authorization header"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted to access this resource.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "FORBIDDEN",
+                  "detail": "Account is disabled"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (burst or monthly quota).",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying when present.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "X-RateLimit-Tier": {
+                "description": "Authenticated caller tier code.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Request limit for the rate-limit window that was exceeded.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0.0
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0.0
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Seconds until the rate-limit window resets.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0.0
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "burstRateLimit": {
+                    "summary": "Per-window rate limit exceeded",
+                    "value": {
+                      "code": "RATE_LIMIT_EXCEEDED",
+                      "detail": "Too Many Requests"
+                    }
+                  },
+                  "monthlyQuotaExceeded": {
+                    "summary": "Monthly quota exhausted",
+                    "value": {
+                      "code": "RATE_LIMIT_MONTHLY_QUOTA_EXCEEDED",
+                      "detail": "Monthly quota exceeded (500000/500000 requests)."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed. The detail list contains field-specific validation errors.",
+            "headers": {
+              "X-RateLimit-Tier": {
+                "description": "Authenticated caller tier code when available.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Account / Sessions"
+        ],
+        "summary": "Revoke Other Sessions",
+        "description": "Revoke all of the user's sessions except the current one.\n\nIf the request has no browser session cookie (e.g. an API-key caller),\nthere is no \"current\" session to preserve, so all sessions are revoked.",
+        "operationId": "revokeOtherSessions",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevokeSessionsResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "detail": "Missing Authorization header"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted to access this resource.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "FORBIDDEN",
+                  "detail": "Account is disabled"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (burst or monthly quota).",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying when present.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "X-RateLimit-Tier": {
+                "description": "Authenticated caller tier code.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Request limit for the rate-limit window that was exceeded.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0.0
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0.0
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Seconds until the rate-limit window resets.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0.0
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "burstRateLimit": {
+                    "summary": "Per-window rate limit exceeded",
+                    "value": {
+                      "code": "RATE_LIMIT_EXCEEDED",
+                      "detail": "Too Many Requests"
+                    }
+                  },
+                  "monthlyQuotaExceeded": {
+                    "summary": "Monthly quota exhausted",
+                    "value": {
+                      "code": "RATE_LIMIT_MONTHLY_QUOTA_EXCEEDED",
+                      "detail": "Monthly quota exceeded (500000/500000 requests)."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed. The detail list contains field-specific validation errors.",
+            "headers": {
+              "X-RateLimit-Tier": {
+                "description": "Authenticated caller tier code when available.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/account/sessions/{session_id}": {
+      "delete": {
+        "tags": [
+          "Account / Sessions"
+        ],
+        "summary": "Revoke Session",
+        "description": "Revoke a single session by id.",
+        "operationId": "revokeSession",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevokeSessionsResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "detail": "Missing Authorization header"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted to access this resource.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "FORBIDDEN",
+                  "detail": "Account is disabled"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (burst or monthly quota).",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "burstRateLimit": {
+                    "summary": "Per-window rate limit exceeded",
+                    "value": {
+                      "code": "RATE_LIMIT_EXCEEDED",
+                      "detail": "Too Many Requests"
+                    }
+                  },
+                  "monthlyQuotaExceeded": {
+                    "summary": "Monthly quota exhausted",
+                    "value": {
+                      "code": "RATE_LIMIT_MONTHLY_QUOTA_EXCEEDED",
+                      "detail": "Monthly quota exceeded (500000/500000 requests)."
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying when present.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "X-RateLimit-Tier": {
+                "description": "Authenticated caller tier code.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Request limit for the rate-limit window that was exceeded.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Seconds until the rate-limit window resets.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed. The detail list contains field-specific validation errors.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Tier": {
+                "description": "Authenticated caller tier code when available.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/account/billing/checkout": {
       "post": {
         "tags": [
@@ -10378,7 +10923,7 @@
           "Market Intelligence"
         ],
         "summary": "Get Arbitrage Opportunities",
-        "description": "Scan providers for cross-market arbitrage opportunities.\n\nFilters:\n- `min_spread_pct`\n- `providers_buy` and `providers_sell` (sell-side limited to buy-order providers)\n- offset pagination via `offset`\n\nResponse:\n- opportunities ranked by estimated net profit in USD with buy-side and sell-side provider context\n\nTier: Quant-only.",
+        "description": "Scan providers for cross-market arbitrage opportunities.\n\nFilters:\n- `min_spread_pct`\n- `providers_buy` and `providers_sell` (sell-side limited to buy-order providers)\n- offset pagination via `offset`\n\nResponse:\n- opportunities ranked by estimated net profit in USD with buy-side and sell-side provider context\n- pagination total reflects the bounded ranked candidate working set, not an uncapped full-database count\n\nTier: Quant-only.",
         "operationId": "getArbitrageOpportunities",
         "security": [
           {
@@ -17795,7 +18340,7 @@
           "Sales"
         ],
         "summary": "List Recent Sales",
-        "description": "Return recent sales history from providers with recent-sales support.\n\nFilters:\n- `item_id` or `market_hash_name` is required\n- optional `phase`\n- `providers` limited to sales-capable provider keys\n- `currency` and `limit`\n\nBehavior:\n- responses are served from background-ingested Redis sales caches\n- cache misses do not trigger live provider fetches during the request\n- each item/provider pair is refreshed by the rolling ingest job about once per 24 hours\n- response is single-page only with a maximum of 50 rows\n\nResponse:\n- request metadata and providers queried\n- sales records with sticker, charm, and inspect metadata when available\n- per-provider cache status for hit, stale, pending, error, or unavailable",
+        "description": "Return recent sales history from providers with recent-sales support.\n\nFilters:\n- `item_id` or `market_hash_name` is required\n- optional `phase`\n- `providers` limited to sales-capable provider keys\n- `currency` and `limit`\n\nBehavior:\n- responses are served from background-ingested Redis sales caches\n- each item/provider pair is refreshed by the rolling ingest job about once per 24 hours\n- response is single-page only with a maximum of 50 rows\n\nResponse:\n- request metadata and providers queried\n- sales records with sticker, charm, and inspect metadata when available",
         "operationId": "webListRecentSales",
         "security": [],
         "parameters": [
@@ -18073,7 +18618,7 @@
           "Market Intelligence"
         ],
         "summary": "Get Arbitrage Opportunities",
-        "description": "Scan providers for cross-market arbitrage opportunities.\n\nFilters:\n- `min_spread_pct`\n- `providers_buy` and `providers_sell` (sell-side limited to buy-order providers)\n- offset pagination via `offset`\n\nResponse:\n- opportunities ranked by estimated net profit in USD with buy-side and sell-side provider context\n\nTier: Quant-only.",
+        "description": "Scan providers for cross-market arbitrage opportunities.\n\nFilters:\n- `min_spread_pct`\n- `providers_buy` and `providers_sell` (sell-side limited to buy-order providers)\n- offset pagination via `offset`\n\nResponse:\n- opportunities ranked by estimated net profit in USD with buy-side and sell-side provider context\n- pagination total reflects the bounded ranked candidate working set, not an uncapped full-database count\n\nTier: Quant-only.",
         "operationId": "webGetArbitrageOpportunities",
         "security": [],
         "parameters": [
@@ -26707,6 +27252,240 @@
         }
       }
     },
+    "/admin/email-domain-rules": {
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Create Email Domain Rule",
+        "description": "Add (or update) an email-domain blocklist rule.\n\nIdempotent on ``domain``: re-posting an existing domain updates its action/note.\nTakes effect for new email verifications within ~60s (override cache TTL).",
+        "operationId": "adminCreateEmailDomainRule",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmailDomainRuleCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailDomainRuleResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid admin token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "detail": "Missing x-admin-token header"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Admin authentication is not configured correctly.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "INTERNAL_SERVER_ERROR",
+                  "detail": "Admin authentication not configured"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The supplied domain is not a plausible bare domain."
+          }
+        },
+        "security": [
+          {
+            "AdminTokenAuth": []
+          }
+        ]
+      }
+    },
+    "/admin/abuse/email-bans": {
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Create Email Abuse Ban",
+        "description": "Ban an email identity and auto-ban safe attributed API-usage IPs.",
+        "operationId": "adminCreateEmailAbuseBan",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmailAbuseBanRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailAbuseBanResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid admin token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "detail": "Missing x-admin-token header"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Admin authentication is not configured correctly.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "INTERNAL_SERVER_ERROR",
+                  "detail": "Admin authentication not configured"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed. The detail list contains field-specific validation errors.",
+            "headers": {
+              "X-RateLimit-Tier": {
+                "description": "Authenticated caller tier code when available.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AdminTokenAuth": []
+          }
+        ]
+      }
+    },
+    "/admin/abuse/ip-bans": {
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Create Ip Abuse Ban",
+        "description": "Ban a client IP by explicit admin action.\n\nBypasses the shared-IP / reverse-DNS heuristics used by the email-ban\nauto-attribution path: this is a deliberate human decision, so the address\nis banned regardless of how many distinct accounts it has served.",
+        "operationId": "adminCreateIpAbuseBan",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IPAbuseBanRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IPAbuseBanResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid admin token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "detail": "Missing x-admin-token header"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Admin authentication is not configured correctly.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "INTERNAL_SERVER_ERROR",
+                  "detail": "Admin authentication not configured"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed. The detail list contains field-specific validation errors.",
+            "headers": {
+              "X-RateLimit-Tier": {
+                "description": "Authenticated caller tier code when available.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AdminTokenAuth": []
+          }
+        ]
+      }
+    },
     "/service/skinscanner/deals": {
       "get": {
         "tags": [
@@ -30169,6 +30948,83 @@
         ],
         "title": "DeleteUserResponse"
       },
+      "EmailAbuseBanRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email",
+            "description": "Email address to ban."
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note",
+            "description": "Optional internal note for the ban."
+          }
+        },
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "title": "EmailAbuseBanRequest"
+      },
+      "EmailAbuseBanResponse": {
+        "properties": {
+          "email_identity": {
+            "type": "string",
+            "title": "Email Identity",
+            "description": "Canonical email identity that was banned."
+          },
+          "matched_user_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Matched User Ids",
+            "description": "Existing users disabled by this ban."
+          },
+          "revoked_key_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Revoked Key Ids",
+            "description": "Active API keys revoked by this ban."
+          },
+          "banned_ips": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Banned Ips",
+            "description": "API-usage IPs auto-banned from this email ban."
+          },
+          "skipped_ips": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Skipped Ips",
+            "description": "Candidate API-usage IPs skipped with machine-readable reasons."
+          }
+        },
+        "type": "object",
+        "required": [
+          "email_identity",
+          "matched_user_ids",
+          "revoked_key_ids",
+          "banned_ips",
+          "skipped_ips"
+        ],
+        "title": "EmailAbuseBanResponse"
+      },
       "EmailChangeRequest": {
         "properties": {
           "new_email": {
@@ -30183,6 +31039,84 @@
           "new_email"
         ],
         "title": "EmailChangeRequest"
+      },
+      "EmailDomainRuleCreateRequest": {
+        "properties": {
+          "domain": {
+            "type": "string",
+            "title": "Domain",
+            "description": "Email domain to add to the blocklist, e.g. 'web-library.net'."
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "deny",
+              "allow"
+            ],
+            "title": "Action",
+            "description": "Rule action. 'deny' blocks the domain from email verification / key issuance; 'allow' whitelists it, overriding the static disposable denylist.",
+            "default": "deny"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note",
+            "description": "Optional human-readable note explaining why the rule was added."
+          }
+        },
+        "type": "object",
+        "required": [
+          "domain"
+        ],
+        "title": "EmailDomainRuleCreateRequest",
+        "description": "Request body for adding or updating an email-domain blocklist rule."
+      },
+      "EmailDomainRuleResponse": {
+        "properties": {
+          "domain": {
+            "type": "string",
+            "title": "Domain",
+            "description": "Normalized email domain the rule applies to."
+          },
+          "action": {
+            "type": "string",
+            "title": "Action",
+            "description": "Rule action: 'deny' or 'allow'."
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note",
+            "description": "Human-readable note stored with the rule, if any."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "UTC timestamp when the rule row was created."
+          }
+        },
+        "type": "object",
+        "required": [
+          "domain",
+          "action",
+          "note",
+          "created_at"
+        ],
+        "title": "EmailDomainRuleResponse",
+        "description": "A persisted email-domain override rule."
       },
       "EmailSetRequest": {
         "properties": {
@@ -30264,6 +31198,52 @@
         },
         "type": "object",
         "title": "HTTPValidationError"
+      },
+      "IPAbuseBanRequest": {
+        "properties": {
+          "ip": {
+            "type": "string",
+            "title": "Ip",
+            "description": "Client IP address to ban (IPv4 or IPv6)."
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note",
+            "description": "Optional internal note for the ban."
+          }
+        },
+        "type": "object",
+        "required": [
+          "ip"
+        ],
+        "title": "IPAbuseBanRequest"
+      },
+      "IPAbuseBanResponse": {
+        "properties": {
+          "ip_address": {
+            "type": "string",
+            "title": "Ip Address",
+            "description": "Canonical IP address that is now banned."
+          },
+          "already_banned": {
+            "type": "boolean",
+            "title": "Already Banned",
+            "description": "True when the IP was already banned and no new record was created."
+          }
+        },
+        "type": "object",
+        "required": [
+          "ip_address",
+          "already_banned"
+        ],
+        "title": "IPAbuseBanResponse"
       },
       "IndicatorDataCoverage": {
         "properties": {
@@ -35276,6 +36256,20 @@
         ],
         "title": "ReplayResponse"
       },
+      "RevokeSessionsResponse": {
+        "properties": {
+          "revoked": {
+            "type": "integer",
+            "title": "Revoked",
+            "description": "Number of sessions that were revoked."
+          }
+        },
+        "type": "object",
+        "required": [
+          "revoked"
+        ],
+        "title": "RevokeSessionsResponse"
+      },
       "SaleRecordDetail": {
         "properties": {
           "date": {
@@ -35480,39 +36474,15 @@
             "type": "array",
             "title": "Items",
             "description": "List of returned items."
-          },
-          "cache_status": {
-            "additionalProperties": {
-              "type": "string",
-              "enum": [
-                "hit",
-                "stale",
-                "pending",
-                "error",
-                "unavailable"
-              ]
-            },
-            "type": "object",
-            "title": "Cache Status",
-            "description": "Per-provider cache outcome map keyed by provider key. `hit` = served from fresh Redis sales cache; `stale` = served from the longer-lived stale sales cache; `pending` = the item/provider has not been ingested yet; `error` = the latest background ingest failed and no cached data is available; `unavailable` = provider requested but not available.",
-            "examples": [
-              {
-                "buff163": "stale",
-                "csfloat": "hit",
-                "csgoempire": "error",
-                "dmarket": "unavailable"
-              }
-            ]
           }
         },
         "type": "object",
         "required": [
           "meta",
-          "items",
-          "cache_status"
+          "items"
         ],
         "title": "SalesHistoryResponse",
-        "description": "Recent Sales response with request metadata and cache status."
+        "description": "Recent Sales response with request metadata."
       },
       "SalesMeta": {
         "properties": {
@@ -35550,6 +36520,83 @@
         ],
         "title": "SalesMeta",
         "description": "Metadata for sales response."
+      },
+      "SessionInfo": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id",
+            "description": "Unique identifier for this browser session."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "When the session was created (UTC)."
+          },
+          "last_seen_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Last Seen At",
+            "description": "When the session was last active (UTC)."
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At",
+            "description": "When the session expires (UTC)."
+          },
+          "ip_address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ip Address",
+            "description": "IP address captured when the session was created."
+          },
+          "device_label": {
+            "type": "string",
+            "title": "Device Label",
+            "description": "Human-readable device label derived from the user agent."
+          },
+          "current": {
+            "type": "boolean",
+            "title": "Current",
+            "description": "Whether this is the session making the request."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "created_at",
+          "last_seen_at",
+          "expires_at",
+          "device_label",
+          "current"
+        ],
+        "title": "SessionInfo"
+      },
+      "SessionListResponse": {
+        "properties": {
+          "sessions": {
+            "items": {
+              "$ref": "#/components/schemas/SessionInfo"
+            },
+            "type": "array",
+            "title": "Sessions",
+            "description": "The user's active browser sessions."
+          }
+        },
+        "type": "object",
+        "required": [
+          "sessions"
+        ],
+        "title": "SessionListResponse"
       },
       "SkinScannerBaselineResponse": {
         "properties": {

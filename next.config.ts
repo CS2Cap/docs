@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withBotId } from "botid/next/config";
 
 // Content-Security-Policy directives (no report directives — those are appended
 // per-request below once the report URL is known). Enforced in production,
@@ -185,4 +186,6 @@ const nextConfig: NextConfig = {
   skipTrailingSlashRedirect: true,
 };
 
-export default nextConfig;
+// withBotId injects first-party proxy rewrites so the BotID detection script is
+// served same-origin (keeps it within our `script-src 'self'` CSP).
+export default withBotId(nextConfig);

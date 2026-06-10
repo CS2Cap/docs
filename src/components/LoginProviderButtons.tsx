@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import posthog from "posthog-js";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 
 const oauthProviders = [
   {
@@ -41,7 +42,7 @@ export function LoginProviderButtons({ apiBaseUrl }: { apiBaseUrl: string }) {
           href={`${apiBaseUrl}/v1/web/auth/${provider.id}/login`}
           className="flex w-full items-center justify-center gap-3 border-brutal bg-secondary/50 px-4 py-3 font-mono text-sm font-bold tracking-wider brutalist-hover transition-colors hover:border-primary"
           onClick={() => {
-            posthog.capture("login_provider_clicked", { provider: provider.id });
+            posthog.capture(ANALYTICS_EVENTS.loginProviderClicked, { provider: provider.id });
           }}
         >
           {provider.icon}

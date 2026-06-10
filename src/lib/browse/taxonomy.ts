@@ -18,6 +18,39 @@ export const WEAPON_SUBTYPES: WeaponSubtype[] = [
   "Equipment",
 ];
 
+// Subtype filter vocabularies per item type. Array order = chip display order.
+export const AGENT_SUBTYPES = ["Counter-Terrorist", "Terrorist"] as const;
+export const CHARM_SUBTYPES = ["Sticker Slab", "Normal", "Highlight Reel"] as const;
+export const COLLECTIBLE_SUBTYPES = ["Pin", "Operation Pass", "Tournament Pass"] as const;
+export const CRATE_SUBTYPES = [
+  "Weapon Case",
+  "Gift",
+  "Souvenir Package",
+  "Sticker Capsule",
+  "Graffiti Box",
+  "Autograph Capsule",
+  "Pins Capsule",
+  "Music Kit Box",
+  "Patch Capsule",
+  "Collection Package",
+  "Souvenir Highlight",
+] as const;
+export const PATCH_SUBTYPES = ["Other", "Team Logo"] as const;
+export const STICKER_SUBTYPES = ["Player Autograph", "Team Logo", "Tournament", "Other"] as const;
+
+// Weapon subtypes for the /weapons PAGE filter (includes Knives & Gloves).
+// Distinct from WEAPON_SUBTYPES, which drives the mega-menu nav payload and
+// must stay limited to the five gun families.
+export const WEAPON_PAGE_SUBTYPES = [
+  "Pistols",
+  "Knives",
+  "SMGs",
+  "Rifles",
+  "Heavy",
+  "Gloves",
+  "Equipment",
+] as const;
+
 // Reuse the existing item slugifier so group slugs are consistent site-wide.
 export function slugifyName(name: string): string {
   return slugifyMarketHashName(name);
@@ -49,6 +82,8 @@ export interface GroupSummary {
   slug: string;
   image: string | null;
   count: number; // number of deduped skins
+  subtypes: string[]; // subtype(s) this group card represents (for filtering)
+  href?: string; // explicit link override (default `${hrefBase}/${slug}`)
 }
 
 export interface SkinCard {
@@ -58,6 +93,7 @@ export interface SkinCard {
   image: string | null;
   rarityName: string | null;
   rarityColor: string | null;
+  subtype: string | null; // item_subtype (slabs → "Sticker Slab"); used for filtering
   itemHref: string; // down-link → /item/[itemId]
   weaponHref: string | null; // up-link → /weapons|knives|gloves/[base]
   topLabel: string | null; // small label above the title
@@ -108,6 +144,8 @@ export function dedupToCards(
     );
     const hasStatTrak = variants.some((v) => v.is_stattrak === true);
     const hasSouvenir = variants.some((v) => v.is_souvenir === true);
+    const subtype =
+      rep.base_name === "Sticker Slab" ? "Sticker Slab" : rep.item_subtype ?? null;
     cards.push({
       itemId: rep.item_id,
       baseName: rep.base_name ?? "",
@@ -115,6 +153,7 @@ export function dedupToCards(
       image: rep.image_url ?? null,
       rarityName: rep.rarity_name ?? null,
       rarityColor: rep.rarity_color ?? null,
+      subtype,
       itemHref: buildItemPath(rep.item_id, rep.market_hash_name),
       weaponHref: includeWeaponHref ? baseHref(rep.item_subtype, rep.base_name ?? "") : null,
       topLabel:

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import posthog from "posthog-js";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 
 type ReplayCategory = "marketing" | "pricing" | "engaged" | "none";
 
@@ -140,19 +141,19 @@ function captureNavigationIntent(event: MouseEvent) {
 
   if (target === "/pricing" || target === "/api-info#pricing" || label?.toLowerCase().includes("pricing")) {
     promoteAnonymousVisitor("pricing", target);
-    posthog.capture("pricing_clicked", { href: target, label });
+    posthog.capture(ANALYTICS_EVENTS.pricingClicked, { href: target, label });
     return;
   }
 
   if (url.hostname === "docs.cs2cap.com") {
     promoteAnonymousVisitor("docs", url.toString());
-    posthog.capture("docs_clicked", { href: url.toString(), label });
+    posthog.capture(ANALYTICS_EVENTS.docsClicked, { href: url.toString(), label });
     return;
   }
 
   if (url.pathname === "/login" || label?.toLowerCase().includes("sign")) {
     promoteAnonymousVisitor("signup", target);
-    posthog.capture("signup_clicked", { href: target, label });
+    posthog.capture(ANALYTICS_EVENTS.signupClicked, { href: target, label });
   }
 }
 

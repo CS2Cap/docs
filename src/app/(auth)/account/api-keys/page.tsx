@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/dialog";
 import posthog from "posthog-js";
 import { useSession, useSubKeys, webApi } from "@/lib/api";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { PlanUpgradeCard } from "@/components/PlanUpgradeCard";
 import { queryKeys } from "@/lib/api/hooks";
 import type { ChildAPIKeyCreateResponse } from "@/lib/api/types";
@@ -118,7 +119,7 @@ export default function AccountApiKeysPage() {
     try {
       const response = await webApi.reissueAPIKey();
       setNewKey(response);
-      posthog.capture(isCreating ? "api_key_created" : "api_key_regenerated");
+      posthog.capture(isCreating ? ANALYTICS_EVENTS.apiKeyCreated : ANALYTICS_EVENTS.apiKeyRegenerated);
       await refetchSession();
     } catch (error: unknown) {
       setReissueError(
@@ -143,7 +144,7 @@ export default function AccountApiKeysPage() {
         quota_requests_per_month_override: quota ?? null,
       });
       setNewSubKey(response);
-      posthog.capture("sub_key_created", {
+      posthog.capture(ANALYTICS_EVENTS.subKeyCreated, {
         has_quota_override: !!quota,
       });
       await refetchSubKeys();

@@ -4,6 +4,7 @@ import {
   WEB_AUTH_TOKEN_COOKIE_NAME,
   WEB_SESSION_COOKIE_NAME,
 } from "./config";
+import { matchApiCachePolicy } from "./cache-policy";
 import { buildQuery } from "./shared";
 import { searchSnapshot } from "../search/snapshot-search";
 import {
@@ -260,6 +261,10 @@ function deriveItemsMetadata(snapshot: ItemsSnapshotData): ItemsMetadataResponse
   };
 }
 
+function getApiRevalidate(path: string, fallback: number | false): number | false {
+  return matchApiCachePolicy(path)?.revalidate ?? fallback;
+}
+
 // ── serverApi ─────────────────────────────────────────────────────────────────
 
 export const serverApi = {
@@ -511,7 +516,9 @@ export const serverApi = {
     );
   },
 
-  getMarketOverview(revalidate: number | false = 60) {
+  getMarketOverview(
+    revalidate: number | false = getApiRevalidate("/v1/web/market/overview", 60),
+  ) {
     return serverFetch<MarketOverviewResponse>("/v1/web/market/overview", {
       revalidate,
       anon: true,

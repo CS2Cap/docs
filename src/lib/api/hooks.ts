@@ -17,6 +17,7 @@ import type {
   ItemSearchResponse,
   ItemSuggestion,
   PlansResponse,
+  SessionListResponse,
   UsageDashboardResponse,
   ViewerResponse,
   WatchlistResponse,
@@ -33,8 +34,11 @@ export const queryKeys = {
   preferences: ["viewer"] as const,
   apiKey: ["api-key"] as const,
   subKeys: (params: Record<string, unknown>) => ["sub-keys", params] as const,
+  watchlistRoot: ["watchlist"] as const,
   watchlist: (params: Record<string, unknown>) => ["watchlist", params] as const,
+  alertsRoot: ["alerts"] as const,
   alerts: (params: Record<string, unknown>) => ["alerts", params] as const,
+  alertEventsRoot: ["alert-events"] as const,
   alertEvents: (params: Record<string, unknown>) => ["alert-events", params] as const,
   webhooks: ["webhooks"] as const,
   billingPlans: ["billing-plans"] as const,
@@ -44,6 +48,7 @@ export const queryKeys = {
   itemSearch: (query: string) => ["item-search", query] as const,
   item: (itemId: number | null) => ["item", itemId] as const,
   browseNav: ["browse-nav"] as const,
+  sessions: ["sessions"] as const,
 };
 
 export function useBrowseNav(enabled: boolean) {
@@ -230,7 +235,7 @@ export function useAddToWatchlistMutation() {
   return useMutation({
     mutationFn: (itemId: number) => webApi.addToWatchlist(itemId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["watchlist"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.watchlistRoot });
       queryClient.invalidateQueries({ queryKey: queryKeys.session });
       queryClient.invalidateQueries({ queryKey: queryKeys.account });
     },
@@ -243,7 +248,7 @@ export function useRemoveFromWatchlistMutation() {
   return useMutation({
     mutationFn: (itemId: number) => webApi.removeFromWatchlist(itemId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["watchlist"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.watchlistRoot });
       queryClient.invalidateQueries({ queryKey: queryKeys.session });
       queryClient.invalidateQueries({ queryKey: queryKeys.account });
     },
@@ -256,8 +261,8 @@ export function useCreateAlertMutation() {
   return useMutation({
     mutationFn: (input: AlertCreateRequest) => webApi.createAlert(input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["alerts"] });
-      queryClient.invalidateQueries({ queryKey: ["alert-events"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.alertsRoot });
+      queryClient.invalidateQueries({ queryKey: queryKeys.alertEventsRoot });
       queryClient.invalidateQueries({ queryKey: queryKeys.session });
       queryClient.invalidateQueries({ queryKey: queryKeys.account });
     },
@@ -271,8 +276,8 @@ export function useUpdateAlertMutation() {
     mutationFn: ({ alertId, data }: { alertId: string; data: AlertUpdateRequest }) =>
       webApi.updateAlert(alertId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["alerts"] });
-      queryClient.invalidateQueries({ queryKey: ["alert-events"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.alertsRoot });
+      queryClient.invalidateQueries({ queryKey: queryKeys.alertEventsRoot });
     },
   });
 }
@@ -283,8 +288,8 @@ export function useDeleteAlertMutation() {
   return useMutation({
     mutationFn: (alertId: string) => webApi.deleteAlert(alertId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["alerts"] });
-      queryClient.invalidateQueries({ queryKey: ["alert-events"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.alertsRoot });
+      queryClient.invalidateQueries({ queryKey: queryKeys.alertEventsRoot });
       queryClient.invalidateQueries({ queryKey: queryKeys.session });
       queryClient.invalidateQueries({ queryKey: queryKeys.account });
     },
@@ -336,6 +341,66 @@ export function useRotateWebhookSecretMutation() {
     mutationFn: (webhookId: string) => webApi.rotateWebhookSecret(webhookId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.webhooks });
+    },
+  });
+}
+
+export function useSessions() {
+  return useQuery({
+    queryKey: queryKeys.sessions,
+    queryFn: () => webApi.listSessions(),
+    staleTime: 30_000,
+  });
+}
+
+export function useRevokeSessionMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => webApi.revokeSession(id),
+    onMutate: async (id: string) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.sessions });
+      const previous = queryClient.getQueryData<SessionListResponse>(queryKeys.sessions);
+      if (previous) {
+        queryClient.setQueryData<SessionListResponse>(queryKeys.sessions, {
+          sessions: previous.sessions.filter((s) => s.id !== id),
+        });
+      }
+      return { previous };
+    },
+    onError: (_err, _id, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(queryKeys.sessions, context.previous);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.sessions });
+    },
+  });
+}
+
+export function useRevokeOtherSessionsMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => webApi.revokeOtherSessions(),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.sessions });
+      const previous = queryClient.getQueryData<SessionListResponse>(queryKeys.sessions);
+      if (previous) {
+        queryClient.setQueryData<SessionListResponse>(queryKeys.sessions, {
+          sessions: previous.sessions.filter((s) => s.current),
+        });
+      }
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(queryKeys.sessions, context.previous);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.sessions });
     },
   });
 }

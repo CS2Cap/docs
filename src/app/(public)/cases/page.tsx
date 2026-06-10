@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { FooterSection } from "@/components/FooterSection";
 import { BrowseUnavailable } from "@/components/browse/BrowseUnavailable";
-import { GroupGrid } from "@/components/browse/GroupGrid";
+import { FilterableGroupGrid } from "@/components/browse/FilterableGroupGrid";
 import { listCases, loadBrowseIndex } from "@/lib/browse/browse-index";
+import { CRATE_SUBTYPES } from "@/lib/browse/taxonomy";
 
 export const revalidate = 86400;
 
@@ -20,7 +21,7 @@ export default async function CasesPage() {
       <main className="container py-8">
         <h1 className="mb-1 font-mono text-2xl font-bold">Cases</h1>
         <p className="mb-6 font-mono text-sm text-muted-foreground">{cases.length} cases</p>
-        <GroupGrid groups={cases} hrefBase="/cases" />
+        <FilterableGroupGrid groups={cases} hrefBase="/cases" subtypeOrder={CRATE_SUBTYPES} />
       </main>
       <FooterSection />
     </>

@@ -35,6 +35,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import posthog from "posthog-js";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { DeliveryIntegrations } from "@/components/alerts/DeliveryIntegrations";
 import { ItemSearchInput, type AlertItemSelection } from "@/components/alerts/ItemSearchInput";
 import {
@@ -128,7 +129,7 @@ export default function AlertsPage() {
       },
       {
         onSuccess: () => {
-          posthog.capture("alert_created", {
+          posthog.capture(ANALYTICS_EVENTS.alertCreated, {
             item_id: selectedItem.item_id,
             kind,
             threshold_currency: kind === "spread_exceeds" ? undefined : thresholdCurrency,
@@ -255,7 +256,7 @@ export default function AlertsPage() {
                                 { alertId: alert.id, data: { is_enabled: checked } },
                                 {
                                   onSuccess: () => {
-                                    posthog.capture("alert_toggled", {
+                                    posthog.capture(ANALYTICS_EVENTS.alertToggled, {
                                       alert_id: alert.id,
                                       item_id: alert.item.item_id,
                                       kind: alert.kind,
@@ -278,7 +279,7 @@ export default function AlertsPage() {
                                 onClick={() =>
                                   deleteAlertMutation.mutate(alert.id, {
                                     onSuccess: () => {
-                                      posthog.capture("alert_deleted", {
+                                      posthog.capture(ANALYTICS_EVENTS.alertDeleted, {
                                         alert_id: alert.id,
                                         item_id: alert.item.item_id,
                                         kind: alert.kind,

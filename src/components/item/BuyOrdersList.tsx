@@ -1,7 +1,7 @@
 import { ExternalLink, TriangleAlert } from "lucide-react";
 import { ProviderIdentity } from "@/components/ProviderIdentity";
 import { Price } from "@/components/Price";
-import { RelativeTime } from "@/components/item/CollapsibleAsksList";
+import { RelativeTime } from "@/components/RelativeTime";
 import {
   Tooltip,
   TooltipContent,

@@ -3,6 +3,7 @@ import { FooterSection } from "@/components/FooterSection";
 import { BrowseUnavailable } from "@/components/browse/BrowseUnavailable";
 import { FilterableSubtypeSections } from "@/components/browse/FilterableSubtypeSections";
 import { collectibleSections, loadBrowseIndex } from "@/lib/browse/browse-index";
+import { COLLECTIBLE_SUBTYPES } from "@/lib/browse/taxonomy";
 
 export const revalidate = 86400;
 
@@ -19,7 +20,7 @@ export default async function CollectiblesPage() {
     <>
       <main className="container py-8">
         <h1 className="mb-6 font-mono text-2xl font-bold">Collectibles</h1>
-        <FilterableSubtypeSections sections={sections} />
+        <FilterableSubtypeSections sections={sections} subtypeOrder={COLLECTIBLE_SUBTYPES} />
       </main>
       <FooterSection />
     </>

@@ -5,6 +5,8 @@ import { ProviderIdentity } from "@/components/ProviderIdentity";
 import { SimilarItemsGrid, type SimilarItem } from "@/components/item/SimilarItemsGrid";
 import { formatCompact, getProvider, providerLabel } from "@/lib/api";
 import { Price } from "@/components/Price";
+import { ErrorState } from "@/components/ui/error-state";
+import { SkeletonLine } from "@/components/ui/skeleton";
 import { serverApi } from "@/lib/api/server";
 import { WEB_AUTH_TOKEN_COOKIE_NAME, WEB_SESSION_COOKIE_NAME } from "@/lib/api/config";
 import { buildQuery } from "@/lib/api/shared";
@@ -68,8 +70,32 @@ function getBestAskFromPrices(prices: MarketItem[], itemId: number): number | nu
   return best;
 }
 
-function SkeletonLine({ className = "" }: { className?: string }) {
-  return <div className={`animate-pulse rounded-sm bg-secondary/70 ${className}`.trim()} />;
+function ItemDeferredSectionError({
+  title,
+  message,
+}: {
+  title: string;
+  message: string;
+}) {
+  return (
+    <ErrorState
+      eyebrow="ITEM DATA"
+      title={title}
+      message={message}
+      size="compact"
+      className="border-brutal"
+    />
+  );
+}
+
+function logSectionFailure(section: string, itemId: number, error: unknown) {
+  console.warn(
+    JSON.stringify({
+      event: `item_section.${section}_failed`,
+      item_id: itemId,
+      error: error instanceof Error ? error.message : "unknown error",
+    }),
+  );
 }
 
 export function ItemPriceHistoryFallback() {
@@ -92,7 +118,19 @@ export function ItemPriceHistoryFallback() {
 }
 
 export async function ItemPriceHistorySection({ itemId }: { itemId: number }) {
-  const priceCandles = await getLongRangePriceCandles(itemId);
+  let priceCandles: PriceCandlesPage | null;
+
+  try {
+    priceCandles = await getLongRangePriceCandles(itemId);
+  } catch (error) {
+    logSectionFailure("price_history", itemId, error);
+    return (
+      <ItemDeferredSectionError
+        title="Price history unavailable"
+        message="Price history could not be loaded for this item."
+      />
+    );
+  }
 
   return (
     <div className="border-brutal bg-card">
@@ -160,48 +198,60 @@ export async function ItemMarketInsightsSection({
   itemId: number;
   listingProvidersCount: number;
 }) {
-  const snapshot = await serverApi.getMarketItemsSnapshot({ timeframe: "24h" });
-  const analyticsSummary = snapshot?.data.items.find((i) => i.item_id === itemId)?.summary ?? null;
+  let cards: Array<{ label: string; value: string; detail: string; tone: InsightTone; tag: string }>;
 
-  const liquidity = liquidityTone(analyticsSummary?.liquidity);
-  const spread = spreadTone(analyticsSummary?.avg_spread_pct);
+  try {
+    const snapshot = await serverApi.getMarketItemsSnapshot({ timeframe: "24h" });
+    const analyticsSummary = snapshot?.data.items.find((i) => i.item_id === itemId)?.summary ?? null;
 
-  const cards: Array<{ label: string; value: string; detail: string; tone: InsightTone; tag: string }> = [
-    {
-      label: "PROVIDERS",
-      value: String(listingProvidersCount),
-      detail: "Live markets",
-      tone: "neutral",
-      tag: "",
-    },
-    {
-      label: "24H VOLUME",
-      value: formatCompact(analyticsSummary?.total_volume_24h ?? null),
-      detail: "Sales / 24h",
-      tone: "neutral",
-      tag: "",
-    },
-    {
-      label: "LIQUIDITY",
-      value:
-        analyticsSummary?.liquidity != null
-          ? `${analyticsSummary.liquidity}/100`
-          : "N/A",
-      detail: "Ease of sale",
-      tone: liquidity.tone,
-      tag: liquidity.tag,
-    },
-    {
-      label: "AVG SPREAD",
-      value:
-        analyticsSummary?.avg_spread_pct != null
-          ? `${analyticsSummary.avg_spread_pct.toFixed(2)}%`
-          : "N/A",
-      detail: "Bid-ask gap",
-      tone: spread.tone,
-      tag: spread.tag,
-    },
-  ];
+    const liquidity = liquidityTone(analyticsSummary?.liquidity);
+    const spread = spreadTone(analyticsSummary?.avg_spread_pct);
+
+    cards = [
+      {
+        label: "PROVIDERS",
+        value: String(listingProvidersCount),
+        detail: "Live markets",
+        tone: "neutral",
+        tag: "",
+      },
+      {
+        label: "24H VOLUME",
+        value: formatCompact(analyticsSummary?.total_volume_24h ?? null),
+        detail: "Sales / 24h",
+        tone: "neutral",
+        tag: "",
+      },
+      {
+        label: "LIQUIDITY",
+        value:
+          analyticsSummary?.liquidity != null
+            ? `${analyticsSummary.liquidity}/100`
+            : "N/A",
+        detail: "Ease of sale",
+        tone: liquidity.tone,
+        tag: liquidity.tag,
+      },
+      {
+        label: "AVG SPREAD",
+        value:
+          analyticsSummary?.avg_spread_pct != null
+            ? `${analyticsSummary.avg_spread_pct.toFixed(2)}%`
+            : "N/A",
+        detail: "Bid-ask gap",
+        tone: spread.tone,
+        tag: spread.tag,
+      },
+    ];
+  } catch (error) {
+    logSectionFailure("market_insights", itemId, error);
+    return (
+      <ItemDeferredSectionError
+        title="Market insights unavailable"
+        message="Market summary data could not be loaded for this item."
+      />
+    );
+  }
 
   return (
     <div className="grid gap-px bg-border md:grid-cols-4">
@@ -255,9 +305,21 @@ export async function ItemRecentSalesSection({
   itemId: number;
   providers: ProviderInfo[];
 }) {
-  const cookieStore = await cookies();
-  const isAuthenticated =
-    cookieStore.has(WEB_SESSION_COOKIE_NAME) || cookieStore.has(WEB_AUTH_TOKEN_COOKIE_NAME);
+  let isAuthenticated: boolean;
+
+  try {
+    const cookieStore = await cookies();
+    isAuthenticated =
+      cookieStore.has(WEB_SESSION_COOKIE_NAME) || cookieStore.has(WEB_AUTH_TOKEN_COOKIE_NAME);
+  } catch (error) {
+    logSectionFailure("recent_sales", itemId, error);
+    return (
+      <ItemDeferredSectionError
+        title="Recent sales unavailable"
+        message="Recent sale records could not be loaded for this item."
+      />
+    );
+  }
 
   if (!isAuthenticated) {
     return (
@@ -276,7 +338,19 @@ export async function ItemRecentSalesSection({
     );
   }
 
-  const sales = await serverApi.getSales(`/v1/web/sales?item_id=${itemId}&limit=10`, 600);
+  let sales: Awaited<ReturnType<typeof serverApi.getSales>>;
+
+  try {
+    sales = await serverApi.getSales(`/v1/web/sales?item_id=${itemId}&limit=10`, 600);
+  } catch (error) {
+    logSectionFailure("recent_sales", itemId, error);
+    return (
+      <ItemDeferredSectionError
+        title="Recent sales unavailable"
+        message="Recent sale records could not be loaded for this item."
+      />
+    );
+  }
 
   return (
     <div className="border-brutal bg-card">
@@ -355,39 +429,51 @@ export async function ItemRelatedItemsSection({ item }: { item: ItemOut }) {
     return null;
   }
 
-  const relatedItems = await serverApi.getItems(
-    buildQuery({ ...filter, limit: 18 }),
-    300,
-  );
+  let items: SimilarItem[];
 
-  const relatedCandidates =
-    relatedItems?.items
-      .filter((candidate) => candidate.item_id !== item.item_id)
-      .filter(
-        (candidate): candidate is ItemOut & { item_id: number } =>
-          typeof candidate.item_id === "number",
-      )
-      .slice(0, 12) ?? [];
+  try {
+    const relatedItems = await serverApi.getItems(
+      buildQuery({ ...filter, limit: 18 }),
+      300,
+    );
 
-  if (relatedCandidates.length === 0) {
-    return null;
+    const relatedCandidates =
+      relatedItems?.items
+        .filter((candidate) => candidate.item_id !== item.item_id)
+        .filter(
+          (candidate): candidate is ItemOut & { item_id: number } =>
+            typeof candidate.item_id === "number",
+        )
+        .slice(0, 12) ?? [];
+
+    if (relatedCandidates.length === 0) {
+      return null;
+    }
+
+    const relatedPrices = await serverApi.postPrices({
+      item_ids: relatedCandidates.map((candidate) => candidate.item_id),
+      currency: "USD",
+    });
+    const relatedPriceItems = relatedPrices?.items ?? [];
+
+    items = relatedCandidates.map((related) => ({
+      itemId: related.item_id,
+      name: related.market_hash_name,
+      imageUrl: related.image_url ?? null,
+      wear: related.wear_name ?? null,
+      collection: related.collection ?? null,
+      bestAsk: getBestAskFromPrices(relatedPriceItems, related.item_id),
+      href: buildItemPath(related.item_id, related.market_hash_name),
+    }));
+  } catch (error) {
+    logSectionFailure("related_items", item.item_id, error);
+    return (
+      <ItemDeferredSectionError
+        title="Similar items unavailable"
+        message="Related item suggestions could not be loaded."
+      />
+    );
   }
-
-  const relatedPrices = await serverApi.postPrices({
-    item_ids: relatedCandidates.map((candidate) => candidate.item_id),
-    currency: "USD",
-  });
-  const relatedPriceItems = relatedPrices?.items ?? [];
-
-  const items: SimilarItem[] = relatedCandidates.map((related) => ({
-    itemId: related.item_id,
-    name: related.market_hash_name,
-    imageUrl: related.image_url ?? null,
-    wear: related.wear_name ?? null,
-    collection: related.collection ?? null,
-    bestAsk: getBestAskFromPrices(relatedPriceItems, related.item_id),
-    href: buildItemPath(related.item_id, related.market_hash_name),
-  }));
 
   return <SimilarItemsGrid items={items} />;
 }

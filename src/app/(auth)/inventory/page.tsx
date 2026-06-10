@@ -4,8 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import { Loader2, RefreshCw } from "lucide-react";
 import posthog from "posthog-js";
 import { useSession, useSteamInventory, webApi } from "@/lib/api";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { useCurrency } from "@/lib/CurrencyContext";
 import { Button } from "@/components/ui/button";
+import { ErrorState } from "@/components/ui/error-state";
 import { InventoryStatsStrip } from "@/components/inventory/InventoryStatsStrip";
 import { InventoryItemsTable } from "@/components/inventory/InventoryItemsTable";
 import type { ProviderInfo } from "@/lib/api/types";
@@ -29,7 +31,7 @@ export default function InventoryPage() {
 
   async function handleConnectSteam() {
     setLinking(true);
-    posthog.capture("provider_link_started", { provider: "steam", source: "inventory" });
+    posthog.capture(ANALYTICS_EVENTS.providerLinkStarted, { provider: "steam", source: "inventory" });
     try {
       const { redirect_url } = await webApi.startProviderLink("steam");
       window.location.assign(redirect_url);
@@ -78,9 +80,11 @@ export default function InventoryPage() {
           <Loader2 className="h-4 w-4 animate-spin" /> Valuing your inventory…
         </div>
       ) : isError ? (
-        <div className="border-2 border-border bg-card p-8 text-center font-mono text-sm text-muted-foreground">
-          {error instanceof Error ? error.message : "Couldn't load your inventory."}
-        </div>
+        <ErrorState
+          eyebrow="INVENTORY"
+          title="Inventory unavailable"
+          message={error instanceof Error ? error.message : "Couldn't load your inventory."}
+        />
       ) : data ? (
         <div className="space-y-6">
           <InventoryStatsStrip

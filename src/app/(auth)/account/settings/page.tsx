@@ -38,6 +38,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useAccountPreferences, useSession, webApi, queryKeys } from "@/lib/api";
+import { SessionsSection } from "./SessionsSection";
 
 const currencyOptions = [
   { value: "USD", label: "USD ($)" },
@@ -535,6 +536,8 @@ export default function AccountSettingsPage() {
             </div>
           </CardContent>
         </Card>
+
+        <SessionsSection />
 
         {/* Preferences card */}
         <Card className="border-border/50 bg-card/50">

@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/collapsible";
 import posthog from "posthog-js";
 import { webApi } from "@/lib/api";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { APIError } from "@/lib/api/shared";
 import { steamIconUrl } from "@/lib/utils";
 import type { InventoryValueToolResponse, ProviderInfo } from "@/lib/api/types";
@@ -66,7 +67,7 @@ export function InventoryValueTool() {
       const data = await webApi.valueSteamInventory({ steam_id: trimmed });
       setResult(data);
       setSubmittedTarget(trimmed);
-      posthog.capture("inventory_valued", {
+      posthog.capture(ANALYTICS_EVENTS.inventoryValued, {
         total_value_cents: data.stats.total_value,
         currency: data.stats.currency,
         items_priced: data.stats.items_priced,

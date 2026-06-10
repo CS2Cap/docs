@@ -10,7 +10,7 @@ export function MarketplacesSection({ providers }: { providers: ProviderInfo[] }
         <div className="mb-10">
           <div className="font-mono text-xs tracking-widest text-primary mb-3">// WHERE WE PULL FROM</div>
           <h2 className="text-4xl md:text-5xl font-black tracking-tighter">
-            SUPPORTED MARKETS<span className="text-primary">.</span>
+            SUPPORTED <span className="text-primary">MARKETS.</span>
           </h2>
         </div>
 

@@ -4,4 +4,13 @@ function Skeleton({ className, ...props }: React.HTMLAttributes<HTMLDivElement>)
   return <div className={cn("animate-pulse rounded-md bg-muted", className)} {...props} />;
 }
 
-export { Skeleton };
+function SkeletonLine({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      className={cn("animate-pulse rounded-sm bg-secondary/70", className)}
+      {...props}
+    />
+  );
+}
+
+export { Skeleton, SkeletonLine };

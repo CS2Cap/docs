@@ -1,8 +1,14 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
+import { BotIdClient } from "botid/client";
 import "./globals.css";
 import { Providers } from "./providers";
+
+// Routes guarded by BotID deep verification. The public inventory-value tool is
+// unauthenticated and drives paid upstream calls + up to 60s of compute per
+// uncached lookup, so we block bots before the route logic runs.
+const protectedRoutes = [{ path: "/api/inventory-value", method: "POST" }];
 
 const geistSans = Geist({
   subsets: ["latin"],
@@ -87,6 +93,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`dark ${geistSans.variable} ${geistMono.variable}`}>
+      <head>
+        <BotIdClient protect={protectedRoutes} />
+      </head>
       <Script
         src="https://analytics.ahrefs.com/analytics.js"
         data-key="0AtA8W/p/U7GHLsO05TdJQ"

@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import posthog from "posthog-js";
 import { Button } from "@/components/ui/button";
 import { useAddToWatchlistMutation, useSession } from "@/lib/api";
+import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 
 export function WatchItemButton({
   itemId,
@@ -32,7 +33,7 @@ export function WatchItemButton({
         mutation.mutate(itemId, {
           onSuccess: () => {
             toast.success("Added to watchlist");
-            posthog.capture("item_added_to_watchlist", { item_id: itemId });
+            posthog.capture(ANALYTICS_EVENTS.itemAddedToWatchlist, { item_id: itemId });
           },
           onError: (error) => toast.error(error.message || "Could not add to watchlist"),
         });
