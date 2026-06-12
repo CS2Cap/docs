@@ -8,6 +8,9 @@ import { getProvider, providerLabel } from "@/lib/api";
 import type { InventoryValueResolvedItem, ProviderInfo } from "@/lib/api/types";
 import { steamIconUrl } from "@/lib/utils";
 import { buildItemPath } from "@/lib/seo/itemSlug";
+import { itemTagTextClass } from "@/lib/item-display";
+import { inventoryItemMeta } from "@/components/inventory/itemMeta";
+import { WearMeter } from "@/components/inventory/WearMeter";
 
 type SortKey = "value" | "ask" | "qty" | "name";
 type SortDir = "asc" | "desc";
@@ -64,14 +67,21 @@ function SortHeader({
   );
 }
 
+// Grid template shared by header and rows on md+ — mirrors the reference:
+// thumb · item · wear · qty · best ask · provider · external.
+const COLS =
+  "md:grid-cols-[56px_minmax(0,1fr)_140px_56px_170px_150px_36px]";
+
 export function InventoryItemsTable({
   items,
   providers,
   formatPrice = formatUsd,
+  distinctCount,
 }: {
   items: InventoryValueResolvedItem[];
   providers: ProviderInfo[];
   formatPrice?: (minor: number | null | undefined) => string;
+  distinctCount?: number;
 }) {
   const [sortKey, setSortKey] = useState<SortKey>("value");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
@@ -118,13 +128,10 @@ export function InventoryItemsTable({
     );
   }
 
-  const COLS =
-    "md:grid-cols-[64px_minmax(0,1fr)_64px_180px_120px_150px_40px]";
-
   return (
     <div className="border-2 border-border bg-card overflow-hidden">
       {/* Header */}
-      <div className={`hidden md:grid ${COLS} gap-3 border-b-2 border-border bg-secondary/30 px-4 py-3`}>
+      <div className={`hidden md:grid ${COLS} gap-4 border-b-2 border-border bg-secondary/30 px-4 py-3`}>
         <div />
         <SortHeader
           label="Item"
@@ -132,19 +139,15 @@ export function InventoryItemsTable({
           dir={sortDir}
           onClick={() => setSort("name")}
         />
+        <div className="flex items-center font-mono text-xs uppercase tracking-widest text-muted-foreground">
+          Wear
+        </div>
         <SortHeader
           label="Qty"
           active={sortKey === "qty"}
           dir={sortDir}
           onClick={() => setSort("qty")}
           align="center"
-        />
-        <SortHeader
-          label="Value"
-          active={sortKey === "value"}
-          dir={sortDir}
-          onClick={() => setSort("value")}
-          align="right"
         />
         <SortHeader
           label="Best ask"
@@ -159,7 +162,7 @@ export function InventoryItemsTable({
         <div />
       </div>
 
-      <ul className="divide-y-2 divide-border">
+      <ul className="divide-y divide-border/60">
         {sorted.map((item) => {
           const href = buildItemPath(item.item_id, item.market_hash_name);
           const winningProvider = topProvider(item);
@@ -167,64 +170,73 @@ export function InventoryItemsTable({
           const provider = providerKey ? getProvider(providerKey, providers) : null;
           const providerFallback = providerKey ? providerLabel(providerKey, providers) : "—";
           const sharePct = ((item.item_value ?? 0) / maxValue) * 100;
+          const meta = inventoryItemMeta(item.market_hash_name);
+          const src = steamIconUrl(item.icon_url);
           return (
             <li
               key={`${item.item_id}-${item.phase ?? ""}`}
-              className={`relative grid grid-cols-[56px_minmax(0,1fr)_auto] ${COLS} items-center gap-3 px-4 py-3 transition-colors hover:bg-secondary/40`}
+              className={`relative grid grid-cols-[48px_minmax(0,1fr)_auto] ${COLS} items-center gap-3 md:gap-4 px-4 py-3 transition-colors hover:bg-secondary/40`}
             >
               <span
                 className="absolute left-0 top-0 bottom-0 w-[3px] bg-primary"
-                style={{ opacity: 0.35 + (sharePct / 100) * 0.65 }}
+                style={{ opacity: 0.3 + (sharePct / 100) * 0.7 }}
                 aria-hidden="true"
               />
               <Link href={href} className="block">
-                {(() => {
-                  const src = steamIconUrl(item.icon_url);
-                  if (!src) {
-                    return <div className="h-12 w-12 border border-border bg-secondary" />;
-                  }
-                  return (
-                    // Steam CDN; plain <img> avoids next.config remotePatterns changes.
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={src}
-                      alt=""
-                      width={48}
-                      height={48}
-                      loading="lazy"
-                      className="h-12 w-12 border border-border bg-secondary object-contain"
-                    />
-                  );
-                })()}
+                {src ? (
+                  // Steam CDN; plain <img> avoids next.config remotePatterns changes.
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={src}
+                    alt=""
+                    width={44}
+                    height={44}
+                    loading="lazy"
+                    className="h-11 w-11 border border-border bg-secondary object-contain"
+                  />
+                ) : (
+                  <div className="h-11 w-11 border border-border bg-secondary" />
+                )}
               </Link>
 
               <div className="min-w-0">
                 <Link
                   href={href}
-                  className="block truncate font-mono text-xs font-semibold text-foreground hover:text-primary"
+                  className="flex min-w-0 items-center gap-2 hover:text-primary"
                   title={item.market_hash_name}
                 >
-                  {item.market_hash_name}
+                  {meta.prefix ? (
+                    <span className={`shrink-0 border px-1 py-0.5 font-mono text-[10px] font-bold leading-none tracking-widest ${itemTagTextClass(meta.tag)} ${meta.tag === "st" ? "border-orange-500/70" : meta.tag === "sv" ? "border-yellow-400/70" : "border-border"}`}>
+                      {meta.prefix}
+                    </span>
+                  ) : null}
+                  <span className="truncate font-mono text-xs font-semibold text-foreground">
+                    {meta.star ? <span className="text-primary">★ </span> : null}
+                    {meta.displayName}
+                  </span>
                 </Link>
-                <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                   {item.phase ? (
-                    <span className="border border-primary/30 px-1.5 py-0.5 font-mono text-xs tracking-widest text-primary">
+                    <span className="border border-primary/40 px-1.5 py-0.5 font-mono text-[10px] tracking-widest text-primary">
                       {item.phase.toUpperCase()}
                     </span>
                   ) : null}
                   {!item.tradable ? (
-                    <span className="border border-muted-foreground/30 px-1.5 py-0.5 font-mono text-xs tracking-widest text-muted-foreground">
+                    <span className="border border-muted-foreground/30 px-1.5 py-0.5 font-mono text-[10px] tracking-widest text-muted-foreground">
                       UNTRADABLE
                     </span>
                   ) : null}
                   {item.best_ask === null ? (
-                    <span className="border border-muted-foreground/30 px-1.5 py-0.5 font-mono text-xs tracking-widest text-muted-foreground">
+                    <span className="border border-muted-foreground/30 px-1.5 py-0.5 font-mono text-[10px] tracking-widest text-muted-foreground">
                       NO PRICE
                     </span>
                   ) : null}
-                  <span className="md:hidden font-mono text-xs text-muted-foreground">
-                    × {item.quantity}
-                  </span>
+                  {/* Mobile-only wear + price summary */}
+                  {meta.wear ? (
+                    <span className="md:hidden font-mono text-[10px] tracking-widest text-muted-foreground">
+                      {meta.wear.name}
+                    </span>
+                  ) : null}
                 </div>
                 <div className="mt-1 md:hidden font-mono text-xs text-muted-foreground">
                   <span className="font-bold text-primary">{formatPrice(item.item_value)}</span>
@@ -233,12 +245,35 @@ export function InventoryItemsTable({
                 </div>
               </div>
 
-              <div className="hidden md:block text-center font-mono text-xs text-foreground">
+              {/* Wear */}
+              <div className="hidden md:block">
+                {meta.wear ? (
+                  <>
+                    <WearMeter tier={meta.wear} />
+                    <div className="mt-1.5 font-mono text-[10px] tracking-widest text-muted-foreground">
+                      {meta.wear.name}
+                    </div>
+                  </>
+                ) : (
+                  <span className="font-mono text-[10px] tracking-widest text-muted-foreground/60">
+                    —
+                  </span>
+                )}
+              </div>
+
+              {/* Qty */}
+              <div
+                className={`hidden md:block text-center font-mono text-xs ${
+                  item.quantity > 1 ? "font-bold text-foreground" : "text-muted-foreground"
+                }`}
+              >
                 {item.quantity}
               </div>
+
+              {/* Best ask + value share bar */}
               <div className="hidden md:block text-right">
-                <div className="font-mono text-sm font-bold text-foreground">
-                  {formatPrice(item.item_value)}
+                <div className="font-mono text-sm font-bold text-primary">
+                  {formatPrice(item.best_ask)}
                 </div>
                 <div className="ml-auto mt-1.5 h-[3px] w-[70%] bg-secondary">
                   <div
@@ -247,15 +282,14 @@ export function InventoryItemsTable({
                   />
                 </div>
               </div>
-              <div className="hidden md:block text-right font-mono text-xs font-bold text-primary">
-                {formatPrice(item.best_ask)}
-              </div>
+
+              {/* Provider */}
               <div className="hidden md:block min-w-0">
                 <ProviderIdentity
                   provider={provider}
                   fallback={providerFallback}
-                  logoSize={18}
-                  textClassName="font-mono text-xs text-muted-foreground"
+                  logoSize={20}
+                  textClassName="font-mono text-xs text-foreground"
                 />
               </div>
 
@@ -276,7 +310,9 @@ export function InventoryItemsTable({
       {/* Footer */}
       <div className="flex items-center justify-between border-t-2 border-border bg-secondary/20 px-4 py-3">
         <span className="font-mono text-xs tracking-widest text-muted-foreground">
-          SHOWING {sorted.length} PRICED ITEM{sorted.length === 1 ? "" : "S"}
+          SHOWING {sorted.length}
+          {distinctCount ? ` OF ${distinctCount}` : ""} PRICED ITEM
+          {sorted.length === 1 ? "" : "S"}
         </span>
         <span className="font-mono text-xs font-bold tracking-widest text-primary">
           SORTED BY {sortKey.toUpperCase()} {sortDir === "asc" ? "↑" : "↓"}

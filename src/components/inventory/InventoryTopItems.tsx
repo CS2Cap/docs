@@ -7,6 +7,8 @@ import { getProvider, providerLabel } from "@/lib/api";
 import type { InventoryValueResolvedItem, ProviderInfo } from "@/lib/api/types";
 import { steamIconUrl } from "@/lib/utils";
 import { buildItemPath } from "@/lib/seo/itemSlug";
+import { itemTagTextClass } from "@/lib/item-display";
+import { inventoryItemMeta } from "@/components/inventory/itemMeta";
 
 function topProvider(
   item: InventoryValueResolvedItem,
@@ -64,6 +66,7 @@ export function InventoryTopItems({
           const provider = providerKey ? getProvider(providerKey, providers) : null;
           const fallback = providerKey ? providerLabel(providerKey, providers) : "—";
           const src = steamIconUrl(it.icon_url);
+          const meta = inventoryItemMeta(it.market_hash_name);
           return (
             <Link
               key={`${it.item_id}-${it.phase ?? ""}`}
@@ -81,27 +84,33 @@ export function InventoryTopItems({
                       width={52}
                       height={52}
                       loading="lazy"
-                      className="h-13 w-13 shrink-0 border border-border bg-secondary object-contain"
+                      className="shrink-0 border border-border bg-secondary object-contain"
                       style={{ height: 52, width: 52 }}
                     />
                   ) : (
-                    <div className="h-13 w-13 shrink-0 border border-border bg-secondary" style={{ height: 52, width: 52 }} />
+                    <div className="shrink-0 border border-border bg-secondary" style={{ height: 52, width: 52 }} />
                   )}
                   <div className="min-w-0 flex-1">
-                    <div className="truncate font-mono text-sm font-bold leading-tight text-foreground group-hover:text-primary">
-                      {it.market_hash_name}
-                    </div>
-                    <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {meta.prefix ? (
+                        <span className={`border px-1 py-0.5 font-mono text-[10px] font-bold leading-none tracking-widest ${itemTagTextClass(meta.tag)} ${meta.tag === "st" ? "border-orange-500/70" : meta.tag === "sv" ? "border-yellow-400/70" : "border-border"}`}>
+                          {meta.prefix}
+                        </span>
+                      ) : null}
+                      {meta.wear ? (
+                        <span className="font-mono text-[10px] font-bold tracking-widest text-muted-foreground">
+                          {meta.wear.abbr}
+                        </span>
+                      ) : null}
                       {it.phase ? (
-                        <span className="border border-primary/30 px-1.5 py-0.5 font-mono text-[10px] tracking-widest text-primary">
+                        <span className="border border-primary/40 px-1.5 py-0.5 font-mono text-[10px] tracking-widest text-primary">
                           {it.phase.toUpperCase()}
                         </span>
                       ) : null}
-                      {it.quantity > 1 ? (
-                        <span className="font-mono text-[10px] tracking-widest text-muted-foreground">
-                          × {it.quantity}
-                        </span>
-                      ) : null}
+                    </div>
+                    <div className="mt-1.5 truncate font-mono text-sm font-bold leading-tight text-foreground group-hover:text-primary">
+                      {meta.star ? <span className="text-primary">★ </span> : null}
+                      {meta.displayName}
                     </div>
                   </div>
                 </div>
@@ -111,7 +120,8 @@ export function InventoryTopItems({
                       {formatPrice(it.item_value)}
                     </div>
                     <div className="mt-0.5 font-mono text-[10px] tracking-widest text-muted-foreground">
-                      {formatPrice(it.best_ask)} ASK
+                      {meta.wear ? `${meta.wear.name} · ` : ""}
+                      {it.quantity > 1 ? `× ${it.quantity}` : `${formatPrice(it.best_ask)} ASK`}
                     </div>
                   </div>
                   <ProviderIdentity

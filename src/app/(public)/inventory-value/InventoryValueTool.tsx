@@ -19,7 +19,6 @@ import { InventoryStatsStrip } from "@/components/inventory/InventoryStatsStrip"
 import { InventoryItemsTable } from "@/components/inventory/InventoryItemsTable";
 import { InventoryPortfolioHeader } from "@/components/inventory/InventoryPortfolioHeader";
 import { InventoryTopItems } from "@/components/inventory/InventoryTopItems";
-import { InventoryAccountCTA } from "@/components/inventory/InventoryAccountCTA";
 
 const EXAMPLES = [
   "76561198153039097",
@@ -286,7 +285,11 @@ export function InventoryValueTool() {
                     ALL ITEMS
                   </span>
                 </div>
-                <InventoryItemsTable items={result.items} providers={providers} />
+                <InventoryItemsTable
+                  items={result.items}
+                  providers={providers}
+                  distinctCount={result.meta.resolved_distinct_item_count}
+                />
               </div>
 
               {result.unmatched_items.length > 0 ? (
@@ -349,8 +352,6 @@ export function InventoryValueTool() {
                   </CollapsibleContent>
                 </Collapsible>
               ) : null}
-
-              <InventoryAccountCTA variant="public" />
             </>
           )}
         </div>

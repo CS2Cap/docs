@@ -163,7 +163,12 @@ export default function InventoryPage() {
                   ALL ITEMS
                 </span>
               </div>
-              <InventoryItemsTable items={data.items} providers={providers} formatPrice={formatPrice} />
+              <InventoryItemsTable
+                items={data.items}
+                providers={providers}
+                formatPrice={formatPrice}
+                distinctCount={data.meta.resolved_distinct_item_count}
+              />
             </div>
 
             <InventoryAccountCTA variant="account" />
