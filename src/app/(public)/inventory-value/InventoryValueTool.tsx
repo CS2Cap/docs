@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ChevronDown, Loader2, Search } from "lucide-react";
+import { ChevronDown, List, Loader2, Search } from "lucide-react";
+import { Package, CircleCheck, TriangleAlert, Globe } from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,
@@ -12,9 +13,12 @@ import { webApi } from "@/lib/api";
 import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { APIError } from "@/lib/api/shared";
 import { steamIconUrl } from "@/lib/utils";
+import { formatRelativeTime } from "@/components/RelativeTime";
 import type { InventoryValueToolResponse, ProviderInfo } from "@/lib/api/types";
 import { InventoryStatsStrip } from "@/components/inventory/InventoryStatsStrip";
 import { InventoryItemsTable } from "@/components/inventory/InventoryItemsTable";
+import { InventoryPortfolioHeader } from "@/components/inventory/InventoryPortfolioHeader";
+import { InventoryTopItems } from "@/components/inventory/InventoryTopItems";
 
 const EXAMPLES = [
   "76561198153039097",
@@ -100,6 +104,7 @@ export function InventoryValueTool() {
 
   const showResults = !submitting && !error && result !== null;
   const isEmpty = showResults && result.items.length === 0 && result.unmatched_items.length === 0;
+  const generatedLabel = result ? formatRelativeTime(result.meta.generated_at) : null;
 
   return (
     <div className="container py-16 md:py-24">
@@ -114,7 +119,7 @@ export function InventoryValueTool() {
         </h1>
         <p className="mx-auto mt-5 max-w-2xl font-mono text-sm leading-relaxed text-muted-foreground md:text-base">
           Paste any Steam profile URL, SteamID64, or vanity name and price the
-          inventory at the lowest current ask across40+ marketplaces. Live data,
+          inventory at the lowest current ask across 40+ marketplaces. Live data,
           never stored.
         </p>
 
@@ -184,8 +189,9 @@ export function InventoryValueTool() {
       ) : null}
 
       {showResults && result ? (
-        <div className="mt-12 space-y-8">
-          {submittedTarget ? (
+        <div className="mt-12 space-y-10">
+          {/* Results meta */}
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
               Results for{" "}
               <span className="text-foreground normal-case tracking-normal">
@@ -197,35 +203,18 @@ export function InventoryValueTool() {
                 </span>
               ) : null}
             </div>
-          ) : null}
-
-          <InventoryStatsStrip
-            stats={[
-              {
-                label: "TOTAL VALUE",
-                value: formatUsd(result.stats.total_value, result.stats.currency),
-                hint: `${formatCount(result.stats.units_total)} units`,
-              },
-              {
-                label: "ITEMS PRICED",
-                value: formatCount(result.stats.items_priced),
-                hint: `${formatCount(result.meta.resolved_distinct_item_count)} distinct items`,
-              },
-              {
-                label: "ITEMS UNPRICED",
-                value: formatCount(result.stats.items_unpriced),
-                hint:
-                  result.unmatched_items.length > 0
-                    ? `${formatCount(result.unmatched_items.length)} unmatched`
-                    : "all matched",
-              },
-              {
-                label: "PROVIDERS QUERIED",
-                value: formatCount(result.stats.providers_queried_count),
-                hint: "live market data",
-              },
-            ]}
-          />
+            <button
+              type="button"
+              onClick={() => {
+                setResult(null);
+                setSubmittedTarget(null);
+                setInput("");
+              }}
+              className="inline-flex items-center gap-2 border-brutal px-4 py-2 font-mono text-xs font-bold tracking-widest text-foreground brutalist-hover"
+            >
+              <Search className="h-3.5 w-3.5" /> NEW LOOKUP
+            </button>
+          </div>
 
           {isEmpty ? (
             <div className="border-2 border-border bg-card p-8 text-center">
@@ -235,7 +224,73 @@ export function InventoryValueTool() {
             </div>
           ) : (
             <>
-              <InventoryItemsTable items={result.items} providers={providers} />
+              <InventoryPortfolioHeader
+                totalValueLabel={formatUsd(result.stats.total_value, result.stats.currency)}
+                items={result.items}
+                formatPrice={(m) => formatUsd(m ?? 0, result.stats.currency)}
+                identity={{
+                  name: submittedTarget ?? "Steam inventory",
+                  sub: `${formatCount(result.meta.steam_inventory_total)} assets · public inventory${
+                    generatedLabel ? ` · resolved ${generatedLabel}` : ""
+                  }`,
+                  badge: result.meta.cache_hit ? "CACHED" : "LIVE",
+                }}
+              />
+
+              <InventoryStatsStrip
+                stats={[
+                  {
+                    label: "TOTAL UNITS",
+                    value: formatCount(result.stats.units_total),
+                    hint: `${formatCount(result.meta.resolved_distinct_item_count)} distinct items`,
+                    icon: Package,
+                  },
+                  {
+                    label: "ITEMS PRICED",
+                    value: formatCount(result.stats.items_priced),
+                    hint: "live best-ask",
+                    icon: CircleCheck,
+                    accent: true,
+                  },
+                  {
+                    label: "UNPRICED",
+                    value: formatCount(result.stats.items_unpriced),
+                    hint:
+                      result.unmatched_items.length > 0
+                        ? `${formatCount(result.unmatched_items.length)} unmatched`
+                        : "all matched",
+                    icon: TriangleAlert,
+                  },
+                  {
+                    label: "PROVIDERS",
+                    value: formatCount(result.stats.providers_queried_count),
+                    hint: "queried live",
+                    icon: Globe,
+                    accent: true,
+                  },
+                ]}
+              />
+
+              <InventoryTopItems
+                items={result.items}
+                providers={providers}
+                distinctCount={result.meta.resolved_distinct_item_count}
+                formatPrice={(m) => formatUsd(m ?? 0, result.stats.currency)}
+              />
+
+              <div>
+                <div className="mb-4 flex items-center gap-2.5">
+                  <List className="h-4 w-4 text-primary" strokeWidth={2} />
+                  <span className="font-mono text-xs font-bold tracking-[0.18em]">
+                    ALL ITEMS
+                  </span>
+                </div>
+                <InventoryItemsTable
+                  items={result.items}
+                  providers={providers}
+                  distinctCount={result.meta.resolved_distinct_item_count}
+                />
+              </div>
 
               {result.unmatched_items.length > 0 ? (
                 <Collapsible>
@@ -248,7 +303,8 @@ export function InventoryValueTool() {
                         UNMATCHED ITEMS ·{" "}
                         <span className="text-foreground">
                           {formatCount(result.unmatched_items.length)}
-                        </span>
+                        </span>{" "}
+                        <span className="opacity-60">— not in the CS2 catalog</span>
                       </span>
                       <ChevronDown className="h-3.5 w-3.5 transition-transform group-data-[state=open]:rotate-180" />
                     </button>

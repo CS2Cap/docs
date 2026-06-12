@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { FooterSection } from "@/components/FooterSection";
+import { InventoryAccountCTA } from "@/components/inventory/InventoryAccountCTA";
 import { InventoryValueTool } from "./InventoryValueTool";
 
 const TITLE = "CS2 Inventory Value Checker — Live Steam Inventory Pricing";
@@ -75,6 +76,13 @@ export default function InventoryValuePage() {
                 </div>
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* Free account CTA */}
+        <section className="border-t-2 border-border py-20">
+          <div className="container">
+            <InventoryAccountCTA variant="public" />
           </div>
         </section>
 

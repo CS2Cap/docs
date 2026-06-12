@@ -47,6 +47,36 @@ export function formatItemDisplay(rawName: string): { star: boolean; prefix: str
   return { star, prefix, name, tag };
 }
 
+export type WearTier = {
+  /** Full wear name, e.g. "Field-Tested". */
+  name: string;
+  /** Two-letter abbreviation, e.g. "FT". */
+  abbr: string;
+  /** 0-based index, Factory New (0) → Battle-Scarred (4). */
+  index: number;
+};
+
+const WEAR_TIERS: { name: string; abbr: string }[] = [
+  { name: "Factory New", abbr: "FN" },
+  { name: "Minimal Wear", abbr: "MW" },
+  { name: "Field-Tested", abbr: "FT" },
+  { name: "Well-Worn", abbr: "WW" },
+  { name: "Battle-Scarred", abbr: "BS" },
+];
+
+/**
+ * Extracts the wear tier from a market hash name suffix, e.g.
+ * "AK-47 | Redline (Field-Tested)" → { name: "Field-Tested", abbr: "FT", index: 2 }.
+ * Returns null for items without a wear (cases, stickers, agents, etc.).
+ */
+export function parseWearTier(rawName: string): WearTier | null {
+  const match = rawName.match(/\(([^)]+)\)\s*$/);
+  if (!match) return null;
+  const idx = WEAR_TIERS.findIndex((t) => t.name === match[1]);
+  if (idx === -1) return null;
+  return { name: WEAR_TIERS[idx].name, abbr: WEAR_TIERS[idx].abbr, index: idx };
+}
+
 export function itemTagFrameClass(tag: ItemNameTag): string {
   if (tag === "st") return "border-orange-500/70";
   if (tag === "sv") return "border-yellow-400/70";
