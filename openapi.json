@@ -8458,6 +8458,289 @@
         }
       }
     },
+    "/v1/market/history/chart": {
+      "get": {
+        "tags": [
+          "Market Intelligence"
+        ],
+        "summary": "Get Deep Price History Chart",
+        "description": "Per-provider daily price history, archive stitched onto live data.\n\nReturns one daily point per provider per UTC day across the eleven archived\nproviders, continuing seamlessly into live data. Prices are minor units of\nthe response currency; ``qty`` is nullable.\n\n**Tier**: Quant-only.",
+        "operationId": "getDeepPriceHistoryChart",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "item_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Normalized catalog item ID (or use market_hash_name).",
+              "title": "Item Id"
+            },
+            "description": "Normalized catalog item ID (or use market_hash_name)."
+          },
+          {
+            "name": "market_hash_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Market hash name (alternative to item_id).",
+              "title": "Market Hash Name"
+            },
+            "description": "Market hash name (alternative to item_id)."
+          },
+          {
+            "name": "providers",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Provider key(s). Repeatable. Omit for all providers with data.",
+              "title": "Providers"
+            },
+            "description": "Provider key(s). Repeatable. Omit for all providers with data."
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "ISO 8601 UTC start of the window.",
+              "title": "Start"
+            },
+            "description": "ISO 8601 UTC start of the window."
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "ISO 8601 UTC end of the window.",
+              "title": "End"
+            },
+            "description": "ISO 8601 UTC end of the window."
+          },
+          {
+            "name": "lookback",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Window length in days; overrides start.",
+              "title": "Lookback"
+            },
+            "description": "Window length in days; overrides start."
+          },
+          {
+            "name": "currency",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Target currency for returned prices. Default: USD.",
+              "default": "USD",
+              "title": "Currency"
+            },
+            "description": "Target currency for returned prices. Default: USD."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketHistoryChartResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "detail": "Missing Authorization header"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Analytics tier required to access this endpoint.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "FORBIDDEN",
+                  "detail": "Analytics access requires indie tier or higher"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (burst or monthly quota).",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "burstRateLimit": {
+                    "summary": "Per-window rate limit exceeded",
+                    "value": {
+                      "code": "RATE_LIMIT_EXCEEDED",
+                      "detail": "Too Many Requests"
+                    }
+                  },
+                  "monthlyQuotaExceeded": {
+                    "summary": "Monthly quota exhausted",
+                    "value": {
+                      "code": "RATE_LIMIT_MONTHLY_QUOTA_EXCEEDED",
+                      "detail": "Monthly quota exceeded (500000/500000 requests)."
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying when present.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "X-RateLimit-Tier": {
+                "description": "Authenticated caller tier code.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Request limit for the rate-limit window that was exceeded.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Seconds until the rate-limit window resets.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed. The detail list contains field-specific validation errors.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Tier": {
+                "description": "Authenticated caller tier code when available.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Item not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/inventory/steam": {
       "get": {
         "tags": [
@@ -13935,6 +14218,133 @@
         ],
         "title": "MarketArbitrageResponse",
         "description": "Response envelope for /v1/market/arbitrage."
+      },
+      "MarketHistoryChartMeta": {
+        "properties": {
+          "item_id": {
+            "type": "integer",
+            "title": "Item Id",
+            "description": "Normalized catalog item ID."
+          },
+          "market_hash_name": {
+            "type": "string",
+            "title": "Market Hash Name",
+            "description": "Canonical market hash name for the item."
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency",
+            "description": "Target currency code for returned prices."
+          },
+          "start": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Start",
+            "description": "ISO 8601 UTC start of the returned window."
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time",
+            "title": "End",
+            "description": "ISO 8601 UTC end of the returned window."
+          },
+          "providers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Providers",
+            "description": "Provider keys actually returned (those with >=1 point in range)."
+          }
+        },
+        "type": "object",
+        "required": [
+          "item_id",
+          "market_hash_name",
+          "currency",
+          "start",
+          "end"
+        ],
+        "title": "MarketHistoryChartMeta",
+        "description": "Metadata for /v1/market/history/chart."
+      },
+      "MarketHistoryChartPoint": {
+        "properties": {
+          "t": {
+            "type": "integer",
+            "title": "T",
+            "description": "UTC day bucket as a Unix timestamp (seconds, midnight)."
+          },
+          "price": {
+            "type": "integer",
+            "title": "Price",
+            "description": "Closing price in minor units of the response currency."
+          },
+          "qty": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Qty",
+            "description": "Listings/volume snapshot for the day. Semantics vary by provider (listings count or sales volume) and may be null."
+          }
+        },
+        "type": "object",
+        "required": [
+          "t",
+          "price"
+        ],
+        "title": "MarketHistoryChartPoint",
+        "description": "One daily price point for a provider series."
+      },
+      "MarketHistoryChartResponse": {
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/MarketHistoryChartMeta",
+            "description": "Response metadata for this payload."
+          },
+          "series": {
+            "items": {
+              "$ref": "#/components/schemas/MarketHistoryChartSeries"
+            },
+            "type": "array",
+            "title": "Series",
+            "description": "Per-provider daily price-point series."
+          }
+        },
+        "type": "object",
+        "required": [
+          "meta"
+        ],
+        "title": "MarketHistoryChartResponse",
+        "description": "Response envelope for GET /v1/market/history/chart (Quant only)."
+      },
+      "MarketHistoryChartSeries": {
+        "properties": {
+          "provider": {
+            "type": "string",
+            "title": "Provider",
+            "description": "Provider key."
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/MarketHistoryChartPoint"
+            },
+            "type": "array",
+            "title": "Data",
+            "description": "Daily points ordered by ascending bucket."
+          }
+        },
+        "type": "object",
+        "required": [
+          "provider"
+        ],
+        "title": "MarketHistoryChartSeries",
+        "description": "Per-provider daily price-point series."
       },
       "MarketIndexGroup": {
         "properties": {
