@@ -3,13 +3,13 @@ title: "Sales API: Recent CS2 Sales with Float and Stickers"
 description: "Retrieve recent CS2 sale records across marketplaces, including float, paint seed, stickers, charms, and inspect links where available."
 ---
 
-The Sales API returns the most recent completed transactions for a CS2 item across the supported marketplaces. Results include per-item detail that goes beyond price alone: float values, paint seeds, sticker wear, charm patterns, and inspect links when the provider exposes them. Sales data is refreshed by background ingestion and served from cache. Some catalog categories may be intentionally excluded from sales ingestion.
+The Sales API returns the most recent completed transactions across the supported marketplaces, newest first. With no filters it returns a global feed of recent sales across all items; add `item_id` or `market_hash_name` to narrow to a single item. Results include per-item detail that goes beyond price alone: float values, paint seeds, sticker wear, charm patterns, and inspect links when the provider exposes them. Results refresh roughly once every 24 hours, so they may be up to a day old. Some item categories may not include sales data.
 
 ---
 
 ## GET /sales — List recent sales
 
-Returns recent sale records for one item across the selected providers.
+Returns recent sale records ordered by sale time (`sold_at`), newest first. Without an item filter this is the global recent-sales feed; with `item_id` or `market_hash_name` it returns sales for that item. Use `cursor` to page through results.
 
 **Tiers:** `pro` · `quant`
 
@@ -68,12 +68,12 @@ console.log(await response.json());
 
 ### Parameters
 
-<ParamField query="item_id" type="integer" required>
-  Required if `market_hash_name` is not provided. Filter by item ID. Takes precedence over `market_hash_name` and `phase` when provided.
+<ParamField query="item_id" type="integer">
+  Restrict to one catalog item by ID. Takes precedence over `market_hash_name` and `phase` when provided. Omit all item filters to return the global recent-sales feed.
 </ParamField>
 
-<ParamField query="market_hash_name" type="string" required>
-  Required if `item_id` is not provided. Exact item name as it appears in inventory. Ignored when `item_id` is provided.
+<ParamField query="market_hash_name" type="string">
+  Restrict to one item by exact name as it appears in inventory. Ignored when `item_id` is provided.
 </ParamField>
 
 <ParamField query="phase" type="string">
@@ -89,14 +89,37 @@ console.log(await response.json());
 </ParamField>
 
 <ParamField query="limit" type="integer">
-  Maximum number of results to return. Capped at 50. This endpoint is single-page only — there is no cursor or offset pagination.
+  Page size. Defaults to and is capped at the tier maximum: **100** for `pro`, **1000** for `quant`.
+</ParamField>
+
+<ParamField query="cursor" type="string">
+  Opaque cursor from the previous response's `pagination.next_cursor`. Returns the next page of results. Omit for the first page.
 </ParamField>
 
 ### Response example
 
 ```json
 {
-  "meta": {...},
+  "meta": {
+    "currency": "USD",
+    "filters": {
+      "item_id": 6154,
+      "market_hash_name": "AWP | Gungnir (Field-Tested)",
+      "phase": null,
+      "requested_providers": ["csfloat", "buff163"],
+      "limit": 100
+    },
+    "providers_queried": ["csfloat", "buff163"],
+    "result_count": 2
+  },
+  "pagination": {
+    "limit": 100,
+    "offset": 0,
+    "total": -1,
+    "has_next": true,
+    "has_prev": false,
+    "next_cursor": "MjAyNi0wMy0wNVQxNjowMDowMCswMDowMHw5ODc2"
+  },
   "items": [
     {
       "date": "2026-03-13T01:31:47.752001Z",
@@ -243,7 +266,11 @@ console.log(await response.json());
 </ResponseField>
 
 <Note>
-  Background ingestion targets a 24 hour refresh interval per item/provider pair.
+  Results refresh roughly once every 24 hours, so they may be up to a day old.
+</Note>
+
+<Note>
+  Results are cursor-paginated over sale time. Follow `pagination.next_cursor` to page forward; `pagination.total` is always `-1` (the count is intentionally skipped). The final page returns `has_next: false` and `next_cursor: null`.
 </Note>
 
 <Note>

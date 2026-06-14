@@ -338,11 +338,11 @@
             }
           },
           "503": {
-            "description": "Indexed prices data unavailable.",
+            "description": "Price data is temporarily unavailable; retry shortly.",
             "content": {
               "application/json": {
                 "example": {
-                  "detail": "Indexed prices data unavailable. reason=index_missing. Try again shortly."
+                  "detail": "Prices data is temporarily unavailable. Try again shortly."
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -404,7 +404,7 @@
                 }
               },
               "X-Snapshot-Total": {
-                "description": "Total indexed rows at stream start, when known.",
+                "description": "Total rows in the stream at start, when known.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -555,12 +555,12 @@
             }
           },
           "503": {
-            "description": "Indexed prices data unavailable.",
+            "description": "Price data is temporarily unavailable; retry shortly.",
             "content": {
               "application/json": {
                 "example": {
                   "code": "PRICES_INDEX_UNAVAILABLE",
-                  "detail": "Indexed prices data unavailable. reason=index_missing. Try again shortly."
+                  "detail": "Prices data is temporarily unavailable. Try again shortly."
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -1573,7 +1573,7 @@
           "Bids"
         ],
         "summary": "List Bids",
-        "description": "Return current highest bids from providers that support buy orders.\n\nFilters:\n- `item_id` or `market_hash_name`\n- optional `phase`\n- `providers` limited to buy-order-capable provider keys\n- `currency`, `limit`, and `offset`\n\nBehavior:\n- broad listings use the indexed pagination path\n- item-specific requests use direct indexed lookup\n- unsupported providers return `400`\n\nResponse:\n- `meta` with filters and providers queried\n- flattened per-provider bid rows\n- offset pagination metadata",
+        "description": "Return current highest bids from providers that support buy orders.\n\nFilters:\n- `item_id` or `market_hash_name`\n- optional `phase`\n- `providers` limited to buy-order-capable provider keys\n- `currency`, `limit`, and `offset`\n\nBehavior:\n- requesting a provider that does not support buy orders returns `400`\n\nResponse:\n- `meta` with filters and providers queried\n- flattened per-provider bid rows\n- offset pagination metadata",
         "operationId": "listBids",
         "security": [
           {
@@ -1916,11 +1916,11 @@
             }
           },
           "503": {
-            "description": "Indexed bids data unavailable.",
+            "description": "Bid data is temporarily unavailable; retry shortly.",
             "content": {
               "application/json": {
                 "example": {
-                  "detail": "Indexed bids data unavailable. reason=index_missing. Try again shortly."
+                  "detail": "Bids data is temporarily unavailable. Try again shortly."
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -1982,7 +1982,7 @@
                 }
               },
               "X-Snapshot-Total": {
-                "description": "Total indexed rows at stream start, when known.",
+                "description": "Total rows in the stream at start, when known.",
                 "schema": {
                   "type": "integer",
                   "minimum": 0
@@ -2133,12 +2133,12 @@
             }
           },
           "503": {
-            "description": "Indexed bids data unavailable.",
+            "description": "Bid data is temporarily unavailable; retry shortly.",
             "content": {
               "application/json": {
                 "example": {
                   "code": "BIDS_INDEX_UNAVAILABLE",
-                  "detail": "Indexed bids data unavailable. reason=index_missing. Try again shortly."
+                  "detail": "Bids data is temporarily unavailable. Try again shortly."
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -2361,7 +2361,7 @@
           "Sales"
         ],
         "summary": "List Recent Sales",
-        "description": "Return recent sales history from providers with recent-sales support.\n\nFilters:\n- `item_id` or `market_hash_name` is required\n- optional `phase`\n- `providers` limited to sales-capable provider keys\n- `currency` and `limit`\n\nBehavior:\n- responses are served from background-ingested Redis sales caches\n- each item/provider pair is refreshed by the rolling ingest job about once per 24 hours\n- response is single-page only with a maximum of 50 rows\n\nResponse:\n- request metadata and providers queried\n- sales records with sticker, charm, and inspect metadata when available",
+        "description": "Return recent sales across providers with recent-sales support, newest first.\n\nWith no filters, returns the global recent-sales feed ordered by sale time (most recent first). Optional filters narrow the results:\n- `item_id` — restrict to one catalog item (its canonical market_hash_name and phase are used)\n- `market_hash_name` (+ optional `phase`) — restrict to one item by name\n- `providers` — restrict to specific sales-capable provider keys\n- `currency` — convert values to the target currency\n\nPagination:\n- `limit` sets the page size (max 100 for Pro, 1000 for Quant)\n- pass `cursor` from the previous response's `pagination.next_cursor` to page through results; `pagination.total` is `-1` (count intentionally skipped)\n\nBehavior:\n- recent-sales data refreshes roughly once every 24 hours, so results may be up to a day old\n\nResponse:\n- request metadata, providers queried, and a cursor pagination footer\n- sales records with sticker, charm, and inspect metadata when available",
         "operationId": "listRecentSales",
         "security": [
           {
@@ -2382,10 +2382,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Filter by item ID. When provided, canonical market_hash_name and phase from catalog are used and take precedence over request market_hash_name/phase.",
+              "description": "Restrict to one catalog item by ID. Its canonical market_hash_name and phase take precedence over the market_hash_name/phase params.",
               "title": "Item Id"
             },
-            "description": "Filter by item ID. When provided, canonical market_hash_name and phase from catalog are used and take precedence over request market_hash_name/phase."
+            "description": "Restrict to one catalog item by ID. Its canonical market_hash_name and phase take precedence over the market_hash_name/phase params."
           },
           {
             "name": "market_hash_name",
@@ -2400,10 +2400,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Exact market_hash_name match (required if item_id not provided). Ignored when item_id is provided.",
+              "description": "Restrict to one item by exact market_hash_name. Ignored when item_id is provided.",
               "title": "Market Hash Name"
             },
-            "description": "Exact market_hash_name match (required if item_id not provided). Ignored when item_id is provided."
+            "description": "Restrict to one item by exact market_hash_name. Ignored when item_id is provided."
           },
           {
             "name": "phase",
@@ -2418,10 +2418,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Filter by phase (when applicable). Ignored when item_id is provided.",
+              "description": "Restrict to a phase (used with market_hash_name). Ignored when item_id is provided.",
               "title": "Phase"
             },
-            "description": "Filter by phase (when applicable). Ignored when item_id is provided."
+            "description": "Restrict to a phase (used with market_hash_name). Ignored when item_id is provided."
           },
           {
             "name": "providers",
@@ -2439,10 +2439,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Providers to query (provider-key enum values with sales support). Repeat `providers` to pass multiple values.",
+              "description": "Restrict to specific sales-capable provider keys. Repeat `providers` to pass multiple values.",
               "title": "Providers"
             },
-            "description": "Providers to query (provider-key enum values with sales support). Repeat `providers` to pass multiple values."
+            "description": "Restrict to specific sales-capable provider keys. Repeat `providers` to pass multiple values."
           },
           {
             "name": "currency",
@@ -2470,10 +2470,28 @@
                   "type": "null"
                 }
               ],
-              "description": "Maximum number of sales to return. Defaults to the effective tier cap.",
+              "description": "Page size. Defaults to and is capped at the tier maximum (100 for Pro, 1000 for Quant).",
               "title": "Limit"
             },
-            "description": "Maximum number of sales to return. Defaults to the effective tier cap."
+            "description": "Page size. Defaults to and is capped at the tier maximum (100 for Pro, 1000 for Quant)."
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Opaque cursor from a previous response's `pagination.next_cursor`. Returns the next page of results.",
+              "title": "Cursor"
+            },
+            "description": "Opaque cursor from a previous response's `pagination.next_cursor`. Returns the next page of results."
           }
         ],
         "responses": {
@@ -2639,15 +2657,15 @@
             }
           },
           "400": {
-            "description": "Missing required item filter or invalid provider selection.",
+            "description": "Invalid cursor or unsupported provider selection.",
             "content": {
               "application/json": {
                 "examples": {
-                  "missingItemFilter": {
-                    "summary": "Missing required item filter",
+                  "invalidCursor": {
+                    "summary": "Invalid pagination cursor",
                     "value": {
                       "code": "BAD_REQUEST",
-                      "detail": "Either item_id or market_hash_name must be provided"
+                      "detail": "invalid cursor format"
                     }
                   },
                   "unsupportedSalesProvider": {
@@ -7259,7 +7277,7 @@
           "Market Intelligence"
         ],
         "summary": "Get Arbitrage Opportunities",
-        "description": "Scan providers for cross-market arbitrage opportunities.\n\nFilters:\n- `min_spread_pct`\n- `providers_buy` and `providers_sell` (sell-side limited to buy-order providers)\n- offset pagination via `offset`\n\nResponse:\n- opportunities ranked by estimated net profit in USD with buy-side and sell-side provider context\n- pagination total reflects the bounded ranked candidate working set, not an uncapped full-database count\n\nTier: Quant-only.",
+        "description": "Scan providers for cross-market arbitrage opportunities.\n\nFilters:\n- `min_spread_pct`\n- `providers_buy` and `providers_sell` (sell-side limited to buy-order providers)\n- offset pagination via `offset`\n\nResponse:\n- opportunities ranked by estimated net profit in USD with buy-side and sell-side provider context\n- pagination total reflects the capped set of ranked opportunities, not a count of all possible matches\n\nTier: Quant-only.",
         "operationId": "getArbitrageOpportunities",
         "security": [
           {
@@ -7524,7 +7542,7 @@
           "Market Intelligence"
         ],
         "summary": "Get Market Analytics Snapshot",
-        "description": "Return the full market as a cached, summary-only snapshot.\n\nIncludes:\n- one row per catalog item with the same summary fields exposed by the detail route\n- no pagination and no provider-level payloads\n- rank-ordered output using `rank asc, item_id asc`\n\nWindow selection uses preset `timeframe` only.\nThe selected timeframe affects liquidity fields only.\nTrade windows remain fixed at 24h, 7d, and 30d.\n\nTier: Pro and Quant.",
+        "description": "Return the full market as a summary-only snapshot.\n\nIncludes:\n- one row per catalog item with the same summary fields exposed by the detail route\n- no pagination and no provider-level payloads\n- rank-ordered output using `rank asc, item_id asc`\n\nLiquidity reflects the 24h horizon; trade windows are 24h, 7d, and 30d.\n\nTier: Pro and Quant.",
         "operationId": "getMarketAnalyticsSnapshot",
         "responses": {
           "200": {
@@ -7720,7 +7738,7 @@
             }
           },
           "503": {
-            "description": "Snapshot cache unavailable and initial build failed.",
+            "description": "Market data is temporarily unavailable; retry shortly.",
             "content": {
               "application/json": {
                 "schema": {
@@ -7743,7 +7761,7 @@
           "Market Intelligence"
         ],
         "summary": "Get Item Analytics",
-        "description": "Return per-item market analytics across providers.\n\nIncludes:\n- best ask, best bid, and spread summary\n- item-level liquidity summary and provider-level price/depth/volume metrics\n- coverage diagnostics showing which providers contributed data\n\nLiquidity is always scored against the 24h horizon.\nProvider volume fields remain literal trailing 24h/7d depletion metrics.\n\nTier: Pro and Quant.",
+        "description": "Return per-item market analytics across providers.\n\nIncludes:\n- best ask, best bid, and spread summary\n- item-level liquidity summary and provider-level price/depth/volume metrics\n- coverage diagnostics showing which providers contributed data\n\nLiquidity is always scored against the 24h horizon.\nProvider volume fields are trailing 24h and 7d totals.\n\nTier: Pro and Quant.",
         "operationId": "getItemAnalytics",
         "security": [
           {
@@ -7980,7 +7998,7 @@
           "Market Intelligence"
         ],
         "summary": "Get Market Cap Indexes",
-        "description": "Aggregate the cached 24h market snapshot into category-level indexes.\n\nSupports grouping by `item_type` or `weapon_type`.\nItems are excluded from market cap totals when bid/ask/marketcap data is incomplete or spread exceeds the minimum threshold.\n\nResponse:\n- no pagination\n- groups sorted by `marketcap_usd desc`\n- totals computed from the same filtered item set\n\nTier: Quant-only.",
+        "description": "Aggregate the 24h market into category-level indexes.\n\nSupports grouping by `item_type` or `weapon_type`.\nItems are excluded from market cap totals when bid/ask/marketcap data is incomplete or spread exceeds the minimum threshold.\n\nResponse:\n- no pagination\n- groups sorted by `marketcap_usd desc`\n- totals computed from the same filtered item set\n\nTier: Quant-only.",
         "operationId": "getMarketCapIndexes",
         "security": [
           {
@@ -8155,7 +8173,7 @@
             }
           },
           "503": {
-            "description": "Snapshot cache unavailable and initial build failed.",
+            "description": "Market data is temporarily unavailable; retry shortly.",
             "content": {
               "application/json": {
                 "schema": {
@@ -8464,7 +8482,7 @@
           "Market Intelligence"
         ],
         "summary": "Get Deep Price History Chart",
-        "description": "Per-provider daily price history, archive stitched onto live data.\n\nReturns one daily point per provider per UTC day across the eleven archived\nproviders, continuing seamlessly into live data. Prices are minor units of\nthe response currency; ``qty`` is nullable.\n\n**Tier**: Quant-only.",
+        "description": "Per-provider daily price history.\n\nReturns one price point per provider per UTC day, spanning years of history\nup to the present. Prices are in minor units of the response currency;\n``qty`` is nullable.\n\nProviders that have shut down are excluded by default; pass\n``include_defunct=true`` to include their historical series.\n\n**Tier**: Quant-only.",
         "operationId": "getDeepPriceHistoryChart",
         "security": [
           {
@@ -8597,6 +8615,18 @@
               "title": "Currency"
             },
             "description": "Target currency for returned prices. Default: USD."
+          },
+          {
+            "name": "include_defunct",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Include providers that have shut down but still have historical data (e.g. GamerPay, BitSkins). Defaults to false.",
+              "default": false,
+              "title": "Include Defunct"
+            },
+            "description": "Include providers that have shut down but still have historical data (e.g. GamerPay, BitSkins). Defaults to false."
           }
         ],
         "responses": {
@@ -13564,7 +13594,7 @@
               }
             ],
             "title": "Item Id",
-            "description": "Internal catalog item ID used by this API."
+            "description": "Catalog item ID used by this API."
           },
           "market_hash_name": {
             "type": "string",
@@ -17193,7 +17223,7 @@
           },
           "limit": {
             "type": "integer",
-            "maximum": 50.0,
+            "maximum": 1000.0,
             "minimum": 1.0,
             "title": "Limit",
             "description": "Maximum number of records returned per page."
@@ -17212,6 +17242,10 @@
             "$ref": "#/components/schemas/SalesMeta",
             "description": "Response metadata for this payload."
           },
+          "pagination": {
+            "$ref": "#/components/schemas/PaginationMeta",
+            "description": "Cursor pagination footer for this page."
+          },
           "items": {
             "items": {
               "$ref": "#/components/schemas/SaleRecordDetail"
@@ -17224,6 +17258,7 @@
         "type": "object",
         "required": [
           "meta",
+          "pagination",
           "items"
         ],
         "title": "SalesHistoryResponse",
@@ -17250,7 +17285,7 @@
           },
           "result_count": {
             "type": "integer",
-            "maximum": 50.0,
+            "maximum": 1000.0,
             "minimum": 0.0,
             "title": "Result Count",
             "description": "Number of records returned in this payload."

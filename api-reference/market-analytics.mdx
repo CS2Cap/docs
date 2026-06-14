@@ -834,3 +834,138 @@ console.log(await response.json());
 <Warning>
   `bid_anomaly: true` indicates the best bid exceeds the best ask on that provider, which produces a negative `spread_pct`. This is a data anomaly, not a tradeable state.
 </Warning>
+
+## GET /market/history/chart
+
+Returns per-provider daily price history for a single item — one price point per provider per UTC day, spanning years of history up to the present. Built for charting long horizons.
+
+**Tier:** Quant only · **Rate limit:** 300 req/min
+
+<CodeGroup>
+
+```bash cURL
+curl -sS \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  "$CS2C_API_BASE/market/history/chart?item_id=16194&providers=buff163&providers=steam&currency=USD"
+```
+
+```python Python
+import os
+import requests
+
+base = os.environ["CS2C_API_BASE"]
+key = os.environ["CS2C_API_KEY"]
+
+response = requests.get(
+    f"{base}/market/history/chart",
+    headers={"Authorization": f"Bearer {key}"},
+    params={
+        "item_id": 16194,
+        "providers": ["buff163", "steam"],
+        "currency": "USD",
+    },
+    timeout=20,
+)
+response.raise_for_status()
+print(response.json())
+```
+
+```javascript JavaScript
+const base = process.env.CS2C_API_BASE;
+const key = process.env.CS2C_API_KEY;
+
+const url = new URL(`${base}/market/history/chart`);
+url.searchParams.set('item_id', '16194');
+url.searchParams.append('providers', 'buff163');
+url.searchParams.append('providers', 'steam');
+url.searchParams.set('currency', 'USD');
+
+const response = await fetch(url, {
+  headers: { Authorization: `Bearer ${key}` },
+});
+
+if (!response.ok) {
+  throw new Error(`${response.status} ${await response.text()}`);
+}
+
+console.log(await response.json());
+```
+
+</CodeGroup>
+
+Provide either `item_id` or `market_hash_name`. With no time parameters the response covers the last 365 days.
+
+<ParamField query="item_id" type="integer">
+  Catalog item ID. Required unless `market_hash_name` is provided.
+</ParamField>
+
+<ParamField query="market_hash_name" type="string">
+  Exact item name as it appears in the Steam catalog. Required unless `item_id` is provided.
+</ParamField>
+
+<ParamField query="providers" type="string[]">
+  Provider key filter. Repeatable. Omit to return every provider that has data for the item.
+</ParamField>
+
+<ParamField query="start" type="string">
+  ISO 8601 UTC start of the window. Defaults to 365 days before `end`.
+</ParamField>
+
+<ParamField query="end" type="string">
+  ISO 8601 UTC end of the window. Defaults to now.
+</ParamField>
+
+<ParamField query="lookback" type="integer">
+  Window length in days. Overrides `start` when provided.
+</ParamField>
+
+<ParamField query="currency" type="string" default="USD">
+  Target currency for returned prices (ISO 4217).
+</ParamField>
+
+<ParamField query="include_defunct" type="boolean" default="false">
+  Include providers that have shut down but still have historical data (e.g. GamerPay, BitSkins). When `false`, their series are omitted even if requested explicitly via `providers`.
+</ParamField>
+
+```json Response example
+{
+  "meta": {
+    "item_id": 16194,
+    "market_hash_name": "AK-47 | Hydroponic (Factory New)",
+    "currency": "USD",
+    "start": "2013-04-26T00:00:00Z",
+    "end": "2026-06-13T00:00:00Z",
+    "providers": ["buff163", "steam"]
+  },
+  "series": [
+    {
+      "provider": "buff163",
+      "data": [
+        { "t": 1685548800, "price": 546976, "qty": 122 }
+      ]
+    },
+    {
+      "provider": "steam",
+      "data": [
+        { "t": 1606953600, "price": 532148, "qty": null }
+      ]
+    }
+  ]
+}
+```
+
+<ResponseField name="meta.providers" type="string[]">
+  The provider keys actually present in `series` — those with at least one point in the requested window.
+</ResponseField>
+
+<ResponseField name="series[].data[].t" type="integer">
+  UTC day bucket as a Unix timestamp (seconds, midnight).
+</ResponseField>
+
+<ResponseField name="series[].data[].price" type="integer">
+  Closing price for that day in minor units of the response currency (e.g. `546976` = $5,469.76).
+</ResponseField>
+
+<ResponseField name="series[].data[].qty" type="integer">
+  Listings/volume figure for that day. Meaning varies by provider and may be `null`.
+</ResponseField>
