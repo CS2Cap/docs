@@ -2382,10 +2382,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Restrict to one catalog item by ID. Its canonical market_hash_name and phase take precedence over the market_hash_name/phase params.",
+              "description": "Filter by item ID. When provided, canonical market_hash_name and phase from catalog are used and take precedence over request market_hash_name/phase.",
               "title": "Item Id"
             },
-            "description": "Restrict to one catalog item by ID. Its canonical market_hash_name and phase take precedence over the market_hash_name/phase params."
+            "description": "Filter by item ID. When provided, canonical market_hash_name and phase from catalog are used and take precedence over request market_hash_name/phase."
           },
           {
             "name": "market_hash_name",
@@ -2400,10 +2400,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Restrict to one item by exact market_hash_name. Ignored when item_id is provided.",
+              "description": "Optional market_hash_name to filter for specific item. Ignored when item_id is provided.",
               "title": "Market Hash Name"
             },
-            "description": "Restrict to one item by exact market_hash_name. Ignored when item_id is provided."
+            "description": "Optional market_hash_name to filter for specific item. Ignored when item_id is provided."
           },
           {
             "name": "phase",
@@ -2418,10 +2418,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Restrict to a phase (used with market_hash_name). Ignored when item_id is provided.",
+              "description": "Optional phase to filter (global or combined with market_hash_name). Ignored when item_id is provided.",
               "title": "Phase"
             },
-            "description": "Restrict to a phase (used with market_hash_name). Ignored when item_id is provided."
+            "description": "Optional phase to filter (global or combined with market_hash_name). Ignored when item_id is provided."
           },
           {
             "name": "providers",
@@ -2439,10 +2439,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Restrict to specific sales-capable provider keys. Repeat `providers` to pass multiple values.",
+              "description": "Providers to include (provider-key enum values that support recent sales). Repeat `providers` to pass multiple values.",
               "title": "Providers"
             },
-            "description": "Restrict to specific sales-capable provider keys. Repeat `providers` to pass multiple values."
+            "description": "Providers to include (provider-key enum values that support recent sales). Repeat `providers` to pass multiple values."
           },
           {
             "name": "currency",
@@ -2470,10 +2470,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Page size. Defaults to and is capped at the tier maximum (100 for Pro, 1000 for Quant).",
+              "description": "Maximum number of results to return. Defaults to the effective tier cap.",
               "title": "Limit"
             },
-            "description": "Page size. Defaults to and is capped at the tier maximum (100 for Pro, 1000 for Quant)."
+            "description": "Maximum number of results to return. Defaults to the effective tier cap."
           },
           {
             "name": "cursor",
@@ -2488,10 +2488,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Opaque cursor from a previous response's `pagination.next_cursor`. Returns the next page of results.",
+              "description": "Cursor for keyset pagination. Use next_cursor from previous response. When provided, offset is ignored and keyset pagination is used for O(1) seek.",
               "title": "Cursor"
             },
-            "description": "Opaque cursor from a previous response's `pagination.next_cursor`. Returns the next page of results."
+            "description": "Cursor for keyset pagination. Use next_cursor from previous response. When provided, offset is ignored and keyset pagination is used for O(1) seek."
           }
         ],
         "responses": {
@@ -17242,10 +17242,6 @@
             "$ref": "#/components/schemas/SalesMeta",
             "description": "Response metadata for this payload."
           },
-          "pagination": {
-            "$ref": "#/components/schemas/PaginationMeta",
-            "description": "Cursor pagination footer for this page."
-          },
           "items": {
             "items": {
               "$ref": "#/components/schemas/SaleRecordDetail"
@@ -17253,13 +17249,17 @@
             "type": "array",
             "title": "Items",
             "description": "List of returned items."
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/PaginationMeta",
+            "description": "Cursor pagination footer for this page."
           }
         },
         "type": "object",
         "required": [
           "meta",
-          "pagination",
-          "items"
+          "items",
+          "pagination"
         ],
         "title": "SalesHistoryResponse",
         "description": "Recent Sales response with request metadata."

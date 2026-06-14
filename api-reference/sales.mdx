@@ -69,11 +69,11 @@ console.log(await response.json());
 ### Parameters
 
 <ParamField query="item_id" type="integer">
-  Restrict to one catalog item by ID. Takes precedence over `market_hash_name` and `phase` when provided. Omit all item filters to return the global recent-sales feed.
+  Filter by item ID. Takes precedence over `market_hash_name` and `phase` when provided.
 </ParamField>
 
 <ParamField query="market_hash_name" type="string">
-  Restrict to one item by exact name as it appears in inventory. Ignored when `item_id` is provided.
+  Exact item name as it appears in inventory. Ignored when `item_id` is provided.
 </ParamField>
 
 <ParamField query="phase" type="string">
@@ -89,11 +89,11 @@ console.log(await response.json());
 </ParamField>
 
 <ParamField query="limit" type="integer">
-  Page size. Defaults to and is capped at the tier maximum: **100** for `pro`, **1000** for `quant`.
+  Results per page. Defaults to the caller's effective tier cap: `100` for Pro, `1000` for Quant.
 </ParamField>
 
 <ParamField query="cursor" type="string">
-  Opaque cursor from the previous response's `pagination.next_cursor`. Returns the next page of results. Omit for the first page.
+  Cursor for keyset pagination. Pass the `next_cursor` value from the previous response.
 </ParamField>
 
 ### Response example
@@ -111,14 +111,6 @@ console.log(await response.json());
     },
     "providers_queried": ["csfloat", "buff163"],
     "result_count": 2
-  },
-  "pagination": {
-    "limit": 100,
-    "offset": 0,
-    "total": -1,
-    "has_next": true,
-    "has_prev": false,
-    "next_cursor": "MjAyNi0wMy0wNVQxNjowMDowMCswMDowMHw5ODc2"
   },
   "items": [
     {
@@ -178,7 +170,15 @@ console.log(await response.json());
         "screenshot_back": "https://spect.fp.ps.netease.com/file/69aadbc88046f513e7f7de78TiWERWCN07"
       }
     }
-  ]
+  ],
+  "pagination": {
+    "limit": 100,
+    "offset": 0,
+    "total": -1,
+    "has_next": true,
+    "has_prev": false,
+    "next_cursor": "MjAyNi0wMy0wNVQxNjowMDowMCswMDowMHw5ODc2"
+  }
 }
 ```
 
