@@ -3890,6 +3890,148 @@
         }
       }
     },
+    "/v1/images": {
+      "get": {
+        "tags": [
+          "Images"
+        ],
+        "summary": "List Game Images",
+        "description": "Return a directory of CS2 catalog display names mapped to their image URLs on the CS2Cap CDN. Names that map to multiple distinct images return all URLs.",
+        "operationId": "listGameImages",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "type": "object",
+                  "title": "ListGameImagesResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "detail": "Missing Authorization header"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted to access this resource.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "code": "FORBIDDEN",
+                  "detail": "Account is disabled"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (burst or monthly quota).",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying when present.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "X-RateLimit-Tier": {
+                "description": "Authenticated caller tier code.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Request limit for the rate-limit window that was exceeded.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0.0
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0.0
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Seconds until the rate-limit window resets.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0.0
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "burstRateLimit": {
+                    "summary": "Per-window rate limit exceeded",
+                    "value": {
+                      "code": "RATE_LIMIT_EXCEEDED",
+                      "detail": "Too Many Requests"
+                    }
+                  },
+                  "monthlyQuotaExceeded": {
+                    "summary": "Monthly quota exhausted",
+                    "value": {
+                      "code": "RATE_LIMIT_MONTHLY_QUOTA_EXCEEDED",
+                      "detail": "Monthly quota exceeded (500000/500000 requests)."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed. The detail list contains field-specific validation errors.",
+            "headers": {
+              "X-RateLimit-Tier": {
+                "description": "Authenticated caller tier code when available.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
     "/v1/account/sub-keys": {
       "get": {
         "tags": [
