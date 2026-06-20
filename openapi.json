@@ -10848,6 +10848,22 @@
               "title": "Cursor"
             },
             "description": "Opaque cursor from `pagination.next_cursor`."
+          },
+          {
+            "name": "basis",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "ledger",
+                "holdings"
+              ],
+              "type": "string",
+              "description": "Holdings basis. `ledger` (default) replays holdings from the transaction ledger and requires recorded transactions. `holdings` values the portfolio's current holdings flat across the window, so history is available without any transactions.",
+              "default": "ledger",
+              "title": "Basis"
+            },
+            "description": "Holdings basis. `ledger` (default) replays holdings from the transaction ledger and requires recorded transactions. `holdings` values the portfolio's current holdings flat across the window, so history is available without any transactions."
           }
         ],
         "responses": {
@@ -15890,9 +15906,12 @@
           },
           "holdings_basis": {
             "type": "string",
-            "const": "ledger_close",
+            "enum": [
+              "ledger_close",
+              "current_holdings"
+            ],
             "title": "Holdings Basis",
-            "description": "Holdings replay basis. Always `ledger_close`.",
+            "description": "Holdings basis. `ledger_close` replays holdings from the transaction ledger; `current_holdings` values the portfolio's current holdings flat across the window (no transactions required).",
             "default": "ledger_close"
           },
           "valuation_basis": {
