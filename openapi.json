@@ -16252,6 +16252,42 @@
             "title": "Item Value",
             "description": "best_ask * quantity. Money amount in minor units of the response currency (for example USD cents when currency=USD). Divide by 100 for display."
           },
+          "image_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Url",
+            "description": "Item image URL from the catalog, if known."
+          },
+          "rarity_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rarity Name",
+            "description": "Item rarity name from the catalog (e.g. 'Covert'), if known."
+          },
+          "rarity_color": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rarity Color",
+            "description": "Item rarity hex color from the catalog, if known."
+          },
           "providers": {
             "items": {
               "$ref": "#/components/schemas/BatchPriceQuote"
