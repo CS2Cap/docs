@@ -185,7 +185,13 @@ console.log(await response.json());
 Streams the complete live buy-orders catalog as NDJSON, with one JSON object per line. The snapshot is captured once at request start and then streamed in full.
 
 **Tiers:** `pro` · `quant`  
-**Rate limit:** rolling 24h quota of successful stream starts per API key — **50/day on `pro`, 300/day on `quant`**, counted separately from [`POST /prices`](/api-reference/prices#post-/prices-—-stream-full-prices-snapshot). One active stream per API key at a time (`409` otherwise). Responses carry `X-RateLimit-Limit`, `X-RateLimit-Remaining`, and `X-RateLimit-Reset`. See [Rate Limits](/guides/rate-limits#special-limits-for-bulk-snapshot-endpoints).
+**Rate limit:** rolling 24h quota of successful stream starts per API key — **50/day on `pro`, 300/day on `quant`**, counted separately from [`POST /prices`](/api-reference/prices#post-/prices-—-stream-full-prices-snapshot). One active stream per API key at a time (`409` otherwise, with `Retry-After`).
+
+<Note>
+  **⚡ Performance Note: Why NDJSON?** A full market snapshot contains *hundreds of thousands* of bids. If this payload were delivered as a standard JSON array (`[...]`), your backend would be forced to decompress and buffer a massive ~200MB string into memory before `JSON.parse()` could even begin. This causes delayed processing, blocked event loops, and massive RAM spikes.
+
+  By streaming this endpoint as NDJSON, CS2Cap achieves a sub-1s TTFB (~500ms). Your backend can decompress and parse the stream line-by-line as packets arrive, which keeps memory usage minimal and allows for instant inserts in your database.
+</Note>
 
 ### Query parameters
 

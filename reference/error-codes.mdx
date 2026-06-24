@@ -49,10 +49,10 @@ Use `code` for programmatic error handling. Use `detail` for logging or displayi
     | `RATE_LIMIT_EXCEEDED` | 429 | You have exceeded the per-minute request limit for your tier. Check the `Retry-After` header and wait before retrying. |
     | `RATE_LIMIT_MONTHLY_QUOTA_EXCEEDED` | 429 | You have consumed your monthly request quota. Quota resets at the start of the next billing period or you can upgrade your tier. |
     | `RATE_LIMIT_STREAM_QUOTA_EXCEEDED` | 429 | You have used your rolling 24-hour bulk-stream-start quota on [`POST /prices`](/api-reference/prices#post-/prices-—-stream-full-prices-snapshot) or [`POST /bids`](/api-reference/bids#post-/bids-—-stream-full-bids-snapshot) (50/day on Pro, 300/day on Quant, per endpoint). Retry after `Retry-After` seconds, when the next slot frees. |
-    | `STREAM_ALREADY_ACTIVE` | 409 | A bulk stream is already active for this API key on this endpoint. Only one concurrent stream is allowed per endpoint — wait for it to finish before starting another. |
+    | `STREAM_ALREADY_ACTIVE` | 409 | A bulk stream is already active for this API key on this endpoint. Only one concurrent stream is allowed per endpoint; wait for it to finish or wait for the `Retry-After` seconds before starting another. |
 
     <Warning>
-      When you receive a `429`, read the `Retry-After` header. It contains the number of seconds you must wait before the next request will succeed. Retrying before that time will return another `429`.
+      When you receive a `429`, or a `409 STREAM_ALREADY_ACTIVE` from a bulk streaming endpoint, read the `Retry-After` header. It contains the number of seconds you must wait before the next request will succeed.
 
       The response also includes `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`, and `X-RateLimit-Tier` headers for monitoring your usage.
     </Warning>
@@ -86,7 +86,7 @@ Use `code` for programmatic error handling. Use `detail` for logging or displayi
 
 ## Retry guidance
 
-**For `429` responses:** Read the `Retry-After` response header. It contains the number of seconds to wait before retrying. Do not retry before that window expires.
+**For `429` responses and bulk-stream `409` conflicts:** Read the `Retry-After` response header. It contains the number of seconds to wait before retrying. Do not retry before that window expires.
 
 ```http
 HTTP/1.1 429 Too Many Requests

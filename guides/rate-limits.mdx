@@ -35,7 +35,7 @@ When you are approaching or have exceeded a limit, the API includes the followin
 
 | Header | Description |
 | --- | --- |
-| `Retry-After` | Seconds to wait before the next request will succeed. Present on `429` responses. |
+| `Retry-After` | Seconds to wait before the next request will succeed. Present on `429` responses and bulk-stream `409` active-stream conflicts. |
 | `X-RateLimit-Limit` | Your tier's monthly quota. |
 | `X-RateLimit-Remaining` | Monthly quota requests remaining in the current billing period. |
 | `X-RateLimit-Reset` | Unix timestamp (seconds) when the monthly quota resets. |
@@ -65,7 +65,7 @@ Both rate limit conditions return HTTP `429` with a machine-readable `code` fiel
 | `RATE_LIMIT_EXCEEDED` | 429 | Per-minute burst limit hit. Wait for the number of seconds in `Retry-After`. |
 | `RATE_LIMIT_MONTHLY_QUOTA_EXCEEDED` | 429 | Monthly quota exhausted. Requests will resume at the start of the next billing period. |
 | `RATE_LIMIT_STREAM_QUOTA_EXCEEDED` | 429 | Rolling 24-hour bulk-stream-start quota exhausted on `POST /prices` or `POST /bids`. Retry after `Retry-After` seconds, when the next slot frees. |
-| `STREAM_ALREADY_ACTIVE` | 409 | A bulk stream is already active for this API key on this endpoint. Wait for it to finish (or for `Retry-After` seconds) before starting another. |
+| `STREAM_ALREADY_ACTIVE` | 409 | A bulk stream is already active for this API key on this endpoint. Wait for it to finish, or wait for the `Retry-After` seconds before trying again. |
 
 ```json
 {
