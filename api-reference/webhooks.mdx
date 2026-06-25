@@ -33,7 +33,6 @@ key = os.environ["CS2C_API_KEY"]
 response = requests.get(
     f"{base}/account/webhooks",
     headers={"Authorization": f"Bearer {key}"},
-    timeout=20,
 )
 response.raise_for_status()
 print(response.json())
@@ -145,8 +144,7 @@ response = requests.post(
         "url": "https://hooks.example.com/cs2c",
         "platform": "custom",
         "is_active": True,
-    },
-    timeout=20,
+    }
 )
 response.raise_for_status()
 print(response.json())
@@ -258,7 +256,6 @@ response = requests.get(
     f"{base}/account/webhooks/deliveries",
     headers={"Authorization": f"Bearer {key}"},
     params={"limit": 25, "offset": 0},
-    timeout=20,
 )
 response.raise_for_status()
 print(response.json())
@@ -384,7 +381,6 @@ delivery_id = "YOUR_DELIVERY_ID"
 response = requests.get(
     f"{base}/account/webhooks/deliveries/{delivery_id}",
     headers={"Authorization": f"Bearer {key}"},
-    timeout=20,
 )
 response.raise_for_status()
 print(response.json())
@@ -492,7 +488,6 @@ response = requests.patch(
     f"{base}/account/webhooks/{webhook_id}",
     headers={"Authorization": f"Bearer {key}"},
     json={"label": "Production alerts v2", "is_active": False},
-    timeout=20,
 )
 response.raise_for_status()
 print(response.json())
@@ -581,7 +576,6 @@ webhook_id = "YOUR_WEBHOOK_ID"
 response = requests.delete(
     f"{base}/account/webhooks/{webhook_id}",
     headers={"Authorization": f"Bearer {key}"},
-    timeout=20,
 )
 response.raise_for_status()
 print(response.json())
@@ -643,7 +637,6 @@ webhook_id = "YOUR_WEBHOOK_ID"
 response = requests.post(
     f"{base}/account/webhooks/{webhook_id}/rotate-secret",
     headers={"Authorization": f"Bearer {key}"},
-    timeout=20,
 )
 response.raise_for_status()
 print(response.json())

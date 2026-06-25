@@ -36,8 +36,7 @@ response = requests.get(
         "providers": ["buff163", "csfloat"],
         "currency": "USD",
         "limit": 10,
-    },
-    timeout=20,
+    }
 )
 response.raise_for_status()
 print(response.json())
@@ -86,7 +85,7 @@ console.log(await response.json());
 </ParamField>
 
 <ParamField query="currency" type="string" default="USD">
-  Target currency. Accepts 160+ ISO 4217 codes. See [`GET /fx`](/api-reference/catalog#get-/fx-—-fx-rates) for the full list.
+  Target currency. Accepts 200+ ISO 4217 codes. See [`GET /fx`](/api-reference/catalog#get-/fx-—-fx-rates) for the full list.
 </ParamField>
 
 <ParamField query="limit" type="integer">
@@ -191,11 +190,11 @@ Streams the complete live prices catalog as NDJSON, with one JSON object per lin
 **Tiers:** `pro` · `quant`  
 **Rate limit:** rolling 24h quota of successful stream starts per API key — **50/day on `pro`, 300/day on `quant`**, counted separately from [`POST /bids`](/api-reference/bids#post-/bids-—-stream-full-bids-snapshot). One active stream per API key at a time (`409` otherwise, with `Retry-After`).
 
-<Note>
-  **⚡ Performance Note: Why NDJSON?** A full market snapshot contains *hundreds of thousands* of listings. If this payload were delivered as a standard JSON array (`[...]`), your backend would be forced to decompress and buffer a massive ~200MB string into memory before `JSON.parse()` could even begin. This causes delayed processing, blocked event loops, and massive RAM spikes.
+<Tip>
+  **⚡ Why NDJSON?** A full market snapshot contains **hundreds of thousands** of listings. If this payload were delivered as a standard JSON array (`[...]`), your backend would be forced to decompress and buffer a massive ~200MB string into memory before `JSON.parse()` could even begin. This causes delayed processing, blocked event loops, and massive RAM spikes.
 
   By streaming this endpoint as NDJSON, CS2Cap achieves a sub-1s TTFB (~500ms). Your backend can decompress and parse the stream line-by-line as packets arrive, which keeps memory usage minimal and allows for instant inserts in your database.
-</Note>
+</Tip>
 
 ### Query parameters
 
@@ -223,8 +222,7 @@ with requests.post(
     f"{base}/prices",
     headers={"Authorization": f"Bearer {key}"},
     params={"providers": "buff163"},
-    stream=True,
-    timeout=120,
+    stream=True
 ) as response:
     response.raise_for_status()
     for line in response.iter_lines():
@@ -324,8 +322,7 @@ response = requests.post(
         "item_ids": [4994, 2],
         "providers": ["buff163", "csfloat"],
         "currency": "USD",
-    },
-    timeout=20,
+    }
 )
 response.raise_for_status()
 print(response.json())
@@ -494,8 +491,7 @@ response = requests.get(
         "interval": "1d",
         "lookback": "30d",
         "currency": "USD",
-    },
-    timeout=20,
+    }
 )
 response.raise_for_status()
 print(response.json())
@@ -675,8 +671,7 @@ response = requests.get(
         "provider": "buff163",
         "currency": "USD",
         "limit": 50,
-    },
-    timeout=20,
+    }
 )
 response.raise_for_status()
 print(response.json())
@@ -732,7 +727,7 @@ console.log(await response.json());
 </ParamField>
 
 <ParamField query="currency" type="string" default="USD">
-  Target currency. Accepts 160+ ISO 4217 codes.
+  Target currency. Accepts 200+ ISO 4217 codes.
 </ParamField>
 
 <ParamField query="limit" type="integer">

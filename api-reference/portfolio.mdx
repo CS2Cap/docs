@@ -34,7 +34,6 @@ response = requests.post(
     f"{base}/portfolio",
     headers={"Authorization": f"Bearer {key}"},
     json={"name": "Main Portfolio"},
-    timeout=20,
 )
 response.raise_for_status()
 print(response.json())
@@ -98,7 +97,6 @@ key = os.environ["CS2C_API_KEY"]
 response = requests.get(
     f"{base}/portfolio",
     headers={"Authorization": f"Bearer {key}"},
-    timeout=20,
 )
 response.raise_for_status()
 print(response.json())
@@ -148,7 +146,6 @@ portfolio_id = "YOUR_PORTFOLIO_ID"
 response = requests.delete(
     f"{base}/portfolio/{portfolio_id}",
     headers={"Authorization": f"Bearer {key}"},
-    timeout=20,
 )
 response.raise_for_status()
 print(response.json())
@@ -213,8 +210,7 @@ response = requests.post(
             {"item_id": 12632, "quantity": 5},
         ],
         "currency": "USD",
-    },
-    timeout=20,
+    }
 )
 response.raise_for_status()
 print(response.json())
@@ -349,7 +345,6 @@ response = requests.get(
     f"{base}/portfolio/{portfolio_id}/value",
     headers={"Authorization": f"Bearer {key}"},
     params={"currency": "USD", "providers": "buff163"},
-    timeout=20,
 )
 response.raise_for_status()
 print(response.json())
@@ -424,8 +419,7 @@ portfolio_id = "YOUR_PORTFOLIO_ID"
 response = requests.post(
     f"{base}/portfolio/{portfolio_id}/import",
     headers={"Authorization": f"Bearer {key}"},
-    json={},
-    timeout=60,
+    json={}
 )
 response.raise_for_status()
 print(response.json())
@@ -497,8 +491,7 @@ with open("transactions.csv", "rb") as f:
     response = requests.post(
         f"{base}/portfolio/{portfolio_id}/import/csv",
         headers={"Authorization": f"Bearer {key}"},
-        files={"file": f},
-        timeout=60,
+        files={"file": f}
     )
 response.raise_for_status()
 print(response.json())
@@ -564,7 +557,6 @@ response = requests.get(
     f"{base}/portfolio/{portfolio_id}/export",
     headers={"Authorization": f"Bearer {key}"},
     params={"type": "transactions"},
-    timeout=20,
 )
 response.raise_for_status()
 with open("portfolio.csv", "wb") as f:
@@ -630,7 +622,6 @@ portfolio_id = "YOUR_PORTFOLIO_ID"
 response = requests.get(
     f"{base}/portfolio/{portfolio_id}/items",
     headers={"Authorization": f"Bearer {key}"},
-    timeout=20,
 )
 response.raise_for_status()
 print(response.json())
@@ -688,7 +679,6 @@ response = requests.post(
     f"{base}/portfolio/{portfolio_id}/items",
     headers={"Authorization": f"Bearer {key}"},
     json={"item_id": 4994, "quantity": 2},
-    timeout=20,
 )
 response.raise_for_status()
 print(response.json())
@@ -769,7 +759,6 @@ entry_id = "YOUR_ENTRY_ID"
 response = requests.delete(
     f"{base}/portfolio/{portfolio_id}/items/{entry_id}",
     headers={"Authorization": f"Bearer {key}"},
-    timeout=20,
 )
 response.raise_for_status()
 print(response.json())
@@ -836,7 +825,6 @@ portfolio_id = "YOUR_PORTFOLIO_ID"
 response = requests.get(
     f"{base}/portfolio/{portfolio_id}/transactions",
     headers={"Authorization": f"Bearer {key}"},
-    timeout=20,
 )
 response.raise_for_status()
 print(response.json())
@@ -900,8 +888,7 @@ response = requests.post(
         "price": 53000,
         "date": "2026-03-15",
         "currency": "USD",
-    },
-    timeout=20,
+    }
 )
 response.raise_for_status()
 print(response.json())
@@ -1016,7 +1003,6 @@ response = requests.patch(
     f"{base}/portfolio/{portfolio_id}/transactions/{tx_id}",
     headers={"Authorization": f"Bearer {key}"},
     json={"quantity": 2, "price": 52500},
-    timeout=20,
 )
 response.raise_for_status()
 print(response.json())
@@ -1114,7 +1100,6 @@ tx_id = "YOUR_TX_ID"
 response = requests.delete(
     f"{base}/portfolio/{portfolio_id}/transactions/{tx_id}",
     headers={"Authorization": f"Bearer {key}"},
-    timeout=20,
 )
 response.raise_for_status()
 print(response.json())
@@ -1178,7 +1163,6 @@ response = requests.get(
     f"{base}/portfolio/{portfolio_id}/history",
     headers={"Authorization": f"Bearer {key}"},
     params={"lookback": "30d", "currency": "USD"},
-    timeout=20,
 )
 response.raise_for_status()
 print(response.json())

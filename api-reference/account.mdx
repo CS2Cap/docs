@@ -28,8 +28,7 @@ key = os.environ["CS2C_API_KEY"]
 
 response = requests.get(
     f"{base}/account/key",
-    headers={"Authorization": f"Bearer {key}"},
-    timeout=20,
+    headers={"Authorization": f"Bearer {key}"}
 )
 response.raise_for_status()
 print(response.json())
@@ -154,7 +153,6 @@ key = os.environ["CS2C_API_KEY"]
 response = requests.post(
     f"{base}/account/key/reissue",
     headers={"Authorization": f"Bearer {key}"},
-    timeout=20,
 )
 response.raise_for_status()
 print(response.json())

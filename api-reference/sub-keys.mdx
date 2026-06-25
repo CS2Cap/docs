@@ -34,7 +34,6 @@ response = requests.get(
     f"{base}/account/sub-keys",
     headers={"Authorization": f"Bearer {key}"},
     params={"limit": 10, "offset": 0},
-    timeout=20,
 )
 response.raise_for_status()
 print(response.json())
@@ -143,8 +142,7 @@ response = requests.post(
     json={
         "name": "analytics-worker",
         "quota_requests_per_month_override": 100000,
-    },
-    timeout=20,
+    }
 )
 response.raise_for_status()
 print(response.json())
@@ -226,7 +224,6 @@ key_id = "YOUR_KEY_ID"
 response = requests.get(
     f"{base}/account/sub-keys/{key_id}",
     headers={"Authorization": f"Bearer {key}"},
-    timeout=20,
 )
 response.raise_for_status()
 print(response.json())
@@ -286,8 +283,7 @@ response = requests.patch(
     json={
         "name": "analytics-worker-v2",
         "quota_requests_per_month_override": 200000,
-    },
-    timeout=20,
+    }
 )
 response.raise_for_status()
 print(response.json())
@@ -374,7 +370,6 @@ key_id = "YOUR_KEY_ID"
 response = requests.delete(
     f"{base}/account/sub-keys/{key_id}",
     headers={"Authorization": f"Bearer {key}"},
-    timeout=20,
 )
 response.raise_for_status()
 print(response.json())
@@ -450,7 +445,6 @@ key_id = "YOUR_KEY_ID"
 response = requests.post(
     f"{base}/account/sub-keys/{key_id}/reissue",
     headers={"Authorization": f"Bearer {key}"},
-    timeout=20,
 )
 response.raise_for_status()
 print(response.json())

@@ -36,8 +36,7 @@ response = requests.post(
         "kind": "price_below",
         "threshold_value": "500.00",
         "threshold_currency": "USD",
-    },
-    timeout=20,
+    }
 )
 response.raise_for_status()
 print(response.json())
@@ -146,8 +145,7 @@ response = requests.post(
                 "threshold_value": "15.0",
             },
         ]
-    },
-    timeout=20,
+    }
 )
 response.raise_for_status()
 print(response.json())
@@ -233,7 +231,6 @@ response = requests.get(
     f"{base}/account/alerts",
     headers={"Authorization": f"Bearer {key}"},
     params={"limit": 25, "search": "AK-47"},
-    timeout=20,
 )
 response.raise_for_status()
 print(response.json())
@@ -302,7 +299,6 @@ response = requests.patch(
     f"{base}/account/alerts/{alert_id}",
     headers={"Authorization": f"Bearer {key}"},
     json={"threshold_value": "450.00", "is_enabled": True},
-    timeout=20,
 )
 response.raise_for_status()
 print(response.json())
@@ -381,7 +377,6 @@ alert_id = "YOUR_ALERT_ID"
 response = requests.delete(
     f"{base}/account/alerts/{alert_id}",
     headers={"Authorization": f"Bearer {key}"},
-    timeout=20,
 )
 response.raise_for_status()
 print(response.json())
@@ -443,7 +438,6 @@ response = requests.get(
     f"{base}/account/alerts/events",
     headers={"Authorization": f"Bearer {key}"},
     params={"limit": 25},
-    timeout=20,
 )
 response.raise_for_status()
 print(response.json())

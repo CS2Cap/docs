@@ -36,8 +36,7 @@ response = requests.get(
         "providers": "csfloat",
         "currency": "USD",
         "limit": 20,
-    },
-    timeout=20,
+    }
 )
 response.raise_for_status()
 print(response.json())
@@ -85,7 +84,7 @@ console.log(await response.json());
 </ParamField>
 
 <ParamField query="currency" type="string" default="USD">
-  Target currency. Accepts 160+ ISO 4217 codes. See [`GET /fx`](/api-reference/catalog#get-/fx-—-fx-rates) for the full list.
+  Target currency. Accepts 200+ ISO 4217 codes. See [`GET /fx`](/api-reference/catalog#get-/fx-—-fx-rates) for the full list.
 </ParamField>
 
 <ParamField query="limit" type="integer">

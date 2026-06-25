@@ -49,8 +49,7 @@ This guide walks you through everything you need to make a live CS2 item price r
             "providers": "steam",
             "currency": "USD",
             "limit": 5,
-        },
-        timeout=20,
+        }
     )
     response.raise_for_status()
     print(response.json())

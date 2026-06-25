@@ -58,8 +58,7 @@ response = requests.get(
         "providers": "steam",
         "currency": "USD",
         "limit": 5,
-    },
-    timeout=20,
+    }
 )
 response.raise_for_status()
 print(response.json())

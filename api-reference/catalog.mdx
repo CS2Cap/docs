@@ -38,8 +38,7 @@ response = requests.get(
         "q": "AK-47",
         "item_type": "Rifle",
         "limit": 10,
-    },
-    timeout=20,
+    }
 )
 response.raise_for_status()
 print(response.json())
@@ -310,7 +309,6 @@ key = os.environ["CS2C_API_KEY"]
 response = requests.get(
     f"{base}/items/metadata",
     headers={"Authorization": f"Bearer {key}"},
-    timeout=20,
 )
 response.raise_for_status()
 print(response.json())
@@ -361,7 +359,7 @@ This endpoint takes no parameters.
 ### Response fields
 
 <ResponseField name="catalog.total_items" type="integer">
-  Total number of items in the CS2Cap catalog.
+  Total number of items in the catalog (i.e. tradable CS2 items).
 </ResponseField>
 
 <ResponseField name="filters" type="object">
@@ -394,7 +392,6 @@ key = os.environ["CS2C_API_KEY"]
 response = requests.get(
     f"{base}/images",
     headers={"Authorization": f"Bearer {key}"},
-    timeout=20,
 )
 response.raise_for_status()
 print(response.json()["AK-47 | Redline"])
@@ -469,7 +466,6 @@ response = requests.get(
     f"{base}/providers",
     headers={"Authorization": f"Bearer {key}"},
     params={"provider": "buff163"},
-    timeout=20,
 )
 response.raise_for_status()
 print(response.json())
@@ -546,7 +542,7 @@ The response is a map keyed by the provider's display name. Each value is an obj
 </ResponseField>
 
 <ResponseField name="market_type" type="string">
-  Market structure. `STORE` (fixed-price listings) or `P2P` (peer-to-peer marketplace).
+  Market structure. `STORE` (fixed-price listings), `P2P` (peer-to-peer marketplace), `ESCROW` (platform-held listings), `TRADING` (item-to-item exchanges) or `HYBRID` (≤2 market models).
 </ResponseField>
 
 <ResponseField name="default_currency" type="string">
@@ -636,7 +632,6 @@ key = os.environ["CS2C_API_KEY"]
 response = requests.get(
     f"{base}/fx",
     headers={"Authorization": f"Bearer {key}"},
-    timeout=20,
 )
 response.raise_for_status()
 print(response.json())
@@ -693,7 +688,7 @@ The endpoint returns the exchange rate for **234 different currencies**, includi
 </ResponseField>
 
 <ResponseField name="rates" type="object">
-  Map of ISO 4217 currency codes to their exchange rate relative to USD. `USD` is always `1`. Over 160 currency codes are included in the full response — the example above is abbreviated.
+  Map of ISO 4217 currency codes to their exchange rate relative to USD. `USD` is always `1`. Over 200 currency codes are included in the full response — the example above is abbreviated.
 </ResponseField>
 
 <Tip>

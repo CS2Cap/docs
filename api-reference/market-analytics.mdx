@@ -34,8 +34,7 @@ response = requests.get(
         "providers_buy": "buff163",
         "providers_sell": "csfloat",
         "limit": 25,
-    },
-    timeout=20,
+    }
 )
 response.raise_for_status()
 print(response.json())
@@ -200,7 +199,6 @@ response = requests.get(
     f"{base}/market/indexes",
     headers={"Authorization": f"Bearer {key}"},
     params={"group_by": "weapon_type"},
-    timeout=20,
 )
 response.raise_for_status()
 print(response.json())
@@ -288,10 +286,6 @@ console.log(await response.json());
   </Expandable>
 </ResponseField>
 
-<Note>
-  `meta.window.timeframe` is always `24h`. Groups remain in the response even when every item in that group was excluded from the total. Items without a grouping value are omitted entirely.
-</Note>
-
 ---
 
 ## GET /market/indicators
@@ -322,8 +316,7 @@ response = requests.get(
         "item_id": 4994,
         "interval": "1d",
         "currency": "USD",
-    },
-    timeout=20,
+    }
 )
 response.raise_for_status()
 print(response.json())
@@ -517,7 +510,6 @@ key = os.environ["CS2C_API_KEY"]
 response = requests.get(
     f"{base}/market/items",
     headers={"Authorization": f"Bearer {key}"},
-    timeout=20,
 )
 response.raise_for_status()
 print(response.json())
@@ -669,7 +661,6 @@ item_id = 4994
 response = requests.get(
     f"{base}/market/items/{item_id}",
     headers={"Authorization": f"Bearer {key}"},
-    timeout=20,
 )
 response.raise_for_status()
 print(response.json())
@@ -837,7 +828,7 @@ console.log(await response.json());
 
 ## GET /market/history/chart
 
-Returns per-provider daily price history for a single item — one price point per provider per UTC day, spanning years of history up to the present. Built for charting long horizons.
+Returns per-provider daily price history for a single item — one price point per provider per UTC day, spanning years of history (i.e. up to 2013 for Steam) up to the present. Built for charting long horizons.
 
 **Tier:** Quant only · **Rate limit:** 300 req/min
 
@@ -862,9 +853,9 @@ response = requests.get(
     params={
         "item_id": 16194,
         "providers": ["buff163", "steam"],
+        "start": "2000-01-01",
         "currency": "USD",
-    },
-    timeout=20,
+    }
 )
 response.raise_for_status()
 print(response.json())
