@@ -21,32 +21,31 @@ curl -sS \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
 
-response = requests.get(
-    f"{base}/inventory/steam",
-    headers={"Authorization": f"Bearer {key}"},
-)
-response.raise_for_status()
-print(response.json())
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.InventoryApi(client)
+    response = api.fetch_steam_inventory()
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
+```typescript TypeScript
+import { Configuration, InventoryApi } from "cs2cap";
 
-const response = await fetch(`${base}/inventory/steam`, {
-  headers: { Authorization: `Bearer ${key}` },
-});
+const accessToken = process.env.CS2C_API_KEY;
 
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const api = new InventoryApi(new Configuration({ accessToken }));
+const response = await api.fetchSteamInventory();
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -152,41 +151,38 @@ Returns the live CS2 inventory for any Steam account. You can identify the targe
 ```bash cURL
 curl -sS \
   -H "Authorization: Bearer $CS2C_API_KEY" \
-  "$CS2C_API_BASE/inventory/steam/lookup?steam_id=76561198012345678"
+  "$CS2C_API_BASE/inventory/steam/lookup?steam_id=anomaly"
 ```
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
 
-response = requests.get(
-    f"{base}/inventory/steam/lookup",
-    headers={"Authorization": f"Bearer {key}"},
-    params={"steam_id": "76561198012345678"},
-)
-response.raise_for_status()
-print(response.json())
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.InventoryApi(client)
+    response = api.fetch_steam_inventory_by_steam_id(
+        steam_id="anomaly"
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
+```typescript TypeScript
+import { Configuration, InventoryApi } from "cs2cap";
 
-const url = new URL(`${base}/inventory/steam/lookup`);
-url.searchParams.set('steam_id', '76561198012345678');
+const accessToken = process.env.CS2C_API_KEY;
 
-const response = await fetch(url, {
-  headers: { Authorization: `Bearer ${key}` },
-});
-
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const api = new InventoryApi(new Configuration({ accessToken }));
+const response = await api.fetchSteamInventoryBySteamId({ steamId: "76561198000000000" });
+
+console.log(response);
 ```
 
 </CodeGroup>

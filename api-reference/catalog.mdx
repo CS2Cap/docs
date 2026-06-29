@@ -21,47 +21,40 @@ Searches the CS2 item catalog and returns full metadata for every match. You can
 ```bash cURL
 curl -sS \
   -H "Authorization: Bearer $CS2C_API_KEY" \
-  "$CS2C_API_BASE/items?q=AK-47&item_type=Rifle&limit=10"
+  "$CS2C_API_BASE/items?q=AK-47&rarity_name=Covert&limit=10"
 ```
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
 
-response = requests.get(
-    f"{base}/items",
-    headers={"Authorization": f"Bearer {key}"},
-    params={
-        "q": "AK-47",
-        "item_type": "Rifle",
-        "limit": 10,
-    }
-)
-response.raise_for_status()
-print(response.json())
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.ItemsApi(client)
+    response = api.list_items(
+        q="AK-47",
+        rarity_name="Covert",
+        limit=10,
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
+```typescript TypeScript
+import { Configuration, ItemsApi } from "cs2cap";
 
-const url = new URL(`${base}/items`);
-url.searchParams.set('q', 'AK-47');
-url.searchParams.set('item_type', 'Rifle');
-url.searchParams.set('limit', '10');
+const accessToken = process.env.CS2C_API_KEY;
 
-const response = await fetch(url, {
-  headers: { Authorization: `Bearer ${key}` },
-});
-
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const api = new ItemsApi(new Configuration({ accessToken }));
+const response = await api.listItems({ q: "AK-47", rarityName: "Covert", limit: 10 });
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -167,6 +160,7 @@ console.log(await response.json());
         "https://cdn.cs2c.app/images/...",
         "https://cdn.cs2c.app/images/..."
       ],
+      "release_date": "2014-07-01",
       "rarity_name": "Covert",
       "rarity_color": "eb4b4b",
       "style_name": "Custom Paint Job",
@@ -243,6 +237,10 @@ console.log(await response.json());
   Image URLs for the associated cases or crates. Indexes align with the `crates` array.
 </ResponseField>
 
+<ResponseField name="release_date" type="string">
+  Item release date as `YYYY-MM-DD`, inferred from direct item, collection, or crate metadata.
+</ResponseField>
+
 <ResponseField name="rarity_name" type="string">
   Rarity tier name.
 </ResponseField>
@@ -301,32 +299,31 @@ curl -sS \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
 
-response = requests.get(
-    f"{base}/items/metadata",
-    headers={"Authorization": f"Bearer {key}"},
-)
-response.raise_for_status()
-print(response.json())
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.ItemsApi(client)
+    response = api.get_item_catalog_metadata()
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
+```typescript TypeScript
+import { Configuration, ItemsApi } from "cs2cap";
 
-const response = await fetch(`${base}/items/metadata`, {
-  headers: { Authorization: `Bearer ${key}` },
-});
+const accessToken = process.env.CS2C_API_KEY;
 
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const api = new ItemsApi(new Configuration({ accessToken }));
+const response = await api.getItemCatalogMetadata();
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -384,33 +381,31 @@ curl -sS \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
 
-response = requests.get(
-    f"{base}/images",
-    headers={"Authorization": f"Bearer {key}"},
-)
-response.raise_for_status()
-print(response.json()["AK-47 | Redline"])
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.ImagesApi(client)
+    response = api.list_game_images()
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
+```typescript TypeScript
+import { Configuration, ImagesApi } from "cs2cap";
 
-const response = await fetch(`${base}/images`, {
-  headers: { Authorization: `Bearer ${key}` },
-});
+const accessToken = process.env.CS2C_API_KEY;
 
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-const images = await response.json();
-console.log(images['AK-47 | Redline']);
+const api = new ImagesApi(new Configuration({ accessToken }));
+const response = await api.listGameImages();
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -457,36 +452,33 @@ curl -sS \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
 
-response = requests.get(
-    f"{base}/providers",
-    headers={"Authorization": f"Bearer {key}"},
-    params={"provider": "buff163"},
-)
-response.raise_for_status()
-print(response.json())
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.ProvidersApi(client)
+    response = api.list_providers(
+        provider="buff163"
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
+```typescript TypeScript
+import { Configuration, ProvidersApi } from "cs2cap";
 
-const url = new URL(`${base}/providers`);
-url.searchParams.set('provider', 'buff163');
+const accessToken = process.env.CS2C_API_KEY;
 
-const response = await fetch(url, {
-  headers: { Authorization: `Bearer ${key}` },
-});
-
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const api = new ProvidersApi(new Configuration({ accessToken }));
+const response = await api.listProviders({ provider: "buff163" });
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -624,32 +616,31 @@ curl -sS \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
 
-response = requests.get(
-    f"{base}/fx",
-    headers={"Authorization": f"Bearer {key}"},
-)
-response.raise_for_status()
-print(response.json())
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.ForeignExchangeApi(client)
+    response = api.get_fx_rates()
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
+```typescript TypeScript
+import { Configuration, ForeignExchangeApi } from "cs2cap";
 
-const response = await fetch(`${base}/fx`, {
-  headers: { Authorization: `Bearer ${key}` },
-});
+const accessToken = process.env.CS2C_API_KEY;
 
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const api = new ForeignExchangeApi(new Configuration({ accessToken }));
+const response = await api.getFxRates();
+
+console.log(response);
 ```
 
 </CodeGroup>

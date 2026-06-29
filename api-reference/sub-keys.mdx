@@ -25,37 +25,34 @@ curl -sS \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
 
-response = requests.get(
-    f"{base}/account/sub-keys",
-    headers={"Authorization": f"Bearer {key}"},
-    params={"limit": 10, "offset": 0},
-)
-response.raise_for_status()
-print(response.json())
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.AccountAPIKeysApi(client)
+    response = api.list_sub_keys(
+        limit=10,
+        offset=0,
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
+```typescript TypeScript
+import { Configuration, AccountAPIKeysApi } from "cs2cap";
 
-const url = new URL(`${base}/account/sub-keys`);
-url.searchParams.set('limit', '10');
-url.searchParams.set('offset', '0');
+const accessToken = process.env.CS2C_API_KEY;
 
-const response = await fetch(url, {
-  headers: { Authorization: `Bearer ${key}` },
-});
-
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const api = new AccountAPIKeysApi(new Configuration({ accessToken }));
+const response = await api.listSubKeys({ limit: 10, offset: 0 });
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -131,44 +128,41 @@ curl -sS -X POST \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
 
-response = requests.post(
-    f"{base}/account/sub-keys",
-    headers={"Authorization": f"Bearer {key}"},
-    json={
-        "name": "analytics-worker",
-        "quota_requests_per_month_override": 100000,
-    }
-)
-response.raise_for_status()
-print(response.json())
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.AccountAPIKeysApi(client)
+    response = api.create_sub_key(
+        cs2cap.ChildAPIKeyCreateRequest(
+            name="analytics-worker",
+            quota_requests_per_month_override=100000,
+        )
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
+```typescript TypeScript
+import { Configuration, AccountAPIKeysApi } from "cs2cap";
 
-const response = await fetch(`${base}/account/sub-keys`, {
-  method: 'POST',
-  headers: {
-    Authorization: `Bearer ${key}`,
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
-    name: 'analytics-worker',
-    quota_requests_per_month_override: 100000,
-  }),
-});
+const accessToken = process.env.CS2C_API_KEY;
 
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const api = new AccountAPIKeysApi(new Configuration({ accessToken }));
+const response = await api.createSubKey({
+  childAPIKeyCreateRequest: {
+    name: "analytics-worker",
+    quotaRequestsPerMonthOverride: 100000,
+  },
+});
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -215,34 +209,37 @@ curl -sS \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
-key_id = "YOUR_KEY_ID"
+import cs2cap
 
-response = requests.get(
-    f"{base}/account/sub-keys/{key_id}",
-    headers={"Authorization": f"Bearer {key}"},
-)
-response.raise_for_status()
-print(response.json())
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+key_id = "YOUR_CHILD_KEY_ID"
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.AccountAPIKeysApi(client)
+    response = api.get_sub_key(
+        key_id
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
-const keyId = 'YOUR_KEY_ID';
+```typescript TypeScript
+import { Configuration, AccountAPIKeysApi } from "cs2cap";
 
-const response = await fetch(`${base}/account/sub-keys/${keyId}`, {
-  headers: { Authorization: `Bearer ${key}` },
-});
+const accessToken = process.env.CS2C_API_KEY;
 
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const keyId = "YOUR_CHILD_KEY_ID";
+
+const api = new AccountAPIKeysApi(new Configuration({ accessToken }));
+const response = await api.getSubKey({ keyId });
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -271,46 +268,47 @@ curl -sS -X PATCH \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
-key_id = "YOUR_KEY_ID"
+import cs2cap
 
-response = requests.patch(
-    f"{base}/account/sub-keys/{key_id}",
-    headers={"Authorization": f"Bearer {key}"},
-    json={
-        "name": "analytics-worker-v2",
-        "quota_requests_per_month_override": 200000,
-    }
-)
-response.raise_for_status()
-print(response.json())
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+key_id = "YOUR_CHILD_KEY_ID"
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.AccountAPIKeysApi(client)
+    response = api.update_sub_key(
+        key_id,
+        cs2cap.ChildAPIKeyUpdateRequest(
+            name="analytics-worker-v2",
+            rate_requests_per_minute_override=60,
+        ),
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
-const keyId = 'YOUR_KEY_ID';
+```typescript TypeScript
+import { Configuration, AccountAPIKeysApi } from "cs2cap";
 
-const response = await fetch(`${base}/account/sub-keys/${keyId}`, {
-  method: 'PATCH',
-  headers: {
-    Authorization: `Bearer ${key}`,
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
-    name: 'analytics-worker-v2',
-    quota_requests_per_month_override: 200000,
-  }),
-});
+const accessToken = process.env.CS2C_API_KEY;
 
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const keyId = "YOUR_CHILD_KEY_ID";
+
+const api = new AccountAPIKeysApi(new Configuration({ accessToken }));
+const response = await api.updateSubKey({
+  keyId,
+  childAPIKeyUpdateRequest: {
+    name: "analytics-worker-v2",
+    rateRequestsPerMinuteOverride: 60,
+  },
+});
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -361,35 +359,37 @@ curl -sS -X DELETE \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
-key_id = "YOUR_KEY_ID"
+import cs2cap
 
-response = requests.delete(
-    f"{base}/account/sub-keys/{key_id}",
-    headers={"Authorization": f"Bearer {key}"},
-)
-response.raise_for_status()
-print(response.json())
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+key_id = "YOUR_CHILD_KEY_ID"
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.AccountAPIKeysApi(client)
+    response = api.delete_sub_key(
+        key_id
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
-const keyId = 'YOUR_KEY_ID';
+```typescript TypeScript
+import { Configuration, AccountAPIKeysApi } from "cs2cap";
 
-const response = await fetch(`${base}/account/sub-keys/${keyId}`, {
-  method: 'DELETE',
-  headers: { Authorization: `Bearer ${key}` },
-});
+const accessToken = process.env.CS2C_API_KEY;
 
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const keyId = "YOUR_CHILD_KEY_ID";
+
+const api = new AccountAPIKeysApi(new Configuration({ accessToken }));
+const response = await api.deleteSubKey({ keyId });
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -436,35 +436,37 @@ curl -sS -X POST \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
-key_id = "YOUR_KEY_ID"
+import cs2cap
 
-response = requests.post(
-    f"{base}/account/sub-keys/{key_id}/reissue",
-    headers={"Authorization": f"Bearer {key}"},
-)
-response.raise_for_status()
-print(response.json())
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+key_id = "YOUR_CHILD_KEY_ID"
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.AccountAPIKeysApi(client)
+    response = api.reissue_sub_key(
+        key_id
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
-const keyId = 'YOUR_KEY_ID';
+```typescript TypeScript
+import { Configuration, AccountAPIKeysApi } from "cs2cap";
 
-const response = await fetch(`${base}/account/sub-keys/${keyId}/reissue`, {
-  method: 'POST',
-  headers: { Authorization: `Bearer ${key}` },
-});
+const accessToken = process.env.CS2C_API_KEY;
 
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const keyId = "YOUR_CHILD_KEY_ID";
+
+const api = new AccountAPIKeysApi(new Configuration({ accessToken }));
+const response = await api.reissueSubKey({ keyId });
+
+console.log(response);
 ```
 
 </CodeGroup>

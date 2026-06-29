@@ -21,44 +21,41 @@ curl -sS \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
 
-response = requests.get(
-    f"{base}/market/arbitrage",
-    headers={"Authorization": f"Bearer {key}"},
-    params={
-        "min_spread_pct": 5,
-        "providers_buy": "buff163",
-        "providers_sell": "csfloat",
-        "limit": 25,
-    }
-)
-response.raise_for_status()
-print(response.json())
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.MarketIntelligenceApi(client)
+    response = api.get_arbitrage_opportunities(
+        limit=25,
+        min_spread_pct=5,
+        providers_buy=["avanmarket", "buff163", "buffmarket", "c5", "csfloat", "csdeals", "csgo500", "csgoempire", "csmoney_m"],
+        providers_sell=["buff163", "buffmarket", "c5", "csfloat"],
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
+```typescript TypeScript
+import { Configuration, MarketIntelligenceApi } from "cs2cap";
 
-const url = new URL(`${base}/market/arbitrage`);
-url.searchParams.set('min_spread_pct', '5');
-url.searchParams.set('providers_buy', 'buff163');
-url.searchParams.set('providers_sell', 'csfloat');
-url.searchParams.set('limit', '25');
+const accessToken = process.env.CS2C_API_KEY;
 
-const response = await fetch(url, {
-  headers: { Authorization: `Bearer ${key}` },
-});
-
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const api = new MarketIntelligenceApi(new Configuration({ accessToken }));
+const response = await api.getArbitrageOpportunities({
+  limit: 25,
+  minSpreadPct: 5,
+  providersBuy: ["buff163"],
+  providersSell: ["csfloat"],
+});
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -190,36 +187,33 @@ curl -sS \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
 
-response = requests.get(
-    f"{base}/market/indexes",
-    headers={"Authorization": f"Bearer {key}"},
-    params={"group_by": "weapon_type"},
-)
-response.raise_for_status()
-print(response.json())
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.MarketIntelligenceApi(client)
+    response = api.get_market_cap_indexes(
+        group_by="weapon_type"
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
+```typescript TypeScript
+import { Configuration, MarketIntelligenceApi } from "cs2cap";
 
-const url = new URL(`${base}/market/indexes`);
-url.searchParams.set('group_by', 'weapon_type');
+const accessToken = process.env.CS2C_API_KEY;
 
-const response = await fetch(url, {
-  headers: { Authorization: `Bearer ${key}` },
-});
-
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const api = new MarketIntelligenceApi(new Configuration({ accessToken }));
+const response = await api.getMarketCapIndexes({ groupBy: "weapon_type" });
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -304,42 +298,35 @@ curl -sS \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
 
-response = requests.get(
-    f"{base}/market/indicators",
-    headers={"Authorization": f"Bearer {key}"},
-    params={
-        "item_id": 4994,
-        "interval": "1d",
-        "currency": "USD",
-    }
-)
-response.raise_for_status()
-print(response.json())
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.MarketIntelligenceApi(client)
+    response = api.get_indicators(
+        item_id=4994,
+        interval="1d",
+        currency="USD",
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
+```typescript TypeScript
+import { Configuration, MarketIntelligenceApi } from "cs2cap";
 
-const url = new URL(`${base}/market/indicators`);
-url.searchParams.set('item_id', '4994');
-url.searchParams.set('interval', '1d');
-url.searchParams.set('currency', 'USD');
+const accessToken = process.env.CS2C_API_KEY;
 
-const response = await fetch(url, {
-  headers: { Authorization: `Bearer ${key}` },
-});
-
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const api = new MarketIntelligenceApi(new Configuration({ accessToken }));
+const response = await api.getIndicators({ itemId: 4994, interval: "1d", currency: "USD" });
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -502,32 +489,31 @@ curl -sS \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
 
-response = requests.get(
-    f"{base}/market/items",
-    headers={"Authorization": f"Bearer {key}"},
-)
-response.raise_for_status()
-print(response.json())
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.MarketIntelligenceApi(client)
+    response = api.get_market_analytics_snapshot()
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
+```typescript TypeScript
+import { Configuration, MarketIntelligenceApi } from "cs2cap";
 
-const response = await fetch(`${base}/market/items`, {
-  headers: { Authorization: `Bearer ${key}` },
-});
+const accessToken = process.env.CS2C_API_KEY;
 
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const api = new MarketIntelligenceApi(new Configuration({ accessToken }));
+const response = await api.getMarketAnalyticsSnapshot();
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -651,36 +637,33 @@ curl -sS \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
 
-item_id = 4994
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
 
-response = requests.get(
-    f"{base}/market/items/{item_id}",
-    headers={"Authorization": f"Bearer {key}"},
-)
-response.raise_for_status()
-print(response.json())
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.MarketIntelligenceApi(client)
+    response = api.get_item_analytics(
+        4994
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
+```typescript TypeScript
+import { Configuration, MarketIntelligenceApi } from "cs2cap";
 
-const itemId = 4994;
+const accessToken = process.env.CS2C_API_KEY;
 
-const response = await fetch(`${base}/market/items/${itemId}`, {
-  headers: { Authorization: `Bearer ${key}` },
-});
-
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const api = new MarketIntelligenceApi(new Configuration({ accessToken }));
+const response = await api.getItemAnalytics({ itemId: 4994 });
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -842,44 +825,41 @@ curl -sS \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
 
-response = requests.get(
-    f"{base}/market/history/chart",
-    headers={"Authorization": f"Bearer {key}"},
-    params={
-        "item_id": 16194,
-        "providers": ["buff163", "steam"],
-        "start": "2000-01-01",
-        "currency": "USD",
-    }
-)
-response.raise_for_status()
-print(response.json())
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.MarketIntelligenceApi(client)
+    response = api.get_deep_price_history_chart(
+        item_id=4994,
+        providers=["buff163", "csfloat"],
+        lookback=30,
+        currency="USD",
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
+```typescript TypeScript
+import { Configuration, MarketIntelligenceApi } from "cs2cap";
 
-const url = new URL(`${base}/market/history/chart`);
-url.searchParams.set('item_id', '16194');
-url.searchParams.append('providers', 'buff163');
-url.searchParams.append('providers', 'steam');
-url.searchParams.set('currency', 'USD');
+const accessToken = process.env.CS2C_API_KEY;
 
-const response = await fetch(url, {
-  headers: { Authorization: `Bearer ${key}` },
-});
-
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const api = new MarketIntelligenceApi(new Configuration({ accessToken }));
+const response = await api.getDeepPriceHistoryChart({
+  itemId: 4994,
+  providers: ["buff163", "csfloat"],
+  lookback: 30,
+  currency: "USD",
+});
+
+console.log(response);
 ```
 
 </CodeGroup>

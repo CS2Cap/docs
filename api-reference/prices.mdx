@@ -23,45 +23,41 @@ curl -sS \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
 
-response = requests.get(
-    f"{base}/prices",
-    headers={"Authorization": f"Bearer {key}"},
-    params={
-        "item_id": 4994,
-        "providers": ["buff163", "csfloat"],
-        "currency": "USD",
-        "limit": 10,
-    }
-)
-response.raise_for_status()
-print(response.json())
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.PricesApi(client)
+    response = api.list_prices(
+        item_id=4994,
+        providers=["buff163", "csfloat"],
+        currency="USD",
+        limit=10,
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
+```typescript TypeScript
+import { Configuration, PricesApi } from "cs2cap";
 
-const url = new URL(`${base}/prices`);
-url.searchParams.set('item_id', '4994');
-url.searchParams.append('providers', 'buff163');
-url.searchParams.append('providers', 'csfloat');
-url.searchParams.set('currency', 'USD');
-url.searchParams.set('limit', '10');
+const accessToken = process.env.CS2C_API_KEY;
 
-const response = await fetch(url, {
-  headers: { Authorization: `Bearer ${key}` },
-});
-
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const api = new PricesApi(new Configuration({ accessToken }));
+const response = await api.listPrices({
+  itemId: 4994,
+  providers: ["buff163", "csfloat"],
+  currency: "USD",
+  limit: 10,
+});
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -212,50 +208,33 @@ curl -sS -X POST \
 
 ```python Python
 import os
-import json
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
 
-with requests.post(
-    f"{base}/prices",
-    headers={"Authorization": f"Bearer {key}"},
-    params={"providers": "buff163"},
-    stream=True
-) as response:
-    response.raise_for_status()
-    for line in response.iter_lines():
-        if line:
-            print(json.loads(line))
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.PricesApi(client)
+    response = api.stream_full_prices_snapshot(
+        providers=["buff163"]
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
+```typescript TypeScript
+import { Configuration, PricesApi } from "cs2cap";
 
-const url = new URL(`${base}/prices`);
-url.searchParams.set('providers', 'buff163');
+const accessToken = process.env.CS2C_API_KEY;
 
-const response = await fetch(url, {
-  method: 'POST',
-  headers: { Authorization: `Bearer ${key}` },
-});
-
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-const reader = response.body.getReader();
-const decoder = new TextDecoder();
+const api = new PricesApi(new Configuration({ accessToken }));
+const response = await api.streamFullPricesSnapshot({ providers: ["buff163"] });
 
-while (true) {
-  const { done, value } = await reader.read();
-  if (done) break;
-  for (const line of decoder.decode(value).split('\n').filter(Boolean)) {
-    console.log(JSON.parse(line));
-  }
-}
+console.log(response);
 ```
 
 </CodeGroup>
@@ -310,46 +289,43 @@ curl -sS -X POST \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
 
-response = requests.post(
-    f"{base}/prices/batch",
-    headers={"Authorization": f"Bearer {key}"},
-    json={
-        "item_ids": [4994, 2],
-        "providers": ["buff163", "csfloat"],
-        "currency": "USD",
-    }
-)
-response.raise_for_status()
-print(response.json())
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.PricesApi(client)
+    response = api.batch_price_lookup(
+        cs2cap.BatchPricesRequest(
+            item_ids=[4994, 12632],
+            providers=["buff163", "csfloat"],
+            currency="USD",
+        )
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
+```typescript TypeScript
+import { Configuration, PricesApi } from "cs2cap";
 
-const response = await fetch(`${base}/prices/batch`, {
-  method: 'POST',
-  headers: {
-    Authorization: `Bearer ${key}`,
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
-    item_ids: [4994, 2],
-    providers: ['buff163', 'csfloat'],
-    currency: 'USD',
-  }),
-});
+const accessToken = process.env.CS2C_API_KEY;
 
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const api = new PricesApi(new Configuration({ accessToken }));
+const response = await api.batchPriceLookup({
+  batchPricesRequest: {
+    itemIds: [4994, 12632],
+    providers: ["buff163", "csfloat"],
+    currency: "USD",
+  },
+});
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -478,44 +454,43 @@ curl -sS \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
 
-response = requests.get(
-    f"{base}/prices/candles",
-    headers={"Authorization": f"Bearer {key}"},
-    params={
-        "item_id": 4994,
-        "interval": "1d",
-        "lookback": "30d",
-        "currency": "USD",
-    }
-)
-response.raise_for_status()
-print(response.json())
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.PricesApi(client)
+    response = api.price_candles(
+        item_id=4994,
+        interval="1d",
+        lookback="30d",
+        fill=True,
+        currency="USD",
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
+```typescript TypeScript
+import { Configuration, PricesApi } from "cs2cap";
 
-const url = new URL(`${base}/prices/candles`);
-url.searchParams.set('item_id', '4994');
-url.searchParams.set('interval', '1d');
-url.searchParams.set('lookback', '30d');
-url.searchParams.set('currency', 'USD');
+const accessToken = process.env.CS2C_API_KEY;
 
-const response = await fetch(url, {
-  headers: { Authorization: `Bearer ${key}` },
-});
-
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const api = new PricesApi(new Configuration({ accessToken }));
+const response = await api.priceCandles({
+  itemId: 4994,
+  interval: "1d",
+  lookback: "30d",
+  fill: true,
+  currency: "USD",
+});
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -658,44 +633,41 @@ curl -sS \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
 
-response = requests.get(
-    f"{base}/prices/history",
-    headers={"Authorization": f"Bearer {key}"},
-    params={
-        "item_id": 4994,
-        "provider": "buff163",
-        "currency": "USD",
-        "limit": 50,
-    }
-)
-response.raise_for_status()
-print(response.json())
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.PricesApi(client)
+    response = api.price_history(
+        item_id=4994,
+        provider=cs2cap.AllProviders.BUFF163,
+        currency="USD",
+        limit=50,
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
+```typescript TypeScript
+import { Configuration, PricesApi } from "cs2cap";
 
-const url = new URL(`${base}/prices/history`);
-url.searchParams.set('item_id', '4994');
-url.searchParams.set('provider', 'buff163');
-url.searchParams.set('currency', 'USD');
-url.searchParams.set('limit', '50');
+const accessToken = process.env.CS2C_API_KEY;
 
-const response = await fetch(url, {
-  headers: { Authorization: `Bearer ${key}` },
-});
-
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const api = new PricesApi(new Configuration({ accessToken }));
+const response = await api.priceHistory({
+  itemId: 4994,
+  provider: "buff163",
+  currency: "USD",
+  limit: 50,
+});
+
+console.log(response);
 ```
 
 </CodeGroup>

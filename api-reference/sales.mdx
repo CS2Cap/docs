@@ -23,44 +23,36 @@ curl -sS \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
 
-response = requests.get(
-    f"{base}/sales",
-    headers={"Authorization": f"Bearer {key}"},
-    params={
-        "item_id": 4994,
-        "providers": "csfloat",
-        "currency": "USD",
-        "limit": 20,
-    }
-)
-response.raise_for_status()
-print(response.json())
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.SalesApi(client)
+    response = api.list_recent_sales(
+        item_id=4994,
+        providers=["csfloat"],
+        currency="USD",
+        limit=20,
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
+```typescript TypeScript
+import { Configuration, SalesApi } from "cs2cap";
 
-const url = new URL(`${base}/sales`);
-url.searchParams.set('item_id', '4994');
-url.searchParams.set('providers', 'csfloat');
-url.searchParams.set('currency', 'USD');
-url.searchParams.set('limit', '20');
+const accessToken = process.env.CS2C_API_KEY;
 
-const response = await fetch(url, {
-  headers: { Authorization: `Bearer ${key}` },
-});
-
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const api = new SalesApi(new Configuration({ accessToken }));
+const response = await api.listRecentSales({ itemId: 4994, providers: ["csfloat"], currency: "USD", limit: 20 });
+
+console.log(response);
 ```
 
 </CodeGroup>

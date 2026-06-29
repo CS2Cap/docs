@@ -25,38 +25,33 @@ curl -sS -X POST \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
 
-response = requests.post(
-    f"{base}/portfolio",
-    headers={"Authorization": f"Bearer {key}"},
-    json={"name": "Main Portfolio"},
-)
-response.raise_for_status()
-print(response.json())
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.PortfolioApi(client)
+    response = api.create_portfolio(
+        cs2cap.PortfolioCreate(name="Main Portfolio")
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
+```typescript TypeScript
+import { Configuration, PortfolioApi } from "cs2cap";
 
-const response = await fetch(`${base}/portfolio`, {
-  method: 'POST',
-  headers: {
-    Authorization: `Bearer ${key}`,
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({ name: 'Main Portfolio' }),
-});
+const accessToken = process.env.CS2C_API_KEY;
 
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const api = new PortfolioApi(new Configuration({ accessToken }));
+const response = await api.createPortfolio({ portfolioCreate: { name: "Main Portfolio" } });
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -89,32 +84,31 @@ curl -sS \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
 
-response = requests.get(
-    f"{base}/portfolio",
-    headers={"Authorization": f"Bearer {key}"},
-)
-response.raise_for_status()
-print(response.json())
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.PortfolioApi(client)
+    response = api.list_portfolios()
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
+```typescript TypeScript
+import { Configuration, PortfolioApi } from "cs2cap";
 
-const response = await fetch(`${base}/portfolio`, {
-  headers: { Authorization: `Bearer ${key}` },
-});
+const accessToken = process.env.CS2C_API_KEY;
 
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const api = new PortfolioApi(new Configuration({ accessToken }));
+const response = await api.listPortfolios();
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -137,35 +131,37 @@ curl -sS -X DELETE \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
 portfolio_id = "YOUR_PORTFOLIO_ID"
 
-response = requests.delete(
-    f"{base}/portfolio/{portfolio_id}",
-    headers={"Authorization": f"Bearer {key}"},
-)
-response.raise_for_status()
-print(response.json())
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.PortfolioApi(client)
+    response = api.delete_portfolio(
+        portfolio_id
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
-const portfolioId = 'YOUR_PORTFOLIO_ID';
+```typescript TypeScript
+import { Configuration, PortfolioApi } from "cs2cap";
 
-const response = await fetch(`${base}/portfolio/${portfolioId}`, {
-  method: 'DELETE',
-  headers: { Authorization: `Bearer ${key}` },
-});
+const accessToken = process.env.CS2C_API_KEY;
 
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const portfolioId = "YOUR_PORTFOLIO_ID";
+
+const api = new PortfolioApi(new Configuration({ accessToken }));
+const response = await api.deletePortfolio({ portfolioId });
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -196,50 +192,47 @@ curl -sS -X POST \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
 
-response = requests.post(
-    f"{base}/portfolio/value",
-    headers={"Authorization": f"Bearer {key}"},
-    json={
-        "items": [
-            {"item_id": 4994, "quantity": 2},
-            {"item_id": 12632, "quantity": 5},
-        ],
-        "currency": "USD",
-    }
-)
-response.raise_for_status()
-print(response.json())
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.PortfolioApi(client)
+    response = api.portfolio_valuation(
+        cs2cap.PortfolioRequest(
+            items=[
+                cs2cap.PortfolioRequestItem(item_id=4994, quantity=2),
+                cs2cap.PortfolioRequestItem(item_id=12632, quantity=5),
+            ],
+            currency="USD",
+        )
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
+```typescript TypeScript
+import { Configuration, PortfolioApi } from "cs2cap";
 
-const response = await fetch(`${base}/portfolio/value`, {
-  method: 'POST',
-  headers: {
-    Authorization: `Bearer ${key}`,
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
-    items: [
-      { item_id: 4994, quantity: 2 },
-      { item_id: 12632, quantity: 5 },
-    ],
-    currency: 'USD',
-  }),
-});
+const accessToken = process.env.CS2C_API_KEY;
 
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const api = new PortfolioApi(new Configuration({ accessToken }));
+const response = await api.portfolioValuation({
+  portfolioRequest: {
+    items: [
+      { itemId: 4994, quantity: 2 },
+      { itemId: 12632, quantity: 5 },
+    ],
+    currency: "USD",
+  },
+});
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -335,39 +328,38 @@ curl -sS \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
 portfolio_id = "YOUR_PORTFOLIO_ID"
 
-response = requests.get(
-    f"{base}/portfolio/{portfolio_id}/value",
-    headers={"Authorization": f"Bearer {key}"},
-    params={"currency": "USD", "providers": "buff163"},
-)
-response.raise_for_status()
-print(response.json())
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.PortfolioApi(client)
+    response = api.value_saved_portfolio(
+        portfolio_id,
+        currency="USD",
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
-const portfolioId = 'YOUR_PORTFOLIO_ID';
+```typescript TypeScript
+import { Configuration, PortfolioApi } from "cs2cap";
 
-const url = new URL(`${base}/portfolio/${portfolioId}/value`);
-url.searchParams.set('currency', 'USD');
-url.searchParams.set('providers', 'buff163');
+const accessToken = process.env.CS2C_API_KEY;
 
-const response = await fetch(url, {
-  headers: { Authorization: `Bearer ${key}` },
-});
-
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const portfolioId = "YOUR_PORTFOLIO_ID";
+
+const api = new PortfolioApi(new Configuration({ accessToken }));
+const response = await api.valueSavedPortfolio({ portfolioId, currency: "USD" });
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -410,40 +402,38 @@ curl -sS -X POST \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
 portfolio_id = "YOUR_PORTFOLIO_ID"
 
-response = requests.post(
-    f"{base}/portfolio/{portfolio_id}/import",
-    headers={"Authorization": f"Bearer {key}"},
-    json={}
-)
-response.raise_for_status()
-print(response.json())
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.PortfolioApi(client)
+    response = api.import_steam_inventory(
+        portfolio_id,
+        cs2cap.PortfolioImportRequest(),
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
-const portfolioId = 'YOUR_PORTFOLIO_ID';
+```typescript TypeScript
+import { Configuration, PortfolioApi } from "cs2cap";
 
-const response = await fetch(`${base}/portfolio/${portfolioId}/import`, {
-  method: 'POST',
-  headers: {
-    Authorization: `Bearer ${key}`,
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({}),
-});
+const accessToken = process.env.CS2C_API_KEY;
 
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const portfolioId = "YOUR_PORTFOLIO_ID";
+
+const api = new PortfolioApi(new Configuration({ accessToken }));
+const response = await api.importSteamInventory({ portfolioId, portfolioImportRequest: {} });
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -479,45 +469,6 @@ curl -sS -X POST \
   "$CS2C_API_BASE/portfolio/YOUR_PORTFOLIO_ID/import/csv"
 ```
 
-```python Python
-import os
-import requests
-
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
-portfolio_id = "YOUR_PORTFOLIO_ID"
-
-with open("transactions.csv", "rb") as f:
-    response = requests.post(
-        f"{base}/portfolio/{portfolio_id}/import/csv",
-        headers={"Authorization": f"Bearer {key}"},
-        files={"file": f}
-    )
-response.raise_for_status()
-print(response.json())
-```
-
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
-const portfolioId = 'YOUR_PORTFOLIO_ID';
-
-const formData = new FormData();
-formData.append('file', new Blob([csvContent], { type: 'text/csv' }), 'transactions.csv');
-
-const response = await fetch(`${base}/portfolio/${portfolioId}/import/csv`, {
-  method: 'POST',
-  headers: { Authorization: `Bearer ${key}` },
-  body: formData,
-});
-
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
-}
-
-console.log(await response.json());
-```
-
 </CodeGroup>
 
 <ParamField path="portfolio_id" type="string" required>
@@ -543,44 +494,6 @@ curl -sS \
   -H "Authorization: Bearer $CS2C_API_KEY" \
   -o portfolio.csv \
   "$CS2C_API_BASE/portfolio/YOUR_PORTFOLIO_ID/export?type=transactions"
-```
-
-```python Python
-import os
-import requests
-
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
-portfolio_id = "YOUR_PORTFOLIO_ID"
-
-response = requests.get(
-    f"{base}/portfolio/{portfolio_id}/export",
-    headers={"Authorization": f"Bearer {key}"},
-    params={"type": "transactions"},
-)
-response.raise_for_status()
-with open("portfolio.csv", "wb") as f:
-    f.write(response.content)
-```
-
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
-const portfolioId = 'YOUR_PORTFOLIO_ID';
-
-const url = new URL(`${base}/portfolio/${portfolioId}/export`);
-url.searchParams.set('type', 'transactions');
-
-const response = await fetch(url, {
-  headers: { Authorization: `Bearer ${key}` },
-});
-
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
-}
-
-const csv = await response.text();
-console.log(csv);
 ```
 
 </CodeGroup>
@@ -613,34 +526,37 @@ curl -sS \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
 portfolio_id = "YOUR_PORTFOLIO_ID"
 
-response = requests.get(
-    f"{base}/portfolio/{portfolio_id}/items",
-    headers={"Authorization": f"Bearer {key}"},
-)
-response.raise_for_status()
-print(response.json())
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.PortfolioApi(client)
+    response = api.list_portfolio_items(
+        portfolio_id
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
-const portfolioId = 'YOUR_PORTFOLIO_ID';
+```typescript TypeScript
+import { Configuration, PortfolioApi } from "cs2cap";
 
-const response = await fetch(`${base}/portfolio/${portfolioId}/items`, {
-  headers: { Authorization: `Bearer ${key}` },
-});
+const accessToken = process.env.CS2C_API_KEY;
 
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const portfolioId = "YOUR_PORTFOLIO_ID";
+
+const api = new PortfolioApi(new Configuration({ accessToken }));
+const response = await api.listPortfolioItems({ portfolioId });
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -669,40 +585,38 @@ curl -sS -X POST \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
 portfolio_id = "YOUR_PORTFOLIO_ID"
 
-response = requests.post(
-    f"{base}/portfolio/{portfolio_id}/items",
-    headers={"Authorization": f"Bearer {key}"},
-    json={"item_id": 4994, "quantity": 2},
-)
-response.raise_for_status()
-print(response.json())
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.PortfolioApi(client)
+    response = api.add_item_to_portfolio(
+        portfolio_id,
+        cs2cap.PortfolioAddItemRequest(item_id=4994, quantity=2),
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
-const portfolioId = 'YOUR_PORTFOLIO_ID';
+```typescript TypeScript
+import { Configuration, PortfolioApi } from "cs2cap";
 
-const response = await fetch(`${base}/portfolio/${portfolioId}/items`, {
-  method: 'POST',
-  headers: {
-    Authorization: `Bearer ${key}`,
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({ item_id: 4994, quantity: 2 }),
-});
+const accessToken = process.env.CS2C_API_KEY;
 
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const portfolioId = "YOUR_PORTFOLIO_ID";
+
+const api = new PortfolioApi(new Configuration({ accessToken }));
+const response = await api.addItemToPortfolio({ portfolioId, portfolioAddItemRequest: { itemId: 4994, quantity: 2 } });
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -749,37 +663,40 @@ curl -sS -X DELETE \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
 portfolio_id = "YOUR_PORTFOLIO_ID"
 entry_id = "YOUR_ENTRY_ID"
 
-response = requests.delete(
-    f"{base}/portfolio/{portfolio_id}/items/{entry_id}",
-    headers={"Authorization": f"Bearer {key}"},
-)
-response.raise_for_status()
-print(response.json())
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.PortfolioApi(client)
+    response = api.remove_item_from_portfolio(
+        portfolio_id,
+        entry_id,
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
-const portfolioId = 'YOUR_PORTFOLIO_ID';
-const entryId = 'YOUR_ENTRY_ID';
+```typescript TypeScript
+import { Configuration, PortfolioApi } from "cs2cap";
 
-const response = await fetch(`${base}/portfolio/${portfolioId}/items/${entryId}`, {
-  method: 'DELETE',
-  headers: { Authorization: `Bearer ${key}` },
-});
+const accessToken = process.env.CS2C_API_KEY;
 
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const portfolioId = "YOUR_PORTFOLIO_ID";
+const entryId = "YOUR_ENTRY_ID";
+
+const api = new PortfolioApi(new Configuration({ accessToken }));
+const response = await api.removeItemFromPortfolio({ portfolioId, entryId });
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -816,34 +733,37 @@ curl -sS \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
 portfolio_id = "YOUR_PORTFOLIO_ID"
 
-response = requests.get(
-    f"{base}/portfolio/{portfolio_id}/transactions",
-    headers={"Authorization": f"Bearer {key}"},
-)
-response.raise_for_status()
-print(response.json())
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.PortfolioApi(client)
+    response = api.list_transactions(
+        portfolio_id
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
-const portfolioId = 'YOUR_PORTFOLIO_ID';
+```typescript TypeScript
+import { Configuration, PortfolioApi } from "cs2cap";
 
-const response = await fetch(`${base}/portfolio/${portfolioId}/transactions`, {
-  headers: { Authorization: `Bearer ${key}` },
-});
+const accessToken = process.env.CS2C_API_KEY;
 
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const portfolioId = "YOUR_PORTFOLIO_ID";
+
+const api = new PortfolioApi(new Configuration({ accessToken }));
+const response = await api.listTransactions({ portfolioId });
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -872,54 +792,55 @@ curl -sS -X POST \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
 portfolio_id = "YOUR_PORTFOLIO_ID"
 
-response = requests.post(
-    f"{base}/portfolio/{portfolio_id}/transactions",
-    headers={"Authorization": f"Bearer {key}"},
-    json={
-        "item_id": 4994,
-        "type": "buy",
-        "quantity": 1,
-        "price": 53000,
-        "date": "2026-03-15",
-        "currency": "USD",
-    }
-)
-response.raise_for_status()
-print(response.json())
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.PortfolioApi(client)
+    response = api.add_transaction(
+        portfolio_id,
+        cs2cap.TransactionCreateRequest(
+            item_id=4994,
+            type="buy",
+            quantity=1,
+            price=50000,
+            currency="USD",
+            transacted_at="2026-03-20T12:00:00Z",
+        ),
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
-const portfolioId = 'YOUR_PORTFOLIO_ID';
+```typescript TypeScript
+import { Configuration, PortfolioApi } from "cs2cap";
 
-const response = await fetch(`${base}/portfolio/${portfolioId}/transactions`, {
-  method: 'POST',
-  headers: {
-    Authorization: `Bearer ${key}`,
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
-    item_id: 4994,
-    type: 'buy',
-    quantity: 1,
-    price: 53000,
-    date: '2026-03-15',
-    currency: 'USD',
-  }),
-});
+const accessToken = process.env.CS2C_API_KEY;
 
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const portfolioId = "YOUR_PORTFOLIO_ID";
+
+const api = new PortfolioApi(new Configuration({ accessToken }));
+const response = await api.addTransaction({
+  portfolioId,
+  transactionCreateRequest: {
+    itemId: 4994,
+    type: "buy",
+    quantity: 1,
+    price: 50000,
+    currency: "USD",
+    transactedAt: new Date("2026-03-20T12:00:00Z"),
+  },
+});
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -992,42 +913,45 @@ curl -sS -X PATCH \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
 portfolio_id = "YOUR_PORTFOLIO_ID"
-tx_id = "YOUR_TX_ID"
+transaction_id = "YOUR_TRANSACTION_ID"
 
-response = requests.patch(
-    f"{base}/portfolio/{portfolio_id}/transactions/{tx_id}",
-    headers={"Authorization": f"Bearer {key}"},
-    json={"quantity": 2, "price": 52500},
-)
-response.raise_for_status()
-print(response.json())
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.PortfolioApi(client)
+    response = api.update_transaction(
+        portfolio_id,
+        transaction_id,
+        cs2cap.TransactionUpdateRequest(price=47500, currency="USD"),
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
-const portfolioId = 'YOUR_PORTFOLIO_ID';
-const txId = 'YOUR_TX_ID';
+```typescript TypeScript
+import { Configuration, PortfolioApi } from "cs2cap";
 
-const response = await fetch(`${base}/portfolio/${portfolioId}/transactions/${txId}`, {
-  method: 'PATCH',
-  headers: {
-    Authorization: `Bearer ${key}`,
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({ quantity: 2, price: 52500 }),
-});
+const accessToken = process.env.CS2C_API_KEY;
 
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const portfolioId = "YOUR_PORTFOLIO_ID";
+const transactionId = "YOUR_TRANSACTION_ID";
+
+const api = new PortfolioApi(new Configuration({ accessToken }));
+const response = await api.updateTransaction({
+  portfolioId,
+  transactionId,
+  transactionUpdateRequest: { price: 47500, currency: "USD" },
+});
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -1090,37 +1014,40 @@ curl -sS -X DELETE \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
 portfolio_id = "YOUR_PORTFOLIO_ID"
-tx_id = "YOUR_TX_ID"
+transaction_id = "YOUR_TRANSACTION_ID"
 
-response = requests.delete(
-    f"{base}/portfolio/{portfolio_id}/transactions/{tx_id}",
-    headers={"Authorization": f"Bearer {key}"},
-)
-response.raise_for_status()
-print(response.json())
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.PortfolioApi(client)
+    response = api.delete_transaction(
+        portfolio_id,
+        transaction_id,
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
-const portfolioId = 'YOUR_PORTFOLIO_ID';
-const txId = 'YOUR_TX_ID';
+```typescript TypeScript
+import { Configuration, PortfolioApi } from "cs2cap";
 
-const response = await fetch(`${base}/portfolio/${portfolioId}/transactions/${txId}`, {
-  method: 'DELETE',
-  headers: { Authorization: `Bearer ${key}` },
-});
+const accessToken = process.env.CS2C_API_KEY;
 
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const portfolioId = "YOUR_PORTFOLIO_ID";
+const transactionId = "YOUR_TRANSACTION_ID";
+
+const api = new PortfolioApi(new Configuration({ accessToken }));
+const response = await api.deleteTransaction({ portfolioId, transactionId });
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -1153,39 +1080,39 @@ curl -sS \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
 portfolio_id = "YOUR_PORTFOLIO_ID"
 
-response = requests.get(
-    f"{base}/portfolio/{portfolio_id}/history",
-    headers={"Authorization": f"Bearer {key}"},
-    params={"lookback": "30d", "currency": "USD"},
-)
-response.raise_for_status()
-print(response.json())
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.PortfolioApi(client)
+    response = api.historical_saved_portfolio_valuation(
+        portfolio_id,
+        lookback="30d",
+        currency="USD",
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
-const portfolioId = 'YOUR_PORTFOLIO_ID';
+```typescript TypeScript
+import { Configuration, PortfolioApi } from "cs2cap";
 
-const url = new URL(`${base}/portfolio/${portfolioId}/history`);
-url.searchParams.set('lookback', '30d');
-url.searchParams.set('currency', 'USD');
+const accessToken = process.env.CS2C_API_KEY;
 
-const response = await fetch(url, {
-  headers: { Authorization: `Bearer ${key}` },
-});
-
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const portfolioId = "YOUR_PORTFOLIO_ID";
+
+const api = new PortfolioApi(new Configuration({ accessToken }));
+const response = await api.historicalSavedPortfolioValuation({ portfolioId, lookback: "30d", currency: "USD" });
+
+console.log(response);
 ```
 
 </CodeGroup>

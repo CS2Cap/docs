@@ -23,48 +23,45 @@ curl -sS -X POST \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
 
-response = requests.post(
-    f"{base}/account/alerts",
-    headers={"Authorization": f"Bearer {key}"},
-    json={
-        "item_id": 4994,
-        "kind": "price_below",
-        "threshold_value": "500.00",
-        "threshold_currency": "USD",
-    }
-)
-response.raise_for_status()
-print(response.json())
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.AccountAlertsApi(client)
+    response = api.create_alert(
+        cs2cap.AlertCreateRequest(
+            item_id=4994,
+            kind="price_below",
+            threshold_value="500.00",
+            threshold_currency="USD",
+        )
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
+```typescript TypeScript
+import { Configuration, AccountAlertsApi } from "cs2cap";
 
-const response = await fetch(`${base}/account/alerts`, {
-  method: 'POST',
-  headers: {
-    Authorization: `Bearer ${key}`,
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
-    item_id: 4994,
-    kind: 'price_below',
-    threshold_value: '500.00',
-    threshold_currency: 'USD',
-  }),
-});
+const accessToken = process.env.CS2C_API_KEY;
 
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const api = new AccountAlertsApi(new Configuration({ accessToken }));
+const response = await api.createAlert({
+  alertCreateRequest: {
+    itemId: 4994,
+    kind: "price_below",
+    thresholdValue: "500.00",
+    thresholdCurrency: "USD",
+  },
+});
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -123,57 +120,54 @@ curl -sS -X POST \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
 
-response = requests.post(
-    f"{base}/account/alerts/batch",
-    headers={"Authorization": f"Bearer {key}"},
-    json={
-        "alerts": [
-            {
-                "item_id": 4994,
-                "kind": "price_below",
-                "threshold_value": "500.00",
-                "threshold_currency": "USD",
-            },
-            {
-                "item_id": 12632,
-                "kind": "spread_exceeds",
-                "threshold_value": "15.0",
-            },
-        ]
-    }
-)
-response.raise_for_status()
-print(response.json())
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.AccountAlertsApi(client)
+    response = api.create_alerts_batch(
+        cs2cap.AlertBatchCreateRequest(
+            alerts=[
+                cs2cap.AlertCreateRequest(
+                    item_id=4994,
+                    kind="price_below",
+                    threshold_value="500.00",
+                    threshold_currency="USD",
+                ),
+                cs2cap.AlertCreateRequest(
+                    item_id=12632,
+                    kind="spread_exceeds",
+                    threshold_value="15.0",
+                ),
+            ]
+        )
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
+```typescript TypeScript
+import { Configuration, AccountAlertsApi } from "cs2cap";
 
-const response = await fetch(`${base}/account/alerts/batch`, {
-  method: 'POST',
-  headers: {
-    Authorization: `Bearer ${key}`,
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
-    alerts: [
-      { item_id: 4994, kind: 'price_below', threshold_value: '500.00', threshold_currency: 'USD' },
-      { item_id: 12632, kind: 'spread_exceeds', threshold_value: '15.0' },
-    ],
-  }),
-});
+const accessToken = process.env.CS2C_API_KEY;
 
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const api = new AccountAlertsApi(new Configuration({ accessToken }));
+const response = await api.createAlertsBatch({
+  alertBatchCreateRequest: {
+    alerts: [
+      { itemId: 4994, kind: "price_below", thresholdValue: "500.00", thresholdCurrency: "USD" },
+      { itemId: 12632, kind: "spread_exceeds", thresholdValue: "15.0" },
+    ],
+  },
+});
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -222,37 +216,34 @@ curl -sS \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
 
-response = requests.get(
-    f"{base}/account/alerts",
-    headers={"Authorization": f"Bearer {key}"},
-    params={"limit": 25, "search": "AK-47"},
-)
-response.raise_for_status()
-print(response.json())
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.AccountAlertsApi(client)
+    response = api.list_alerts(
+        limit=25,
+        search="AK-47",
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
+```typescript TypeScript
+import { Configuration, AccountAlertsApi } from "cs2cap";
 
-const url = new URL(`${base}/account/alerts`);
-url.searchParams.set('limit', '25');
-url.searchParams.set('search', 'AK-47');
+const accessToken = process.env.CS2C_API_KEY;
 
-const response = await fetch(url, {
-  headers: { Authorization: `Bearer ${key}` },
-});
-
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const api = new AccountAlertsApi(new Configuration({ accessToken }));
+const response = await api.listAlerts({ limit: 25, search: "AK-47" });
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -289,40 +280,44 @@ curl -sS -X PATCH \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
 alert_id = "YOUR_ALERT_ID"
 
-response = requests.patch(
-    f"{base}/account/alerts/{alert_id}",
-    headers={"Authorization": f"Bearer {key}"},
-    json={"threshold_value": "450.00", "is_enabled": True},
-)
-response.raise_for_status()
-print(response.json())
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.AccountAlertsApi(client)
+    response = api.update_alert(
+        alert_id,
+        cs2cap.AlertUpdateRequest(
+            threshold_value="450.00",
+            is_enabled=True,
+        ),
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
-const alertId = 'YOUR_ALERT_ID';
+```typescript TypeScript
+import { Configuration, AccountAlertsApi } from "cs2cap";
 
-const response = await fetch(`${base}/account/alerts/${alertId}`, {
-  method: 'PATCH',
-  headers: {
-    Authorization: `Bearer ${key}`,
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({ threshold_value: '450.00', is_enabled: true }),
-});
+const accessToken = process.env.CS2C_API_KEY;
 
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const alertId = "YOUR_ALERT_ID";
+
+const api = new AccountAlertsApi(new Configuration({ accessToken }));
+const response = await api.updateAlert({
+  alertId,
+  alertUpdateRequest: { thresholdValue: "450.00", isEnabled: true },
+});
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -368,35 +363,37 @@ curl -sS -X DELETE \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
 alert_id = "YOUR_ALERT_ID"
 
-response = requests.delete(
-    f"{base}/account/alerts/{alert_id}",
-    headers={"Authorization": f"Bearer {key}"},
-)
-response.raise_for_status()
-print(response.json())
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.AccountAlertsApi(client)
+    response = api.delete_alert(
+        alert_id
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
-const alertId = 'YOUR_ALERT_ID';
+```typescript TypeScript
+import { Configuration, AccountAlertsApi } from "cs2cap";
 
-const response = await fetch(`${base}/account/alerts/${alertId}`, {
-  method: 'DELETE',
-  headers: { Authorization: `Bearer ${key}` },
-});
+const accessToken = process.env.CS2C_API_KEY;
 
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const alertId = "YOUR_ALERT_ID";
+
+const api = new AccountAlertsApi(new Configuration({ accessToken }));
+const response = await api.deleteAlert({ alertId });
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -429,36 +426,33 @@ curl -sS \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
 
-response = requests.get(
-    f"{base}/account/alerts/events",
-    headers={"Authorization": f"Bearer {key}"},
-    params={"limit": 25},
-)
-response.raise_for_status()
-print(response.json())
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.AccountAlertsApi(client)
+    response = api.list_alert_events(
+        limit=25
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
+```typescript TypeScript
+import { Configuration, AccountAlertsApi } from "cs2cap";
 
-const url = new URL(`${base}/account/alerts/events`);
-url.searchParams.set('limit', '25');
+const accessToken = process.env.CS2C_API_KEY;
 
-const response = await fetch(url, {
-  headers: { Authorization: `Bearer ${key}` },
-});
-
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const api = new AccountAlertsApi(new Configuration({ accessToken }));
+const response = await api.listAlertEvents({ limit: 25 });
+
+console.log(response);
 ```
 
 </CodeGroup>

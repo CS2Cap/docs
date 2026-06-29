@@ -23,43 +23,39 @@ curl -sS \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
 
-response = requests.get(
-    f"{base}/bids",
-    headers={"Authorization": f"Bearer {key}"},
-    params={
-        "item_id": 4994,
-        "providers": ["buff163", "csfloat"],
-        "currency": "USD",
-    }
-)
-response.raise_for_status()
-print(response.json())
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.BidsApi(client)
+    response = api.list_bids(
+        item_id=4994,
+        providers=["buff163", "csfloat"],
+        currency="USD",
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
+```typescript TypeScript
+import { Configuration, BidsApi } from "cs2cap";
 
-const url = new URL(`${base}/bids`);
-url.searchParams.set('item_id', '4994');
-url.searchParams.append('providers', 'buff163');
-url.searchParams.append('providers', 'csfloat');
-url.searchParams.set('currency', 'USD');
+const accessToken = process.env.CS2C_API_KEY;
 
-const response = await fetch(url, {
-  headers: { Authorization: `Bearer ${key}` },
-});
-
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const api = new BidsApi(new Configuration({ accessToken }));
+const response = await api.listBids({
+  itemId: 4994,
+  providers: ["buff163", "csfloat"],
+  currency: "USD",
+});
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -208,50 +204,33 @@ curl -sS -X POST \
 
 ```python Python
 import os
-import json
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
 
-with requests.post(
-    f"{base}/bids",
-    headers={"Authorization": f"Bearer {key}"},
-    params={"providers": "buff163"},
-    stream=True,
-) as response:
-    response.raise_for_status()
-    for line in response.iter_lines():
-        if line:
-            print(json.loads(line))
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.BidsApi(client)
+    response = api.stream_full_bids_snapshot(
+        providers=["buff163"]
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
+```typescript TypeScript
+import { Configuration, BidsApi } from "cs2cap";
 
-const url = new URL(`${base}/bids`);
-url.searchParams.set('providers', 'buff163');
+const accessToken = process.env.CS2C_API_KEY;
 
-const response = await fetch(url, {
-  method: 'POST',
-  headers: { Authorization: `Bearer ${key}` },
-});
-
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-const reader = response.body.getReader();
-const decoder = new TextDecoder();
+const api = new BidsApi(new Configuration({ accessToken }));
+const response = await api.streamFullBidsSnapshot({ providers: ["buff163"] });
 
-while (true) {
-  const { done, value } = await reader.read();
-  if (done) break;
-  for (const line of decoder.decode(value).split('\n').filter(Boolean)) {
-    console.log(JSON.parse(line));
-  }
-}
+console.log(response);
 ```
 
 </CodeGroup>
@@ -306,46 +285,43 @@ curl -sS -X POST \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
 
-response = requests.post(
-    f"{base}/bids/batch",
-    headers={"Authorization": f"Bearer {key}"},
-    json={
-        "item_ids": [4994, 12632],
-        "providers": ["buff163", "csfloat"],
-        "currency": "USD",
-    }
-)
-response.raise_for_status()
-print(response.json())
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.BidsApi(client)
+    response = api.batch_bid_lookup(
+        cs2cap.BatchBidsRequest(
+            item_ids=[4994, 12632],
+            providers=["buff163", "csfloat"],
+            currency="USD",
+        )
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
+```typescript TypeScript
+import { Configuration, BidsApi } from "cs2cap";
 
-const response = await fetch(`${base}/bids/batch`, {
-  method: 'POST',
-  headers: {
-    Authorization: `Bearer ${key}`,
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
-    item_ids: [4994, 12632],
-    providers: ['buff163', 'csfloat'],
-    currency: 'USD',
-  }),
-});
+const accessToken = process.env.CS2C_API_KEY;
 
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const api = new BidsApi(new Configuration({ accessToken }));
+const response = await api.batchBidLookup({
+  batchBidsRequest: {
+    itemIds: [4994, 12632],
+    providers: ["buff163", "csfloat"],
+    currency: "USD",
+  },
+});
+
+console.log(response);
 ```
 
 </CodeGroup>

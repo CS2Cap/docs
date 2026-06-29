@@ -19,36 +19,6 @@ curl -sS \
   "$CS2C_API_BASE/account/key"
 ```
 
-```python Python
-import os
-import requests
-
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
-
-response = requests.get(
-    f"{base}/account/key",
-    headers={"Authorization": f"Bearer {key}"}
-)
-response.raise_for_status()
-print(response.json())
-```
-
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
-
-const response = await fetch(`${base}/account/key`, {
-  headers: { Authorization: `Bearer ${key}` },
-});
-
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
-}
-
-console.log(await response.json());
-```
-
 </CodeGroup>
 
 ```json Response example
@@ -141,37 +111,6 @@ Replaces your active root key and immediately revokes all child keys issued from
 curl -sS -X POST \
   -H "Authorization: Bearer $CS2C_API_KEY" \
   "$CS2C_API_BASE/account/key/reissue"
-```
-
-```python Python
-import os
-import requests
-
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
-
-response = requests.post(
-    f"{base}/account/key/reissue",
-    headers={"Authorization": f"Bearer {key}"},
-)
-response.raise_for_status()
-print(response.json())
-```
-
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
-
-const response = await fetch(`${base}/account/key/reissue`, {
-  method: 'POST',
-  headers: { Authorization: `Bearer ${key}` },
-});
-
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
-}
-
-console.log(await response.json());
 ```
 
 </CodeGroup>

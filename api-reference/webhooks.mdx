@@ -25,32 +25,31 @@ curl -sS \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
 
-response = requests.get(
-    f"{base}/account/webhooks",
-    headers={"Authorization": f"Bearer {key}"},
-)
-response.raise_for_status()
-print(response.json())
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.AccountWebhooksApi(client)
+    response = api.list_webhooks()
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
+```typescript TypeScript
+import { Configuration, AccountWebhooksApi } from "cs2cap";
 
-const response = await fetch(`${base}/account/webhooks`, {
-  headers: { Authorization: `Bearer ${key}` },
-});
+const accessToken = process.env.CS2C_API_KEY;
 
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const api = new AccountWebhooksApi(new Configuration({ accessToken }));
+const response = await api.listWebhooks();
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -131,48 +130,45 @@ curl -sS -X POST \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
 
-response = requests.post(
-    f"{base}/account/webhooks",
-    headers={"Authorization": f"Bearer {key}"},
-    json={
-        "label": "Production alerts",
-        "url": "https://hooks.example.com/cs2c",
-        "platform": "custom",
-        "is_active": True,
-    }
-)
-response.raise_for_status()
-print(response.json())
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.AccountWebhooksApi(client)
+    response = api.create_webhook(
+        cs2cap.WebhookCreateRequest(
+            label="Production alerts",
+            url="https://hooks.example.com/cs2c",
+            platform="custom",
+            is_active=True,
+        )
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
+```typescript TypeScript
+import { Configuration, AccountWebhooksApi } from "cs2cap";
 
-const response = await fetch(`${base}/account/webhooks`, {
-  method: 'POST',
-  headers: {
-    Authorization: `Bearer ${key}`,
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
-    label: 'Production alerts',
-    url: 'https://hooks.example.com/cs2c',
-    platform: 'custom',
-    is_active: true,
-  }),
-});
+const accessToken = process.env.CS2C_API_KEY;
 
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const api = new AccountWebhooksApi(new Configuration({ accessToken }));
+const response = await api.createWebhook({
+  webhookCreateRequest: {
+    label: "Production alerts",
+    url: "https://hooks.example.com/cs2c",
+    platform: "custom",
+    isActive: true,
+  },
+});
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -247,37 +243,33 @@ curl -sS \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
 
-response = requests.get(
-    f"{base}/account/webhooks/deliveries",
-    headers={"Authorization": f"Bearer {key}"},
-    params={"limit": 25, "offset": 0},
-)
-response.raise_for_status()
-print(response.json())
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.AccountWebhooksApi(client)
+    response = api.list_webhook_deliveries(
+        limit=25
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
+```typescript TypeScript
+import { Configuration, AccountWebhooksApi } from "cs2cap";
 
-const url = new URL(`${base}/account/webhooks/deliveries`);
-url.searchParams.set('limit', '25');
-url.searchParams.set('offset', '0');
+const accessToken = process.env.CS2C_API_KEY;
 
-const response = await fetch(url, {
-  headers: { Authorization: `Bearer ${key}` },
-});
-
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const api = new AccountWebhooksApi(new Configuration({ accessToken }));
+const response = await api.listWebhookDeliveries({ limit: 25 });
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -372,34 +364,37 @@ curl -sS \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
 delivery_id = "YOUR_DELIVERY_ID"
 
-response = requests.get(
-    f"{base}/account/webhooks/deliveries/{delivery_id}",
-    headers={"Authorization": f"Bearer {key}"},
-)
-response.raise_for_status()
-print(response.json())
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.AccountWebhooksApi(client)
+    response = api.get_webhook_delivery(
+        delivery_id
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
-const deliveryId = 'YOUR_DELIVERY_ID';
+```typescript TypeScript
+import { Configuration, AccountWebhooksApi } from "cs2cap";
 
-const response = await fetch(`${base}/account/webhooks/deliveries/${deliveryId}`, {
-  headers: { Authorization: `Bearer ${key}` },
-});
+const accessToken = process.env.CS2C_API_KEY;
 
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const deliveryId = "YOUR_DELIVERY_ID";
+
+const api = new AccountWebhooksApi(new Configuration({ accessToken }));
+const response = await api.getWebhookDelivery({ deliveryId });
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -478,40 +473,38 @@ curl -sS -X PATCH \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
 webhook_id = "YOUR_WEBHOOK_ID"
 
-response = requests.patch(
-    f"{base}/account/webhooks/{webhook_id}",
-    headers={"Authorization": f"Bearer {key}"},
-    json={"label": "Production alerts v2", "is_active": False},
-)
-response.raise_for_status()
-print(response.json())
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.AccountWebhooksApi(client)
+    response = api.update_webhook(
+        webhook_id,
+        cs2cap.WebhookUpdateRequest(is_active=False),
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
-const webhookId = 'YOUR_WEBHOOK_ID';
+```typescript TypeScript
+import { Configuration, AccountWebhooksApi } from "cs2cap";
 
-const response = await fetch(`${base}/account/webhooks/${webhookId}`, {
-  method: 'PATCH',
-  headers: {
-    Authorization: `Bearer ${key}`,
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({ label: 'Production alerts v2', is_active: false }),
-});
+const accessToken = process.env.CS2C_API_KEY;
 
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const webhookId = "YOUR_WEBHOOK_ID";
+
+const api = new AccountWebhooksApi(new Configuration({ accessToken }));
+const response = await api.updateWebhook({ webhookId, webhookUpdateRequest: { isActive: false } });
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -567,35 +560,37 @@ curl -sS -X DELETE \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
 webhook_id = "YOUR_WEBHOOK_ID"
 
-response = requests.delete(
-    f"{base}/account/webhooks/{webhook_id}",
-    headers={"Authorization": f"Bearer {key}"},
-)
-response.raise_for_status()
-print(response.json())
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.AccountWebhooksApi(client)
+    response = api.delete_webhook(
+        webhook_id
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
-const webhookId = 'YOUR_WEBHOOK_ID';
+```typescript TypeScript
+import { Configuration, AccountWebhooksApi } from "cs2cap";
 
-const response = await fetch(`${base}/account/webhooks/${webhookId}`, {
-  method: 'DELETE',
-  headers: { Authorization: `Bearer ${key}` },
-});
+const accessToken = process.env.CS2C_API_KEY;
 
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const webhookId = "YOUR_WEBHOOK_ID";
+
+const api = new AccountWebhooksApi(new Configuration({ accessToken }));
+const response = await api.deleteWebhook({ webhookId });
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -628,35 +623,37 @@ curl -sS -X POST \
 
 ```python Python
 import os
-import requests
 
-base = os.environ["CS2C_API_BASE"]
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
 webhook_id = "YOUR_WEBHOOK_ID"
 
-response = requests.post(
-    f"{base}/account/webhooks/{webhook_id}/rotate-secret",
-    headers={"Authorization": f"Bearer {key}"},
-)
-response.raise_for_status()
-print(response.json())
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.AccountWebhooksApi(client)
+    response = api.rotate_webhook_secret(
+        webhook_id
+    )
+
+print(response.to_dict() if hasattr(response, "to_dict") else response)
 ```
 
-```javascript JavaScript
-const base = process.env.CS2C_API_BASE;
-const key = process.env.CS2C_API_KEY;
-const webhookId = 'YOUR_WEBHOOK_ID';
+```typescript TypeScript
+import { Configuration, AccountWebhooksApi } from "cs2cap";
 
-const response = await fetch(`${base}/account/webhooks/${webhookId}/rotate-secret`, {
-  method: 'POST',
-  headers: { Authorization: `Bearer ${key}` },
-});
+const accessToken = process.env.CS2C_API_KEY;
 
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const webhookId = "YOUR_WEBHOOK_ID";
+
+const api = new AccountWebhooksApi(new Configuration({ accessToken }));
+const response = await api.rotateWebhookSecret({ webhookId });
+
+console.log(response);
 ```
 
 </CodeGroup>

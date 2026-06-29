@@ -17,8 +17,8 @@ Every request to a CS2Cap market-data endpoint must include an API key in the `A
   <Step title="Generate your key">
     Go to [cs2cap.com/account/api-keys](https://cs2cap.com/account/api-keys?utm_source=docs&utm_medium=referral&utm_campaign=docs) and generate your initial API key. Copy it immediately — it is only shown once.
   </Step>
-  <Step title="Add the key to your requests">
-    Include the key in the `Authorization` header of every API request using the `Bearer` scheme (see examples below).
+  <Step title="Add the key to your SDK configuration">
+    Configure the SDK with your API key once. The client sends the required `Authorization` header on every request.
   </Step>
 </Steps>
 
@@ -41,47 +41,48 @@ Authorization: Bearer <your_api_key_here>
 ```bash cURL
 curl -sS \
   -H "Authorization: Bearer $CS2C_API_KEY" \
-  "https://api.cs2c.app/v1/prices?market_hash_name=AK-47%20%7C%20Redline%20(Field-Tested)&providers=steam&currency=USD"
+  "https://api.cs2c.app/v1/prices?market_hash_name=AK-47%20%7C%20Redline%20(Field-Tested)&providers=steam&currency=USD&limit=5"
 ```
 
 ```python Python
 import os
-import requests
 
-key = os.environ["CS2C_API_KEY"]
+import cs2cap
 
-response = requests.get(
-    "https://api.cs2c.app/v1/prices",
-    headers={"Authorization": f"Bearer {key}"},
-    params={
-        "market_hash_name": "AK-47 | Redline (Field-Tested)",
-        "providers": "steam",
-        "currency": "USD",
-        "limit": 5,
-    }
+configuration = cs2cap.Configuration(
+    access_token=os.environ["CS2C_API_KEY"],
 )
-response.raise_for_status()
-print(response.json())
+
+with cs2cap.ApiClient(configuration) as client:
+    prices_api = cs2cap.PricesApi(client)
+    response = prices_api.list_prices(
+        market_hash_name="AK-47 | Redline (Field-Tested)",
+        providers=["steam"],
+        currency="USD",
+        limit=5,
+    )
+
+print(response.to_dict())
 ```
 
-```javascript JavaScript
-const key = process.env.CS2C_API_KEY;
+```typescript TypeScript
+import { Configuration, PricesApi } from "cs2cap";
 
-const url = new URL("https://api.cs2c.app/v1/prices");
-url.searchParams.set("market_hash_name", "AK-47 | Redline (Field-Tested)");
-url.searchParams.set("providers", "steam");
-url.searchParams.set("currency", "USD");
-url.searchParams.set("limit", "5");
+const accessToken = process.env.CS2C_API_KEY;
 
-const response = await fetch(url, {
-  headers: { Authorization: `Bearer ${key}` },
-});
-
-if (!response.ok) {
-  throw new Error(`${response.status} ${await response.text()}`);
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
 }
 
-console.log(await response.json());
+const pricesApi = new PricesApi(new Configuration({ accessToken }));
+const response = await pricesApi.listPrices({
+  marketHashName: "AK-47 | Redline (Field-Tested)",
+  providers: ["steam"],
+  currency: "USD",
+  limit: 5,
+});
+
+console.log(response);
 ```
 
 </CodeGroup>
@@ -98,7 +99,7 @@ console.log(await response.json());
 
 ## Reissuing your key
 
-If your key is compromised or you want to rotate it, call [`POST /account/key/reissue`](/api-reference/account#post-/account/key/reissue). This endpoint:
+If your key is compromised or you want to rotate it, use the Account page or call [`POST /account/key/reissue`](/api-reference/account#post-/account/key/reissue). This root-key rotation endpoint is intentionally separate from the public SDK sub-key helpers. It:
 
 - Immediately **revokes your current key**
 - Revokes **all child keys** issued from your account

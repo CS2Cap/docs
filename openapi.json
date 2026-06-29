@@ -13921,6 +13921,19 @@
             "title": "Crates Images",
             "description": "Image URLs for the associated cases/crates. Indexes align with the `crates` array."
           },
+          "release_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Release Date",
+            "description": "Item release date inferred from direct item, collection, or crate metadata."
+          },
           "rarity_name": {
             "anyOf": [
               {
