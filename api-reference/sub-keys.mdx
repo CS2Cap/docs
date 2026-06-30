@@ -37,7 +37,7 @@ with cs2cap.ApiClient(configuration) as client:
         offset=0,
     )
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript
@@ -142,7 +142,7 @@ with cs2cap.ApiClient(configuration) as client:
         )
     )
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript
@@ -222,7 +222,7 @@ with cs2cap.ApiClient(configuration) as client:
         key_id
     )
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript
@@ -285,7 +285,7 @@ with cs2cap.ApiClient(configuration) as client:
         ),
     )
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript
@@ -372,7 +372,7 @@ with cs2cap.ApiClient(configuration) as client:
         key_id
     )
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript
@@ -449,7 +449,7 @@ with cs2cap.ApiClient(configuration) as client:
         key_id
     )
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript

@@ -15524,7 +15524,7 @@
               }
             ],
             "title": "Stability Score",
-            "description": "Price stability component score (0-20): measures how consistently the item is observed and how stable its price has been over the last 24 hours."
+            "description": "24h price stability bonus (0-8)."
           },
           "external_score": {
             "anyOf": [
@@ -15536,7 +15536,7 @@
               }
             ],
             "title": "External Score",
-            "description": "External confirmation component score (0-20): Steam volume + Buff163 depth."
+            "description": "External confirmation component score (0-25): Steam volume + Buff163 depth."
           },
           "liquidity_last_updated": {
             "anyOf": [

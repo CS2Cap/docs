@@ -39,7 +39,7 @@ with cs2cap.ApiClient(configuration) as client:
         )
     )
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript
@@ -145,7 +145,7 @@ with cs2cap.ApiClient(configuration) as client:
         )
     )
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript
@@ -228,7 +228,7 @@ with cs2cap.ApiClient(configuration) as client:
         search="AK-47",
     )
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript
@@ -297,7 +297,7 @@ with cs2cap.ApiClient(configuration) as client:
         ),
     )
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript
@@ -376,7 +376,7 @@ with cs2cap.ApiClient(configuration) as client:
         alert_id
     )
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript
@@ -437,7 +437,7 @@ with cs2cap.ApiClient(configuration) as client:
         limit=25
     )
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript

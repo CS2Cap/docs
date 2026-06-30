@@ -30,7 +30,7 @@ with cs2cap.ApiClient(configuration) as client:
     api = cs2cap.InventoryApi(client)
     response = api.fetch_steam_inventory()
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript
@@ -167,7 +167,7 @@ with cs2cap.ApiClient(configuration) as client:
         steam_id="anomaly"
     )
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript

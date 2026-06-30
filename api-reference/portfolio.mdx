@@ -36,7 +36,7 @@ with cs2cap.ApiClient(configuration) as client:
         cs2cap.PortfolioCreate(name="Main Portfolio")
     )
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript
@@ -93,7 +93,7 @@ with cs2cap.ApiClient(configuration) as client:
     api = cs2cap.PortfolioApi(client)
     response = api.list_portfolios()
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript
@@ -144,7 +144,7 @@ with cs2cap.ApiClient(configuration) as client:
         portfolio_id
     )
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript
@@ -209,7 +209,7 @@ with cs2cap.ApiClient(configuration) as client:
         )
     )
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript
@@ -342,7 +342,7 @@ with cs2cap.ApiClient(configuration) as client:
         currency="USD",
     )
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript
@@ -416,7 +416,7 @@ with cs2cap.ApiClient(configuration) as client:
         cs2cap.PortfolioImportRequest(),
     )
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript
@@ -539,7 +539,7 @@ with cs2cap.ApiClient(configuration) as client:
         portfolio_id
     )
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript
@@ -599,7 +599,7 @@ with cs2cap.ApiClient(configuration) as client:
         cs2cap.PortfolioAddItemRequest(item_id=4994, quantity=2),
     )
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript
@@ -678,7 +678,7 @@ with cs2cap.ApiClient(configuration) as client:
         entry_id,
     )
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript
@@ -746,7 +746,7 @@ with cs2cap.ApiClient(configuration) as client:
         portfolio_id
     )
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript
@@ -813,7 +813,7 @@ with cs2cap.ApiClient(configuration) as client:
         ),
     )
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript
@@ -929,7 +929,7 @@ with cs2cap.ApiClient(configuration) as client:
         cs2cap.TransactionUpdateRequest(price=47500, currency="USD"),
     )
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript
@@ -1029,7 +1029,7 @@ with cs2cap.ApiClient(configuration) as client:
         transaction_id,
     )
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript
@@ -1095,7 +1095,7 @@ with cs2cap.ApiClient(configuration) as client:
         currency="USD",
     )
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript

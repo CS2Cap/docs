@@ -13,11 +13,11 @@ The normal score is the sum of five components:
 
 | Component | Possible score (range) |
 | --- | --- |
-| Sell-side depth | `0` -- `15` |
-| Bid/ask quality | `0` -- `10` |
-| Recent activity | `0` -- `35` |
-| Price stability | `0` -- `20` |
-| External confirmation | `0` -- `20` |
+| Sell-side depth | `0` -- `18` |
+| Bid/ask quality | `0` -- `12` |
+| Recent activity | `0` -- `45` |
+| Price stability | `0` -- `8` (bonus) |
+| External confirmation | `0` -- `25` |
 
 The final score is rounded to the nearest integer and clipped to the `0-100` range.
 
@@ -48,7 +48,7 @@ Prices are normalized to USD before ratio calculations. The score is calculated 
 
 Sell-side depth measures how much supply exists for the item right now.
 
-- Range: `0-15`
+- Range: `0-18`
 - Curve: logarithmic
 - Saturation point: `500` active listings
 
@@ -57,18 +57,18 @@ The logarithmic curve means that the distance in score between an item with 1 vs
 <div className="liquidity-visual">
   <p className="liquidity-visual-title">Sell-side depth climbs fast, then flattens</p>
   <p className="liquidity-visual-note">The first few listings matter most. After the market is already deep, extra listings add less signal.</p>
-  <img src="/images/liquidity-depth.svg" alt="Sell-side depth curve from zero to fifteen points" className="liq-img" />
+  <img src="/images/liquidity-depth.svg" alt="Sell-side depth curve from zero to eighteen points" className="liq-img" />
 </div>
 
-The result is clipped to `15`.
+The result is clipped to `18`.
 
 ### Bid/ask quality
 
 Bid/ask quality measures how close the strongest buyer is to the cheapest seller. A buyer offering `$95` against a cheapest listing of `$100` is much healthier than a buyer offering `$50` against that same listing.
 
-- Range: `0-10`
+- Range: `0-12`
 - Buyer offers 50% or less of the cheapest listing: `0` points
-- Buyer offers 95% or more of the cheapest listing: `10` points
+- Buyer offers 95% or more of the cheapest listing: `12` points
 - Between 50% and 95%: scales linearly
 
 A tighter gap means buyers are already close to sellers, so the item is easier to exit without a large discount.
@@ -76,14 +76,14 @@ A tighter gap means buyers are already close to sellers, so the item is easier t
 <div className="liquidity-visual">
   <p className="liquidity-visual-title">Bid/ask quality is flat, then linear, then capped</p>
   <p className="liquidity-visual-note">Weak buy orders add no confidence. Once buyers get close to sellers, each step tighter adds predictable score.</p>
-  <img src="/images/liquidity-bidask.svg" alt="Bid ask quality ramp from zero to ten points" className="liq-img" />
+  <img src="/images/liquidity-bidask.svg" alt="Bid ask quality ramp from zero to twelve points" className="liq-img" />
 </div>
 
 ### Recent activity
 
 Recent activity measures how much of the item was consumed from active marketplace supply during the last 24 hours.
 
-- Range: `0-35`
+- Range: `0-45`
 - Curve: logarithmic
 - Saturation point: `200` consumed units in the last 24h
 
@@ -92,16 +92,16 @@ This measures how many units left active marketplace supply in the last 24 hours
 <div className="liquidity-visual">
   <p className="liquidity-visual-title">Recent activity rewards real movement</p>
   <p className="liquidity-visual-note">The curve gives strong credit once an item is clearly moving, then slows as activity approaches the cap.</p>
-  <img src="/images/liquidity-activity.svg" alt="Recent activity curve from zero to thirty five points" className="liq-img" />
+  <img src="/images/liquidity-activity.svg" alt="Recent activity curve from zero to forty five points" className="liq-img" />
 </div>
 
 ### Price stability
 
 Price stability rewards items that have been observed consistently and have not had extreme hourly price swings.
 
-- Range: `0-20`
-- Observation density max: `10` points
-- Price stability max: `10` points
+- Range: `0-8` (bonus)
+- Observation density max: `4` points
+- Price stability max: `4` points
 - Window: last 24h hourly close prices
 
 Half of this component comes from observation density: an item seen in more hourly periods gets more credit than an item seen only once or twice.
@@ -115,16 +115,28 @@ The other half comes from price steadiness. Items with very stable hourly prices
     <div className="liquidity-meter-row">
       <span className="liquidity-meter-label">Recent coverage</span>
       <span className="liquidity-meter"><span className="liquidity-meter-fill liquidity-meter-fill-stability" /></span>
-      <span className="liquidity-meter-value">up to 10 pts</span>
+      <span className="liquidity-meter-value">up to 4 pts</span>
     </div>
     <div className="liquidity-meter-row">
       <span className="liquidity-meter-label">Price steadiness</span>
       <span className="liquidity-meter"><span className="liquidity-meter-fill liquidity-meter-fill-volatility" /></span>
-      <span className="liquidity-meter-value">up to 10 pts</span>
+      <span className="liquidity-meter-value">up to 4 pts</span>
     </div>
-    <p className="liquidity-stability-caption">Sparse observations or sharp relative price movement reduce this component, even if the current bid and ask look healthy.</p>
+    <div className="liquidity-meter-row liquidity-meter-scale">
+      <span className="liquidity-meter-label" />
+      <span className="liquidity-scale-ticks">
+        <span>1</span>
+        <span>2</span>
+        <span>3</span>
+        <span>4</span>
+      </span>
+      <span className="liquidity-meter-value">points</span>
+    </div>
+    <p className="liquidity-stability-caption">Each marker is the point unlocked at that threshold. Sparse observations or sharp relative price movement reduce this component, even if the current bid and ask look healthy.</p>
   </div>
 </div>
+
+Price stability is a bonus added into the score's remaining room below 100 — it sharpens ranking but never holds a fully-liquid item below 100.
 
 ### External confirmation
 
@@ -132,19 +144,19 @@ External confirmation adds independent evidence from Steam and Buff163.
 
 | Signal | Max points | How it works |
 | :---: | :---: | --- |
-| Steam sales activity | 12 | Logarithmic curve, saturates at `120` sold in 24h |
-| Buff163 listing depth | 5 | Logarithmic curve, saturates at `30` listings |
-| Buff163 tight gap bonus | 3 | Added when Buff163 bid/ask ratio is at least `0.85` |
+| Steam sales activity | 15 | Logarithmic curve, saturates at `120` sold in 24h |
+| Buff163 listing depth | 6 | Logarithmic curve, saturates at `30` listings |
+| Buff163 tight gap bonus | 4 | Added when Buff163 bid/ask ratio is at least `0.85` |
 
 
 <div className="liquidity-visual">
   <p className="liquidity-visual-title">External confirmation is additive</p>
-  <p className="liquidity-visual-note">Major-market evidence can add up to 20 points when Steam activity and Buff163 order-book quality agree.</p>
+  <p className="liquidity-visual-note">Major-market evidence can add up to 25 points when Steam activity and Buff163 order-book quality agree.</p>
   <div className="liquidity-stack" aria-label="External confirmation stacked contribution bar">
     <div className="liquidity-stack-bar">
-      <span className="liquidity-stack-segment liquidity-stack-steam">12</span>
-      <span className="liquidity-stack-segment liquidity-stack-depth">5</span>
-      <span className="liquidity-stack-segment liquidity-stack-gap">3</span>
+      <span className="liquidity-stack-segment liquidity-stack-steam">15</span>
+      <span className="liquidity-stack-segment liquidity-stack-depth">6</span>
+      <span className="liquidity-stack-segment liquidity-stack-gap">4</span>
     </div>
     <div className="liquidity-stack-legend">
       <span className="liquidity-stack-legend-item"><span className="liquidity-swatch swatch-steam" />Steam activity</span>

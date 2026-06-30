@@ -34,7 +34,7 @@ with cs2cap.ApiClient(configuration) as client:
     api = cs2cap.AccountWebhooksApi(client)
     response = api.list_webhooks()
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript
@@ -146,7 +146,7 @@ with cs2cap.ApiClient(configuration) as client:
         )
     )
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript
@@ -254,7 +254,7 @@ with cs2cap.ApiClient(configuration) as client:
         limit=25
     )
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript
@@ -377,7 +377,7 @@ with cs2cap.ApiClient(configuration) as client:
         delivery_id
     )
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript
@@ -487,7 +487,7 @@ with cs2cap.ApiClient(configuration) as client:
         cs2cap.WebhookUpdateRequest(is_active=False),
     )
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript
@@ -573,7 +573,7 @@ with cs2cap.ApiClient(configuration) as client:
         webhook_id
     )
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript
@@ -636,7 +636,7 @@ with cs2cap.ApiClient(configuration) as client:
         webhook_id
     )
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript

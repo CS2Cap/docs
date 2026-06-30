@@ -35,7 +35,7 @@ with cs2cap.ApiClient(configuration) as client:
         providers_sell=["buff163", "buffmarket", "c5", "csfloat"],
     )
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript
@@ -198,7 +198,7 @@ with cs2cap.ApiClient(configuration) as client:
         group_by="weapon_type"
     )
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript
@@ -311,7 +311,7 @@ with cs2cap.ApiClient(configuration) as client:
         currency="USD",
     )
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript
@@ -498,7 +498,7 @@ with cs2cap.ApiClient(configuration) as client:
     api = cs2cap.MarketIntelligenceApi(client)
     response = api.get_market_analytics_snapshot()
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript
@@ -596,23 +596,23 @@ This endpoint takes no query parameters.
 </ResponseField>
 
 <ResponseField name="data.items[].summary.listing_score" type="integer | null">
-  Listing-depth component score (0–15). `null` when liquidity data is unavailable.
+  Listing-depth component score (0–18). `null` when liquidity data is unavailable.
 </ResponseField>
 
 <ResponseField name="data.items[].summary.gap_score" type="integer | null">
-  Bid/ask gap component score (0–10). `null` when liquidity data is unavailable.
+  Bid/ask gap component score (0–12). `null` when liquidity data is unavailable.
 </ResponseField>
 
 <ResponseField name="data.items[].summary.volume_score" type="integer | null">
-  24h churn component score (0–35). `null` when liquidity data is unavailable.
+  24h churn component score (0–45). `null` when liquidity data is unavailable.
 </ResponseField>
 
 <ResponseField name="data.items[].summary.stability_score" type="integer | null">
-  Price stability component score (0–20): measures how consistently the item is observed and how stable its price has been over the last 24 hours. `null` when insufficient history.
+  Price stability bonus (0–8): added into the score's remaining headroom below 100, combining observation density and price steadiness over the last 24 hours. `null` when insufficient history.
 </ResponseField>
 
 <ResponseField name="data.items[].summary.external_score" type="integer | null">
-  External confirmation component score (0–20): based on Steam and Buff163 market activity. `null` when external data is unavailable.
+  External confirmation component score (0–25): based on Steam and Buff163 market activity. `null` when external data is unavailable.
 </ResponseField>
 
 <Note>
@@ -648,7 +648,7 @@ with cs2cap.ApiClient(configuration) as client:
         4994
     )
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript
@@ -839,7 +839,7 @@ with cs2cap.ApiClient(configuration) as client:
         currency="USD",
     )
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript

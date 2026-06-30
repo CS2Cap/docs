@@ -43,6 +43,7 @@
             "pages": [
               "introduction",
               "quickstart",
+              "sdks",
               "authentication",
               "core-concepts"
             ]

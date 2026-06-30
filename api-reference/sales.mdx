@@ -37,7 +37,7 @@ with cs2cap.ApiClient(configuration) as client:
         limit=20,
     )
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript

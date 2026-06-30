@@ -39,7 +39,7 @@ with cs2cap.ApiClient(configuration) as client:
         limit=10,
     )
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript
@@ -308,7 +308,7 @@ with cs2cap.ApiClient(configuration) as client:
     api = cs2cap.ItemsApi(client)
     response = api.get_item_catalog_metadata()
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript
@@ -390,7 +390,7 @@ with cs2cap.ApiClient(configuration) as client:
     api = cs2cap.ImagesApi(client)
     response = api.list_game_images()
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript
@@ -463,7 +463,7 @@ with cs2cap.ApiClient(configuration) as client:
         provider="buff163"
     )
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript
@@ -625,7 +625,7 @@ with cs2cap.ApiClient(configuration) as client:
     api = cs2cap.ForeignExchangeApi(client)
     response = api.get_fx_rates()
 
-print(response.to_dict() if hasattr(response, "to_dict") else response)
+print(client.sanitize_for_serialization(response))
 ```
 
 ```typescript TypeScript
