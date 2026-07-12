@@ -1,0 +1,239 @@
+.dark [data-page-type] {
+  background-image:
+    linear-gradient(rgba(29, 110, 243, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(29, 110, 243, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.liquidity-visual {
+  --liq-blue: #1d6ef3;
+  --liq-cyan: #22b8f0;
+  --liq-green: #16a34a;
+  --liq-amber: #d97706;
+  --liq-muted: color-mix(in srgb, currentColor 52%, transparent);
+  --liq-faint: color-mix(in srgb, currentColor 10%, transparent);
+  --liq-panel: color-mix(in srgb, currentColor 4%, transparent);
+  --liq-border: color-mix(in srgb, currentColor 14%, transparent);
+  border: 1px solid var(--liq-border);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--liq-blue) 7%, transparent), transparent 44%),
+    var(--liq-panel);
+  margin: 1.25rem 0 1.5rem;
+  padding: 1rem;
+}
+
+.liquidity-visual-title {
+  margin: 0;
+  color: currentColor;
+  font-size: 0.95rem;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.liquidity-visual-note {
+  margin: 0.25rem 0 0;
+  color: var(--liq-muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.liq-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 1rem;
+  border-radius: 6px;
+}
+
+.liquidity-stability {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.liquidity-meter-row {
+  display: grid;
+  grid-template-columns: minmax(7rem, 10rem) 1fr minmax(3rem, auto);
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.liquidity-meter-label,
+.liquidity-meter-value {
+  color: var(--liq-muted);
+  font-size: 0.78rem;
+}
+
+.liquidity-meter-value {
+  text-align: right;
+}
+
+.liquidity-meter {
+  position: relative;
+  display: block;
+  height: 0.75rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 10%, transparent);
+}
+
+/* Quarter-point threshold ticks: each bar is worth up to 4 points, so the
+   dividers at 25/50/75/100% mark where each successive point is unlocked. */
+.liquidity-meter::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    to right,
+    transparent 0,
+    transparent calc(25% - 1px),
+    color-mix(in srgb, currentColor 30%, transparent) calc(25% - 1px),
+    color-mix(in srgb, currentColor 30%, transparent) 25%
+  );
+}
+
+.liquidity-meter-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--liq-blue), var(--liq-cyan));
+}
+
+/* Numbered scale aligned under the meter tick dividers (25/50/75/100%). */
+.liquidity-meter-scale {
+  margin-top: -0.55rem;
+}
+
+.liquidity-scale-ticks {
+  position: relative;
+  height: 0.9rem;
+}
+
+.liquidity-scale-ticks span {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  font-size: 0.68rem;
+  line-height: 1;
+  color: var(--liq-muted);
+}
+
+.liquidity-scale-ticks span:nth-child(1) { left: 25%; }
+.liquidity-scale-ticks span:nth-child(2) { left: 50%; }
+.liquidity-scale-ticks span:nth-child(3) { left: 75%; }
+.liquidity-scale-ticks span:nth-child(4) { left: 100%; }
+
+.liquidity-meter-fill-stability {
+  width: 78%;
+}
+
+.liquidity-meter-fill-volatility {
+  width: 88%;
+  background: linear-gradient(90deg, var(--liq-green), var(--liq-blue));
+}
+
+.liquidity-stability-caption {
+  margin: 0.25rem 0 0;
+  color: var(--liq-muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.liquidity-stack {
+  margin-top: 1rem;
+}
+
+.liquidity-stack-bar {
+  display: flex;
+  height: 2.25rem;
+  overflow: hidden;
+  border-radius: 8px;
+  background: color-mix(in srgb, currentColor 10%, transparent);
+}
+
+.liquidity-stack-segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.5rem;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 650;
+}
+
+.liquidity-stack-steam {
+  flex: 12;
+  background: var(--liq-blue);
+}
+
+.liquidity-stack-depth {
+  flex: 5;
+  background: var(--liq-cyan);
+  color: #052f48;
+}
+
+.liquidity-stack-gap {
+  flex: 3;
+  background: var(--liq-green);
+  color: #052e16;
+}
+
+.liquidity-stack-legend {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin-top: 0.8rem;
+}
+
+.liquidity-stack-legend-item {
+  color: var(--liq-muted);
+  font-size: 0.75rem;
+  line-height: 1.25;
+}
+
+.liquidity-swatch {
+  display: inline-block;
+  width: 0.6rem;
+  height: 0.6rem;
+  margin-right: 0.35rem;
+  border-radius: 2px;
+  vertical-align: -0.04rem;
+}
+
+.swatch-steam {
+  background: var(--liq-blue);
+}
+
+.swatch-depth {
+  background: var(--liq-cyan);
+}
+
+.swatch-gap {
+  background: var(--liq-green);
+}
+
+@media (max-width: 640px) {
+  .liquidity-visual {
+    padding: 0.85rem;
+  }
+
+  .liquidity-meter-row {
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+  }
+
+  .liquidity-meter-value {
+    text-align: left;
+  }
+
+  .liquidity-stack-legend {
+    grid-template-columns: 1fr;
+  }
+
+  .liquidity-stack-segment {
+    min-width: 2.8rem;
+    font-size: 0.68rem;
+  }
+}

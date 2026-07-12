@@ -1,0 +1,292 @@
+---
+title: "Quickstart: Make Your First CS2Cap API Call"
+description: "Learn how to make your first CS2Cap API request using the Python or TypeScript SDK. Goes from zero to a live price response in a few steps."
+---
+
+This guide walks you through everything you need to make a live CS2 item price request with the CS2Cap SDK. You'll set up your credentials, send a request, read the response, and know how to handle the most common errors — all before you write a single line of production code.
+
+<Steps>
+
+  <Step title="Install the SDK">
+
+    Install the SDK for the language you are using.
+
+    <CodeGroup>
+
+    ```bash Python
+    pip install cs2cap
+    ```
+
+    ```bash TypeScript
+    npm install cs2cap
+    ```
+
+    </CodeGroup>
+
+  </Step>
+
+  <Step title="Set up environment variables">
+
+    Store your base URL and API key as environment variables so you never hardcode credentials into your code.
+
+    ```bash
+    export CS2C_API_BASE="https://api.cs2c.app/v1"
+    export CS2C_API_KEY="your_api_key_here"
+    ```
+
+    <Tip>
+      Generate your API key from the Account page at [cs2cap.com](https://cs2cap.com?utm_source=docs&utm_medium=referral&utm_campaign=docs) after verifying your email address.
+    </Tip>
+
+  </Step>
+
+  <Step title="Make your first request">
+
+    Query the [`/prices`](/api-reference/prices) endpoint for an AK-47 | Redline (Field-Tested) across the Steam marketplace. This is the fastest way to confirm your key is working and to see what a real response looks like.
+
+    <CodeGroup>
+
+    ```bash cURL
+    curl -sS \
+      -H "Authorization: Bearer $CS2C_API_KEY" \
+      "https://api.cs2c.app/prices?market_hash_name=AK-47%20%7C%20Redline%20(Field-Tested)&providers=steam&currency=USD"
+    ```
+
+    ```python Python
+    import os
+
+    import cs2cap
+
+    configuration = cs2cap.Configuration(
+        access_token=os.environ["CS2C_API_KEY"],
+    )
+
+    with cs2cap.ApiClient(configuration) as client:
+        prices_api = cs2cap.PricesApi(client)
+        response = prices_api.list_prices(
+            market_hash_name="AK-47 | Redline (Field-Tested)",
+            providers=["steam"],
+            currency="USD",
+        )
+
+    print(response.to_dict())
+    ```
+
+    ```typescript TypeScript
+    import { Configuration, PricesApi } from "cs2cap";
+
+    const accessToken = process.env.CS2C_API_KEY;
+
+    if (!accessToken) {
+      throw new Error("Set CS2C_API_KEY before running this example.");
+    }
+
+    const pricesApi = new PricesApi(new Configuration({ accessToken }));
+    const response = await pricesApi.listPrices({
+      marketHashName: "AK-47 | Redline (Field-Tested)",
+      providers: ["steam"],
+      currency: "USD",
+    });
+
+    console.log(response);
+    ```
+
+    </CodeGroup>
+
+  </Step>
+
+  <Step title="Understand the response">
+
+    Every list endpoint returns three top-level fields:
+
+    - `items` — the records you asked for, one object per provider result
+    - `meta` — response context: the currency you requested, your filter parameters, and which providers actually returned data
+    - `pagination` — total record count and paging state (`limit`, `offset`, `has_next`, `has_prev`)
+
+    ```json
+    {
+      "meta": {
+        "currency": "USD",
+        "filters": {
+          "market_hash_name": "★ Falchion Knife | Doppler (Minimal Wear)",
+          "phase": "Phase 1",
+          "requested_providers": [
+            "steam",
+            "marketcsgo"
+          ]
+        },
+        "returned_providers": [
+          "marketcsgo"
+        ]
+      },
+      "items": [
+        {
+          "provider": "marketcsgo",
+          "item_id": 3739,
+          "market_hash_name": "★ Falchion Knife | Doppler (Minimal Wear)",
+          "phase": "Phase 1",
+          "lowest_ask": 58915,
+          "quantity": 1,
+          "link": "https://cs2c.app/r/marketcsgo/3739",
+          "url": "https://market.csgo.com/...",
+          "timestamp": "2026-03-18T16:14:41.493719Z",
+          "last_updated": "2026-03-18T16:54:58.782196Z"
+        }
+      ],
+      "pagination": {
+        "limit": 1000,
+        "offset": 0,
+        "total": 2,
+        "has_next": false,
+        "has_prev": false
+      }
+    }
+    ```
+
+    <Note>
+      All price fields use **minor units** (integer cents). A `lowest_ask` of `2550` with `currency: USD` means **$25.50**. Divide by 100 to convert to the major unit for any two-decimal currency.
+    </Note>
+
+  </Step>
+
+  <Step title="Common next requests">
+
+    Once you have a working [`/prices`](/api-reference/prices) call, these four requests cover the most frequent follow-up queries. The `item_id` lookup is a good second step — it gives you the stable numeric ID you can reuse across endpoints without passing the full item name each time.
+
+    <CodeGroup>
+
+    ```bash cURL
+    # Resolve a market_hash_name to its stable item_id
+    curl -sS -H "Authorization: Bearer $CS2C_API_KEY" \
+      "https://api.cs2c.app/items?market_hash_name=AK-47%20%7C%20Redline%20(Field-Tested)"
+
+    # Highest buy orders across buy-order-enabled providers (Starter/Pro/Quant)
+    curl -sS -H "Authorization: Bearer $CS2C_API_KEY" \
+      "https://api.cs2c.app/bids?market_hash_name=AK-47%20%7C%20Redline%20(Field-Tested)&providers=steam"
+
+    # Completed sale transactions from a specific provider (Pro/Quant)
+    curl -sS -H "Authorization: Bearer $CS2C_API_KEY" \
+      "https://api.cs2c.app/sales?market_hash_name=AK-47%20%7C%20Redline%20(Field-Tested)&providers=csfloat&limit=10"
+
+    # Historical price snapshots for trend analysis (Pro/Quant)
+    curl -sS -H "Authorization: Bearer $CS2C_API_KEY" \
+      "https://api.cs2c.app/prices/history?market_hash_name=AK-47%20%7C%20Redline%20(Field-Tested)&provider=steam&limit=50"
+    ```
+
+    ```python Python
+    with cs2cap.ApiClient(configuration) as client:
+        items_api = cs2cap.ItemsApi(client)
+        bids_api = cs2cap.BidsApi(client)
+        sales_api = cs2cap.SalesApi(client)
+        prices_api = cs2cap.PricesApi(client)
+
+        item = items_api.list_items(
+            market_hash_name="AK-47 | Redline (Field-Tested)",
+        )
+
+        bids = bids_api.list_bids(
+            market_hash_name="AK-47 | Redline (Field-Tested)",
+            providers=["steam"],
+            currency="USD",
+        )
+
+        sales = sales_api.list_recent_sales(
+            market_hash_name="AK-47 | Redline (Field-Tested)",
+            providers=["csfloat"],
+            currency="USD",
+            limit=10,
+        )
+
+        history = prices_api.price_history(
+            market_hash_name="AK-47 | Redline (Field-Tested)",
+            provider="steam",
+            currency="USD",
+            limit=50,
+        )
+    ```
+
+    ```typescript TypeScript
+    import { BidsApi, Configuration, ItemsApi, PricesApi, SalesApi } from "cs2cap";
+
+    const configuration = new Configuration({ accessToken });
+    const itemsApi = new ItemsApi(configuration);
+    const bidsApi = new BidsApi(configuration);
+    const salesApi = new SalesApi(configuration);
+    const pricesApi = new PricesApi(configuration);
+
+    const item = await itemsApi.listItems({
+      marketHashName: "AK-47 | Redline (Field-Tested)",
+    });
+
+    const bids = await bidsApi.listBids({
+      marketHashName: "AK-47 | Redline (Field-Tested)",
+      providers: ["steam"],
+      currency: "USD",
+    });
+
+    const sales = await salesApi.listRecentSales({
+      marketHashName: "AK-47 | Redline (Field-Tested)",
+      providers: ["csfloat"],
+      currency: "USD",
+      limit: 10,
+    });
+
+    const history = await pricesApi.priceHistory({
+      marketHashName: "AK-47 | Redline (Field-Tested)",
+      provider: "steam",
+      currency: "USD",
+      limit: 50,
+    });
+    ```
+
+    </CodeGroup>
+
+    <Note>
+      Buy orders require Starter or higher. Sales and raw history require Pro or higher. If your tier does not include an endpoint, the request returns `403` until you upgrade. See [Pricing & Plans](/guides/pricing-plans) for a full endpoint-by-tier breakdown.
+    </Note>
+
+  </Step>
+
+  <Step title="Handle common failures">
+
+    The table below covers the errors you're most likely to encounter while integrating. Treat these as your first-line debugging checklist before opening a support ticket.
+
+    | Status | Code | What it means |
+    |--------|------|---------------|
+    | `401` | `AUTH_INVALID_API_KEY` | Your `Authorization: Bearer` header is missing, malformed, or the key has been revoked. Check the header format and regenerate your key if needed. |
+    | `429` | `RATE_LIMIT_EXCEEDED` | You're sending requests faster than your plan allows. Back off and respect the `Retry-After` response header before retrying. |
+    | `429` | `RATE_LIMIT_MONTHLY_QUOTA_EXCEEDED` | You've exhausted your plan's monthly request quota. Upgrade your plan or wait for the quota to reset. |
+    | `503` | `PRICES_INDEX_UNAVAILABLE` or `BIDS_INDEX_UNAVAILABLE` | A data index is temporarily unavailable due to a refresh cycle or upstream issue. Retry with exponential backoff — this resolves quickly. |
+    | `422` | `VALIDATION_ERROR` | One or more query parameters are missing, have the wrong type, or contain an invalid value. Check the response body for a `details` field that identifies the offending parameter. |
+
+    <Warning>
+      Do not retry `401` or `422` errors without first fixing the underlying issue — they will not self-resolve. Only `503` and `429` errors are safe to retry automatically.
+    </Warning>
+
+  </Step>
+
+</Steps>
+
+## Runnable SDK examples
+
+The SDK source includes complete example scripts by tier. Start with the free-tier examples, then move to the Pro and Quant scripts as your plan unlocks more endpoints:
+
+- Python: `scripts/sdk-scripts/python/examples/`
+- TypeScript: `scripts/sdk-scripts/typescript/examples/`
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Authentication" icon="key" href="/authentication">
+    Learn how API keys work, how to rotate them, and how to use sub-keys to scope access per application.
+  </Card>
+  <Card title="Core concepts" icon="book-open" href="/core-concepts">
+    Understand providers, minor units, pagination, and the data model before you build.
+  </Card>
+  <Card title="API reference" icon="code" href="/api-reference/overview">
+    Browse every endpoint: prices, bids, sales, analytics, portfolio, and account management.
+  </Card>
+  <Card title="Pricing & plans" icon="credit-card" href="/guides/pricing-plans">
+    Compare Free, Starter, Pro, and Quant tiers by endpoint access, rate limits, and monthly quotas.
+  </Card>
+</CardGroup>

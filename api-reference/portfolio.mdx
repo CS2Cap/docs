@@ -1,0 +1,1154 @@
+---
+title: "Portfolio API: Track and Value Your CS2 Items"
+description: "Create saved portfolios, record buy/sell transactions, import Steam inventory, and value holdings statlessly or against stored portfolios across providers."
+---
+
+The Portfolio API supports two complementary use cases: **stateless valuation** for one-off item lists you send in the request body, and **saved portfolios** that persist items and transactions under your account for ongoing tracking and historical analysis. Portfolio item limits are 1,000 items for Free and Starter accounts, 5,000 for Pro, and 10,000 for Quant — the same limit applies regardless of how items were added.
+
+## Portfolio management
+
+### POST /portfolio
+
+Creates a new empty portfolio under your account.
+
+**Auth:** API key required
+
+<CodeGroup>
+
+```bash cURL
+curl -sS -X POST \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Main Portfolio"}' \
+  "https://api.cs2c.app/portfolio"
+```
+
+```python Python
+import os
+
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.PortfolioApi(client)
+    response = api.create_portfolio(
+        cs2cap.PortfolioCreate(name="Main Portfolio")
+    )
+
+print(client.sanitize_for_serialization(response))
+```
+
+```typescript TypeScript
+import { Configuration, PortfolioApi } from "cs2cap";
+
+const accessToken = process.env.CS2C_API_KEY;
+
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
+}
+
+const api = new PortfolioApi(new Configuration({ accessToken }));
+const response = await api.createPortfolio({ portfolioCreate: { name: "Main Portfolio" } });
+
+console.log(response);
+```
+
+</CodeGroup>
+
+```json Request body
+{
+  "name": "Main Inventory"
+}
+```
+
+<ParamField body="name" type="string" required>
+  Display name for the portfolio.
+</ParamField>
+
+---
+
+### GET /portfolio
+
+Returns all saved portfolios for your account.
+
+**Auth:** API key required
+
+<CodeGroup>
+
+```bash cURL
+curl -sS \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  "https://api.cs2c.app/portfolio"
+```
+
+```python Python
+import os
+
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.PortfolioApi(client)
+    response = api.list_portfolios()
+
+print(client.sanitize_for_serialization(response))
+```
+
+```typescript TypeScript
+import { Configuration, PortfolioApi } from "cs2cap";
+
+const accessToken = process.env.CS2C_API_KEY;
+
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
+}
+
+const api = new PortfolioApi(new Configuration({ accessToken }));
+const response = await api.listPortfolios();
+
+console.log(response);
+```
+
+</CodeGroup>
+
+---
+
+### DELETE /portfolio/:id
+
+Permanently deletes a portfolio and all of its saved items and transactions.
+
+**Auth:** API key required
+
+<CodeGroup>
+
+```bash cURL
+curl -sS -X DELETE \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  "https://api.cs2c.app/portfolio/YOUR_PORTFOLIO_ID"
+```
+
+```python Python
+import os
+
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+portfolio_id = "YOUR_PORTFOLIO_ID"
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.PortfolioApi(client)
+    response = api.delete_portfolio(
+        portfolio_id
+    )
+
+print(client.sanitize_for_serialization(response))
+```
+
+```typescript TypeScript
+import { Configuration, PortfolioApi } from "cs2cap";
+
+const accessToken = process.env.CS2C_API_KEY;
+
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
+}
+
+const portfolioId = "YOUR_PORTFOLIO_ID";
+
+const api = new PortfolioApi(new Configuration({ accessToken }));
+const response = await api.deletePortfolio({ portfolioId });
+
+console.log(response);
+```
+
+</CodeGroup>
+
+<ParamField path="portfolio_id" type="string" required>
+  UUID of the portfolio to delete.
+</ParamField>
+
+---
+
+## Valuation
+
+### POST /portfolio/value
+
+Values a user-supplied item list using the current best ask across the selected providers. Use this for one-off valuations without creating a saved portfolio.
+
+**Tiers:** Free, Starter, Pro, Quant
+
+<CodeGroup>
+
+```bash cURL
+curl -sS -X POST \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"items":[{"item_id":4994,"quantity":2},{"item_id":12632,"quantity":5}],"currency":"USD"}' \
+  "https://api.cs2c.app/portfolio/value"
+```
+
+```python Python
+import os
+
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.PortfolioApi(client)
+    response = api.portfolio_valuation(
+        cs2cap.PortfolioRequest(
+            items=[
+                cs2cap.PortfolioRequestItem(item_id=4994, quantity=2),
+                cs2cap.PortfolioRequestItem(item_id=12632, quantity=5),
+            ],
+            currency="USD",
+        )
+    )
+
+print(client.sanitize_for_serialization(response))
+```
+
+```typescript TypeScript
+import { Configuration, PortfolioApi } from "cs2cap";
+
+const accessToken = process.env.CS2C_API_KEY;
+
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
+}
+
+const api = new PortfolioApi(new Configuration({ accessToken }));
+const response = await api.portfolioValuation({
+  portfolioRequest: {
+    items: [
+      { itemId: 4994, quantity: 2 },
+      { itemId: 12632, quantity: 5 },
+    ],
+    currency: "USD",
+  },
+});
+
+console.log(response);
+```
+
+</CodeGroup>
+
+<ParamField body="items" type="array" required>
+  Array of objects, each with `item_id` (integer) and `quantity` (integer). Maximum 100 items per request.
+</ParamField>
+
+<ParamField body="providers" type="string[]">
+  Optional provider filter. Omit to use all available providers.
+</ParamField>
+
+<ParamField body="currency" type="string" default="USD">
+  Target output currency (ISO 4217).
+</ParamField>
+
+```json Request body
+{
+  "items": [
+    { "item_id": 1, "quantity": 3 }
+  ],
+  "providers": ["steam", "buff163"],
+  "currency": "USD"
+}
+```
+
+```json Response example
+{
+  "meta": {
+    "currency": "USD",
+    "generated_at": "2026-03-24T12:00:00Z",
+    "providers_queried": ["steam", "buff163"]
+  },
+  "data": {
+    "line_items": [
+      {
+        "item_id": 1,
+        "market_hash_name": "AK-47 | Redline (Field-Tested)",
+        "phase": null,
+        "quantity": 3,
+        "best_ask": 2550,
+        "item_value": 7650,
+        "providers": []
+      }
+    ],
+    "total_value": 7650,
+    "items_valued": 1,
+    "items_not_found": []
+  }
+}
+```
+
+<ResponseField name="data.line_items" type="array">
+  Per-item valuation results.
+  <Expandable title="line item properties">
+    <ResponseField name="item_id" type="integer">Catalog item ID.</ResponseField>
+    <ResponseField name="market_hash_name" type="string">Full item name.</ResponseField>
+    <ResponseField name="phase" type="string | null">Phase variant, or `null`.</ResponseField>
+    <ResponseField name="quantity" type="integer">Quantity from the request.</ResponseField>
+    <ResponseField name="best_ask" type="number">Best ask price for a single unit, in the requested currency's minor units.</ResponseField>
+    <ResponseField name="item_value" type="number">`best_ask × quantity`.</ResponseField>
+    <ResponseField name="providers" type="array">Per-provider breakdown when available.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="data.total_value" type="number">
+  Sum of all `item_value` entries.
+</ResponseField>
+
+<ResponseField name="data.items_valued" type="integer">
+  Number of items successfully priced.
+</ResponseField>
+
+<ResponseField name="data.items_not_found" type="array">
+  Item IDs from the request that could not be matched in the catalog.
+</ResponseField>
+
+---
+
+### GET /portfolio/:id/value
+
+Values all items currently in a saved portfolio using live market prices.
+
+**Auth:** API key required
+
+<CodeGroup>
+
+```bash cURL
+curl -sS \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  "https://api.cs2c.app/portfolio/YOUR_PORTFOLIO_ID/value?currency=USD&providers=buff163"
+```
+
+```python Python
+import os
+
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+portfolio_id = "YOUR_PORTFOLIO_ID"
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.PortfolioApi(client)
+    response = api.value_saved_portfolio(
+        portfolio_id,
+        currency="USD",
+    )
+
+print(client.sanitize_for_serialization(response))
+```
+
+```typescript TypeScript
+import { Configuration, PortfolioApi } from "cs2cap";
+
+const accessToken = process.env.CS2C_API_KEY;
+
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
+}
+
+const portfolioId = "YOUR_PORTFOLIO_ID";
+
+const api = new PortfolioApi(new Configuration({ accessToken }));
+const response = await api.valueSavedPortfolio({ portfolioId, currency: "USD" });
+
+console.log(response);
+```
+
+</CodeGroup>
+
+<ParamField path="portfolio_id" type="string" required>
+  UUID of the portfolio to value.
+</ParamField>
+
+<ParamField query="currency" type="string" default="USD">
+  Target output currency (ISO 4217).
+</ParamField>
+
+<ParamField query="providers" type="string[]">
+  Optional provider filter. Repeat to pass multiple values.
+</ParamField>
+
+<Note>
+  This is a live valuation based on current indexed prices, not a historical replay.
+</Note>
+
+---
+
+## Import and export
+
+### POST /portfolio/:id/import
+
+Imports items from your linked Steam inventory into a saved portfolio. If you omit `asset_ids`, the full inventory is imported.
+
+**Auth:** API key required + linked Steam account
+
+<CodeGroup>
+
+```bash cURL
+curl -sS -X POST \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{}' \
+  "https://api.cs2c.app/portfolio/YOUR_PORTFOLIO_ID/import"
+```
+
+```python Python
+import os
+
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+portfolio_id = "YOUR_PORTFOLIO_ID"
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.PortfolioApi(client)
+    response = api.import_steam_inventory(
+        portfolio_id,
+        cs2cap.PortfolioImportRequest(),
+    )
+
+print(client.sanitize_for_serialization(response))
+```
+
+```typescript TypeScript
+import { Configuration, PortfolioApi } from "cs2cap";
+
+const accessToken = process.env.CS2C_API_KEY;
+
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
+}
+
+const portfolioId = "YOUR_PORTFOLIO_ID";
+
+const api = new PortfolioApi(new Configuration({ accessToken }));
+const response = await api.importSteamInventory({ portfolioId, portfolioImportRequest: {} });
+
+console.log(response);
+```
+
+</CodeGroup>
+
+<ParamField path="portfolio_id" type="string" required>
+  UUID of the destination portfolio.
+</ParamField>
+
+```json Request body (optional asset filter)
+{
+  "asset_ids": ["1234567890", "1234567891"]
+}
+```
+
+<Note>
+  Items already saved under the same Steam asset ID are skipped automatically. Items that cannot be matched to a catalog entry are returned in `unresolved` and are not stored.
+</Note>
+
+---
+
+### POST /portfolio/:id/import/csv
+
+Uploads a CSV file to bulk import transactions or snapshot-style holdings into a portfolio.
+
+**Auth:** API key required
+
+<CodeGroup>
+
+```bash cURL
+curl -sS -X POST \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  -F "file=@transactions.csv" \
+  "https://api.cs2c.app/portfolio/YOUR_PORTFOLIO_ID/import/csv"
+```
+
+</CodeGroup>
+
+<ParamField path="portfolio_id" type="string" required>
+  UUID of the destination portfolio.
+</ParamField>
+
+<Note>
+  Both ledger and snapshot CSV formats are supported. The format is detected automatically from the CSV headers. Buy transactions imported from CSV can create missing portfolio items automatically.
+</Note>
+
+---
+
+### GET /portfolio/:id/export
+
+Downloads portfolio data as a CSV file.
+
+**Auth:** API key required
+
+<CodeGroup>
+
+```bash cURL
+curl -sS \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  -o portfolio.csv \
+  "https://api.cs2c.app/portfolio/YOUR_PORTFOLIO_ID/export?type=transactions"
+```
+
+</CodeGroup>
+
+<ParamField path="portfolio_id" type="string" required>
+  UUID of the portfolio to export.
+</ParamField>
+
+<ParamField query="type" type="string" default="transactions">
+  Export format. One of: `transactions`, `items`.
+</ParamField>
+
+---
+
+## Portfolio items
+
+### GET /portfolio/:id/items
+
+Returns the items currently stored in a portfolio.
+
+**Auth:** API key required
+
+<CodeGroup>
+
+```bash cURL
+curl -sS \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  "https://api.cs2c.app/portfolio/YOUR_PORTFOLIO_ID/items"
+```
+
+```python Python
+import os
+
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+portfolio_id = "YOUR_PORTFOLIO_ID"
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.PortfolioApi(client)
+    response = api.list_portfolio_items(
+        portfolio_id
+    )
+
+print(client.sanitize_for_serialization(response))
+```
+
+```typescript TypeScript
+import { Configuration, PortfolioApi } from "cs2cap";
+
+const accessToken = process.env.CS2C_API_KEY;
+
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
+}
+
+const portfolioId = "YOUR_PORTFOLIO_ID";
+
+const api = new PortfolioApi(new Configuration({ accessToken }));
+const response = await api.listPortfolioItems({ portfolioId });
+
+console.log(response);
+```
+
+</CodeGroup>
+
+<ParamField path="portfolio_id" type="string" required>
+  UUID of the portfolio.
+</ParamField>
+
+---
+
+### POST /portfolio/:id/items
+
+Manually adds one item to a portfolio.
+
+**Auth:** API key required
+
+<CodeGroup>
+
+```bash cURL
+curl -sS -X POST \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"item_id":4994,"quantity":2}' \
+  "https://api.cs2c.app/portfolio/YOUR_PORTFOLIO_ID/items"
+```
+
+```python Python
+import os
+
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+portfolio_id = "YOUR_PORTFOLIO_ID"
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.PortfolioApi(client)
+    response = api.add_item_to_portfolio(
+        portfolio_id,
+        cs2cap.PortfolioAddItemRequest(item_id=4994, quantity=2),
+    )
+
+print(client.sanitize_for_serialization(response))
+```
+
+```typescript TypeScript
+import { Configuration, PortfolioApi } from "cs2cap";
+
+const accessToken = process.env.CS2C_API_KEY;
+
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
+}
+
+const portfolioId = "YOUR_PORTFOLIO_ID";
+
+const api = new PortfolioApi(new Configuration({ accessToken }));
+const response = await api.addItemToPortfolio({ portfolioId, portfolioAddItemRequest: { itemId: 4994, quantity: 2 } });
+
+console.log(response);
+```
+
+</CodeGroup>
+
+<ParamField path="portfolio_id" type="string" required>
+  UUID of the portfolio.
+</ParamField>
+
+<ParamField body="item_id" type="integer">
+  Catalog item ID. Provide either `item_id` or `market_hash_name`.
+</ParamField>
+
+<ParamField body="quantity" type="integer" required>
+  Number of units to add.
+</ParamField>
+
+<ParamField body="phase" type="string">
+  Phase variant for Doppler/Gamma items, or `null`.
+</ParamField>
+
+```json Request body
+{
+  "item_id": 12632,
+  "quantity": 2,
+  "phase": null
+}
+```
+
+---
+
+### DELETE /portfolio/:id/items/:entry_id
+
+Removes a saved portfolio entry.
+
+**Auth:** API key required
+
+<CodeGroup>
+
+```bash cURL
+curl -sS -X DELETE \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  "https://api.cs2c.app/portfolio/YOUR_PORTFOLIO_ID/items/YOUR_ENTRY_ID"
+```
+
+```python Python
+import os
+
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+portfolio_id = "YOUR_PORTFOLIO_ID"
+entry_id = "YOUR_ENTRY_ID"
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.PortfolioApi(client)
+    response = api.remove_item_from_portfolio(
+        portfolio_id,
+        entry_id,
+    )
+
+print(client.sanitize_for_serialization(response))
+```
+
+```typescript TypeScript
+import { Configuration, PortfolioApi } from "cs2cap";
+
+const accessToken = process.env.CS2C_API_KEY;
+
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
+}
+
+const portfolioId = "YOUR_PORTFOLIO_ID";
+const entryId = "YOUR_ENTRY_ID";
+
+const api = new PortfolioApi(new Configuration({ accessToken }));
+const response = await api.removeItemFromPortfolio({ portfolioId, entryId });
+
+console.log(response);
+```
+
+</CodeGroup>
+
+<ParamField path="portfolio_id" type="string" required>
+  UUID of the portfolio.
+</ParamField>
+
+<ParamField path="entry_id" type="string" required>
+  Portfolio entry UUID. This is the UUID assigned to the portfolio entry — it is not the catalog `item_id`.
+</ParamField>
+
+<Note>
+  `entry_id` is the portfolio entry UUID, not the catalog `item_id`. You can retrieve it from `GET /portfolio/:id/items`.
+</Note>
+
+---
+
+## Transactions
+
+### GET /portfolio/:id/transactions
+
+Returns the portfolio's buy/sell ledger, newest first.
+
+**Auth:** API key required
+
+<CodeGroup>
+
+```bash cURL
+curl -sS \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  "https://api.cs2c.app/portfolio/YOUR_PORTFOLIO_ID/transactions"
+```
+
+```python Python
+import os
+
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+portfolio_id = "YOUR_PORTFOLIO_ID"
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.PortfolioApi(client)
+    response = api.list_transactions(
+        portfolio_id
+    )
+
+print(client.sanitize_for_serialization(response))
+```
+
+```typescript TypeScript
+import { Configuration, PortfolioApi } from "cs2cap";
+
+const accessToken = process.env.CS2C_API_KEY;
+
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
+}
+
+const portfolioId = "YOUR_PORTFOLIO_ID";
+
+const api = new PortfolioApi(new Configuration({ accessToken }));
+const response = await api.listTransactions({ portfolioId });
+
+console.log(response);
+```
+
+</CodeGroup>
+
+<ParamField path="portfolio_id" type="string" required>
+  UUID of the portfolio.
+</ParamField>
+
+---
+
+### POST /portfolio/:id/transactions
+
+Records a buy or sell transaction for an item in the portfolio.
+
+**Auth:** API key required
+
+<CodeGroup>
+
+```bash cURL
+curl -sS -X POST \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"item_id":4994,"type":"buy","quantity":1,"price":53000,"date":"2026-03-15","currency":"USD"}' \
+  "https://api.cs2c.app/portfolio/YOUR_PORTFOLIO_ID/transactions"
+```
+
+```python Python
+import os
+
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+portfolio_id = "YOUR_PORTFOLIO_ID"
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.PortfolioApi(client)
+    response = api.add_transaction(
+        portfolio_id,
+        cs2cap.TransactionCreateRequest(
+            item_id=4994,
+            type="buy",
+            quantity=1,
+            price=50000,
+            currency="USD",
+            transacted_at="2026-03-20T12:00:00Z",
+        ),
+    )
+
+print(client.sanitize_for_serialization(response))
+```
+
+```typescript TypeScript
+import { Configuration, PortfolioApi } from "cs2cap";
+
+const accessToken = process.env.CS2C_API_KEY;
+
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
+}
+
+const portfolioId = "YOUR_PORTFOLIO_ID";
+
+const api = new PortfolioApi(new Configuration({ accessToken }));
+const response = await api.addTransaction({
+  portfolioId,
+  transactionCreateRequest: {
+    itemId: 4994,
+    type: "buy",
+    quantity: 1,
+    price: 50000,
+    currency: "USD",
+    transactedAt: new Date("2026-03-20T12:00:00Z"),
+  },
+});
+
+console.log(response);
+```
+
+</CodeGroup>
+
+<ParamField path="portfolio_id" type="string" required>
+  UUID of the portfolio.
+</ParamField>
+
+<ParamField body="item_id" type="integer">
+  Catalog item ID. Provide either `item_id` or `market_hash_name`.
+</ParamField>
+
+<ParamField body="type" type="string" required>
+  Transaction direction. One of: `buy`, `sell`.
+</ParamField>
+
+<ParamField body="quantity" type="integer" required>
+  Number of units transacted.
+</ParamField>
+
+<ParamField body="price" type="number" required>
+  Price per unit in the specified currency.
+</ParamField>
+
+<ParamField body="date" type="string" required>
+  Transaction date in `YYYY-MM-DD` format.
+</ParamField>
+
+<ParamField body="marketplace" type="string">
+  Marketplace where the transaction occurred (e.g., `skinport`).
+</ParamField>
+
+<ParamField body="currency" type="string" required>
+  Currency for the price (ISO 4217).
+</ParamField>
+
+```json Request body
+{
+  "item_id": 1,
+  "type": "buy",
+  "quantity": 1,
+  "price": 2500,
+  "date": "2026-03-24",
+  "marketplace": "skinport",
+  "currency": "USD"
+}
+```
+
+<Note>
+  Buy transactions can automatically create portfolio items for items not yet tracked in the portfolio.
+</Note>
+
+---
+
+### PATCH /portfolio/:id/transactions/:tx_id
+
+Partially updates an existing transaction.
+
+**Auth:** API key required
+
+<CodeGroup>
+
+```bash cURL
+curl -sS -X PATCH \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"quantity":2,"price":52500}' \
+  "https://api.cs2c.app/portfolio/YOUR_PORTFOLIO_ID/transactions/YOUR_TX_ID"
+```
+
+```python Python
+import os
+
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+portfolio_id = "YOUR_PORTFOLIO_ID"
+transaction_id = "YOUR_TRANSACTION_ID"
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.PortfolioApi(client)
+    response = api.update_transaction(
+        portfolio_id,
+        transaction_id,
+        cs2cap.TransactionUpdateRequest(price=47500, currency="USD"),
+    )
+
+print(client.sanitize_for_serialization(response))
+```
+
+```typescript TypeScript
+import { Configuration, PortfolioApi } from "cs2cap";
+
+const accessToken = process.env.CS2C_API_KEY;
+
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
+}
+
+const portfolioId = "YOUR_PORTFOLIO_ID";
+const transactionId = "YOUR_TRANSACTION_ID";
+
+const api = new PortfolioApi(new Configuration({ accessToken }));
+const response = await api.updateTransaction({
+  portfolioId,
+  transactionId,
+  transactionUpdateRequest: { price: 47500, currency: "USD" },
+});
+
+console.log(response);
+```
+
+</CodeGroup>
+
+<ParamField path="portfolio_id" type="string" required>
+  UUID of the portfolio.
+</ParamField>
+
+<ParamField path="transaction_id" type="string" required>
+  UUID of the transaction to update.
+</ParamField>
+
+<ParamField body="quantity" type="integer">
+  Updated unit count.
+</ParamField>
+
+<ParamField body="price" type="number">
+  Updated price per unit.
+</ParamField>
+
+<ParamField body="date" type="string">
+  Updated date in `YYYY-MM-DD` format.
+</ParamField>
+
+<ParamField body="fee_amount" type="number">
+  Absolute fee paid, in the transaction currency.
+</ParamField>
+
+<ParamField body="fee_percentage" type="number">
+  Fee as a percentage of the transaction total.
+</ParamField>
+
+<ParamField body="marketplace" type="string">
+  Updated marketplace name.
+</ParamField>
+
+<ParamField body="note" type="string">
+  Free-text note for this transaction.
+</ParamField>
+
+<ParamField body="currency" type="string">
+  Updated transaction currency (ISO 4217).
+</ParamField>
+
+---
+
+### DELETE /portfolio/:id/transactions/:tx_id
+
+Permanently deletes a transaction from the portfolio ledger.
+
+**Auth:** API key required
+
+<CodeGroup>
+
+```bash cURL
+curl -sS -X DELETE \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  "https://api.cs2c.app/portfolio/YOUR_PORTFOLIO_ID/transactions/YOUR_TX_ID"
+```
+
+```python Python
+import os
+
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+portfolio_id = "YOUR_PORTFOLIO_ID"
+transaction_id = "YOUR_TRANSACTION_ID"
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.PortfolioApi(client)
+    response = api.delete_transaction(
+        portfolio_id,
+        transaction_id,
+    )
+
+print(client.sanitize_for_serialization(response))
+```
+
+```typescript TypeScript
+import { Configuration, PortfolioApi } from "cs2cap";
+
+const accessToken = process.env.CS2C_API_KEY;
+
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
+}
+
+const portfolioId = "YOUR_PORTFOLIO_ID";
+const transactionId = "YOUR_TRANSACTION_ID";
+
+const api = new PortfolioApi(new Configuration({ accessToken }));
+const response = await api.deleteTransaction({ portfolioId, transactionId });
+
+console.log(response);
+```
+
+</CodeGroup>
+
+<ParamField path="portfolio_id" type="string" required>
+  UUID of the portfolio.
+</ParamField>
+
+<ParamField path="transaction_id" type="string" required>
+  UUID of the transaction to delete.
+</ParamField>
+
+---
+
+## Historical valuation
+
+### GET /portfolio/:id/history
+
+Rebuilds daily portfolio values from the transaction ledger. Returns a time series of portfolio worth over the selected date range.
+
+**Auth:** API key required
+
+<CodeGroup>
+
+```bash cURL
+curl -sS \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  "https://api.cs2c.app/portfolio/YOUR_PORTFOLIO_ID/history?lookback=30d&currency=USD"
+```
+
+```python Python
+import os
+
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+portfolio_id = "YOUR_PORTFOLIO_ID"
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.PortfolioApi(client)
+    response = api.historical_saved_portfolio_valuation(
+        portfolio_id,
+        lookback="30d",
+        currency="USD",
+    )
+
+print(client.sanitize_for_serialization(response))
+```
+
+```typescript TypeScript
+import { Configuration, PortfolioApi } from "cs2cap";
+
+const accessToken = process.env.CS2C_API_KEY;
+
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
+}
+
+const portfolioId = "YOUR_PORTFOLIO_ID";
+
+const api = new PortfolioApi(new Configuration({ accessToken }));
+const response = await api.historicalSavedPortfolioValuation({ portfolioId, lookback: "30d", currency: "USD" });
+
+console.log(response);
+```
+
+</CodeGroup>
+
+<ParamField path="portfolio_id" type="string" required>
+  UUID of the portfolio.
+</ParamField>
+
+<ParamField query="start_date" type="string">
+  Inclusive start date in `YYYY-MM-DD` format.
+</ParamField>
+
+<ParamField query="end_date" type="string">
+  Inclusive end date in `YYYY-MM-DD` format. Defaults to today.
+</ParamField>
+
+<ParamField query="lookback" type="string">
+  Optional window such as `30d`. When provided, it overrides `start_date`.
+</ParamField>
+
+<ParamField query="currency" type="string" default="USD">
+  Target output currency (ISO 4217).
+</ParamField>
+
+<ParamField query="providers" type="string[]">
+  Optional provider filter. Repeat to pass multiple values.
+</ParamField>
+
+<ParamField query="limit" type="integer">
+  Maximum number of daily data points to return.
+</ParamField>
+
+<ParamField query="cursor" type="string">
+  Opaque cursor from the previous page for cursor-based pagination.
+</ParamField>
+
+<Note>
+  Historical valuation is daily only. Each day's value uses the best available price across your selected providers. If no price update exists for a given day, the most recent available price is used. `pagination.total` is always `-1` — use `next_cursor` to paginate.
+</Note>

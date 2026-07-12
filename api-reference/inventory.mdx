@@ -1,0 +1,218 @@
+---
+title: "Steam Inventory API: Fetch Your CS2 Items"
+description: "Fetch your linked Steam CS2 inventory or look up any player's public inventory by Steam64ID or vanity URL. Data is fetched live and never stored."
+---
+
+The Steam Inventory API lets you retrieve live CS2 inventory data directly from Steam. You can fetch your own inventory using your linked Steam account, or look up any player's public inventory by their Steam64 ID or vanity URL. Inventory data is fetched live on every request and is never stored by CS2Cap.
+
+## GET /inventory/steam
+
+Returns the authenticated user's live CS2 inventory from Steam. A linked Steam account is required — connect yours in your account settings before calling this endpoint.
+
+**Auth:** Bearer token + linked Steam account 
+
+<CodeGroup>
+
+```bash cURL
+curl -sS \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  "https://api.cs2c.app/inventory/steam"
+```
+
+```python Python
+import os
+
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.InventoryApi(client)
+    response = api.fetch_steam_inventory()
+
+print(client.sanitize_for_serialization(response))
+```
+
+```typescript TypeScript
+import { Configuration, InventoryApi } from "cs2cap";
+
+const accessToken = process.env.CS2C_API_KEY;
+
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
+}
+
+const api = new InventoryApi(new Configuration({ accessToken }));
+const response = await api.fetchSteamInventory();
+
+console.log(response);
+```
+
+</CodeGroup>
+
+```json Response example
+{
+  "data": [
+    {
+      "assetid": "12345678901234567",
+      "market_hash_name": "AK-47 | Redline (Field-Tested)",
+      "phase": null,
+      "name": "AK-47 | Redline",
+      "icon_url": "https://steamcommunity-a.akamaihd.net/economy/image/...",
+      "tradable": true,
+      "marketable": true,
+      "quantity": 1,
+      "float_value": 0.234512,
+      "paint_seed": 123,
+      "inspect_link": "steam://rungame/730/...",
+      "name_tag": "Collector's piece",
+      "stickers": [],
+      "charms": []
+    }
+  ],
+  "total_count": 1
+}
+```
+
+<ResponseField name="data[].assetid" type="string">
+  Steam asset ID for this specific instance of the item. Unique within the inventory.
+</ResponseField>
+
+<ResponseField name="data[].market_hash_name" type="string">
+  Full item name as it appears in the Steam market catalog.
+</ResponseField>
+
+<ResponseField name="data[].phase" type="string | null">
+  Doppler/Gamma phase for phase-variant items, or `null`.
+</ResponseField>
+
+<ResponseField name="data[].name" type="string">
+  Display name without wear condition.
+</ResponseField>
+
+<ResponseField name="data[].icon_url" type="string">
+  Steam CDN URL for the item's inventory icon.
+</ResponseField>
+
+<ResponseField name="data[].tradable" type="boolean">
+  Whether the item can currently be traded on Steam.
+</ResponseField>
+
+<ResponseField name="data[].marketable" type="boolean">
+  Whether the item can be listed on the Steam Community Market.
+</ResponseField>
+
+<ResponseField name="data[].quantity" type="integer">
+  Number of this item in the stack. Almost always `1` for CS2 items.
+</ResponseField>
+
+<ResponseField name="data[].float_value" type="number | null">
+  Wear float value (0.0–1.0) for weapon skins. `null` for non-weapon items.
+</ResponseField>
+
+<ResponseField name="data[].paint_seed" type="integer | null">
+  Pattern seed for weapon skins. `null` for items without a pattern.
+</ResponseField>
+
+<ResponseField name="data[].inspect_link" type="string | null">
+  Steam inspect link for viewing the item in-game. `null` for items that do not support inspection.
+</ResponseField>
+
+<ResponseField name="data[].name_tag" type="string | null">
+  Custom name tag applied to the item, or `null`.
+</ResponseField>
+
+<ResponseField name="data[].stickers" type="array | null">
+  Applied stickers. `null` when the item has none.
+</ResponseField>
+
+<ResponseField name="data[].charms" type="array | null">
+  Applied charms. `null` when the item has none.
+</ResponseField>
+
+<ResponseField name="total_count" type="integer">
+  Total number of items Steam reported in the inventory.
+</ResponseField>
+
+<Note>
+  This endpoint fetches live data on each call. Nothing is persisted by CS2Cap. `stickers` and `charms` may be `null` when an item has none applied.
+</Note>
+
+---
+
+## GET /inventory/steam/lookup
+
+Returns the live CS2 inventory for any Steam account. You can identify the target by their 17-digit Steam64 ID or their vanity URL name.
+
+**Auth:** Bearer token 
+
+<CodeGroup>
+
+```bash cURL
+curl -sS \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  "https://api.cs2c.app/inventory/steam/lookup?steam_id=anomaly"
+```
+
+```python Python
+import os
+
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.InventoryApi(client)
+    response = api.fetch_steam_inventory_by_steam_id(
+        steam_id="anomaly"
+    )
+
+print(client.sanitize_for_serialization(response))
+```
+
+```typescript TypeScript
+import { Configuration, InventoryApi } from "cs2cap";
+
+const accessToken = process.env.CS2C_API_KEY;
+
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
+}
+
+const api = new InventoryApi(new Configuration({ accessToken }));
+const response = await api.fetchSteamInventoryBySteamId({ steamId: "76561198000000000" });
+
+console.log(response);
+```
+
+</CodeGroup>
+
+<ParamField query="steam_id" type="string" required>
+  17-digit Steam64 ID (e.g., `76561198012345678`) or vanity URL name (e.g., `myusername`). The vanity URL name is the custom part of a Steam profile URL.
+</ParamField>
+
+```json Response example
+{
+  "data": [
+    {
+      "assetid": "12345678901234567",
+      "market_hash_name": "AK-47 | Redline (Field-Tested)",
+      "phase": null,
+      "name": "AK-47 | Redline",
+      "icon_url": "https://steamcommunity-a.akamaihd.net/economy/image/...",
+      "tradable": true,
+      "marketable": true,
+      "quantity": 1,
+      "float_value": 0.234512,
+      "paint_seed": 123,
+      "inspect_link": "steam://rungame/730/...",
+      "name_tag": null,
+      "stickers": null,
+      "charms": null
+    }
+  ],
+  "total_count": 1
+}
+```
+
+The response format is identical to `GET /inventory/steam`. See that endpoint's response field definitions above.

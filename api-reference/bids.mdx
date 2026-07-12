@@ -1,0 +1,435 @@
+---
+title: "Bids API: Buy Orders Across CS2 Marketplaces"
+description: "Query the highest active buy orders across CS2 marketplaces, stream the full live bids catalog as NDJSON, or batch-lookup up to 100 items at once."
+---
+
+The Bids API exposes the highest active buy orders placed across CS2 marketplaces. Use it to see where demand is strongest for an item, identify arbitrage opportunities between ask and bid prices, or track buy-order depth over time. You can query individual items, batch up to 100 at once, or stream the entire live bids catalog as NDJSON.
+
+---
+
+## GET /bids — List bids
+
+Returns the current highest buy order across buy-order-enabled providers. You can filter by item, phase, provider, and currency. Valid filters with no current matches return `200` with an empty `items` array; `503` indicates the data source is temporarily unavailable.
+
+**Tiers:** Starter, Pro, Quant
+
+<CodeGroup>
+
+```bash cURL
+curl -sS \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  "https://api.cs2c.app/bids?item_id=4994&providers=buff163&providers=csfloat&currency=USD"
+```
+
+```python Python
+import os
+
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.BidsApi(client)
+    response = api.list_bids(
+        item_id=4994,
+        providers=["buff163", "csfloat"],
+        currency="USD",
+    )
+
+print(client.sanitize_for_serialization(response))
+```
+
+```typescript TypeScript
+import { Configuration, BidsApi } from "cs2cap";
+
+const accessToken = process.env.CS2C_API_KEY;
+
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
+}
+
+const api = new BidsApi(new Configuration({ accessToken }));
+const response = await api.listBids({
+  itemId: 4994,
+  providers: ["buff163", "csfloat"],
+  currency: "USD",
+});
+
+console.log(response);
+```
+
+</CodeGroup>
+
+### Parameters
+
+<ParamField query="item_id" type="integer">
+  Filter by item ID. Takes precedence over `market_hash_name` and `phase` when provided.
+</ParamField>
+
+<ParamField query="market_hash_name" type="string">
+  Exact item name as it appears in inventory. Ignored when `item_id` is provided.
+</ParamField>
+
+<ParamField query="phase" type="string">
+  Doppler or Gamma Doppler phase filter. Can be used without `market_hash_name`. One of: `Phase 1`, `Phase 2`, `Phase 3`, `Phase 4`, `Ruby`, `Sapphire`, `Black Pearl`, `Emerald`.
+</ParamField>
+
+<ParamField query="providers" type="string[]">
+  Buy-order provider keys to include. Repeat to pass more than one: `providers=steam&providers=buff163`. Valid keys: `buff163`, `buffmarket`, `c5`, `csfloat`, `dmarket`, `dupefi`, `ecosteam`, `marketcsgo`, `steam`, `waxpeer`, `whitemarket`, `youpin`.
+</ParamField>
+
+<ParamField query="currency" type="string" default="USD">
+  Target currency. Accepts 200+ ISO 4217 codes. See [`GET /fx`](/api-reference/catalog#get-/fx-—-fx-rates) for the full list.
+</ParamField>
+
+<ParamField query="limit" type="integer">
+  Results per page. Range: 1–1000. Defaults to the caller's effective tier cap.
+</ParamField>
+
+<ParamField query="offset" type="integer" default="0">
+  Pagination offset.
+</ParamField>
+
+### Response example
+
+```json
+{
+  "meta": {...},
+  "items": [
+    {
+      "item_id": 12632,
+      "market_hash_name": "AK-47 | Redline (Field-Tested)",
+      "phase": null,
+      "provider": "buff163",
+      "highest_bid": 3001,
+      "num_bids": 232,
+      "timestamp": "2026-03-21T05:22:39.570895Z",
+      "last_updated": "2026-03-21T05:22:43.400024Z"
+    },
+    {
+      "item_id": 12632,
+      "market_hash_name": "AK-47 | Redline (Field-Tested)",
+      "phase": null,
+      "provider": "steam",
+      "highest_bid": 3923,
+      "num_bids": 57053,
+      "timestamp": "2026-03-21T05:00:30.858070Z",
+      "last_updated": "2026-03-21T05:00:34.493615Z"
+    },
+    {
+      "item_id": 12632,
+      "market_hash_name": "AK-47 | Redline (Field-Tested)",
+      "phase": null,
+      "provider": "dmarket",
+      "highest_bid": 3081,
+      "num_bids": 310,
+      "timestamp": "2026-03-21T05:22:07.475923Z",
+      "last_updated": "2026-03-21T05:22:10.170889Z"
+    }
+  ],
+  "pagination": {...}
+}
+```
+
+### Response fields
+
+<ResponseField name="item_id" type="integer">
+  Catalog item ID.
+</ResponseField>
+
+<ResponseField name="market_hash_name" type="string">
+  Full item name as it appears in the Steam economy.
+</ResponseField>
+
+<ResponseField name="phase" type="string">
+  Doppler phase, or `null` for non-phased items.
+</ResponseField>
+
+<ResponseField name="provider" type="string">
+  Provider key for this buy order.
+</ResponseField>
+
+<ResponseField name="highest_bid" type="integer">
+  Current best bid price in minor units of the response currency. For example, `3923` with `currency=EUR` = €39.23.
+</ResponseField>
+
+<ResponseField name="highest_bid_decimal" type="string">
+  `highest_bid` as a decimal string with adaptive precision: two decimal places at or above `1.0`, eight below it. Use this for low-value currencies such as crypto, where the integer `highest_bid` rounds to `0` (for example a $25.50 bid in BTC returns `highest_bid = 0`, `highest_bid_decimal = "0.00041600"`).
+</ResponseField>
+
+<ResponseField name="num_bids" type="integer">
+  Total number of active buy orders at this provider for the item.
+</ResponseField>
+
+<ResponseField name="timestamp" type="string">
+  When the bid or quantity last changed.
+</ResponseField>
+
+<ResponseField name="last_updated" type="string">
+  When this record was last refreshed, even if the bid stayed the same.
+</ResponseField>
+
+<Note>
+  If the item exists in the catalog but none of the selected providers currently has a buy order, the endpoint returns `200` with `items: []`.
+</Note>
+
+---
+
+## POST /bids — Stream full bids snapshot
+
+Streams the complete live buy-orders catalog as NDJSON, with one JSON object per line. The snapshot is captured once at request start and then streamed in full.
+
+**Tiers:** Starter, Pro, Quant
+**Rate limit:** rolling 24h quota of successful stream starts per API key — **50/day on `pro`, 300/day on `quant`**, counted separately from [`POST /prices`](/api-reference/prices#post-/prices-—-stream-full-prices-snapshot). One active stream per API key at a time (`409` otherwise, with `Retry-After`).
+
+<Tip>
+  **⚡ Why NDJSON?** A full market snapshot contains **hundreds of thousands** of bids. If this payload were delivered as a standard JSON array (`[...]`), your backend would be forced to decompress and buffer a massive ~200MB string into memory before `JSON.parse()` could even begin. This causes delayed processing, blocked event loops, and massive RAM spikes.
+
+  By streaming this endpoint as NDJSON, CS2Cap achieves a sub-1s TTFB (~500ms). Your backend can decompress and parse the stream line-by-line as packets arrive, which keeps memory usage minimal and allows for instant inserts in your database.
+</Tip>
+
+### Query parameters
+
+<ParamField query="providers" type="string[]">
+  Optional. Repeat to restrict the stream to specific buy-order providers. Uses the same provider keys as [`GET /bids`](/api-reference/bids#get-/bids-—-list-bids). If omitted, all buy-order providers are included.
+</ParamField>
+
+<CodeGroup>
+
+```bash cURL
+curl -sS -X POST \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  "https://api.cs2c.app/bids?providers=buff163"
+```
+
+```python Python
+import os
+
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.BidsApi(client)
+    response = api.stream_full_bids_snapshot(
+        providers=["buff163"]
+    )
+
+print(client.sanitize_for_serialization(response))
+```
+
+```typescript TypeScript
+import { Configuration, BidsApi } from "cs2cap";
+
+const accessToken = process.env.CS2C_API_KEY;
+
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
+}
+
+const api = new BidsApi(new Configuration({ accessToken }));
+const response = await api.streamFullBidsSnapshot({ providers: ["buff163"] });
+
+console.log(response);
+```
+
+</CodeGroup>
+
+### Response example
+
+```ndjson
+{"provider":"buff163","item_id":12632,"market_hash_name":"AK-47 | Redline (Field-Tested)","phase":null,"highest_bid":3001,"num_bids":232,"timestamp":"2026-03-21T05:22:39.570895Z","last_updated":"2026-03-21T05:22:43.400024Z"}
+{"provider":"csfloat","item_id":12632,"market_hash_name":"AK-47 | Redline (Field-Tested)","phase":null,"highest_bid":2946,"num_bids":2,"timestamp":"2026-03-21T04:59:16.565601Z","last_updated":"2026-03-21T05:03:40.837477Z"}
+{"provider":"steam","item_id":2,"market_hash_name":"'Blueberries' Buckshot | NSWC SEAL","phase":null,"highest_bid":289,"num_bids":4820,"timestamp":"2026-03-22T01:41:00.000000Z","last_updated":"2026-03-22T01:41:36.221322Z"}
+```
+
+---
+
+## POST /bids/batch — Batch bids lookup
+
+Returns current highest buy orders for up to 100 items in a single request, grouped by item ID across the selected buy-order providers.
+
+**Tiers:** Starter, Pro, Quant
+
+### Request body
+
+<ParamField body="item_ids" type="integer[]">
+  Array of item IDs to fetch. Provide at least one of `item_ids` or `market_hash_names`.
+</ParamField>
+
+<ParamField body="market_hash_names" type="string[]">
+  Array of market hash names to fetch. Provide at least one of `item_ids` or `market_hash_names`.
+</ParamField>
+
+<ParamField body="providers" type="string[]">
+  Buy-order provider keys to include. If omitted, all supported buy-order providers are queried. Valid keys: `buff163`, `buffmarket`, `c5`, `csfloat`, `dmarket`, `dupefi`, `ecosteam`, `marketcsgo`, `steam`, `waxpeer`, `whitemarket`, `youpin`.
+</ParamField>
+
+<ParamField body="currency" type="string" default="USD">
+  Target currency. Use [`GET /fx`](/api-reference/catalog#get-/fx-—-fx-rates) for supported ISO 4217 codes.
+</ParamField>
+
+<Warning>
+  **Phased items (Dopplers / Gammas):** `market_hash_name` resolves to the phaseless catalog entry and returns results for the cheapest variant regardless of phase. To target a specific phase (`Phase 1`, `Phase 2`, `Phase 3`, `Phase 4`, `Sapphire`, `Ruby`, `Emerald`, or `Black Pearl`), pass the corresponding `item_id` instead.
+</Warning>
+
+<CodeGroup>
+
+```bash cURL
+curl -sS -X POST \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"item_ids":[4994,12632],"providers":["buff163","csfloat"],"currency":"USD"}' \
+  "https://api.cs2c.app/bids/batch"
+```
+
+```python Python
+import os
+
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.BidsApi(client)
+    response = api.batch_bid_lookup(
+        cs2cap.BatchBidsRequest(
+            item_ids=[4994, 12632],
+            providers=["buff163", "csfloat"],
+            currency="USD",
+        )
+    )
+
+print(client.sanitize_for_serialization(response))
+```
+
+```typescript TypeScript
+import { Configuration, BidsApi } from "cs2cap";
+
+const accessToken = process.env.CS2C_API_KEY;
+
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
+}
+
+const api = new BidsApi(new Configuration({ accessToken }));
+const response = await api.batchBidLookup({
+  batchBidsRequest: {
+    itemIds: [4994, 12632],
+    providers: ["buff163", "csfloat"],
+    currency: "USD",
+  },
+});
+
+console.log(response);
+```
+
+</CodeGroup>
+
+### Request example
+
+```json
+{
+  "item_ids": [12632, 2],
+  "market_hash_names": ["AK-47 | Redline (Field-Tested)"],
+  "providers": ["buff163", "steam"],
+  "currency": "USD"
+}
+```
+
+### Response example
+
+```json
+{
+  "meta": {...},
+  "items": [
+    {
+      "item_id": 12632,
+      "market_hash_name": "AK-47 | Redline (Field-Tested)",
+      "phase": null,
+      "quotes": [
+        {
+          "provider": "buff163",
+          "highest_bid": 3001,
+          "num_bids": 232,
+          "timestamp": "2026-03-21T05:22:39Z",
+          "last_updated": "2026-03-21T05:22:43Z"
+        },
+        {
+          "provider": "steam",
+          "highest_bid": 3923,
+          "num_bids": 57053,
+          "timestamp": "2026-03-21T05:00:30Z",
+          "last_updated": "2026-03-21T05:00:34Z"
+        }
+      ]
+    },
+    {
+      "item_id": 2,
+      "market_hash_name": "'Blueberries' Buckshot | NSWC SEAL",
+      "phase": null,
+      "quotes": [
+        {
+          "provider": "buff163",
+          "highest_bid": 224,
+          "num_bids": 1,
+          "timestamp": "2026-03-21T05:27:20Z",
+          "last_updated": "2026-03-21T05:27:22Z"
+        }
+      ]
+    }
+  ],
+  "items_not_found": [],
+  "names_not_found": []
+}
+```
+
+### Response fields
+
+<ResponseField name="items" type="object[]">
+  Array of results, one entry per resolved item.
+
+  <Expandable title="item properties">
+    <ResponseField name="item_id" type="integer">
+      Catalog item ID.
+    </ResponseField>
+    <ResponseField name="market_hash_name" type="string">
+      Full item name.
+    </ResponseField>
+    <ResponseField name="phase" type="string">
+      Doppler phase or `null`.
+    </ResponseField>
+    <ResponseField name="quotes" type="object[]">
+      Per-provider bid quotes for this item.
+
+      <Expandable title="quote properties">
+        <ResponseField name="provider" type="string">
+          Provider key.
+        </ResponseField>
+        <ResponseField name="highest_bid" type="integer">
+          Highest buy order in minor units of the response currency.
+        </ResponseField>
+        <ResponseField name="highest_bid_decimal" type="string">
+          `highest_bid` as an adaptive-precision decimal string (eight places below `1.0`). Use for sub-cent currencies such as crypto.
+        </ResponseField>
+        <ResponseField name="num_bids" type="integer">
+          Total number of active buy orders at this provider.
+        </ResponseField>
+        <ResponseField name="timestamp" type="string">
+          When the bid was observed.
+        </ResponseField>
+        <ResponseField name="last_updated" type="string">
+          When the record was last refreshed.
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="items_not_found" type="integer[]">
+  Item IDs (including those resolved from `market_hash_names`) that returned no bids on any queried provider.
+</ResponseField>
+
+<ResponseField name="names_not_found" type="string[]">
+  `market_hash_names` that could not be resolved to any catalog item.
+</ResponseField>

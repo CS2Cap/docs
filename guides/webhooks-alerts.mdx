@@ -1,0 +1,153 @@
+---
+title: "Using CS2Cap Webhooks as an Alerting Backend"
+description: "Use CS2Cap for market monitoring and alert detection, then receive alert events in your own service or supported delivery platform."
+---
+
+CS2Cap webhooks are account-level delivery destinations, not per-alert routing rules.
+
+Use them when you want CS2Cap to watch the market, detect alert conditions, and hand the resulting event to your own service or a supported platform for downstream delivery.
+
+## The basic model
+
+```text
+Your customer
+  -> your app
+  -> CS2Cap alert config
+  -> CS2Cap monitors the market
+  -> CS2Cap sends alert.triggered to your webhook receiver
+  -> your app verifies the signature
+  -> your app routes the notification to the right customer
+```
+
+Alerts define what CS2Cap should watch. Webhooks define where CS2Cap should send machine-readable events when an alert fires.
+
+## Recommended SaaS pattern
+
+If you are building an alerting product for your own customers:
+
+1. Let customers define alert rules in your app.
+2. Mirror those rules into CS2Cap alerts.
+3. Point one or more CS2Cap webhook destinations at your backend receiver.
+4. Verify each incoming webhook signature.
+5. Route the event to the correct customer internally.
+6. Send email, SMS, Slack, Discord, push, or any other channel from your app.
+
+This pattern keeps customer routing in your product while CS2Cap owns market-side monitoring.
+
+## What CS2Cap owns
+
+- Monitors market data for enabled alert conditions
+- Supports `price_below`, `price_above`, and `spread_exceeds` alert rules
+- Creates `alert.triggered` events when conditions match
+- Sends delivery requests to every active webhook destination on your account
+- Retries delivery when your endpoint fails with retryable errors
+- Exposes alert event and webhook delivery history for debugging
+- Disables the alert after a trigger so it does not fire repeatedly until re-enabled
+
+## What your app owns
+
+- Stores your customers and their notification preferences
+- Decides which customer owns each alert rule
+- Creates and manages the matching CS2Cap alerts
+- Receives and verifies webhook events
+- Routes events to the correct customer or workspace
+- Handles your own billing, quotas, escalation rules, and downstream notifications
+
+## What gets configured in CS2Cap
+
+Create one or more alerts with [`POST /account/alerts`](/api-reference/alerts#post-/account/alerts) or [`POST /account/alerts/batch`](/api-reference/alerts#post-/account/alerts/batch).
+
+An alert defines the trigger:
+
+- `item_id`
+- `kind` (`price_below`, `price_above`, or `spread_exceeds`)
+- `threshold_value`
+- `threshold_currency` for price alerts
+- `is_enabled`
+
+Enabled alerts require at least one delivery channel:
+
+- a verified account email with alert emails enabled, or
+- an active Quant-tier webhook destination
+
+Create a webhook destination with [`POST /account/webhooks`](/api-reference/webhooks#post-/account/webhooks). The destination defines the delivery target and platform:
+
+- `label`
+- `url`
+- `platform`
+- `is_active`
+
+Supported platform keys are `custom`, `discord`, `telegram`, and `google_sheets`. Custom and Google Sheets destinations receive the signed CS2Cap event JSON. Discord and Telegram destinations receive native message payloads. Telegram URLs must include a `chat_id` query parameter for the Bot API `sendMessage` request.
+
+The plaintext signing secret is returned only when the webhook is created or rotated. Store it securely if your destination receives signed CS2Cap JSON.
+
+## What happens when an alert fires
+
+When one of your enabled alerts matches the current market state:
+
+1. CS2Cap creates an `alert.triggered` event.
+2. CS2Cap records delivery work for the configured delivery channels.
+3. CS2Cap enqueues a webhook delivery job for every active webhook destination on your account.
+4. CS2Cap disables the alert until you re-enable it.
+5. Custom and Google Sheets receivers verify the signature using the webhook signing secret.
+6. Your app decides which of your own users should receive the notification.
+7. Your app delivers the message through whatever channels you support.
+
+This means one alert can fan out to all active account-level webhook destinations, and one webhook receiver can route many customer alerts internally.
+
+## Signature and delivery debugging
+
+Custom and Google Sheets webhook requests include signing and routing headers:
+
+| Header | Use |
+| --- | --- |
+| `X-CS2C-Event-Type` | Event type. Currently `alert.triggered`. |
+| `X-CS2C-Delivery-Id` | Delivery job ID for debugging and idempotency. |
+| `X-CS2C-Timestamp` | Unix timestamp included in the signature payload. |
+| `X-CS2C-Signature` | HMAC-SHA256 signature for `timestamp.body`. |
+
+Use the secret returned by [`POST /account/webhooks`](/api-reference/webhooks#post-/account/webhooks) or [`POST /account/webhooks/{id}/rotate-secret`](/api-reference/webhooks#post-/account/webhooks/id/rotate-secret) to verify `X-CS2C-Signature`.
+
+For delivery debugging:
+
+- Use [`GET /account/alerts/events`](/api-reference/alerts#get-/account/alerts/events) to see alert trigger events and delivery summaries.
+- Use [`GET /account/webhooks/deliveries`](/api-reference/webhooks#get-/account/webhooks/deliveries) to inspect outbound webhook jobs.
+- Use [`GET /account/webhooks/deliveries/{delivery_id}`](/api-reference/webhooks#get-/account/webhooks/deliveries/id) to inspect a specific payload snapshot and attempt history.
+
+## How the API supports this
+
+| Need | Endpoint |
+| --- | --- |
+| Create one alert | [`POST /account/alerts`](/api-reference/alerts#post-/account/alerts) |
+| Create alerts in bulk | [`POST /account/alerts/batch`](/api-reference/alerts#post-/account/alerts/batch) |
+| List or search alerts | [`GET /account/alerts`](/api-reference/alerts#get-/account/alerts) |
+| Re-enable or update an alert | [`PATCH /account/alerts/{id}`](/api-reference/alerts#patch-/account/alerts/alert_id) |
+| Delete an alert | [`DELETE /account/alerts/{id}`](/api-reference/alerts#delete-/account/alerts/alert_id) |
+| Review alert trigger events | [`GET /account/alerts/events`](/api-reference/alerts#get-/account/alerts/events) |
+| Create a webhook destination | [`POST /account/webhooks`](/api-reference/webhooks#post-/account/webhooks) |
+| Manage webhook destinations | [`GET /account/webhooks`](/api-reference/webhooks#get-/account/webhooks), [`PATCH /account/webhooks/{id}`](/api-reference/webhooks#patch-/account/webhooks/id), [`DELETE /account/webhooks/{id}`](/api-reference/webhooks#delete-/account/webhooks/id) |
+| Rotate a webhook secret | [`POST /account/webhooks/{id}/rotate-secret`](/api-reference/webhooks#post-/account/webhooks/id/rotate-secret) |
+| Inspect webhook delivery history | [`GET /account/webhooks/deliveries`](/api-reference/webhooks#get-/account/webhooks/deliveries), [`GET /account/webhooks/deliveries/{delivery_id}`](/api-reference/webhooks#get-/account/webhooks/deliveries/id) |
+
+## What this is not
+
+- It is not one webhook URL per alert.
+- It is not one webhook URL per end customer.
+- It is not a direct customer-routing system inside CS2Cap.
+- It is not a replacement for your own notification logic.
+- It is not automatic recurring alert firing; triggered alerts must be re-enabled.
+
+## When this is a good fit
+
+- You want CS2Cap to do market-side monitoring.
+- You want your own product to own customer routing and notification delivery.
+- You want to avoid polling.
+- You want signed event delivery instead of scraping or periodic sync.
+- You are building a Quant-tier integration that can receive and verify webhooks.
+
+## When this is not a good fit
+
+- You need CS2Cap to deliver different alerts to different webhook URLs directly.
+- You need per-alert webhook selection inside CS2Cap.
+- You want CS2Cap to manage your end-customer notification preferences.
+- You do not have a backend that can receive signed HTTP requests.

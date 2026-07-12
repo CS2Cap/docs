@@ -1,0 +1,75 @@
+---
+title: "SDKs: Installation and Setup"
+description: "Install and configure the CS2Cap Python and TypeScript SDKs."
+---
+
+Use the official SDKs when you want typed request helpers instead of building HTTP requests by hand. Both SDKs use `https://api.cs2c.app` as the default API host and authenticate with your CS2Cap API key.
+
+<Note>
+  You can generate an API key from the Account page after verifying your email address.
+</Note>
+
+## Python
+
+The Python package is published as [`cs2cap`](https://pypi.org/project/cs2cap/) on PyPI.
+
+```bash
+pip install cs2cap
+```
+
+Set your API key in the environment:
+
+```bash
+export CS2C_API_KEY="sk_your_key_here"
+```
+
+Verify the install with a small catalog request:
+
+```python
+import os
+
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.ItemsApi(client)
+    response = api.list_items(q="AK-47", rarity_name="Covert", limit=5)
+
+    print(client.sanitize_for_serialization(response))
+```
+
+## TypeScript
+
+The TypeScript package is published as [`cs2cap`](https://www.npmjs.com/package/cs2cap) on npm.
+
+```bash
+npm install cs2cap
+```
+
+Set your API key in the environment:
+
+```bash
+export CS2C_API_KEY="sk_your_key_here"
+```
+
+Verify the install with a small catalog request:
+
+```typescript
+import { Configuration, ItemsApi } from "cs2cap";
+
+const accessToken = process.env.CS2C_API_KEY;
+
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
+}
+
+const api = new ItemsApi(new Configuration({ accessToken }));
+const response = await api.listItems({ q: "AK-47", rarityName: "Covert", limit: 5 });
+
+console.log(response);
+```
+
+## Examples
+
+Complete SDK examples are available in the [`CS2Cap/SDKs`](https://github.com/CS2Cap/SDKs) repository. The examples are grouped by tier so you can start with free endpoints and move to Pro or Quant workflows when your plan unlocks them.

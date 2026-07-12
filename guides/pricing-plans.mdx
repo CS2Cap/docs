@@ -1,0 +1,116 @@
+---
+title: "Pricing: Compare Free, Starter, Pro, and Quant Plans"
+description: "Compare CS2Cap's 4 API tiers — Free, Starter, Pro, and Quant — by monthly request quota, rate limits, endpoint access, and feature availability."
+---
+
+CS2Cap offers four API tiers to fit every use case, from quick evaluation to production-scale analytics:
+
+- **Free** gives you immediate access to **Live Prices + 30d of OHLCV data** at no cost, 
+- **Starter** adds **Live Buy Orders, Batch Queries + Higher Limits** for serious hobbyists, 
+- **Pro** unlocks the **Prices + Bids + Sales + History** endpoints for full visibility across the market,
+- **Quant** enables **Advanced Analytics, Arbitrage Scanner + Webhook Support**
+
+<Tip>
+Every tier is backed by the same 40-marketplace data network with 5–10 min freshness and all basic utility endpoints documented [here](/api-reference/catalog).
+</Tip>
+
+## At a glance
+
+|  | **Starter** | **Pro** | **Quant** |
+| --- | :---: | :---: | :---: |
+| Monthly price | **\$19** | **\$79** | **\$179** |
+| Requests / month | 50,000 | 500,000 | 1,000,000 |
+| Requests / minute | 40 | 100 | 300 |
+| Support | Basic | Basic | Priority (24 h SLA) |
+| Best for | Evaluation & hobby use | Traders, bots, tooling | Analytics, B2B, resellers |
+
+## Endpoint access
+
+| Endpoint | Starter | Pro | Quant |
+| :--- | :-: | :-: | :-: |
+| [`GET /prices`](/api-reference/prices#get-/prices-—-list-prices) — current lowest asks _(40 providers)_ | ✅ | ✅ | ✅ |
+| [`GET /bids`](/api-reference/bids#get-/bids-—-list-bids) — highest buy orders _(11 providers)_ | ✅ | ✅ | ✅ |
+| [`POST /prices/batch`](/api-reference/prices#post-/prices/batch-—-batch-prices-lookup) — multi-item price lookup | ✅ | ✅ | ✅ |
+| [`POST /bids/batch`](/api-reference/bids#post-/bids/batch-—-batch-bids-lookup) — multi-item buy-order lookup | ✅ | ✅ | ✅ |
+| [`GET /prices/candles`](/api-reference/prices#get-/prices/candles-—-price-candles-ohlcv) — 5m, 1h, 1d OHLCV (≤ 365 d) | ⚠️ 1d candles only -- max 30d* | ✅ | ✅ |
+| [`POST /prices`](/api-reference/prices#post-/prices-—-stream-full-prices-snapshot) — full prices snapshot (NDJSON stream) | — | ✅ | ✅ |
+| [`POST /bids`](/api-reference/bids#post-/bids-—-stream-full-bids-snapshot) — full bids snapshot (NDJSON stream) | — | ✅ | ✅ |
+| [`GET /prices/history`](/api-reference/prices#get-/prices/history-—-price-history) — per-provider pricing & quantity changes (≤ 35 d) | — | ✅ | ✅ |
+| [`GET /sales`](/api-reference/sales#get-/sales-—-list-recent-sales) — most recent sales details _(8 providers)_ | — | ✅ | ✅ |
+| [`GET /market/items/*`](/api-reference/market-analytics#get-/market/items) — enriched item metadata | — | ✅ | ✅ |
+| [`GET /market/arbitrage`](/api-reference/market-analytics#get-/market/arbitrage) — cross-market arbitrage | — | — | ✅ |
+| [`GET /market/indexes`](/api-reference/market-analytics#get-/market/indexes) — market cap indexes | — | — | ✅ |
+| [`GET /market/indicators`](/api-reference/market-analytics#get-/market/indicators) — technical indicators | — | — | ✅ |
+| All [`/items`](/api-reference/catalog#get-/items-—-list-items) — item catalog | ✅ | ✅ | ✅ |
+| All [`/portfolio`](/api-reference/portfolio) — portfolio management | ✅ | ✅ | ✅ |
+| All `/inventory/steam` — Steam inventory lookup | ✅ | ✅ | ✅ |
+
+<Note>
+  **Free and Starter candles restriction:** Free and Starter keys can only call [`GET /prices/candles`](/api-reference/prices#get-/prices/candles-—-price-candles-ohlcv) with `interval=1d` and a lookback window measured in whole days up to 30 days (for example `30d` or `30`). Pro and Quant have no such restriction and can request up to 365 days of candle history at any supported interval.
+</Note>
+
+## Features and add-ons
+
+| Feature | Starter | Pro | Quant |
+| --- | :-: | :-: | :-: |
+| Raw provider listing URLs in responses | — | ✅ | ✅ |
+| Bulk snapshot exports (NDJSON stream) | — | ✅ 50 req/day | ✅ 300 req/day |
+| Cross-market arbitrage scanner | — | — | ✅ |
+| Technical indicators (RSI, MACD, EMA, …) | — | — | ✅ |
+| Customer webhooks | — | — | ✅ |
+| Child API keys for sub-leasing | — | — | ✅ up to **25** per account |
+
+## Portfolio limits
+
+| Limit | Starter | Pro | Quant |
+| --- | :--: | :--: | :--: |
+| Max portfolios | 20 | 50 | 1,000 |
+| Max items per portfolio | 1,000 | 5,000 | 10,000 |
+
+## API key rules
+
+- **One active key per account** on all tiers. Reissuing a key immediately revokes the previous one.
+- **Quant supports child keys.** Quant accounts can create up to 25 child keys for sub-leasing. Each child key supports optional per-key quota and rate-limit caps.
+
+## Included on every tier
+
+Every plan — including Free — ships with the full breadth of CS2Cap's data network:
+
+- **40 supported marketplaces**, including BUFF163, Youpin898, C5, CSFloat, GameBoost, Skinport, DMarket, Waxpeer, Bitskins, Haloskins, Market.csgo, Tradeit, and more.
+- **Doppler phase differentiation** in prices, buy orders, and recent sales whenever the underlying marketplace exposes phase data.
+- **5–10 minute data freshness** across most providers. Prices and bids are cached for fast, consistent responses.
+- **Stable, machine-readable error codes** on every error response.
+- **Consistent minor-unit pricing** for all monetary values — for example, `2550` represents `$25.50`.
+
+## Billing
+
+Paid tiers are billed monthly through Stripe via card, or NOWPayments via cryptocurrency.
+
+- **Upgrades** take effect immediately and are prorated on the current invoice.
+- **Downgrades** take effect at the start of the next billing cycle. Until then, you retain your current tier's access.
+- **Payment failures** keep or return your account to the Free tier until the payment processor resolves the retry. No data is lost.
+- **Cancellation** can be done at any time through the Stripe customer portal. A cancelled subscription stays active until the end of the current billing cycle, then reverts to Free. Subscriptions paid through cryptocurrencies do not renew automatically and cannot be cancelled before the end of the billing period.
+
+## FAQ
+
+<AccordionGroup>
+  <Accordion title="Can I upgrade or downgrade at any time?">
+    Yes. Upgrades are immediate and prorated against the current billing period. Downgrades take effect at the end of the current billing cycle and can be reversed before then.
+  </Accordion>
+
+  <Accordion title="What happens if I hit my monthly quota?">
+    Further requests return `429 RATE_LIMIT_MONTHLY_QUOTA_EXCEEDED` until the next billing period begins. Per-minute rate limit violations return `429 RATE_LIMIT_EXCEEDED` with a `Retry-After` header indicating how long to wait.
+  </Accordion>
+
+  <Accordion title="Is historical data really 365 days?">
+    Yes. Pro and Quant include up to one year of per-item daily OHLCV history through [`GET /prices/candles`](/api-reference/prices#get-/prices/candles-—-price-candles-ohlcv). Granular per-provider history goes back up to 35 days through [`GET /prices/history`](/api-reference/prices#get-/prices/history-—-price-history).
+  </Accordion>
+
+  <Accordion title="Do I get all 40 marketplaces on Free?">
+    You can browse the provider catalog on every tier, but Free is limited to current prices from [`GET /prices`](/api-reference/prices#get-/prices-—-list-prices). Starter adds current bids and 100-item batch lookups, but not sales, history, analytics, listing URLs, or NDJSON snapshots.
+  </Accordion>
+
+  <Accordion title="How do I get an API key?">
+    Visit [cs2cap.com](https://cs2cap.com/?utm_source=docs&utm_medium=referral&utm_campaign=docs), create an account, verify your email address, and generate an API key from your [Account API Keys](https://cs2cap.com/account/api-keys?utm_source=docs&utm_medium=referral&utm_campaign=docs) page.
+  </Accordion>
+</AccordionGroup>

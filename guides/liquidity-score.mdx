@@ -1,0 +1,213 @@
+---
+title: "Liquidity Score: Inputs and Formula Calculation"
+description: "How CS2Cap calculates the 0-100 item liquidity score from market depth, bid/ask quality, churn, price stability, and external confirmation signals."
+---
+
+CS2Cap's liquidity score estimates how easy an item is to trade right now. It is an item-level score from `0` to `100`, where higher values mean deeper sell-side supply, stronger buy-side demand, more recent trading activity, steadier pricing, and better confirmation from major marketplaces.
+
+The score is exposed on market analytics responses such as [`GET /market/items/item_id`](/api-reference/market-analytics#get-/market/items/item_id) and market snapshots. Liquidity is currently scored on the 24-hour horizon.
+
+## Score summary
+
+The normal score is the sum of five components:
+
+| Component | Possible score (range) |
+| --- | --- |
+| Sell-side depth | `0` -- `18` |
+| Bid/ask quality | `0` -- `12` |
+| Recent activity | `0` -- `45` |
+| Price stability | `0` -- `8` (bonus) |
+| External confirmation | `0` -- `25` |
+
+The final score is rounded to the nearest integer and clipped to the `0-100` range.
+
+```text
+liquidity =
+  sell-side depth
+  + bid/ask quality
+  + recent activity
+  + price stability
+  + external confirmation
+```
+
+## Input data
+
+Liquidity is built from current market data and recent activity:
+
+| Input | What it means |
+| --- | --- |
+| Active sell listings | The number of currently available listings for the item across supported marketplaces. |
+| Current buy orders | The strongest currently available buy order compared with the cheapest currently available listing. |
+| Recent item consumption | How many units disappeared from active marketplace supply during the last 24 hours. This is used as the activity signal. |
+| Recent price observations | How many hours in the last day had usable item pricing, and how much those hourly prices moved. |
+| Major-market confirmation | Steam sales activity and Buff163 order-book quality, used as outside confirmation that the item is genuinely tradable. |
+
+Prices are normalized to USD before ratio calculations. The score is calculated from the current lowest ask and highest bid across eligible providers, not from a single marketplace unless only one provider has usable data.
+
+### Sell-side depth
+
+Sell-side depth measures how much supply exists for the item right now.
+
+- Range: `0-18`
+- Curve: logarithmic
+- Saturation point: `500` active listings
+
+The logarithmic curve means that the distance in score between an item with 1 vs 20 listings will be greater than an item with 400 vs 500 listings.
+
+<div className="liquidity-visual">
+  <p className="liquidity-visual-title">Sell-side depth climbs fast, then flattens</p>
+  <p className="liquidity-visual-note">The first few listings matter most. After the market is already deep, extra listings add less signal.</p>
+  <img src="/images/liquidity-depth.svg" alt="Sell-side depth curve from zero to eighteen points" className="liq-img" />
+</div>
+
+The result is clipped to `18`.
+
+### Bid/ask quality
+
+Bid/ask quality measures how close the strongest buyer is to the cheapest seller. A buyer offering `$95` against a cheapest listing of `$100` is much healthier than a buyer offering `$50` against that same listing.
+
+- Range: `0-12`
+- Buyer offers 50% or less of the cheapest listing: `0` points
+- Buyer offers 95% or more of the cheapest listing: `12` points
+- Between 50% and 95%: scales linearly
+
+A tighter gap means buyers are already close to sellers, so the item is easier to exit without a large discount.
+
+<div className="liquidity-visual">
+  <p className="liquidity-visual-title">Bid/ask quality is flat, then linear, then capped</p>
+  <p className="liquidity-visual-note">Weak buy orders add no confidence. Once buyers get close to sellers, each step tighter adds predictable score.</p>
+  <img src="/images/liquidity-bidask.svg" alt="Bid ask quality ramp from zero to twelve points" className="liq-img" />
+</div>
+
+### Recent activity
+
+Recent activity measures how much of the item was consumed from active marketplace supply during the last 24 hours.
+
+- Range: `0-45`
+- Curve: logarithmic
+- Saturation point: `200` consumed units in the last 24h
+
+This measures how many units left active marketplace supply in the last 24 hours, which closely approximates actual sales volume.
+
+<div className="liquidity-visual">
+  <p className="liquidity-visual-title">Recent activity rewards real movement</p>
+  <p className="liquidity-visual-note">The curve gives strong credit once an item is clearly moving, then slows as activity approaches the cap.</p>
+  <img src="/images/liquidity-activity.svg" alt="Recent activity curve from zero to forty five points" className="liq-img" />
+</div>
+
+### Price stability
+
+Price stability rewards items that have been observed consistently and have not had extreme hourly price swings.
+
+- Range: `0-8` (bonus)
+- Observation density max: `4` points
+- Price stability max: `4` points
+- Window: last 24h hourly close prices
+
+Half of this component comes from observation density: an item seen in more hourly periods gets more credit than an item seen only once or twice.
+
+The other half comes from price steadiness. Items with very stable hourly prices get the most credit. Items with large swings relative to their average price lose stability points, and extremely volatile items receive no credit for the steadiness half.
+
+<div className="liquidity-visual">
+  <p className="liquidity-visual-title">Price stability needs coverage and calm pricing</p>
+  <p className="liquidity-visual-note">A stable item is seen often and does not swing wildly relative to its usual price.</p>
+  <div className="liquidity-stability" aria-label="Price stability contribution meters">
+    <div className="liquidity-meter-row">
+      <span className="liquidity-meter-label">Recent coverage</span>
+      <span className="liquidity-meter"><span className="liquidity-meter-fill liquidity-meter-fill-stability" /></span>
+      <span className="liquidity-meter-value">up to 4 pts</span>
+    </div>
+    <div className="liquidity-meter-row">
+      <span className="liquidity-meter-label">Price steadiness</span>
+      <span className="liquidity-meter"><span className="liquidity-meter-fill liquidity-meter-fill-volatility" /></span>
+      <span className="liquidity-meter-value">up to 4 pts</span>
+    </div>
+    <div className="liquidity-meter-row liquidity-meter-scale">
+      <span className="liquidity-meter-label" />
+      <span className="liquidity-scale-ticks">
+        <span>1</span>
+        <span>2</span>
+        <span>3</span>
+        <span>4</span>
+      </span>
+      <span className="liquidity-meter-value">points</span>
+    </div>
+    <p className="liquidity-stability-caption">Each marker is the point unlocked at that threshold. Sparse observations or sharp relative price movement reduce this component, even if the current bid and ask look healthy.</p>
+  </div>
+</div>
+
+Price stability is a bonus added into the score's remaining room below 100 — it sharpens ranking but never holds a fully-liquid item below 100.
+
+### External confirmation
+
+External confirmation adds independent evidence from Steam and Buff163.
+
+| Signal | Max points | How it works |
+| :---: | :---: | --- |
+| Steam sales activity | 15 | Logarithmic curve, saturates at `120` sold in 24h |
+| Buff163 listing depth | 6 | Logarithmic curve, saturates at `30` listings |
+| Buff163 tight gap bonus | 4 | Added when Buff163 bid/ask ratio is at least `0.85` |
+
+
+<div className="liquidity-visual">
+  <p className="liquidity-visual-title">External confirmation is additive</p>
+  <p className="liquidity-visual-note">Major-market evidence can add up to 25 points when Steam activity and Buff163 order-book quality agree.</p>
+  <div className="liquidity-stack" aria-label="External confirmation stacked contribution bar">
+    <div className="liquidity-stack-bar">
+      <span className="liquidity-stack-segment liquidity-stack-steam">15</span>
+      <span className="liquidity-stack-segment liquidity-stack-depth">6</span>
+      <span className="liquidity-stack-segment liquidity-stack-gap">4</span>
+    </div>
+    <div className="liquidity-stack-legend">
+      <span className="liquidity-stack-legend-item"><span className="liquidity-swatch swatch-steam" />Steam activity</span>
+      <span className="liquidity-stack-legend-item"><span className="liquidity-swatch swatch-depth" />Buff163 depth</span>
+      <span className="liquidity-stack-legend-item"><span className="liquidity-swatch swatch-gap" />Tight buy-side confirmation</span>
+    </div>
+  </div>
+</div>
+
+#### High-tier external override
+
+Some expensive items have little or no Steam sold volume but are still highly liquid. CS2Cap has a narrow high-tier override for those cases.
+
+The override can increase the external confirmation component when **all of these** are true:
+
+- Steam volume is missing or at most `1`
+- Buff163 has at least `5` listings
+- Buff163 ask is at least `$700`
+- Buff163 bid/ask ratio is at least `0.85`
+
+When this applies, the response marks that the high-tier override was used.
+
+## API fields
+
+Analytics responses ([`GET /market/items/*`](/api-reference/market-analytics#get-/market/items) endpoints) include the total score and component breakdown:
+
+```json
+{
+  "liquidity": 78,
+  "listing_score": 15,
+  "gap_score": 10,
+  "volume_score": 35,
+  "stability_score": 10,
+  "external_score": 8,
+  "liquidity_last_updated": "2026-03-21T06:48:43.193895Z"
+}
+```
+
+Use the component fields to understand why an item scored the way it did. For example, a score can be high on listing depth, spread, and churn while still losing points because the Steam/Buff163 external confirmation is weak or stale.
+
+## Caching and freshness
+
+Liquidity scores update as market data changes. There may be a brief delay between a price change and the corresponding score update.
+
+## How to interpret scores
+
+| Score | Interpretation |
+| :---: | --- |
+| `80-100` | **Very liquid**. Strong depth, tight bids, meaningful churn, and good confirmation signals. |
+| `60-79` | **Liquid**. Tradable under normal conditions, but one or two components may be weaker. |
+| `30-59` | **Moderate or situational liquidity**. Check spread, depth, and recent volume before relying on fast execution. |
+| `0-29` | **Low liquidity**. The item may be thin, stale, volatile, or poorly confirmed by external signals. |
+
+Liquidity is a tradability signal, not a price forecast. A high score means the item is easier to buy or sell with less friction. It does not mean the item is underpriced or expected to rise.

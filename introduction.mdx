@@ -1,0 +1,51 @@
+---
+title: "CS2Cap API: Build on Normalized CS2 Market Data"
+description: "CS2Cap aggregates normalized prices, buy orders, sales, analytics, and portfolio data from 40 CS2 marketplaces into one unified REST API."
+---
+
+CS2Cap is a REST API that aggregates and normalizes market data from 40 CS2 marketplaces — including BUFF163, CSFloat, GameBoost, Skinport, Steam, and more. Whether you're building a trading bot, pricing dashboard, arbitrage scanner, or portfolio tracker, CS2Cap eliminates the work of integrating each marketplace individually and delivers consistent, structured data through a single base URL: `https://api.cs2c.app/v1`.
+
+## Key capabilities
+
+| Capability | Endpoints | Description |
+| --- | --- | --- |
+| **Price data** | [`/prices`](/api-reference/prices), [`/prices/history`](/api-reference/prices#get-/prices/history-—-price-history) | Current lowest asks and historical candles across providers |
+| **Buy orders** | [`/bids`](/api-reference/bids) | Highest buy order snapshots from bid-enabled marketplaces |
+| **Sales** | [`/sales`](/api-reference/sales) | Completed transaction records with price and timestamp |
+| **Candle data** | [`/prices/candles`](/api-reference/prices#get-/prices/candles-—-price-candles-ohlcv) | OHLCV candles aggregated across providers |
+| **Analytics** | [`/market/indicators`](/api-reference/market-analytics#get-/market/indicators), [`/market/arbitrage`](/api-reference/market-analytics#get-/market/arbitrage) | Technical indicators, arbitrage edges, and liquidity scores |
+| **Portfolio** | [`/portfolio`](/api-reference/portfolio) | Track holdings, import from Steam, and value in real time |
+| **FX conversion** | [`/fx`](/api-reference/catalog#get-/fx-—-fx-rates), `?currency=` param | On-the-fly currency conversion on all price fields |
+| **Item catalog** | [`/items`](/api-reference/catalog#get-/items-—-list-items), [`/providers`](/api-reference/catalog#get-/providers-—-list-providers) | Item identity, metadata, phase, wear, and provider details |
+
+## Tiers
+
+CS2Cap offers four tiers. All tiers use the same endpoints and authentication model — tier determines your rate limits, monthly quota, and which endpoints are accessible.
+
+| Tier | Requests/min | Requests/month | Notes |
+| --- | --- | --- | --- |
+| **Free** | 20 | 1,000 | Prices endpoint only |
+| **Starter** | 40 | 50,000 | Prices, bids, and 100-item batch lookups |
+| **Pro** | 100 | 500,000 | Prices, bids, sales, portfolio |
+| **Quant** | 300 | 1,000,000 | All endpoints including analytics |
+
+<Note>
+  Starter includes current prices and bids for known item sets. Sales, raw history, market analytics, listing URLs, and NDJSON snapshots require Pro or Quant where applicable.
+</Note>
+
+## Where to go next
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="bolt" href="/quickstart">
+    Make your first API call in under 5 minutes with cURL, Python, or JavaScript.
+  </Card>
+  <Card title="Authentication" icon="key" href="/authentication">
+    Get your API key and learn how to authenticate every request.
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/overview">
+    Explore all endpoints: prices, bids, sales, analytics, and more.
+  </Card>
+  <Card title="Pricing & Plans" icon="credit-card" href="/guides/pricing-plans">
+    Compare Free, Starter, Pro, and Quant tiers by endpoint access and quotas.
+  </Card>
+</CardGroup>

@@ -1,0 +1,298 @@
+---
+title: "Sales API: Recent CS2 Sales with Float and Stickers"
+description: "Retrieve recent CS2 sale records across marketplaces, including float, paint seed, stickers, charms, and inspect links where available."
+---
+
+The Sales API returns the most recent completed transactions across the supported marketplaces, newest first. With no filters it returns a global feed of recent sales across all items; add `item_id` or `market_hash_name` to narrow to a single item. You can also filter historical rows by float range, exact paint seed, sticker names, or charm name when the provider exposes those values. Results include per-item detail that goes beyond price alone: float values, paint seeds, sticker wear, charm patterns, and inspect links when the provider exposes them. Results refresh roughly once every 24 hours, so they may be up to a day old. Some item categories may not include sales data.
+
+---
+
+## GET /sales — List recent sales
+
+Returns recent sale records ordered by sale time (`sold_at`), newest first. Without an item filter this is the global recent-sales feed; with `item_id` or `market_hash_name` it returns sales for that item. Use `min_float`, `max_float`, `paint_seed`, `stickers`, and `charms` to search sales with specific item details. Use `cursor` to page through results.
+
+**Tiers:** Pro, Quant
+
+<CodeGroup>
+
+```bash cURL
+curl -sS \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  "https://api.cs2c.app/sales?item_id=4994&providers=csfloat&min_float=0.10&max_float=0.20&paint_seed=815&charms=Semi-Precious&currency=USD&limit=20"
+```
+
+```python Python
+import os
+
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.SalesApi(client)
+    response = api.list_recent_sales(
+        item_id=4994,
+        providers=["csfloat"],
+        min_float=0.10,
+        max_float=0.20,
+        paint_seed=815,
+        charms="Semi-Precious",
+        currency="USD",
+        limit=20,
+    )
+
+print(client.sanitize_for_serialization(response))
+```
+
+```typescript TypeScript
+import { Configuration, SalesApi } from "cs2cap";
+
+const accessToken = process.env.CS2C_API_KEY;
+
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
+}
+
+const api = new SalesApi(new Configuration({ accessToken }));
+const response = await api.listRecentSales({ itemId: 4994, providers: ["csfloat"], minFloat: 0.10, maxFloat: 0.20, paintSeed: 815, charms: "Semi-Precious", currency: "USD", limit: 20 });
+
+console.log(response);
+```
+
+</CodeGroup>
+
+### Parameters
+
+<ParamField query="item_id" type="integer">
+  Filter by item ID. Takes precedence over `market_hash_name` and `phase` when provided.
+</ParamField>
+
+<ParamField query="market_hash_name" type="string">
+  Exact item name as it appears in inventory. Ignored when `item_id` is provided.
+</ParamField>
+
+<ParamField query="phase" type="string">
+  Doppler or Gamma Doppler phase filter. One of: `Phase 1`, `Phase 2`, `Phase 3`, `Phase 4`, `Ruby`, `Sapphire`, `Black Pearl`, `Emerald`. Ignored when `item_id` is provided.
+</ParamField>
+
+<ParamField query="providers" type="string[]">
+  Provider keys to include. Repeat to pass multiple values: `providers=buff163&providers=csfloat`. Valid keys: `buff163`, `c5`, `csfloat`, `csgo500`, `csgoempire`, `dmarket`, `youpin`.
+</ParamField>
+
+<ParamField query="min_float" type="number">
+  Inclusive minimum item float value. Must be between `0.0` and `1.0`.
+</ParamField>
+
+<ParamField query="max_float" type="number">
+  Inclusive maximum item float value. Must be between `0.0` and `1.0`.
+</ParamField>
+
+<ParamField query="paint_seed" type="integer">
+  Exact paint seed value. Must be between `0` and `999`.
+</ParamField>
+
+<ParamField query="stickers" type="string[]">
+  Sticker names that must all be present on the sold item. Repeat to require multiple stickers: `stickers=Battle-Scarred+(Holo)&stickers=Dragon+Lore`.
+</ParamField>
+
+<ParamField query="charms" type="string">
+  Charm/keychain name that must be present on the sold item. Only one `charms` value is allowed.
+</ParamField>
+
+<ParamField query="currency" type="string" default="USD">
+  Target currency. Accepts 200+ ISO 4217 codes. See [`GET /fx`](/api-reference/catalog#get-/fx-—-fx-rates) for the full list.
+</ParamField>
+
+<ParamField query="limit" type="integer">
+  Results per page. Defaults to the caller's effective tier cap: `100` for Pro, `1000` for Quant.
+</ParamField>
+
+<ParamField query="cursor" type="string">
+  Cursor for keyset pagination. Pass the `next_cursor` value from the previous response.
+</ParamField>
+
+### Response example
+
+```json
+{
+  "meta": {
+    "currency": "USD",
+    "filters": {
+      "item_id": 6154,
+      "market_hash_name": "AWP | Gungnir (Field-Tested)",
+      "phase": null,
+      "requested_providers": ["csfloat", "buff163"],
+      "min_float": 0.1,
+      "max_float": 0.2,
+      "paint_seed": 815,
+      "stickers": null,
+      "charms": "semi-precious",
+      "limit": 100
+    },
+    "providers_queried": ["csfloat", "buff163"],
+    "result_count": 2
+  },
+  "items": [
+    {
+      "date": "2026-03-13T01:31:47.752001Z",
+      "provider": "csfloat",
+      "price": 846105,
+      "currency": "USD",
+      "item_id": 6154,
+      "market_hash_name": "AWP | Gungnir (Field-Tested)",
+      "phase": null,
+      "float": 0.2155461460351944,
+      "paint_seed": 815,
+      "stickers": [
+        {
+          "name": "Sticker | zevy | Budapest 2025",
+          "slot": 2,
+          "wear": 0.74
+        },
+        {
+          "name": "Sticker | zont1x | Budapest 2025",
+          "slot": 0,
+          "wear": 0.73
+        }
+      ],
+      "charms": [
+        {
+          "name": "Charm | Semi-Precious",
+          "pattern_id": 66122
+        }
+      ],
+      "inspect": {
+        "in_game": "steam://rungame/730/76561202255233023/+csgo_econ_action_preview%20...",
+        "screenshot_front": "https://csfloat.pics/m/1640912832771024139/playside.png?v=3",
+        "screenshot_back": "https://csfloat.pics/m/1640912832771024139/backside.png?v=3"
+      }
+    },
+    {
+      "date": "2026-03-05T16:00:00+00:00",
+      "provider": "buff163",
+      "price": 942052,
+      "currency": "USD",
+      "item_id": 6154,
+      "market_hash_name": "AWP | Gungnir (Field-Tested)",
+      "phase": null,
+      "float": 0.15253503620624542,
+      "paint_seed": 105,
+      "stickers": null,
+      "charms": [
+        {
+          "name": "Charm | Semi-Precious",
+          "pattern_id": 79972
+        }
+      ],
+      "inspect": {
+        "in_game": "steam://rungame/730/76561202255233023/+csgo_econ_action_preview%20...",
+        "screenshot_front": "https://spect.fp.ps.netease.com/file/69aadbc88046f513e7f7de78TiWERWCN07",
+        "screenshot_back": "https://spect.fp.ps.netease.com/file/69aadbc88046f513e7f7de78TiWERWCN07"
+      }
+    }
+  ],
+  "pagination": {
+    "limit": 100,
+    "offset": 0,
+    "total": -1,
+    "has_next": true,
+    "has_prev": false,
+    "next_cursor": "MjAyNi0wMy0wNVQxNjowMDowMCswMDowMHw5ODc2"
+  }
+}
+```
+
+### Response fields
+
+<ResponseField name="date" type="string">
+  ISO 8601 timestamp of the sale.
+</ResponseField>
+
+<ResponseField name="provider" type="string">
+  Provider key where the sale occurred.
+</ResponseField>
+
+<ResponseField name="price" type="integer">
+  Sale price in minor units of the response currency. For example, `846105` in USD = $8,461.05.
+</ResponseField>
+
+<ResponseField name="currency" type="string">
+  ISO 4217 currency code for the returned price.
+</ResponseField>
+
+<ResponseField name="item_id" type="integer">
+  Catalog item ID.
+</ResponseField>
+
+<ResponseField name="market_hash_name" type="string">
+  Full item name as it appears in the Steam economy.
+</ResponseField>
+
+<ResponseField name="phase" type="string">
+  Doppler phase, or `null` for non-phased items.
+</ResponseField>
+
+<ResponseField name="float" type="number">
+  Float value of the sold item. May be `null` if not provided by the source.
+</ResponseField>
+
+<ResponseField name="paint_seed" type="integer">
+  Paint seed (pattern index) of the sold item. May be `null` if not provided by the source.
+</ResponseField>
+
+<ResponseField name="stickers" type="object[]">
+  Array of stickers applied to the item. May be `null` if not available.
+
+  <Expandable title="sticker properties">
+    <ResponseField name="name" type="string">
+      Full sticker name.
+    </ResponseField>
+    <ResponseField name="slot" type="integer">
+      Slot position (0–4).
+    </ResponseField>
+    <ResponseField name="wear" type="number">
+      Sticker wear value from 0 (pristine) to 1 (fully worn).
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="charms" type="object[]">
+  Array of charms attached to the item. May be `null` if not available.
+
+  <Expandable title="charm properties">
+    <ResponseField name="name" type="string">
+      Full charm name.
+    </ResponseField>
+    <ResponseField name="pattern_id" type="integer">
+      Charm pattern identifier.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="inspect" type="object">
+  Inspect links for the sold item. May be `null` if not provided by the source.
+
+  <Expandable title="inspect properties">
+    <ResponseField name="in_game" type="string">
+      Steam in-game inspect link.
+    </ResponseField>
+    <ResponseField name="screenshot_front" type="string">
+      URL to a front-side screenshot of the item.
+    </ResponseField>
+    <ResponseField name="screenshot_back" type="string">
+      URL to a back-side screenshot of the item.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<Note>
+  Results refresh roughly once every 24 hours, so they may be up to a day old.
+</Note>
+
+<Note>
+  Results are cursor-paginated over sale time. Follow `pagination.next_cursor` to page forward; `pagination.total` is always `-1` (the count is intentionally skipped). The final page returns `has_next: false` and `next_cursor: null`.
+</Note>
+
+<Note>
+  `stickers`, `charms`, `float`, `paint_seed`, and `inspect` depend on the provider's data and may be `null`. Not all providers expose full item details on completed sales.
+</Note>

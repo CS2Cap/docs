@@ -1,0 +1,252 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "name": "CS2Cap",
+  "theme": "maple",
+  "logo": {
+    "light": "https://api.cs2c.app/favicon.ico",
+    "dark": "https://api.cs2c.app/favicon.ico",
+    "href": "https://cs2cap.com/"
+  },
+  "favicon": "https://api.cs2c.app/favicon.ico",
+  "appearance": {
+    "default": "dark"
+  },
+  "colors": {
+    "primary": "#1d6ef3",
+    "light": "#3d8ef8",
+    "dark": "#1458d6"
+  },
+  "background": {
+    "dark": "#080d14",
+    "decoration": "grid"
+  },
+  "navbar": {
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/CS2Cap/docs"
+    },
+    "links": [
+      {
+        "href": "https://cs2cap.com/account/api-keys",
+        "label": "Get an API key"
+      }
+    ]
+  },
+  "css": "custom.css",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "sdks",
+              "authentication",
+              "core-concepts"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/pricing-plans",
+              "guides/rate-limits",
+              "guides/liquidity-score",
+              "guides/portfolio",
+              "guides/webhooks-alerts"
+            ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              "reference/field-reference",
+              "reference/error-codes",
+              "reference/providers",
+              "changelog"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "api-reference/overview"
+            ]
+          },
+          {
+            "group": "Market Data",
+            "pages": [
+              "api-reference/prices",
+              "api-reference/bids",
+              "api-reference/sales",
+              "api-reference/catalog"
+            ]
+          },
+          {
+            "group": "Analytics",
+            "pages": [
+              "api-reference/market-analytics"
+            ]
+          },
+          {
+            "group": "Portfolio",
+            "pages": [
+              "api-reference/inventory",
+              "api-reference/portfolio"
+            ]
+          },
+          {
+            "group": "Account",
+            "pages": [
+              "api-reference/account",
+              "api-reference/alerts",
+              "api-reference/sub-keys",
+              "api-reference/webhooks"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "api": {
+    "openapi": "openapi.json",
+    "params": {
+      "expanded": "closed"
+    },
+    "playground": {
+      "display": "interactive",
+      "credentials": false
+    },
+    "examples": {
+      "defaults": "required",
+      "languages": [
+        "javascript",
+        "python",
+        "go"
+      ],
+      "prefill": true,
+      "autogenerate": true
+    },
+    "url": "full",
+    "mdx": {
+      "auth": {
+        "method": "bearer",
+        "name": "Authorization"
+      },
+      "server": "https://api.cs2c.app"
+    }
+  },
+  "seo": {
+    "indexing": "all"
+  },
+  "description": "One free REST API for real-time CS2 skin prices, buy orders, sales history, items, and analytics across 40+ marketplaces. Built for developers, trading tools, and data teams.",
+  "fonts": {
+    "family": "Geist"
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/CS2Cap",
+      "discord": "https://discord.gg/a2CgnHNzse",
+      "x": "https://x.com/dadscap"
+    },
+    "links": [
+      {
+        "header": "Learn More",
+        "items": [
+          {
+            "label": "Pricing",
+            "href": "https://cs2cap.com/api-info"
+          },
+          {
+            "label": "Uptime",
+            "href": "https://status.cs2c.app/status/api"
+          },
+          {
+            "label": "Terms of Service",
+            "href": "https://cs2cap.com/terms"
+          },
+          {
+            "label": "Privacy Policy",
+            "href": "https://cs2cap.com/privacy"
+          }
+        ]
+      },
+      {
+        "header": "Repositories",
+        "items": [
+          {
+            "label": "docs",
+            "href": "https://github.com/CS2Cap/docs"
+          },
+          {
+            "label": "SDKs",
+            "href": "https://github.com/CS2Cap/SDKs"
+          },
+          {
+            "label": "CLI",
+            "href": "https://github.com/CS2Cap/CLI"
+          },
+          {
+            "label": "CS2-API",
+            "href": "https://github.com/CS2Cap/CS2-API"
+          }
+        ]
+      }
+    ]
+  },
+  "styling": {
+    "eyebrows": "breadcrumbs",
+    "codeblocks": {
+      "theme": "github-dark-default"
+    },
+    "latex": true
+  },
+  "icons": {
+    "library": "fontawesome"
+  },
+  "banner": {
+    "content": "Still have questions? Join our Discord --> https://discord.gg/a2CgnHNzse",
+    "dismissible": true,
+    "type": "info"
+  },
+  "thumbnails": {
+    "appearance": "dark"
+  },
+  "search": {
+    "prompt": "Search CS2Cap docs..."
+  },
+  "integrations": {
+    "posthog": {
+      "apiKey": "phc_moQPDpJaaD4pDyhhT4uAFsvFs3miRvvnuEjTwg5ZkLCD",
+      "sessionRecording": true
+    }
+  },
+  "errors": {
+    "404": {
+      "redirect": false
+    }
+  },
+  "metadata": {
+    "timestamp": true
+  },
+  "interaction": {
+    "drilldown": true
+  },
+  "contextual": {
+    "options": [
+      "copy",
+      "view",
+      "chatgpt",
+      "claude"
+    ],
+    "display": "header"
+  },
+  "markdown": {
+    "schema": true
+  }
+}

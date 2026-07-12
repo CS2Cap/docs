@@ -1,0 +1,478 @@
+---
+title: "Alerts API: CS2Cap Price and Spread Notifications"
+description: "Create price-below, price-above, and spread-exceeds alerts for CS2 items, manage them in bulk, and retrieve triggered event history with delivery status."
+---
+
+The Alerts API lets you configure price and spread notifications for CS2 catalog items. You can set alerts that fire when a best ask crosses a price threshold or when the bid-ask spread exceeds a target percentage. Alerts are delivered by email and automatically disable themselves after a successful delivery, so you only receive each notification once until you re-enable the alert. Alert management requests are exempt from your monthly quota.
+
+## POST /account/alerts
+
+Creates a new price or spread alert for a catalog item.
+
+**Auth:** API key required  (exempt from monthly quota)
+
+<CodeGroup>
+
+```bash cURL
+curl -sS -X POST \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"item_id":4994,"kind":"price_below","threshold_value":"500.00","threshold_currency":"USD"}' \
+  "https://api.cs2c.app/account/alerts"
+```
+
+```python Python
+import os
+
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.AccountAlertsApi(client)
+    response = api.create_alert(
+        cs2cap.AlertCreateRequest(
+            item_id=4994,
+            kind="price_below",
+            threshold_value="500.00",
+            threshold_currency="USD",
+        )
+    )
+
+print(client.sanitize_for_serialization(response))
+```
+
+```typescript TypeScript
+import { Configuration, AccountAlertsApi } from "cs2cap";
+
+const accessToken = process.env.CS2C_API_KEY;
+
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
+}
+
+const api = new AccountAlertsApi(new Configuration({ accessToken }));
+const response = await api.createAlert({
+  alertCreateRequest: {
+    itemId: 4994,
+    kind: "price_below",
+    thresholdValue: "500.00",
+    thresholdCurrency: "USD",
+  },
+});
+
+console.log(response);
+```
+
+</CodeGroup>
+
+<ParamField body="item_id" type="integer" required>
+  Catalog item ID for the alert target.
+</ParamField>
+
+<ParamField body="kind" type="string" required>
+  Alert type. One of: `price_below`, `price_above`, `spread_exceeds`.
+</ParamField>
+
+<ParamField body="threshold_value" type="string" required>
+  Decimal string threshold greater than zero. For price alerts, this is the price in `threshold_currency`. For `spread_exceeds`, this is a spread percentage.
+</ParamField>
+
+<ParamField body="threshold_currency" type="string">
+  Currency for price alerts (ISO 4217). Ignored for `spread_exceeds` alerts.
+</ParamField>
+
+<ParamField body="is_enabled" type="boolean" default="true">
+  Set to `false` to create the alert in a disabled state and enable it later.
+</ParamField>
+
+```json Request body
+{
+  "item_id": 156,
+  "kind": "price_below",
+  "threshold_value": "20.00",
+  "threshold_currency": "USD",
+  "is_enabled": true
+}
+```
+
+<Note>
+  `price_below` and `price_above` compare against the current best ask price. `spread_exceeds` uses the formula `((best_ask - best_bid) / best_ask) * 100`. After a successful email delivery, the alert automatically disables itself — you must re-enable it to receive the next notification. A verified email address is required for enabled alerts.
+</Note>
+
+---
+
+## POST /account/alerts/batch
+
+Creates multiple alerts in a single request and returns per-item results in the same order as the input.
+
+**Auth:** API key required  (exempt from monthly quota, counts as one request regardless of batch size)
+
+<CodeGroup>
+
+```bash cURL
+curl -sS -X POST \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"alerts":[{"item_id":4994,"kind":"price_below","threshold_value":"500.00","threshold_currency":"USD"},{"item_id":12632,"kind":"spread_exceeds","threshold_value":"15.0"}]}' \
+  "https://api.cs2c.app/account/alerts/batch"
+```
+
+```python Python
+import os
+
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.AccountAlertsApi(client)
+    response = api.create_alerts_batch(
+        cs2cap.AlertBatchCreateRequest(
+            alerts=[
+                cs2cap.AlertCreateRequest(
+                    item_id=4994,
+                    kind="price_below",
+                    threshold_value="500.00",
+                    threshold_currency="USD",
+                ),
+                cs2cap.AlertCreateRequest(
+                    item_id=12632,
+                    kind="spread_exceeds",
+                    threshold_value="15.0",
+                ),
+            ]
+        )
+    )
+
+print(client.sanitize_for_serialization(response))
+```
+
+```typescript TypeScript
+import { Configuration, AccountAlertsApi } from "cs2cap";
+
+const accessToken = process.env.CS2C_API_KEY;
+
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
+}
+
+const api = new AccountAlertsApi(new Configuration({ accessToken }));
+const response = await api.createAlertsBatch({
+  alertBatchCreateRequest: {
+    alerts: [
+      { itemId: 4994, kind: "price_below", thresholdValue: "500.00", thresholdCurrency: "USD" },
+      { itemId: 12632, kind: "spread_exceeds", thresholdValue: "15.0" },
+    ],
+  },
+});
+
+console.log(response);
+```
+
+</CodeGroup>
+
+<ParamField body="alerts" type="array" required>
+  Array of 1–100 alert objects. Each object uses the same fields as [`POST /account/alerts`](/api-reference/alerts#post-/account/alerts).
+</ParamField>
+
+```json Request body
+{
+  "alerts": [
+    {
+      "item_id": 156,
+      "kind": "price_below",
+      "threshold_value": "20.00",
+      "threshold_currency": "USD"
+    },
+    {
+      "item_id": 157,
+      "kind": "spread_exceeds",
+      "threshold_value": "15.0"
+    }
+  ]
+}
+```
+
+<Note>
+  Multiple alerts for the same `item_id` are allowed when the `kind` or `threshold_value` differs. Exact duplicate payloads within the same request are rejected inline with an error result for that entry. If the batch would push you over your enabled-alert cap, the entire request fails upfront with `402`.
+</Note>
+
+---
+
+## GET /account/alerts
+
+Returns all configured alerts for your account, newest first, with optional filtering.
+
+**Auth:** API key required  (exempt from monthly quota)
+
+<CodeGroup>
+
+```bash cURL
+curl -sS \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  "https://api.cs2c.app/account/alerts?limit=25&search=AK-47"
+```
+
+```python Python
+import os
+
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.AccountAlertsApi(client)
+    response = api.list_alerts(
+        limit=25,
+        search="AK-47",
+    )
+
+print(client.sanitize_for_serialization(response))
+```
+
+```typescript TypeScript
+import { Configuration, AccountAlertsApi } from "cs2cap";
+
+const accessToken = process.env.CS2C_API_KEY;
+
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
+}
+
+const api = new AccountAlertsApi(new Configuration({ accessToken }));
+const response = await api.listAlerts({ limit: 25, search: "AK-47" });
+
+console.log(response);
+```
+
+</CodeGroup>
+
+<ParamField query="limit" type="integer" default="50">
+  Page size, clamped to 1–200.
+</ParamField>
+
+<ParamField query="offset" type="integer" default="0">
+  Zero-based starting position.
+</ParamField>
+
+<ParamField query="search" type="string">
+  Filter results. Pass an exact numeric `item_id` for an ID match, or a string for a case-insensitive item name substring search.
+</ParamField>
+
+---
+
+## PATCH /account/alerts/:alert_id
+
+Partially updates an alert's threshold, currency, or enabled state.
+
+**Auth:** API key required  (exempt from monthly quota)
+
+<CodeGroup>
+
+```bash cURL
+curl -sS -X PATCH \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"threshold_value":"450.00","is_enabled":true}' \
+  "https://api.cs2c.app/account/alerts/YOUR_ALERT_ID"
+```
+
+```python Python
+import os
+
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+alert_id = "YOUR_ALERT_ID"
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.AccountAlertsApi(client)
+    response = api.update_alert(
+        alert_id,
+        cs2cap.AlertUpdateRequest(
+            threshold_value="450.00",
+            is_enabled=True,
+        ),
+    )
+
+print(client.sanitize_for_serialization(response))
+```
+
+```typescript TypeScript
+import { Configuration, AccountAlertsApi } from "cs2cap";
+
+const accessToken = process.env.CS2C_API_KEY;
+
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
+}
+
+const alertId = "YOUR_ALERT_ID";
+
+const api = new AccountAlertsApi(new Configuration({ accessToken }));
+const response = await api.updateAlert({
+  alertId,
+  alertUpdateRequest: { thresholdValue: "450.00", isEnabled: true },
+});
+
+console.log(response);
+```
+
+</CodeGroup>
+
+<ParamField path="alert_id" type="string" required>
+  UUID of the alert to update.
+</ParamField>
+
+<ParamField body="threshold_value" type="string">
+  Updated threshold as a decimal string.
+</ParamField>
+
+<ParamField body="threshold_currency" type="string">
+  Updated currency for price alerts (ISO 4217).
+</ParamField>
+
+<ParamField body="is_enabled" type="boolean">
+  Updated enabled state. Enabling an alert runs the same checks as alert creation (e.g., verified email required).
+</ParamField>
+
+```json Request body
+{
+  "threshold_value": "18.50",
+  "is_enabled": true
+}
+```
+
+---
+
+## DELETE /account/alerts/:alert_id
+
+Permanently deletes an alert rule.
+
+**Auth:** API key required  (exempt from monthly quota)
+
+<CodeGroup>
+
+```bash cURL
+curl -sS -X DELETE \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  "https://api.cs2c.app/account/alerts/YOUR_ALERT_ID"
+```
+
+```python Python
+import os
+
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+alert_id = "YOUR_ALERT_ID"
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.AccountAlertsApi(client)
+    response = api.delete_alert(
+        alert_id
+    )
+
+print(client.sanitize_for_serialization(response))
+```
+
+```typescript TypeScript
+import { Configuration, AccountAlertsApi } from "cs2cap";
+
+const accessToken = process.env.CS2C_API_KEY;
+
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
+}
+
+const alertId = "YOUR_ALERT_ID";
+
+const api = new AccountAlertsApi(new Configuration({ accessToken }));
+const response = await api.deleteAlert({ alertId });
+
+console.log(response);
+```
+
+</CodeGroup>
+
+<ParamField path="alert_id" type="string" required>
+  UUID of the alert to delete.
+</ParamField>
+
+```json Response example
+{
+  "ok": true
+}
+```
+
+---
+
+## GET /account/alerts/events
+
+Returns recent alert trigger events and their email delivery attempts, newest first.
+
+**Auth:** API key required  (exempt from monthly quota)
+
+<CodeGroup>
+
+```bash cURL
+curl -sS \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  "https://api.cs2c.app/account/alerts/events?limit=25"
+```
+
+```python Python
+import os
+
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.AccountAlertsApi(client)
+    response = api.list_alert_events(
+        limit=25
+    )
+
+print(client.sanitize_for_serialization(response))
+```
+
+```typescript TypeScript
+import { Configuration, AccountAlertsApi } from "cs2cap";
+
+const accessToken = process.env.CS2C_API_KEY;
+
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
+}
+
+const api = new AccountAlertsApi(new Configuration({ accessToken }));
+const response = await api.listAlertEvents({ limit: 25 });
+
+console.log(response);
+```
+
+</CodeGroup>
+
+<ParamField query="limit" type="integer" default="50">
+  Page size, clamped to 1–100.
+</ParamField>
+
+<ParamField query="offset" type="integer" default="0">
+  Zero-based starting position.
+</ParamField>
+
+<ResponseField name="events[].triggered_currency" type="string | null">
+  The currency in which the threshold was evaluated. Always `null` for `spread_exceeds` alerts since spread is dimensionless.
+</ResponseField>
+
+<ResponseField name="events[].deliveries" type="array">
+  Email delivery attempts for this event. Currently includes email delivery only.
+</ResponseField>
+
+<Note>
+  `triggered_currency` is `null` for `spread_exceeds` alerts. Cursor pagination is not supported on this endpoint — use `offset` and `limit` to page through results.
+</Note>
