@@ -599,9 +599,9 @@
         "tags": [
           "Prices"
         ],
-        "summary": "Price History",
+        "summary": "Get Price History",
         "description": "Return historical price snapshots.\n\nParameters:\n- Filters: `item_id`, `market_hash_name`, `phase`, `provider` (singular string key).\n- Time window: `start`, `end` (ISO 8601). If `start` is omitted, the\n  endpoint defaults to the last 14 days of raw history.\n- `currency`: Quote currency (default `USD`).\n- `limit`: Items per page.\n- `cursor`: Opaque cursor from `next_cursor` for the next page.\n\nResponse:\n- `items`: Historical snapshots ordered newest first.\n- `meta`: Applied filters and time window.\n- `pagination`: Standardized pagination footer with cursor state.\n\nRequirements:\n- Valid API key with access to `/v1/prices/history`.\n- `start`/`end` must be valid ISO 8601 timestamps.\n- Requested time range must be within the endpoint retention window.\n- `limit` is capped by your tier.",
-        "operationId": "priceHistory",
+        "operationId": "getPriceHistory",
         "security": [
           {
             "BearerAuth": []
@@ -976,9 +976,9 @@
         "tags": [
           "Prices"
         ],
-        "summary": "Price Candles",
+        "summary": "Get Price Candles",
         "description": "Return composite OHLCV candle data for a single item across all providers.\n\nParameters:\n- Item filter: `item_id` or `market_hash_name` (one is required).\n- Optional filter: `phase`.\n- Time window: `start`/`end` (ISO 8601) or `lookback` (for example `7d` or `7`).\n- `interval`: `5m`, `1h`, or `1d`.\n- `fill`: Include empty buckets with carry-forward prices when `true`.\n- `currency`: Quote currency (default `USD`).\n\nNotes:\n- If `lookback` is sent with `start` or `end`, `lookback` takes precedence.\n  Lookback requests are aligned to completed candle buckets; `1h` lookback\n  windows use a 15-minute freshness buffer before flooring to the hour.\n- Maximum lookback depends on `interval`:\n  `5m` up to 7 days, `1h` up to 30 days, `1d` up to 365 days.\n- Free tiers are additionally capped by their tier restrictions and default\n  to the maximum allowed window when no explicit lookback is supplied.\n\nResponse:\n- `meta`: Item, provider scope, interval, phase, currency, and effective query-window\n  start/end timestamps.\n- `data`: Candle buckets in oldest-to-newest order\n  (`t`, `o`, `h`, `l`, `c`, `v`, `q`, `providers`).\n  `o`/`c` are the best ask prices at the start/end of the bucket, `l` is the\n  lowest ask, `h` is the highest ask (capped to reduce the impact of outliers), `v`\n  is the estimated trade volume derived from inventory changes, and `q` is the total\n  active listings at bucket end when available. `providers.o`, `providers.h`,\n  `providers.l`, and `providers.c` identify the provider keys contributing the\n  returned open/high/low/close values. For `1d` requests starting more than 30 days\n  back, `v` uses an alternate volume estimate and `q` is `null`.\n\nRequirements:\n- Valid API key with access to `/v1/prices/candles`.\n- `item_id` or `market_hash_name` is required.\n- `start`/`end` must be valid ISO 8601 timestamps.",
-        "operationId": "priceCandles",
+        "operationId": "getPriceCandles",
         "security": [
           {
             "BearerAuth": []
@@ -2802,7 +2802,7 @@
         "tags": [
           "Foreign Exchange"
         ],
-        "summary": "Get Fx Rates",
+        "summary": "Get FX Rates",
         "description": "Return latest foreign exchange rates.\n\nParameters:\n- None.\n\nResponse:\n- `timestamp`: ISO timestamp for the rates snapshot.\n- `rates`: Map of currency code to value relative to 1 USD (USD -> X).\n\nRequirements:\n- Valid API key with access to `/v1/fx`.",
         "operationId": "getFxRates",
         "responses": {
@@ -9035,9 +9035,9 @@
         "tags": [
           "Inventory"
         ],
-        "summary": "Fetch Steam Inventory",
+        "summary": "Get Steam Inventory",
         "description": "Fetch the authenticated user's live CS2 inventory from Steam. Requires a linked Steam account. No data is persisted — use the portfolio import endpoint to add items to a portfolio.",
-        "operationId": "fetchSteamInventory",
+        "operationId": "getSteamInventory",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -9176,9 +9176,9 @@
         "tags": [
           "Inventory"
         ],
-        "summary": "Fetch Steam Inventory by Steam ID",
+        "summary": "Get Steam Inventory by Steam ID",
         "description": "Fetch the CS2 inventory for any Steam account by Steam64ID or vanity URL. Accepts a 17-digit Steam64ID (e.g. `76561197964243909`) or a custom URL name (e.g. `dadscap`). Vanity URL resolution requires a Steam Web API key to be configured. No data is persisted.",
-        "operationId": "fetchSteamInventoryBySteamId",
+        "operationId": "getSteamInventoryBySteamId",
         "security": [
           {
             "BearerAuth": []
@@ -9344,9 +9344,9 @@
         "tags": [
           "Portfolio"
         ],
-        "summary": "Portfolio Valuation",
+        "summary": "Value Portfolio",
         "description": "Value an inventory of CS2 items at live market prices.\n\nSend a list of `{item_id, quantity}` pairs and receive per-item valuation based on the best ask price across queried providers, plus a rolled-up total.\n\nMaximum 100 distinct items per request.\n\nAll money values are in minor units of the requested currency (e.g. USD cents when `currency=USD`). Divide by 100 for display.",
-        "operationId": "portfolioValuation",
+        "operationId": "valuePortfolio",
         "requestBody": {
           "content": {
             "application/json": {
@@ -10631,9 +10631,9 @@
         "tags": [
           "Portfolio"
         ],
-        "summary": "Value Saved Portfolio",
+        "summary": "Get Portfolio Value",
         "description": "Value all items in a saved portfolio at live market prices. Items without price data appear in `items_not_found`. All money values are in minor units (e.g. USD cents). Divide by 100 for display.",
-        "operationId": "valueSavedPortfolio",
+        "operationId": "getPortfolioValue",
         "security": [
           {
             "BearerAuth": []
@@ -10821,9 +10821,9 @@
         "tags": [
           "Portfolio"
         ],
-        "summary": "Historical Saved Portfolio Valuation",
+        "summary": "Get Portfolio Value History",
         "description": "Replay saved-portfolio holdings from the transaction ledger and return daily historical valuation points priced from stored daily market closes. This endpoint is daily-only because portfolio transactions are date-granular.",
-        "operationId": "historicalSavedPortfolioValuation",
+        "operationId": "getPortfolioValueHistory",
         "security": [
           {
             "BearerAuth": []
