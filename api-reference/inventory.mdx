@@ -28,7 +28,7 @@ configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
 
 with cs2cap.ApiClient(configuration) as client:
     api = cs2cap.InventoryApi(client)
-    response = api.fetch_steam_inventory()
+    response = api.get_steam_inventory()
 
 print(client.sanitize_for_serialization(response))
 ```
@@ -43,7 +43,7 @@ if (!accessToken) {
 }
 
 const api = new InventoryApi(new Configuration({ accessToken }));
-const response = await api.fetchSteamInventory();
+const response = await api.getSteamInventory();
 
 console.log(response);
 ```
@@ -163,7 +163,7 @@ configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
 
 with cs2cap.ApiClient(configuration) as client:
     api = cs2cap.InventoryApi(client)
-    response = api.fetch_steam_inventory_by_steam_id(
+    response = api.get_steam_inventory_by_steam_id(
         steam_id="anomaly"
     )
 
@@ -180,7 +180,7 @@ if (!accessToken) {
 }
 
 const api = new InventoryApi(new Configuration({ accessToken }));
-const response = await api.fetchSteamInventoryBySteamId({ steamId: "76561198000000000" });
+const response = await api.getSteamInventoryBySteamId({ steamId: "76561198000000000" });
 
 console.log(response);
 ```

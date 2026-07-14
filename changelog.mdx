@@ -5,6 +5,29 @@ description: "Public-facing API, documentation, and platform changes to CS2Cap t
 
 This changelog tracks public API, documentation, and platform changes that affect integrators. You will find new endpoints, breaking changes, deprecations, and improvements here as they ship. Non-breaking internal changes and infrastructure updates are not listed.
 
-<Note>
-  No entries yet. Check back here for updates to the CS2Cap API.
-</Note>
+## 2026-07 — SDK v3.0.0: new repositories and renamed methods
+
+Both SDKs move to dedicated repositories with independent versioning, and method
+names change to a consistent verb-first convention. This is a breaking SDK release;
+the REST API itself is unchanged.
+
+**New homes**
+
+- Python: [`CS2Cap/cs2cap-python`](https://github.com/CS2Cap/cs2cap-python) — `pip install cs2cap==3.0.0`
+- Node/TypeScript: [`CS2Cap/cs2cap-node`](https://github.com/CS2Cap/cs2cap-node) — `npm install cs2cap@3.0.0`
+- The former `CS2Cap/SDKs` repository is archived.
+
+**Renamed methods** (TypeScript / Python)
+
+| v2.x | v3.0.0 |
+| --- | --- |
+| `priceHistory` / `price_history` | `getPriceHistory` / `get_price_history` |
+| `priceCandles` / `price_candles` | `getPriceCandles` / `get_price_candles` |
+| `fetchSteamInventory` / `fetch_steam_inventory` | `getSteamInventory` / `get_steam_inventory` |
+| `fetchSteamInventoryBySteamId` / `fetch_steam_inventory_by_steam_id` | `getSteamInventoryBySteamId` / `get_steam_inventory_by_steam_id` |
+| `portfolioValuation` / `portfolio_valuation` | `valuePortfolio` / `value_portfolio` |
+| `valueSavedPortfolio` / `value_saved_portfolio` | `getPortfolioValue` / `get_portfolio_value` |
+| `historicalSavedPortfolioValuation` / `historical_saved_portfolio_valuation` | `getPortfolioValueHistory` / `get_portfolio_value_history` |
+
+The bundled SDK examples were removed; the [docs](https://docs.cs2cap.com) are the
+canonical usage reference.

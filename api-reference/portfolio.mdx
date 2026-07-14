@@ -199,7 +199,7 @@ configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
 
 with cs2cap.ApiClient(configuration) as client:
     api = cs2cap.PortfolioApi(client)
-    response = api.portfolio_valuation(
+    response = api.value_portfolio(
         cs2cap.PortfolioRequest(
             items=[
                 cs2cap.PortfolioRequestItem(item_id=4994, quantity=2),
@@ -222,7 +222,7 @@ if (!accessToken) {
 }
 
 const api = new PortfolioApi(new Configuration({ accessToken }));
-const response = await api.portfolioValuation({
+const response = await api.valuePortfolio({
   portfolioRequest: {
     items: [
       { itemId: 4994, quantity: 2 },
@@ -337,7 +337,7 @@ portfolio_id = "YOUR_PORTFOLIO_ID"
 
 with cs2cap.ApiClient(configuration) as client:
     api = cs2cap.PortfolioApi(client)
-    response = api.value_saved_portfolio(
+    response = api.get_portfolio_value(
         portfolio_id,
         currency="USD",
     )
@@ -357,7 +357,7 @@ if (!accessToken) {
 const portfolioId = "YOUR_PORTFOLIO_ID";
 
 const api = new PortfolioApi(new Configuration({ accessToken }));
-const response = await api.valueSavedPortfolio({ portfolioId, currency: "USD" });
+const response = await api.getPortfolioValue({ portfolioId, currency: "USD" });
 
 console.log(response);
 ```
@@ -1089,7 +1089,7 @@ portfolio_id = "YOUR_PORTFOLIO_ID"
 
 with cs2cap.ApiClient(configuration) as client:
     api = cs2cap.PortfolioApi(client)
-    response = api.historical_saved_portfolio_valuation(
+    response = api.get_portfolio_value_history(
         portfolio_id,
         lookback="30d",
         currency="USD",
@@ -1110,7 +1110,7 @@ if (!accessToken) {
 const portfolioId = "YOUR_PORTFOLIO_ID";
 
 const api = new PortfolioApi(new Configuration({ accessToken }));
-const response = await api.historicalSavedPortfolioValuation({ portfolioId, lookback: "30d", currency: "USD" });
+const response = await api.getPortfolioValueHistory({ portfolioId, lookback: "30d", currency: "USD" });
 
 console.log(response);
 ```

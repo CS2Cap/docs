@@ -197,7 +197,7 @@ This guide walks you through everything you need to make a live CS2 item price r
             limit=10,
         )
 
-        history = prices_api.price_history(
+        history = prices_api.get_price_history(
             market_hash_name="AK-47 | Redline (Field-Tested)",
             provider="steam",
             currency="USD",
@@ -231,7 +231,7 @@ This guide walks you through everything you need to make a live CS2 item price r
       limit: 10,
     });
 
-    const history = await pricesApi.priceHistory({
+    const history = await pricesApi.getPriceHistory({
       marketHashName: "AK-47 | Redline (Field-Tested)",
       provider: "steam",
       currency: "USD",
@@ -266,13 +266,6 @@ This guide walks you through everything you need to make a live CS2 item price r
   </Step>
 
 </Steps>
-
-## Runnable SDK examples
-
-The SDK source includes complete example scripts by tier. Start with the free-tier examples, then move to the Pro and Quant scripts as your plan unlocks more endpoints:
-
-- Python: `scripts/sdk-scripts/python/examples/`
-- TypeScript: `scripts/sdk-scripts/typescript/examples/`
 
 ## Next steps
 

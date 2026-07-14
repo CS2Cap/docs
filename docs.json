@@ -184,8 +184,12 @@
             "href": "https://github.com/CS2Cap/docs"
           },
           {
-            "label": "SDKs",
-            "href": "https://github.com/CS2Cap/SDKs"
+            "label": "Python SDK",
+            "href": "https://github.com/CS2Cap/cs2cap-python"
+          },
+          {
+            "label": "Node SDK",
+            "href": "https://github.com/CS2Cap/cs2cap-node"
           },
           {
             "label": "CLI",
