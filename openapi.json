@@ -7536,7 +7536,7 @@
           "Market Intelligence"
         ],
         "summary": "Get Arbitrage Opportunities",
-        "description": "Scan providers for cross-market arbitrage opportunities.\n\nFilters:\n- `min_spread_pct`\n- `providers_buy` and `providers_sell` (sell-side limited to buy-order providers)\n- offset pagination via `offset`\n\nResponse:\n- opportunities ranked by estimated net profit in USD with buy-side and sell-side provider context\n- pagination total reflects the capped set of ranked opportunities, not a count of all possible matches\n\nTier: Quant-only.",
+        "description": "Scan providers for cross-market arbitrage opportunities.\n\nFilters:\n- `min_spread_pct`\n- `providers_buy` and `providers_sell` (sell-side limited to buy-order providers)\n- offset pagination via `offset`\n\nResponse:\n- opportunities ranked by estimated net profit in USD with buy-side and sell-side provider context\n- pagination total reflects every matching item across the market\n\nTier: Quant-only.",
         "operationId": "getArbitrageOpportunities",
         "security": [
           {
@@ -7784,6 +7784,16 @@
           },
           "400": {
             "description": "Invalid cursor or unsupported cursor parameter.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "FX rates or analytics database capacity are temporarily unavailable.",
             "content": {
               "application/json": {
                 "schema": {
