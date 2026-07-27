@@ -83,6 +83,7 @@
             "pages": [
               "api-reference/prices",
               "api-reference/bids",
+              "api-reference/feed",
               "api-reference/sales",
               "api-reference/catalog"
             ]

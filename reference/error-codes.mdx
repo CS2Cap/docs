@@ -50,6 +50,7 @@ Use `code` for programmatic error handling. Use `detail` for logging or displayi
     | `RATE_LIMIT_MONTHLY_QUOTA_EXCEEDED` | 429 | You have consumed your monthly request quota. Quota resets at the start of the next billing period or you can upgrade your tier. |
     | `RATE_LIMIT_STREAM_QUOTA_EXCEEDED` | 429 | You have used your rolling 24-hour bulk-stream-start quota on [`POST /prices`](/api-reference/prices#post-/prices-—-stream-full-prices-snapshot) or [`POST /bids`](/api-reference/bids#post-/bids-—-stream-full-bids-snapshot) (50/day on Pro, 300/day on Quant, per endpoint). Retry after `Retry-After` seconds, when the next slot frees. |
     | `STREAM_ALREADY_ACTIVE` | 409 | A bulk stream is already active for this API key on this endpoint. Only one concurrent stream is allowed per endpoint; wait for it to finish or wait for the `Retry-After` seconds before starting another. |
+    | `RATE_LIMIT_FEED_CONNECTIONS_EXCEEDED` | 429 | You already have the maximum number of concurrent [`/feed/prices`](/api-reference/feed#get-/feed/prices-—-stream-price-changes) or [`/feed/bids`](/api-reference/feed#get-/feed/bids-—-stream-bid-changes) connections open for this API key (2 by default). Close an existing connection or wait for the `Retry-After` seconds. |
 
     <Warning>
       When you receive a `429`, or a `409 STREAM_ALREADY_ACTIVE` from a bulk streaming endpoint, read the `Retry-After` header. It contains the number of seconds you must wait before the next request will succeed.

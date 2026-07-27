@@ -1,0 +1,176 @@
+---
+title: "Feed API: Real-Time Price and Bid Changes"
+description: "Subscribe to a Server-Sent Events stream of price and bid changes as marketplace providers refresh, with a reconnect recipe for picking up where you left off."
+---
+
+The Feed API pushes item-level price and bid changes to you as they're detected, over a Server-Sent Events (SSE) connection, so you don't have to poll [`GET /prices`](/api-reference/prices) or [`GET /bids`](/api-reference/bids) on a timer.
+
+<Warning>
+  **Event cadence follows provider scrape cadence, not ticks.** Each provider is re-scraped on its own interval (typically every few minutes), and an event only fires when that scrape detects a change. This is not a tick-by-tick order-book feed — expect bursts of events after each provider refresh, not a steady stream.
+</Warning>
+
+Delivery is fire-and-forget: there is no event history and nothing is buffered while you're disconnected. If your connection drops, re-fetch current state from `/prices` or `/bids` before reconnecting to the feed — see [Reconnecting](#reconnecting) below.
+
+---
+
+## GET /feed/prices — Stream price changes
+
+Opens an SSE stream of price changes across the providers you subscribe to.
+
+**Tiers:** Requires your tier's `features_json.endpoints` to include `/v1/feed/prices`. Contact support if the feed isn't yet enabled on your plan.
+
+<CodeGroup>
+
+```bash cURL
+curl -N -sS \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  "https://api.cs2c.app/feed/prices?providers=steam&providers=csfloat&item_ids=17464"
+```
+
+```javascript Browser (EventSource)
+// EventSource can't send an Authorization header directly. Proxy the request
+// through your own backend, or pass a scoped token as a query param if your
+// deployment supports it — do not embed a raw API key in client-side code.
+const source = new EventSource(
+  "https://api.cs2c.app/feed/prices?providers=steam&providers=csfloat&item_ids=17464",
+);
+
+source.addEventListener("ready", (event) => {
+  const { providers, item_ids_filter_count } = JSON.parse(event.data);
+  console.log("subscribed", providers, "filtered items:", item_ids_filter_count);
+});
+
+source.addEventListener("prices.changed", (event) => {
+  const { provider, seen_at, items } = JSON.parse(event.data);
+  for (const item of items) {
+    console.log(provider, seen_at, item.item_id, item.change, item.price);
+  }
+});
+
+source.onerror = () => {
+  // Fetch current state from GET /prices, then let EventSource auto-reconnect
+  // (or close and open a new one) once you've resynced.
+};
+```
+
+</CodeGroup>
+
+### Query parameters
+
+<ParamField query="providers" type="string[]">
+  Providers to stream. Repeat the parameter to pass more than one: `providers=steam&providers=csfloat`. Omit to stream all providers. Uses the same provider keys as [`GET /prices`](/api-reference/prices#get-/prices-—-list-prices).
+</ParamField>
+
+<ParamField query="item_ids" type="integer[]">
+  Optional exact catalog `item_id` filter, repeatable: `item_ids=17464&item_ids=17465`. Uses the same IDs as [`GET /prices`](/api-reference/prices).
+</ParamField>
+
+<ParamField query="market_hash_names" type="string[]">
+  Optional `market_hash_name` filter, repeatable: `market_hash_names=AK-47%20%7C%20Redline%20(Field-Tested)`.
+</ParamField>
+
+The two filters are a **union** — an item is streamed if either parameter names it — and their combined length is capped at 100 values. Omit both to receive changes for every item on the selected providers. See [Limits](#limits).
+
+<Note>
+  **Prefer `item_ids` for phased items.** Doppler, Gamma Doppler, and other phased finishes all share a single `market_hash_name` — `★ Butterfly Knife | Doppler (Factory New)` covers Phase 1 through Sapphire — but each phase is a distinct catalog item with its own `item_id`. Filtering by `market_hash_names` therefore streams *every* phase, so a Sapphire subscriber also receives Phase 2 prices an order of magnitude cheaper. Filter by `item_ids` to receive exactly the phase you asked for.
+</Note>
+
+### Event catalog
+
+<ResponseField name="ready" type="event">
+  The first event on every connection. Confirms the subscription.
+
+  ```json
+  {"providers":["steam","csfloat"],"item_ids_filter_count":1,"market_hash_names_filter_count":0}
+  ```
+</ResponseField>
+
+<ResponseField name="prices.changed" type="event">
+  Fires when a provider refresh detects one or more added, updated, or removed listings.
+
+  ```json
+  {
+    "provider": "csfloat",
+    "seen_at": "2026-07-12T14:03:22+00:00",
+    "items": [
+      {
+        "item_id": 4821,
+        "market_hash_name": "AK-47 | Redline (Field-Tested)",
+        "price": 2550,
+        "qty": 3,
+        "phase": null,
+        "change": "updated"
+      }
+    ]
+  }
+  ```
+
+  <Expandable title="item properties">
+    <ResponseField name="item_id" type="integer">
+      Exact catalog item ID. Unique per phase, so this is the field to key your local state on — `market_hash_name` alone is ambiguous for phased items.
+    </ResponseField>
+    <ResponseField name="market_hash_name" type="string">
+      Full item name. Shared across every phase of a phased item.
+    </ResponseField>
+    <ResponseField name="price" type="integer">
+      Lowest ask in USD minor units (`2550` = `$25.50`). `null` when `change` is `removed`.
+    </ResponseField>
+    <ResponseField name="qty" type="integer">
+      Listing count at or near the lowest ask. `0` when `change` is `removed`.
+    </ResponseField>
+    <ResponseField name="phase" type="string">
+      Doppler phase, or `null` for non-phased items.
+    </ResponseField>
+    <ResponseField name="change" type="string">
+      One of `added`, `updated`, `removed`.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="heartbeat" type="comment">
+  A `: ping` comment line sent roughly every 20 seconds while the stream is idle, so you can detect a dead connection without waiting on a TCP timeout. This is a raw SSE comment, not a named event — most SSE clients surface it only as a no-op keepalive.
+</ResponseField>
+
+### Reconnecting
+
+The feed has no replay buffer, so a disconnect always means you may have missed changes. On every reconnect:
+
+1. Fetch current state from [`GET /prices`](/api-reference/prices#get-/prices-—-list-prices) (or `/bids` for the bids feed) for the providers/items you care about.
+2. Open a new feed connection.
+3. Apply feed events on top of that fresh snapshot going forward.
+
+Don't try to diff against your last-seen event — there's no ordering or sequence guarantee across a reconnect, only within a single open connection.
+
+### Limits
+
+| Limit | Value | Notes |
+| --- | --- | --- |
+| Item filter size | 100 | `item_ids` and `market_hash_names` counted together, across all repeats |
+| Concurrent connections per API key | 2 | Best-effort — simultaneous connects can briefly exceed this by one |
+| Heartbeat interval | ~20s | `: ping` comment while idle |
+
+<Note>
+  The concurrent-connection cap is enforced per API key, not per IP or session. If you need more than 2 concurrent feed connections (for example, separate processes for prices and bids), use separate API keys or consolidate into fewer, broader-scoped connections.
+</Note>
+
+### Possible errors
+
+- `503 SERVICE_UNAVAILABLE` — the feed is temporarily disabled or its backing store is unreachable. Retry with backoff.
+- `422 VALIDATION_ERROR` — `item_ids` and `market_hash_names` exceed 100 values combined, an `item_ids` value is not an integer, or an unknown provider key was passed.
+- `429 RATE_LIMIT_FEED_CONNECTIONS_EXCEEDED` — you already have the maximum concurrent feed connections open for this API key. Check the `Retry-After` header, close an existing connection, or wait it out.
+
+See the [error codes reference](/reference/error-codes) for the full list.
+
+---
+
+## GET /feed/bids — Stream bid changes
+
+Same contract as `GET /feed/prices` — identical `providers`, `item_ids`, and `market_hash_names` parameters — for buy-order (bid) changes. Events are named `bids.changed` instead of `prices.changed`, with the same item-change shape. On reconnect, fetch current state from [`GET /bids`](/api-reference/bids) instead of `/prices`.
+
+```bash cURL
+curl -N -sS \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  "https://api.cs2c.app/feed/bids?providers=steam&item_ids=17464"
+```
+
+**Tiers:** Requires your tier's `features_json.endpoints` to include `/v1/feed/bids`.
