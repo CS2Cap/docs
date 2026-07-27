@@ -2355,6 +2355,414 @@
         ]
       }
     },
+    "/v1/feed/prices": {
+      "get": {
+        "tags": [
+          "Feed"
+        ],
+        "summary": "Subscribe to Price Changes",
+        "description": "Server-Sent Events stream of price changes. An event fires when a provider refresh detects added, updated, or removed listings — granularity follows each provider's refresh cadence (typically minutes).\n\nDelivery is fire-and-forget: events during a disconnect are not replayed. On reconnect, fetch current state from `/v1/prices`, then resume the stream.\n\nPrices are in USD minor units (2550 = $25.50).",
+        "operationId": "subscribeToPriceChanges",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "providers",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AllProviders"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Providers to stream. Repeatable, e.g. providers=steam&providers=csfloat. Omit to stream all providers.",
+              "title": "Providers"
+            },
+            "description": "Providers to stream. Repeatable, e.g. providers=steam&providers=csfloat. Omit to stream all providers."
+          },
+          {
+            "name": "item_ids",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "integer"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Optional exact catalog item_id filter (repeatable). Prefer this over `market_hash_names` for phased items (Dopplers, Gammas), where one market_hash_name covers every phase but each phase has its own item_id.",
+              "title": "Item Ids"
+            },
+            "description": "Optional exact catalog item_id filter (repeatable). Prefer this over `market_hash_names` for phased items (Dopplers, Gammas), where one market_hash_name covers every phase but each phase has its own item_id."
+          },
+          {
+            "name": "market_hash_names",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Optional market_hash_name filter (repeatable). For a phased item this matches every phase; use `item_ids` to select one. Combined with `item_ids`, at most 100 values per connection.",
+              "title": "Market Hash Names"
+            },
+            "description": "Optional market_hash_name filter (repeatable). For a phased item this matches every phase; use `item_ids` to select one. Combined with `item_ids`, at most 100 values per connection."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Server-Sent Events stream. Emits a `ready` event on connect, then `prices.changed`/`bids.changed` events with changed items, plus `: ping` heartbeat comments roughly every 20 seconds.",
+            "content": {
+              "application/json": {
+                "schema": {}
+              },
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "event: ready\ndata: {\"providers\":[\"csfloat\"],\"item_ids_filter_count\":0,\"market_hash_names_filter_count\":0}\n\nevent: prices.changed\ndata: {\"provider\":\"csfloat\",\"seen_at\":\"2026-07-12T14:03:22+00:00\",\"items\":[{\"item_id\":4821,\"market_hash_name\":\"AK-47 | Redline (Field-Tested)\",\"price\":2550,\"qty\":3,\"phase\":null,\"change\":\"updated\"}]}\n\n"
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "detail": "Missing Authorization header"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted to access this resource.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "FORBIDDEN",
+                  "detail": "Account is disabled"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (burst or monthly quota).",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "burstRateLimit": {
+                    "summary": "Per-window rate limit exceeded",
+                    "value": {
+                      "code": "RATE_LIMIT_EXCEEDED",
+                      "detail": "Too Many Requests"
+                    }
+                  },
+                  "monthlyQuotaExceeded": {
+                    "summary": "Monthly quota exhausted",
+                    "value": {
+                      "code": "RATE_LIMIT_MONTHLY_QUOTA_EXCEEDED",
+                      "detail": "Monthly quota exceeded (500000/500000 requests)."
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying when present.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "X-RateLimit-Tier": {
+                "description": "Authenticated caller tier code.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Request limit for the rate-limit window that was exceeded.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Seconds until the rate-limit window resets.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed. The detail list contains field-specific validation errors.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Tier": {
+                "description": "Authenticated caller tier code when available.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/feed/bids": {
+      "get": {
+        "tags": [
+          "Feed"
+        ],
+        "summary": "Subscribe to Bid Changes",
+        "description": "Server-Sent Events stream of buy-order (bid) changes. Same contract as `/v1/feed/prices`: fire-and-forget delivery, provider-cadence granularity, USD minor units. On reconnect, fetch current state from `/v1/bids`.",
+        "operationId": "subscribeToBidChanges",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "providers",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AllProviders"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Providers to stream. Repeatable, e.g. providers=steam&providers=csfloat. Omit to stream all providers.",
+              "title": "Providers"
+            },
+            "description": "Providers to stream. Repeatable, e.g. providers=steam&providers=csfloat. Omit to stream all providers."
+          },
+          {
+            "name": "item_ids",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "integer"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Optional exact catalog item_id filter (repeatable). Prefer this over `market_hash_names` for phased items (Dopplers, Gammas), where one market_hash_name covers every phase but each phase has its own item_id.",
+              "title": "Item Ids"
+            },
+            "description": "Optional exact catalog item_id filter (repeatable). Prefer this over `market_hash_names` for phased items (Dopplers, Gammas), where one market_hash_name covers every phase but each phase has its own item_id."
+          },
+          {
+            "name": "market_hash_names",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Optional market_hash_name filter (repeatable). For a phased item this matches every phase; use `item_ids` to select one. Combined with `item_ids`, at most 100 values per connection.",
+              "title": "Market Hash Names"
+            },
+            "description": "Optional market_hash_name filter (repeatable). For a phased item this matches every phase; use `item_ids` to select one. Combined with `item_ids`, at most 100 values per connection."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Server-Sent Events stream. Emits a `ready` event on connect, then `prices.changed`/`bids.changed` events with changed items, plus `: ping` heartbeat comments roughly every 20 seconds.",
+            "content": {
+              "application/json": {
+                "schema": {}
+              },
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "event: ready\ndata: {\"providers\":[\"csfloat\"],\"item_ids_filter_count\":0,\"market_hash_names_filter_count\":0}\n\nevent: prices.changed\ndata: {\"provider\":\"csfloat\",\"seen_at\":\"2026-07-12T14:03:22+00:00\",\"items\":[{\"item_id\":4821,\"market_hash_name\":\"AK-47 | Redline (Field-Tested)\",\"price\":2550,\"qty\":3,\"phase\":null,\"change\":\"updated\"}]}\n\n"
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "detail": "Missing Authorization header"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted to access this resource.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "FORBIDDEN",
+                  "detail": "Account is disabled"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (burst or monthly quota).",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "burstRateLimit": {
+                    "summary": "Per-window rate limit exceeded",
+                    "value": {
+                      "code": "RATE_LIMIT_EXCEEDED",
+                      "detail": "Too Many Requests"
+                    }
+                  },
+                  "monthlyQuotaExceeded": {
+                    "summary": "Monthly quota exhausted",
+                    "value": {
+                      "code": "RATE_LIMIT_MONTHLY_QUOTA_EXCEEDED",
+                      "detail": "Monthly quota exceeded (500000/500000 requests)."
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying when present.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "X-RateLimit-Tier": {
+                "description": "Authenticated caller tier code.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Request limit for the rate-limit window that was exceeded.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Seconds until the rate-limit window resets.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed. The detail list contains field-specific validation errors.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Tier": {
+                "description": "Authenticated caller tier code when available.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/sales": {
       "get": {
         "tags": [

@@ -17,7 +17,7 @@ Delivery is fire-and-forget: there is no event history and nothing is buffered w
 
 Opens an SSE stream of price changes across the providers you subscribe to.
 
-**Tiers:** Requires your tier's `features_json.endpoints` to include `/v1/feed/prices`. Contact support if the feed isn't yet enabled on your plan.
+**Tiers:** Quant. Keys on Free, Starter, and Pro receive `403` — see [Pricing](https://cs2cap.com/pricing) to upgrade.
 
 <CodeGroup>
 
@@ -173,4 +173,4 @@ curl -N -sS \
   "https://api.cs2c.app/feed/bids?providers=steam&item_ids=17464"
 ```
 
-**Tiers:** Requires your tier's `features_json.endpoints` to include `/v1/feed/bids`.
+**Tiers:** Quant, same as `/feed/prices`.
