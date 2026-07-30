@@ -568,7 +568,7 @@ This endpoint takes no query parameters.
 </ResponseField>
 
 <ResponseField name="data.items[].summary.best_bid_usd" type="string">
-  Decimal string highest bid in USD across all providers, including providers without a current ask.
+  Decimal string highest eligible bid in USD across supported buy-order providers. Same-provider bids greater than or equal to the current ask are excluded; providers without a current ask remain eligible. The value can still exceed `best_ask_usd` when the winning bid and ask come from different providers.
 </ResponseField>
 
 <ResponseField name="data.items[].summary.marketcap" type="string">
@@ -802,7 +802,7 @@ console.log(response);
 </ResponseField>
 
 <Note>
-  `ask_usd`, `bid_usd`, `spread_usd`, and `total_value_24h_usd` are decimal strings in USD — not minor units. `summary.best_bid_usd` is the highest bid across all providers, including providers that do not appear in `data.providers[]`.
+  `ask_usd`, `bid_usd`, `spread_usd`, and `total_value_24h_usd` are decimal strings in USD — not minor units. `summary.best_bid_usd` excludes same-provider bids where `bid_anomaly` is `true`; bid-only providers remain eligible and do not appear in `data.providers[]`. A summary bid can still exceed the summary ask when those values come from different providers.
 </Note>
 
 <Warning>

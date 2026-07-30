@@ -15832,7 +15832,7 @@
               }
             ],
             "title": "Best Bid Usd",
-            "description": "Best bid price in USD major units."
+            "description": "Highest eligible bid in USD major units, excluding same-provider bids greater than or equal to the current ask."
           },
           "avg_spread_pct": {
             "anyOf": [
