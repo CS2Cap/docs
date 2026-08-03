@@ -16024,7 +16024,7 @@
               }
             ],
             "title": "Listing Score",
-            "description": "Listing-count component score."
+            "description": "Fresh competitive listing-depth component score (0-15)."
           },
           "gap_score": {
             "anyOf": [
@@ -16036,7 +16036,7 @@
               }
             ],
             "title": "Gap Score",
-            "description": "Gap component score."
+            "description": "Fee-adjusted same-provider execution-quality component score (0-25)."
           },
           "volume_score": {
             "anyOf": [
@@ -16048,7 +16048,7 @@
               }
             ],
             "title": "Volume Score",
-            "description": "Volume component score."
+            "description": "Smoothed confirmed sales-velocity component score (0-45)."
           },
           "stability_score": {
             "anyOf": [
@@ -16060,7 +16060,7 @@
               }
             ],
             "title": "Stability Score",
-            "description": "24h price stability bonus (0-8)."
+            "description": "Provider-normalized 24h price-stability component score (0-5)."
           },
           "external_score": {
             "anyOf": [
@@ -16072,7 +16072,7 @@
               }
             ],
             "title": "External Score",
-            "description": "External confirmation component score (0-25): Steam volume + Buff163 depth."
+            "description": "Provider and sales-data coverage confidence score (0-10)."
           },
           "liquidity_last_updated": {
             "anyOf": [
@@ -16224,7 +16224,7 @@
           "timeframe": {
             "type": "string",
             "title": "Timeframe",
-            "description": "Liquidity scoring horizon used for this query. Controls which depletion volume window (24h, 7d, or 30d) feeds the liquidity volume score. Does not affect price change fields, bid/ask values, spread, or trade counts."
+            "description": "Requested liquidity horizon. Liquidity v2 currently normalizes all requests to its canonical 24h score, which smooths confirmed 24h/7d/30d sales evidence."
           }
         },
         "type": "object",

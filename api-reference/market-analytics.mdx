@@ -596,23 +596,23 @@ This endpoint takes no query parameters.
 </ResponseField>
 
 <ResponseField name="data.items[].summary.listing_score" type="integer | null">
-  Listing-depth component score (0–18). `null` when liquidity data is unavailable.
+  Fresh competitive listing-depth component score (0–15). `null` when liquidity data is unavailable.
 </ResponseField>
 
 <ResponseField name="data.items[].summary.gap_score" type="integer | null">
-  Bid/ask gap component score (0–12). `null` when liquidity data is unavailable.
+  Fee-adjusted same-provider execution-quality component score (0–25), including bid depth. `null` when liquidity data is unavailable.
 </ResponseField>
 
 <ResponseField name="data.items[].summary.volume_score" type="integer | null">
-  24h churn component score (0–45). `null` when liquidity data is unavailable.
+  Smoothed confirmed 24h/7d/30d sales-velocity component score (0–45). `null` when liquidity data is unavailable.
 </ResponseField>
 
 <ResponseField name="data.items[].summary.stability_score" type="integer | null">
-  Price stability bonus (0–8): added into the score's remaining headroom below 100, combining observation density and price steadiness over the last 24 hours. `null` when insufficient history.
+  Provider-normalized price-stability component score (0–5), combining observation density and within-provider variation over the last 24 hours. `null` when insufficient history.
 </ResponseField>
 
 <ResponseField name="data.items[].summary.external_score" type="integer | null">
-  External confirmation component score (0–25): based on Steam and Buff163 market activity. `null` when external data is unavailable.
+  Provider, execution-book, and confirmed-sales data coverage score (0–10). `null` when liquidity data is unavailable.
 </ResponseField>
 
 <Note>
