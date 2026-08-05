@@ -78,8 +78,7 @@
   background: color-mix(in srgb, currentColor 10%, transparent);
 }
 
-/* Quarter-point threshold ticks: each bar is worth up to 4 points, so the
-   dividers at 25/50/75/100% mark where each successive point is unlocked. */
+/* Each stability bar is worth 2.5 points. Dividers mark 0.5-point steps. */
 .liquidity-meter::after {
   content: "";
   position: absolute;
@@ -88,9 +87,9 @@
   background-image: repeating-linear-gradient(
     to right,
     transparent 0,
-    transparent calc(25% - 1px),
-    color-mix(in srgb, currentColor 30%, transparent) calc(25% - 1px),
-    color-mix(in srgb, currentColor 30%, transparent) 25%
+    transparent calc(20% - 1px),
+    color-mix(in srgb, currentColor 30%, transparent) calc(20% - 1px),
+    color-mix(in srgb, currentColor 30%, transparent) 20%
   );
 }
 
@@ -101,7 +100,7 @@
   background: linear-gradient(90deg, var(--liq-blue), var(--liq-cyan));
 }
 
-/* Numbered scale aligned under the meter tick dividers (25/50/75/100%). */
+/* Numbered scale aligned to 1, 2, and 2.5 points. */
 .liquidity-meter-scale {
   margin-top: -0.55rem;
 }
@@ -120,10 +119,9 @@
   color: var(--liq-muted);
 }
 
-.liquidity-scale-ticks span:nth-child(1) { left: 25%; }
-.liquidity-scale-ticks span:nth-child(2) { left: 50%; }
-.liquidity-scale-ticks span:nth-child(3) { left: 75%; }
-.liquidity-scale-ticks span:nth-child(4) { left: 100%; }
+.liquidity-scale-ticks span:nth-child(1) { left: 40%; }
+.liquidity-scale-ticks span:nth-child(2) { left: 80%; }
+.liquidity-scale-ticks span:nth-child(3) { left: 100%; }
 
 .liquidity-meter-fill-stability {
   width: 78%;

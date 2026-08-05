@@ -1,4 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 200" role="img" aria-label="Bid ask quality ramp from zero to twelve points">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 260" role="img" aria-labelledby="title desc">
+  <title id="title">Buyers ready to purchase</title>
+  <desc id="desc">A buy offer close to the listing price on the same marketplace earns up to twenty points. The number of active buy offers adds up to five more.</desc>
   <defs>
     <linearGradient id="grad" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0%" stop-color="#1d6ef3"/>
@@ -10,29 +12,33 @@
     </linearGradient>
   </defs>
 
-  <!-- grid -->
-  <line x1="52" y1="20" x2="52" y2="148" stroke="#94a3b8" stroke-opacity="0.35" stroke-width="1"/>
-  <line x1="52" y1="148" x2="464" y2="148" stroke="#94a3b8" stroke-opacity="0.35" stroke-width="1"/>
-  <line x1="258" y1="20" x2="258" y2="148" stroke="#94a3b8" stroke-opacity="0.25" stroke-width="1" stroke-dasharray="4 4"/>
-  <line x1="443" y1="20" x2="443" y2="148" stroke="#94a3b8" stroke-opacity="0.25" stroke-width="1" stroke-dasharray="4 4"/>
+  <text x="60" y="16" fill="#cbd5e1" font-size="10" font-family="ui-sans-serif, system-ui, sans-serif">buy offer after fees / listing price on the same site</text>
+  <line x1="60" y1="22" x2="60" y2="140" stroke="#94a3b8" stroke-opacity="0.35" stroke-width="1"/>
+  <line x1="60" y1="140" x2="500" y2="140" stroke="#94a3b8" stroke-opacity="0.35" stroke-width="1"/>
+  <line x1="280" y1="22" x2="280" y2="140" stroke="#94a3b8" stroke-opacity="0.25" stroke-width="1" stroke-dasharray="4 4"/>
+  <line x1="478" y1="22" x2="478" y2="140" stroke="#94a3b8" stroke-opacity="0.25" stroke-width="1" stroke-dasharray="4 4"/>
 
-  <!-- y labels -->
-  <text x="46" y="24" fill="#94a3b8" font-size="11" font-family="ui-sans-serif, system-ui, sans-serif" text-anchor="end">12 pts</text>
-  <text x="46" y="152" fill="#94a3b8" font-size="11" font-family="ui-sans-serif, system-ui, sans-serif" text-anchor="end">0</text>
+  <text x="54" y="26" fill="#94a3b8" font-size="11" font-family="ui-sans-serif, system-ui, sans-serif" text-anchor="end">20 pts</text>
+  <text x="54" y="144" fill="#94a3b8" font-size="11" font-family="ui-sans-serif, system-ui, sans-serif" text-anchor="end">0</text>
 
-  <!-- area fill under ramp -->
-  <path d="M 52,148 L 258,148 L 443,20 L 464,20 L 464,148 Z" fill="url(#fill)"/>
+  <path d="M 60,140 L 280,140 L 478,22 L 500,22 L 500,140 Z" fill="url(#fill)"/>
+  <polyline points="60,140 280,140 478,22 500,22" fill="none" stroke="url(#grad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="280" cy="140" r="5" fill="#1d6ef3" stroke="#ffffff" stroke-opacity="0.9" stroke-width="2"/>
+  <circle cx="478" cy="22" r="5" fill="#22b8f0" stroke="#ffffff" stroke-opacity="0.9" stroke-width="2"/>
 
-  <!-- curve -->
-  <polyline points="52,148 258,148 443,20 464,20" fill="none" stroke="url(#grad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="60" y="160" fill="#94a3b8" font-size="11" font-family="ui-sans-serif, system-ui, sans-serif" text-anchor="start">0%</text>
+  <text x="280" y="160" fill="#cbd5e1" font-size="11" font-family="ui-sans-serif, system-ui, sans-serif" text-anchor="middle">50%</text>
+  <text x="478" y="42" fill="#cbd5e1" font-size="11" font-family="ui-sans-serif, system-ui, sans-serif" text-anchor="middle">95%</text>
+  <text x="500" y="160" fill="#94a3b8" font-size="11" font-family="ui-sans-serif, system-ui, sans-serif" text-anchor="end">100%</text>
 
-  <!-- points -->
-  <circle cx="258" cy="148" r="5" fill="#1d6ef3" stroke="#ffffff" stroke-opacity="0.9" stroke-width="2"/>
-  <circle cx="443" cy="20" r="5" fill="#22b8f0" stroke="#ffffff" stroke-opacity="0.9" stroke-width="2"/>
+  <text x="60" y="184" fill="#cbd5e1" font-size="10" font-family="ui-sans-serif, system-ui, sans-serif">number of active buy offers</text>
+  <text x="500" y="184" fill="#22b8f0" font-size="11" font-family="ui-sans-serif, system-ui, sans-serif" text-anchor="end">+5 pts max</text>
+  <line x1="60" y1="232" x2="500" y2="232" stroke="#94a3b8" stroke-opacity="0.35" stroke-width="1"/>
+  <path d="M 60,232 L 68.8,224.4 L 77.6,219.9 L 104,212.2 L 148,205.8 L 236,198.7 L 368,192.8 L 500,189 L 500,232 Z" fill="url(#fill)"/>
+  <polyline points="60,232 68.8,224.4 77.6,219.9 104,212.2 148,205.8 236,198.7 368,192.8 500,189" fill="none" stroke="url(#grad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="60" cy="232" r="4" fill="#1d6ef3" stroke="#ffffff" stroke-opacity="0.9" stroke-width="1.5"/>
+  <circle cx="500" cy="189" r="4" fill="#22b8f0" stroke="#ffffff" stroke-opacity="0.9" stroke-width="1.5"/>
 
-  <!-- x labels -->
-  <text x="52" y="172" fill="#94a3b8" font-size="11" font-family="ui-sans-serif, system-ui, sans-serif" text-anchor="start">0%</text>
-  <text x="258" y="172" fill="#cbd5e1" font-size="11" font-family="ui-sans-serif, system-ui, sans-serif" text-anchor="middle">50%</text>
-  <text x="443" y="40" fill="#cbd5e1" font-size="11" font-family="ui-sans-serif, system-ui, sans-serif" text-anchor="middle">95%</text>
-  <text x="464" y="172" fill="#94a3b8" font-size="11" font-family="ui-sans-serif, system-ui, sans-serif" text-anchor="end">100%</text>
+  <text x="60" y="250" fill="#94a3b8" font-size="11" font-family="ui-sans-serif, system-ui, sans-serif">0 buy offers</text>
+  <text x="500" y="250" fill="#94a3b8" font-size="11" font-family="ui-sans-serif, system-ui, sans-serif" text-anchor="end">50 buy offers</text>
 </svg>

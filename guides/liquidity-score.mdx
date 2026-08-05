@@ -1,113 +1,123 @@
 ---
 title: "Liquidity Score: Inputs and Formula Calculation"
-description: "How CS2Cap calculates the 0-100 item liquidity score from confirmed sales, executable bids, competitive depth, stability, and data confidence."
+description: "Learn what the CS2Cap liquidity score means, what affects it, and how to use it when comparing CS2 items."
 ---
 
-CS2Cap's liquidity score estimates how readily an owner can sell an item near its current market value. It is an item-level score from `0` to `100`, where higher values mean stronger confirmed sales velocity, executable fee-adjusted bids, competitive fresh listings, steadier pricing, and broader trustworthy market coverage.
+The liquidity score answers a simple question:
 
-The score is exposed on market analytics responses such as [`GET /market/items/item_id`](/api-reference/market-analytics#get-/market/items/item_id) and market snapshots. Liquidity is currently scored on the 24-hour horizon.
+> **How easy should it be to sell this item near its current market price?**
 
-## Score summary
+Every item receives a score from `0` to `100`. A higher score means there is stronger evidence that the item can be sold without waiting a long time or accepting a large discount.
 
-The normal score is the sum of five components:
+The score does **not** predict whether an item's price will rise or fall. It also does not mean an item is cheap, expensive, popular, or a good investment.
 
-| Component | Possible score (range) |
-| --- | --- |
-| Competitive sell-side depth | `0` -- `15` |
-| Execution quality | `0` -- `25` |
-| Confirmed sales velocity | `0` -- `45` |
-| Price stability | `0` -- `5` |
-| Data confidence | `0` -- `10` |
+## Reading the score
 
-The final score is rounded to the nearest integer and clipped to the `0-100` range.
+| Score | What it usually means |
+| :---: | --- |
+| `80-100` | **Very liquid.** Many completed sales, ready buyers, healthy listings, and broad market coverage. |
+| `60-79` | **Liquid.** Usually sellable, although one part of the market may be weaker. |
+| `30-59` | **Situational.** Selling quickly may require patience or a larger discount. |
+| `0-29` | **Low liquidity.** Few confirmed sales, weak buy orders, thin listings, or incomplete data. |
 
-```text
-liquidity =
-  competitive sell-side depth
-  + execution quality
-  + confirmed sales velocity
-  + price stability
-  + data confidence
-```
+These ranges are a quick guide. The component scores explain why an item received its total.
 
-## Input data
+## What makes up the score
 
-Liquidity is built from current market data and recent activity:
+The total comes from five parts:
 
-| Input | What it means |
-| --- | --- |
-| Fresh competitive listings | Listings from providers whose best ask is within 10% of the current best ask. |
-| Executable buy orders | Fresh same-provider bid/ask pairs, adjusted for the provider's instant-sell or seller fee and weighted by bid depth. |
-| Confirmed sales | Steam and persisted marketplace sale counts blended across 24-hour, 7-day, and 30-day windows. |
-| Recent price observations | Per-provider hourly coverage and coefficient of variation, calculated within each provider/currency series. |
-| Data confidence | Independent listing coverage, executable-book coverage, sales-data availability, and anomaly status. |
+| Part | Maximum points | What it measures |
+| --- | ---: | --- |
+| Listings count | `15` | How many items are actually listed at competitive prices |
+| Valid buy orders | `25` | How close real buy orders are to seller prices, and how many buy orders exist |
+| Sales volume | `45` | How often the item has actually sold recently |
+| Consistent pricing | `5` | Whether recent prices are well covered and reasonably steady |
+| Data coverage | `10` | How many independent sources support the score |
 
-Prices are normalized to USD before ratio calculations. Bids and asks must come from the same provider; a cheap ask on one marketplace and a high bid on another cannot manufacture a perfect spread. Market documents older than six hours are ignored.
+The result is rounded to the nearest whole number and kept between `0` and `100`. Missing information receives zero points for that part; the other parts are not increased to make up the difference.
 
-### Sell-side depth
+Completed sales are the largest part of the score. A large number of listings cannot make an item perfectly liquid by itself.
 
-Sell-side depth measures how much supply exists for the item right now.
+### Listings count: 15%
 
-- Range: `0-15`
-- Curve: logarithmic
-- Saturation point: `500` active listings
+This part looks at items that are currently for sale.
 
-The logarithmic curve means that the distance in score between an item with 1 vs 20 listings will be greater than an item with 400 vs 500 listings.
+Only listings priced within 10% of the cheapest current listing count. An item listed far above the rest of the market does not make the item easier to sell, so it adds no points.
 
-Only providers with a best ask within 10% of the current best ask contribute. The result is clipped to `15`; distant or stale inventory adds no liquidity credit.
+The first few listings matter the most. As the number grows, each extra listing adds less. This part reaches its maximum at 500 competitive listings.
 
-### Execution quality
-
-Execution quality measures how much value an owner can realize by selling into a current buy order. Each bid is matched only with that provider's ask and reduced by the applicable instant-sell or seller fee.
-
-- Range: `0-25`
-- Fee-adjusted bid is 50% or less of the matched ask: `0` ratio points
-- Fee-adjusted bid is 95% or more of the matched ask: full ratio points
-- Bid depth contributes up to `5` of the `25` points
-- Multiple providers are combined using logarithmic bid-depth weights
-
-A tighter gap means buyers are already close to sellers, so the item is easier to exit without a large discount.
-
-### Confirmed sales velocity
-
-Confirmed sales velocity measures observed sales rather than decreases in listing quantity. Steam counters and persisted marketplace sale records are blended across three windows, so an expensive item is not treated as inactive solely because one day was quiet.
-
-- Range: `0-45`
-- Curve: logarithmic over the blended daily rate
-- Saturation point: `100` confirmed sales per day
-
-The 24-hour rate receives 50% of the blend, the 7-day daily average receives 30%, and the 30-day daily average receives 20%. Listing depletion, delistings, pagination changes, and inventory resets do not contribute.
+Listings older than six hours are ignored.
 
 <div className="liquidity-visual">
-  <p className="liquidity-visual-title">Recent activity rewards real movement</p>
-  <p className="liquidity-visual-note">The curve gives strong credit once an item is clearly moving, then slows as activity approaches the cap.</p>
-  <img src="/images/liquidity-activity.svg" alt="Recent activity curve from zero to forty five points" className="liq-img" />
+  <p className="liquidity-visual-title">Only competitive inventory counts</p>
+  <p className="liquidity-visual-note">Fresh listings close to the cheapest current price provide useful evidence. Old or overpriced listings do not.</p>
+  <img src="/images/liquidity-depth.svg" alt="Chart showing how listings near the market price earn up to fifteen points" className="liq-img" />
 </div>
 
-### Price stability
+### Valid buy orders: 25%
 
-Price stability rewards items that have been observed consistently and have not had extreme hourly price swings.
+A listing shows what a seller wants. A buy order shows what a buyer is willing to pay right now.
 
-- Range: `0-5`
-- Observation density max: `2.5` points
-- Price stability max: `2.5` points
-- Window: last 24h hourly close prices
+The score compares buy orders with listings from the **same marketplace**. It never combines a cheap listing from one site with a high buy order from another site, because that does not represent a trade that can actually be made.
 
-Half of this component comes from observation density: an item seen in more hourly periods gets more credit than an item seen only once or twice.
+Seller fees are deducted from the buy order before it is compared with the listing price.
 
-The other half comes from price steadiness. Coefficient of variation is computed within each provider/currency series before the results are combined, avoiding false volatility from mixing currencies or marketplace price levels.
+This part is split into:
+
+- Up to `20` points for how close the buyer's offer is to the seller's price.
+- Up to `5` points for the number of active buy orders.
+
+A buy order worth 50% or less of the seller's price receives no price-closeness points. An offer worth 95% or more receives the full 20 points. Fifty active buy orders are enough to receive the full 5 points for buyer depth.
+
+Clearly broken non-Steam data, such as a buy order more than 5% above the same site's listing price, is ignored.
 
 <div className="liquidity-visual">
-  <p className="liquidity-visual-title">Price stability needs coverage and calm pricing</p>
-  <p className="liquidity-visual-note">A stable item is seen often and does not swing wildly relative to its usual price.</p>
-  <div className="liquidity-stability" aria-label="Price stability contribution meters">
+  <p className="liquidity-visual-title">A strong score needs a realistic exit price</p>
+  <p className="liquidity-visual-note">Buyers close to the seller price provide most of these points. A deeper group of buyers adds extra confidence.</p>
+  <img src="/images/liquidity-bidask.svg" alt="Chart showing twenty points for buyer price and five points for the number of buy orders" className="liq-img" />
+</div>
+
+### Sales volume: 45%
+
+Completed sales are the strongest evidence that an item is liquid.
+
+CS2Cap combines Steam sales counts with completed sales reported by supported marketplaces. It considers three time periods:
+
+- Sales during the last 24 hours provide 50% of this signal.
+- The daily average from the last 7 days provides 30%.
+- The daily average from the last 30 days provides 20%.
+
+Recent sales matter the most, but the longer periods prevent one unusually quiet day from making a regularly traded item appear inactive.
+
+The points rise quickly when an item begins selling regularly, then rise more slowly. A combined rate of 100 sales per day receives the full 45 points.
+
+This part counts recorded sales only. It does not treat removed listings, expired listings, inventory resets, or missing marketplace pages as sales.
+
+<div className="liquidity-visual">
+  <p className="liquidity-visual-title">Completed sales matter most</p>
+  <p className="liquidity-visual-note">Regular sales provide much stronger evidence than listings simply disappearing from a marketplace.</p>
+  <img src="/images/liquidity-activity.svg" alt="Completed-sales curve from zero to forty-five points" className="liq-img" />
+</div>
+
+### Consistent pricing: 5%
+
+This is a small supporting part of the score. It cannot make up for missing sales or weak buyers.
+
+Half of the points come from price coverage. An item seen throughout more of the last 24 hours receives more credit than an item seen only once or twice.
+
+The other half comes from price consistency. CS2Cap checks price movement separately for each marketplace and currency. This prevents normal price differences between marketplaces or currencies from looking like wild price swings.
+
+<div className="liquidity-visual">
+  <p className="liquidity-visual-title">Reliable prices need coverage and consistency</p>
+  <p className="liquidity-visual-note">Each half contributes up to 2.5 points.</p>
+  <div className="liquidity-stability" aria-label="Price consistency contribution meters">
     <div className="liquidity-meter-row">
       <span className="liquidity-meter-label">Recent coverage</span>
       <span className="liquidity-meter"><span className="liquidity-meter-fill liquidity-meter-fill-stability" /></span>
       <span className="liquidity-meter-value">up to 2.5 pts</span>
     </div>
     <div className="liquidity-meter-row">
-      <span className="liquidity-meter-label">Price steadiness</span>
+      <span className="liquidity-meter-label">Price consistency</span>
       <span className="liquidity-meter"><span className="liquidity-meter-fill liquidity-meter-fill-volatility" /></span>
       <span className="liquidity-meter-value">up to 2.5 pts</span>
     </div>
@@ -116,57 +126,73 @@ The other half comes from price steadiness. Coefficient of variation is computed
       <span className="liquidity-scale-ticks">
         <span>1</span>
         <span>2</span>
-        <span>2.5</span>
       </span>
-      <span className="liquidity-meter-value">points</span>
     </div>
-    <p className="liquidity-stability-caption">Each marker is the point unlocked at that threshold. Sparse observations or sharp relative price movement reduce this component, even if the current bid and ask look healthy.</p>
   </div>
 </div>
 
-Price stability is supporting evidence only. It cannot compensate for missing confirmed sales.
+### Data coverage: 10%
 
-### Data confidence
+The score is more trustworthy when several independent sources agree.
 
-Data confidence rewards broad, trustworthy coverage without double-counting sales or listings.
+| Evidence | Maximum points |
+| --- | ---: |
+| Marketplaces with competitive listings | `4` |
+| Marketplaces with both a usable listing and buy order | `3` |
+| Available completed-sales data | `3` |
 
-| Signal | Max points | How it works |
-| :---: | :---: | --- |
-| Fresh listing-provider coverage | 4 | Saturates at 12 competitive providers |
-| Same-provider execution coverage | 3 | Saturates at 3 providers with a usable bid and ask |
-| Confirmed-sales data availability | 3 | Requires a fresh Steam snapshot or a successful persisted-sales query |
+The first part reaches its maximum with 12 marketplaces. The second reaches its maximum with 3 marketplaces.
 
-Same-provider bid-above-ask anomalies reduce confidence and are excluded from execution quality. Liquidity v2 has no price-based, rarity-based, Doppler, or high-tier boost. The legacy `high_tier_override` and `doppler_bonus` response flags remain for compatibility and are always `false` for v2 scores.
+A confirmed result of zero sales still counts as available data. It tells us that the sales source was checked and found nothing, which is different from the source being unavailable.
 
-## API fields
+Broken buy orders data can remove 2 points from this part.
 
-Analytics responses ([`GET /market/items/*`](/api-reference/market-analytics#get-/market/items) endpoints) include the total score and component breakdown:
+## Using the score
+
+Use the total score to compare items quickly, then check the component scores before making a decision.
+
+For example:
+
+- A high listing score with a low completed-sales score may mean many sellers are waiting for very few buyers.
+- A high buyer score with low buyer depth may mean one good offer is supporting the market.
+- A low data-coverage score means the total is based on fewer independent sources.
+
+Liquidity describes how easily an item may trade today. It is not a promise that a sale will happen, and it is not a forecast of the item's future value.
+
+### Missing or old data
+
+Missing information receives zero points for the affected part. The other parts are not increased to hide the missing data.
+
+- Marketplace listings and buy orders older than six hours are ignored.
+- Steam sales counts older than two hours are ignored.
+- A missing sales source is different from a checked source reporting zero sales.
+
+An older saved score may appear briefly while a fresh score is being calculated.
+
+Some field names are older than the current scoring method. Their current meanings are:
+
+| API field | Meaning |
+| --- | --- |
+| `listing_score` | Listings near the market price |
+| `gap_score` | Buyers ready to purchase |
+| `volume_score` | Completed sales |
+| `stability_score` | Consistent pricing |
+| `external_score` | Data coverage |
+
+The five component values always add up to the total liquidity score.
+
+### API fields
+
+Market analytics responses include the total and its component scores:
 
 ```json
 {
-  "liquidity": 61,
+  "liquidity": 62,
   "listing_score": 15,
-  "gap_score": 22,
-  "volume_score": 9,
+  "gap_score": 24,
+  "volume_score": 8,
   "stability_score": 5,
   "external_score": 10,
-  "liquidity_last_updated": "2026-03-21T06:48:43.193895Z"
+  "liquidity_last_updated": "2026-08-03T04:00:00Z"
 }
 ```
-
-Use the component fields to understand why an item scored the way it did. For example, deep listings and strong bids cannot produce a very-liquid score when confirmed sales velocity is weak.
-
-## Caching and freshness
-
-Liquidity v2 uses its own Redis score and ranking namespace, preventing legacy and v2 results from mixing. Scores update as market data and confirmed-sales history change; stale cached scores can be served briefly while a recomputation is queued.
-
-## How to interpret scores
-
-| Score | Interpretation |
-| :---: | --- |
-| `80-100` | **Very liquid**. Strong confirmed velocity, executable bids, competitive depth, and broad coverage. |
-| `60-79` | **Liquid**. Tradable under normal conditions, but one or two components may be weaker. |
-| `30-59` | **Moderate or situational liquidity**. Check spread, depth, and recent volume before relying on fast execution. |
-| `0-29` | **Low liquidity**. The item may be thin, stale, volatile, or poorly confirmed by external signals. |
-
-Liquidity is a tradability signal, not a price forecast. A high score means the item is easier to buy or sell with less friction. It does not mean the item is underpriced or expected to rise.
