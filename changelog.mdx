@@ -5,6 +5,103 @@ description: "Public-facing API, documentation, and platform changes to CS2Cap t
 
 This changelog tracks public API, documentation, and platform changes that affect integrators. You will find new endpoints, breaking changes, deprecations, and improvements here as they ship. Non-breaking internal changes and infrastructure updates are not listed.
 
+## 2026-08 — SDK v3.1.0: feed streaming and portfolio value fields
+
+An additive release covering everything the API gained since v3.0.0. No methods were
+renamed or removed, so upgrading needs no code changes.
+
+- Python: `pip install cs2cap==3.1.0`
+- Node/TypeScript: `npm install cs2cap@3.1.0`
+
+**What is new**
+
+- `FeedStream`, a streaming client for the real-time feeds. It handles the SSE
+  connection, skips heartbeats, and yields decoded events with typed item changes.
+- `skinswap_t` joins the provider enum.
+- `currency`, `price_provider`, `total_value`, and `change_24h_pct` on the portfolio list
+  model, plus the `include` parameter that fills the last two in.
+- `prices` on the Steam import request, so an import can carry cost basis.
+- Liquidity score field descriptions now match the current scoring model.
+
+<CodeGroup>
+
+```python Python
+feed = cs2cap.FeedStream(client)
+
+for event in feed.stream_prices(providers=["steam"], item_ids=[17464]):
+    for item in event.items:
+        print(event.provider, item.item_id, item.change, item.price)
+```
+
+```typescript TypeScript
+const feed = new FeedStream(new Configuration({ accessToken }));
+
+for await (const event of feed.streamPrices({ providers: ["steam"], itemIds: [17464] })) {
+  for (const item of event.items) {
+    console.log(event.provider, item.itemId, item.change, item.price);
+  }
+}
+```
+
+</CodeGroup>
+
+`FeedStream` is the supported way to consume the feeds from the SDKs. The generated
+`FeedApi` class reads a whole response before returning, which never completes on a
+stream. See the [Feed API reference](/api-reference/feed) for the event catalog and
+reconnect guidance.
+
+## 2026-08 — Portfolio list valuation and import cost basis
+
+`GET /portfolio` now accepts `include=value`, which adds `total_value` and
+`change_24h_pct` to every portfolio in the response. It is opt-in because valuing each
+portfolio costs an extra lookup. The list model also returns `currency` and
+`price_provider` so you can tell how a portfolio is being valued.
+
+`POST /portfolio/{id}/import` accepts a `prices` map keyed by Steam asset ID. Each
+imported asset with a price also gets a matching `buy` transaction, so imported items
+arrive with cost basis instead of needing a second pass.
+
+## 2026-08 — Liquidity score rebalanced around confirmed sales
+
+The liquidity score now weighs evidence differently. The range stays `0-100` and no field
+names change, but **scores move for some items** — recompute anything you cached or
+threshold against.
+
+| Part | Maximum points |
+| --- | ---: |
+| Sales volume | `45` |
+| Valid buy orders | `25` |
+| Listings count | `15` |
+| Data coverage | `10` |
+| Consistent pricing | `5` |
+
+Requests for a `7d` or `30d` liquidity horizon are normalized to the canonical 24h score,
+which already smooths 24h, 7d, and 30d sales evidence. See the
+[liquidity score guide](/guides/liquidity-score) for the full model.
+
+## 2026-07 — Best bid excludes same-provider bids above the ask
+
+`best_bid` in market analytics now ignores bids from the same provider that sit at or
+above that provider's current ask. Those entries were arbitrage artifacts rather than
+offers you could actually sell into.
+
+## 2026-07 — Real-time price and bid feeds
+
+Two Server-Sent Events endpoints replace polling `/prices` and `/bids` on a timer:
+
+- `GET /feed/prices` — price changes as providers refresh
+- `GET /feed/bids` — buy-order changes
+
+Both take repeatable `providers`, `item_ids`, and `market_hash_names` filters, and are
+available on the Quant tier. Delivery is fire-and-forget with no event history, so
+re-fetch current state before reconnecting. See the
+[Feed API reference](/api-reference/feed).
+
+## 2026-07 — New provider: SkinSwap Trade
+
+`skinswap_t` is accepted anywhere a provider key is, and appears in provider lists
+alongside the existing `skinswap` marketplace.
+
 ## 2026-07 — SDK v3.0.0: new repositories and renamed methods
 
 Both SDKs move to dedicated repositories with independent versioning, and method

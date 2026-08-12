@@ -53,7 +53,49 @@ source.onerror = () => {
 };
 ```
 
+```python Python
+import os
+
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    feed = cs2cap.FeedStream(client)
+
+    for event in feed.stream_prices(providers=["steam", "csfloat"], item_ids=[17464]):
+        for item in event.items:
+            print(event.provider, item.item_id, item.change, item.price)
+```
+
+```typescript TypeScript
+import { Configuration, FeedStream } from "cs2cap";
+
+const accessToken = process.env.CS2C_API_KEY;
+
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
+}
+
+const feed = new FeedStream(new Configuration({ accessToken }));
+
+for await (const event of feed.streamPrices({
+  providers: ["steam", "csfloat"],
+  itemIds: [17464],
+})) {
+  for (const item of event.items) {
+    console.log(event.provider, item.itemId, item.change, item.price);
+  }
+}
+```
+
 </CodeGroup>
+
+<Note>
+  `FeedStream` opens one connection per call and yields events as they arrive.
+  Leaving the loop closes the connection. Heartbeat comments are consumed for you, so
+  every value you receive is a real event: `ready` first, then `prices.changed`.
+</Note>
 
 ### Query parameters
 
@@ -198,6 +240,8 @@ source.addEventListener("bids.changed", (event) => {
 ```
 
 </CodeGroup>
+
+From the SDKs, use `feed.stream_bids(...)` (Python) or `feed.streamBids({...})` (TypeScript). They take the same arguments and yield the same event shape as the price feed shown above, carrying `bids.changed` instead of `prices.changed`.
 
 ### Query parameters
 

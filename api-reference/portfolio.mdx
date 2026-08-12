@@ -113,6 +113,26 @@ console.log(response);
 
 </CodeGroup>
 
+<ParamField query="include" type="string">
+  Set to `value` to add `total_value` and `change_24h_pct` to every portfolio in the response. Omitted by default, since valuing every portfolio costs an extra lookup per portfolio.
+</ParamField>
+
+<ResponseField name="data[].currency" type="string" default="USD">
+  Portfolio base currency (ISO 4217). Values are returned in this currency.
+</ResponseField>
+
+<ResponseField name="data[].price_provider" type="string | null">
+  Pinned pricing provider key, or `null` when the portfolio is valued at the best ask across all providers.
+</ResponseField>
+
+<ResponseField name="data[].total_value" type="integer | null">
+  Current total value in minor units of the base currency. Present only with `include=value`.
+</ResponseField>
+
+<ResponseField name="data[].change_24h_pct" type="number | null">
+  Percent change against the previous daily close. Present only with `include=value`, and `null` until a previous close exists.
+</ResponseField>
+
 ---
 
 ### DELETE /portfolio/:id
@@ -442,11 +462,18 @@ console.log(response);
   UUID of the destination portfolio.
 </ParamField>
 
-```json Request body (optional asset filter)
+```json Request body (optional asset filter and cost basis)
 {
-  "asset_ids": ["1234567890", "1234567891"]
+  "asset_ids": ["1234567890", "1234567891"],
+  "prices": {
+    "1234567890": 2550
+  }
 }
 ```
+
+<ParamField body="prices" type="object">
+  Optional per-unit purchase price in minor units, keyed by Steam asset ID. Every imported asset with a price also gets a matching `buy` transaction — dated today, marketplace `steam`, in the portfolio's base currency — so the import carries cost basis. Assets you leave out are imported without one.
+</ParamField>
 
 <Note>
   Items already saved under the same Steam asset ID are skipped automatically. Items that cannot be matched to a catalog entry are returned in `unresolved` and are not stored.
