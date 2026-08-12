@@ -9953,6 +9953,32 @@
         "summary": "List Portfolios",
         "description": "List all named portfolios belonging to the authenticated user.",
         "operationId": "listPortfolios",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "include",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "const": "value",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Set to 'value' to include total_value and change_24h_pct per portfolio.",
+              "title": "Include"
+            },
+            "description": "Set to 'value' to include total_value and change_24h_pct per portfolio."
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -9968,12 +9994,12 @@
             "description": "Missing or invalid authentication credentials.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
                 "example": {
                   "code": "UNAUTHORIZED",
                   "detail": "Missing Authorization header"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -9990,6 +10016,29 @@
           },
           "429": {
             "description": "Rate limit exceeded (burst or monthly quota).",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "burstRateLimit": {
+                    "summary": "Per-window rate limit exceeded",
+                    "value": {
+                      "code": "RATE_LIMIT_EXCEEDED",
+                      "detail": "Too Many Requests"
+                    }
+                  },
+                  "monthlyQuotaExceeded": {
+                    "summary": "Monthly quota exhausted",
+                    "value": {
+                      "code": "RATE_LIMIT_MONTHLY_QUOTA_EXCEEDED",
+                      "detail": "Monthly quota exceeded (500000/500000 requests)."
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
             "headers": {
               "Retry-After": {
                 "description": "Seconds to wait before retrying when present.",
@@ -10008,50 +10057,34 @@
                 "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
-                  "minimum": 0.0
+                  "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
                 "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
-                  "minimum": 0.0
+                  "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
                 "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
-                  "minimum": 0.0
-                }
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "examples": {
-                  "burstRateLimit": {
-                    "summary": "Per-window rate limit exceeded",
-                    "value": {
-                      "code": "RATE_LIMIT_EXCEEDED",
-                      "detail": "Too Many Requests"
-                    }
-                  },
-                  "monthlyQuotaExceeded": {
-                    "summary": "Monthly quota exhausted",
-                    "value": {
-                      "code": "RATE_LIMIT_MONTHLY_QUOTA_EXCEEDED",
-                      "detail": "Monthly quota exceeded (500000/500000 requests)."
-                    }
-                  }
+                  "minimum": 0
                 }
               }
             }
           },
           "422": {
             "description": "Request validation failed. The detail list contains field-specific validation errors.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            },
             "headers": {
               "X-RateLimit-Tier": {
                 "description": "Authenticated caller tier code when available.",
@@ -10059,21 +10092,9 @@
                   "type": "string"
                 }
               }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ValidationErrorResponse"
-                }
-              }
             }
           }
-        },
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ]
+        }
       },
       "post": {
         "tags": [
@@ -10082,15 +10103,20 @@
         "summary": "Create Portfolio",
         "description": "Create a new named portfolio. The maximum number of portfolios depends on your tier. Portfolios store items persistently and can be valued at any time.",
         "operationId": "createPortfolio",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/PortfolioCreate"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "201": {
@@ -10107,12 +10133,12 @@
             "description": "Missing or invalid authentication credentials.",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
                 "example": {
                   "code": "UNAUTHORIZED",
                   "detail": "Missing Authorization header"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -10129,6 +10155,29 @@
           },
           "429": {
             "description": "Rate limit exceeded (burst or monthly quota).",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "burstRateLimit": {
+                    "summary": "Per-window rate limit exceeded",
+                    "value": {
+                      "code": "RATE_LIMIT_EXCEEDED",
+                      "detail": "Too Many Requests"
+                    }
+                  },
+                  "monthlyQuotaExceeded": {
+                    "summary": "Monthly quota exhausted",
+                    "value": {
+                      "code": "RATE_LIMIT_MONTHLY_QUOTA_EXCEEDED",
+                      "detail": "Monthly quota exceeded (500000/500000 requests)."
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
             "headers": {
               "Retry-After": {
                 "description": "Seconds to wait before retrying when present.",
@@ -10147,62 +10196,39 @@
                 "description": "Request limit for the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
-                  "minimum": 0.0
+                  "minimum": 0
                 }
               },
               "X-RateLimit-Remaining": {
                 "description": "Remaining requests in the rate-limit window that was exceeded.",
                 "schema": {
                   "type": "integer",
-                  "minimum": 0.0
+                  "minimum": 0
                 }
               },
               "X-RateLimit-Reset": {
                 "description": "Seconds until the rate-limit window resets.",
                 "schema": {
                   "type": "integer",
-                  "minimum": 0.0
-                }
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "examples": {
-                  "burstRateLimit": {
-                    "summary": "Per-window rate limit exceeded",
-                    "value": {
-                      "code": "RATE_LIMIT_EXCEEDED",
-                      "detail": "Too Many Requests"
-                    }
-                  },
-                  "monthlyQuotaExceeded": {
-                    "summary": "Monthly quota exhausted",
-                    "value": {
-                      "code": "RATE_LIMIT_MONTHLY_QUOTA_EXCEEDED",
-                      "detail": "Monthly quota exceeded (500000/500000 requests)."
-                    }
-                  }
+                  "minimum": 0
                 }
               }
             }
           },
           "422": {
             "description": "Request validation failed. The detail list contains field-specific validation errors.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            },
             "headers": {
               "X-RateLimit-Tier": {
                 "description": "Authenticated caller tier code when available.",
                 "schema": {
                   "type": "string"
-                }
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ValidationErrorResponse"
                 }
               }
             }
@@ -10217,12 +10243,7 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ]
+        }
       }
     },
     "/v1/portfolio/{portfolio_id}": {
@@ -10381,7 +10402,7 @@
           "Portfolio"
         ],
         "summary": "Import Steam Inventory",
-        "description": "Import items from the user's Steam inventory into a portfolio. Optionally supply `asset_ids` to import only specific items. Items already present (by Steam asset ID) are skipped. Items not matched in the CS2C catalog are returned in `unresolved` and are not stored.",
+        "description": "Import items from the user's Steam inventory into a portfolio. Optionally supply `asset_ids` to import only specific items. Items already present (by Steam asset ID) are skipped. Items not matched in the CS2C catalog are returned in `unresolved` and are not stored. Optionally supply `prices` to record a matching 'buy' transaction (dated today, marketplace 'steam') for each newly imported asset, giving imports cost basis.",
         "operationId": "importSteamInventory",
         "security": [
           {
@@ -11073,12 +11094,18 @@
             "in": "query",
             "required": false,
             "schema": {
-              "type": "string",
-              "description": "Target currency code.",
-              "default": "USD",
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Target currency code. Defaults to the portfolio's base currency.",
               "title": "Currency"
             },
-            "description": "Target currency code."
+            "description": "Target currency code. Defaults to the portfolio's base currency."
           },
           {
             "name": "providers",
@@ -11319,12 +11346,18 @@
             "in": "query",
             "required": false,
             "schema": {
-              "type": "string",
-              "description": "Target currency code.",
-              "default": "USD",
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Target currency code. Defaults to the portfolio's base currency.",
               "title": "Currency"
             },
-            "description": "Target currency code."
+            "description": "Target currency code. Defaults to the portfolio's base currency."
           },
           {
             "name": "providers",
@@ -16570,6 +16603,22 @@
             ],
             "title": "Asset Ids",
             "description": "Steam asset IDs to import. Omit to import the entire inventory. Only items resolvable in the CS2C catalog are stored."
+          },
+          "prices": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "integer",
+                  "minimum": 0.0
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prices",
+            "description": "Optional per-unit purchase price in minor units, keyed by Steam asset ID. Each imported asset with a price gets a matching 'buy' transaction (dated today, marketplace 'steam', portfolio base currency) so imports carry cost basis."
           }
         },
         "additionalProperties": false,
@@ -16939,6 +16988,48 @@
             "type": "integer",
             "title": "Item Count",
             "description": "Number of items currently in the portfolio."
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency",
+            "description": "Portfolio base currency (ISO 4217).",
+            "default": "USD"
+          },
+          "price_provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Provider",
+            "description": "Pinned pricing provider key, or null for best ask across all providers."
+          },
+          "total_value": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Value",
+            "description": "Current total value in minor units of the base currency. Only present when the list endpoint is called with include=value."
+          },
+          "change_24h_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change 24H Pct",
+            "description": "Percent change vs the previous daily close. Only present with include=value when a previous close exists."
           },
           "created_at": {
             "type": "string",
