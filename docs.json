@@ -143,7 +143,12 @@
     }
   },
   "seo": {
-    "indexing": "all"
+    "indexing": "all",
+    "metatags": {
+      "og:image": "https://cs2cap.com/api/og",
+      "twitter:card": "summary_large_image",
+      "twitter:image": "https://cs2cap.com/api/og"
+    }
   },
   "description": "One free REST API for real-time CS2 skin prices, buy orders, sales history, items, and analytics across 40+ marketplaces. Built for developers, trading tools, and data teams.",
   "fonts": {
