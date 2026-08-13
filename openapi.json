@@ -9269,17 +9269,16 @@
             "schema": {
               "anyOf": [
                 {
-                  "type": "integer",
-                  "minimum": 1
+                  "type": "string"
                 },
                 {
                   "type": "null"
                 }
               ],
-              "description": "Window length in days; overrides start.",
+              "description": "Duration window such as `7d` or `30`; overrides start.",
               "title": "Lookback"
             },
-            "description": "Window length in days; overrides start."
+            "description": "Duration window such as `7d` or `30`; overrides start."
           },
           {
             "name": "currency",

@@ -835,7 +835,7 @@ with cs2cap.ApiClient(configuration) as client:
     response = api.get_deep_price_history_chart(
         item_id=4994,
         providers=["buff163", "csfloat"],
-        lookback=30,
+        lookback="30d",
         currency="USD",
     )
 
@@ -855,7 +855,7 @@ const api = new MarketIntelligenceApi(new Configuration({ accessToken }));
 const response = await api.getDeepPriceHistoryChart({
   itemId: 4994,
   providers: ["buff163", "csfloat"],
-  lookback: 30,
+  lookback: "30d",
   currency: "USD",
 });
 
@@ -886,8 +886,8 @@ Provide either `item_id` or `market_hash_name`. With no time parameters the resp
   ISO 8601 UTC end of the window. Defaults to now.
 </ParamField>
 
-<ParamField query="lookback" type="integer">
-  Window length in days. Overrides `start` when provided.
+<ParamField query="lookback" type="string">
+  Duration shorthand such as `7d` or `30`. Overrides `start` when provided.
 </ParamField>
 
 <ParamField query="currency" type="string" default="USD">
