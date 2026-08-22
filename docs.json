@@ -3,8 +3,8 @@
   "name": "CS2Cap",
   "theme": "maple",
   "logo": {
-    "light": "https://api.cs2c.app/favicon.ico",
-    "dark": "https://api.cs2c.app/favicon.ico",
+    "light": "https://cdn.cs2c.app/assets/wordmark.svg",
+    "dark": "https://cdn.cs2c.app/assets/wordmark.svg",
     "href": "https://cs2cap.com/"
   },
   "favicon": "https://api.cs2c.app/favicon.ico",
