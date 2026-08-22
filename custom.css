@@ -1,3 +1,10 @@
+/* Mintlify caps the navbar logo at h-7 (1.75rem); enlarge it. */
+img[alt="light logo"],
+img[alt="dark logo"] {
+  height: 2.5rem !important;
+  max-height: none !important;
+}
+
 .dark [data-page-type] {
   background-image:
     linear-gradient(rgba(29, 110, 243, 0.05) 1px, transparent 1px),
