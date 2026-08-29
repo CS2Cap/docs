@@ -157,7 +157,7 @@
   "footer": {
     "socials": {
       "github": "https://github.com/CS2Cap",
-      "discord": "https://discord.gg/a2CgnHNzse",
+      "discord": "https://cs2cap.com/discord",
       "x": "https://x.com/dadscap"
     },
     "links": [
@@ -220,7 +220,7 @@
     "library": "fontawesome"
   },
   "banner": {
-    "content": "Still have questions? Join our Discord --> https://discord.gg/a2CgnHNzse",
+    "content": "Still have questions? Join our Discord --> https://cs2cap.com/discord",
     "dismissible": true,
     "type": "info"
   },
