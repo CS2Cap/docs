@@ -15957,6 +15957,12 @@
             "title": "Price Diff 24H",
             "description": "Price change over the last 24 hours in USD major units."
           },
+          "price_change_confirmed_24h": {
+            "type": "boolean",
+            "title": "Price Change Confirmed 24H",
+            "description": "Whether the 24-hour change is corroborated in direction and magnitude by the trusted marketplace panel. Market movers require this.",
+            "default": false
+          },
           "price_rate_7d": {
             "anyOf": [
               {

@@ -587,6 +587,10 @@ This endpoint takes no query parameters.
   Same 24h price change expressed as a percentage.
 </ResponseField>
 
+<ResponseField name="data.items[].summary.price_change_confirmed_24h" type="boolean">
+  Whether the 24h change is corroborated in direction and magnitude by the trusted marketplace panel. Market movers require this.
+</ResponseField>
+
 <ResponseField name="data.items[].summary.sales_1d" type="integer">
   Estimated number of trades in the last 24 hours. A useful approximation, not a guaranteed exact count.
 </ResponseField>
