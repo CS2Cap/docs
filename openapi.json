@@ -9640,13 +9640,9 @@
             }
           },
           "403": {
-            "description": "Authenticated but not permitted to access this resource.",
+            "description": "Steam inventory is private.",
             "content": {
               "application/json": {
-                "example": {
-                  "code": "FORBIDDEN",
-                  "detail": "Account is disabled"
-                },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
