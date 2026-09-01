@@ -9594,7 +9594,7 @@
           "Inventory"
         ],
         "summary": "Get Steam Inventory by Steam ID",
-        "description": "Fetch the CS2 inventory for any Steam account by Steam64ID or vanity URL. Accepts a 17-digit Steam64ID (e.g. `76561197964243909`) or a custom URL name (e.g. `dadscap`). Vanity URL resolution requires a Steam Web API key to be configured. No data is persisted.",
+        "description": "Fetch the CS2 inventory for any Steam account by Steam64ID or vanity URL. Accepts a 17-digit Steam64ID (e.g. `76561197964243909`) or a custom URL name (e.g. `dadscap`). Vanity URL resolution requires a Steam Web API key to be configured. Includes a profile summary (persona name, avatar) when available. No data is persisted.",
         "operationId": "getSteamInventoryBySteamId",
         "security": [
           {
@@ -9620,7 +9620,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SteamInventoryResponse"
+                  "$ref": "#/components/schemas/SteamInventoryLookupResponse"
                 }
               }
             }
@@ -18355,6 +18355,41 @@
         "title": "SteamInventoryItem",
         "description": "A single item from a Steam CS2 inventory."
       },
+      "SteamInventoryLookupResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/SteamInventoryItem"
+            },
+            "type": "array",
+            "title": "Data",
+            "description": "Items in the inventory."
+          },
+          "total_count": {
+            "type": "integer",
+            "title": "Total Count",
+            "description": "Total inventory count reported by Steam."
+          },
+          "profile": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SteamProfileSummary"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Steam profile summary for the looked-up account; null if unavailable."
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "total_count"
+        ],
+        "title": "SteamInventoryLookupResponse",
+        "description": "Response envelope for GET /v1/inventory/steam/lookup."
+      },
       "SteamInventoryResponse": {
         "properties": {
           "data": {
@@ -18378,6 +18413,39 @@
         ],
         "title": "SteamInventoryResponse",
         "description": "Response envelope for GET /v1/portfolio/steam-inventory."
+      },
+      "SteamProfileSummary": {
+        "properties": {
+          "steam_id64": {
+            "type": "string",
+            "title": "Steam Id64",
+            "description": "Resolved Steam64ID of the profile."
+          },
+          "persona_name": {
+            "type": "string",
+            "title": "Persona Name",
+            "description": "Steam persona (display) name."
+          },
+          "avatar_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avatar Url",
+            "description": "Full-size Steam avatar URL, if available."
+          }
+        },
+        "type": "object",
+        "required": [
+          "steam_id64",
+          "persona_name"
+        ],
+        "title": "SteamProfileSummary",
+        "description": "Public Steam profile summary for a looked-up account."
       },
       "StickerInfo": {
         "properties": {
