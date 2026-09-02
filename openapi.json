@@ -675,10 +675,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Single provider key for provider-scoped historical snapshots. Use repeated `providers` on `/v1/prices` for live snapshot filtering; `/v1/prices/candles` is composite and intentionally has no provider filter.",
+              "description": "Single provider key for provider-scoped historical snapshots. Use repeated `providers` on `/v1/prices` for live snapshot filtering; `/v1/prices/candles` returns composite candles and has no provider filter.",
               "title": "Provider"
             },
-            "description": "Single provider key for provider-scoped historical snapshots. Use repeated `providers` on `/v1/prices` for live snapshot filtering; `/v1/prices/candles` is composite and intentionally has no provider filter."
+            "description": "Single provider key for provider-scoped historical snapshots. Use repeated `providers` on `/v1/prices` for live snapshot filtering; `/v1/prices/candles` returns composite candles and has no provider filter."
           },
           {
             "name": "start",
@@ -762,10 +762,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Cursor for keyset pagination. Use next_cursor from previous response. When provided, offset is ignored and keyset pagination is used for O(1) seek.",
+              "description": "Pagination cursor. Use `next_cursor` from the previous response to fetch the next page.",
               "title": "Cursor"
             },
-            "description": "Cursor for keyset pagination. Use next_cursor from previous response. When provided, offset is ignored and keyset pagination is used for O(1) seek."
+            "description": "Pagination cursor. Use `next_cursor` from the previous response to fetch the next page."
           }
         ],
         "responses": {
@@ -977,7 +977,7 @@
           "Prices"
         ],
         "summary": "Get Price Candles",
-        "description": "Return composite OHLCV candle data for a single item across all providers.\n\nParameters:\n- Item filter: `item_id` or `market_hash_name` (one is required).\n- Optional filter: `phase`.\n- Time window: `start`/`end` (ISO 8601) or `lookback` (for example `7d` or `7`).\n- `interval`: `5m`, `1h`, or `1d`.\n- `fill`: Include empty buckets with carry-forward prices when `true`.\n- `currency`: Quote currency (default `USD`).\n\nNotes:\n- If `lookback` is sent with `start` or `end`, `lookback` takes precedence.\n  Lookback requests are aligned to completed candle buckets; `1h` lookback\n  windows use a 15-minute freshness buffer before flooring to the hour.\n- Maximum lookback depends on `interval`:\n  `5m` up to 7 days, `1h` up to 30 days, `1d` up to 365 days.\n- Free tiers are additionally capped by their tier restrictions and default\n  to the maximum allowed window when no explicit lookback is supplied.\n\nResponse:\n- `meta`: Item, provider scope, interval, phase, currency, and effective query-window\n  start/end timestamps.\n- `data`: Candle buckets in oldest-to-newest order\n  (`t`, `o`, `h`, `l`, `c`, `v`, `q`, `providers`).\n  All four price legs track one series: the best (lowest) ask available\n  across marketplaces. `o`/`c` are that best ask at the start/end of the\n  bucket, and `h`/`l` are the highest and lowest values it reached within\n  the bucket. `v` is the estimated trade volume derived from inventory\n  changes, and `q` is the total active listings at bucket end when\n  available. `providers.o`, `providers.h`, `providers.l`, and `providers.c`\n  identify the marketplace that was the best ask at each of those moments.\n  For `1d` requests starting more than 30 days back, `v` uses an alternate\n  volume estimate and `q` is `null`.\n\nRequirements:\n- Valid API key with access to `/v1/prices/candles`.\n- `item_id` or `market_hash_name` is required.\n- `start`/`end` must be valid ISO 8601 timestamps.",
+        "description": "Return composite OHLCV candle data for a single item across all providers.\n\nParameters:\n- Item filter: `item_id` or `market_hash_name` (one is required).\n- Optional filter: `phase`.\n- Time window: `start`/`end` (ISO 8601) or `lookback` (for example `7d` or `7`).\n- `interval`: `5m`, `1h`, or `1d`.\n- `fill`: Include empty buckets with carry-forward prices when `true`.\n- `currency`: Quote currency (default `USD`).\n\nNotes:\n- If `lookback` is sent with `start` or `end`, `lookback` takes precedence.\n  Lookback requests are aligned to completed candle buckets, so the\n  effective window may end slightly before the current time.\n- Maximum lookback depends on `interval`:\n  `5m` up to 7 days, `1h` up to 30 days, `1d` up to 365 days.\n- Free tiers are additionally capped by their tier restrictions and default\n  to the maximum allowed window when no explicit lookback is supplied.\n\nResponse:\n- `meta`: Item, provider scope, interval, phase, currency, and effective query-window\n  start/end timestamps.\n- `data`: Candle buckets in oldest-to-newest order\n  (`t`, `o`, `h`, `l`, `c`, `v`, `q`, `providers`).\n  All four price legs track one series: the best (lowest) ask available\n  across marketplaces. `o`/`c` are that best ask at the start/end of the\n  bucket, and `h`/`l` are the highest and lowest values it reached within\n  the bucket. `v` is the estimated trade volume derived from inventory\n  changes, and `q` is the total active listings at bucket end when\n  available. `providers.o`, `providers.h`, `providers.l`, and `providers.c`\n  identify the marketplace that was the best ask at each of those moments.\n  For `1d` requests starting more than 30 days back, `v` is estimated from\n  a different data source and may not be directly comparable across the\n  30-day boundary, and `q` is `null`.\n\nRequirements:\n- Valid API key with access to `/v1/prices/candles`.\n- `item_id` or `market_hash_name` is required.\n- `start`/`end` must be valid ISO 8601 timestamps.",
         "operationId": "getPriceCandles",
         "security": [
           {
@@ -2769,7 +2769,7 @@
           "Sales"
         ],
         "summary": "List Recent Sales",
-        "description": "Return recent sales across providers with recent-sales support, newest first.\n\nWith no filters, returns the global recent-sales feed ordered by sale time (most recent first). Optional filters narrow the results:\n- `item_id` — restrict to one catalog item (its canonical market_hash_name and phase are used)\n- `market_hash_name` (+ optional `phase`) — restrict to one item by name\n- `min_float` / `max_float` — restrict to a float-value range\n- `paint_seed` — restrict to an exact paint seed\n- `stickers` — restrict to sales containing every requested sticker name\n- `charms` — restrict to sales containing one requested charm name\n- `providers` — restrict to specific sales-capable provider keys\n- `currency` — convert values to the target currency\n\nPagination:\n- `limit` sets the page size (max 100 for Pro, 1000 for Quant)\n- pass `cursor` from the previous response's `pagination.next_cursor` to page through results; `pagination.total` is `-1` (count intentionally skipped)\n\nBehavior:\n- recent-sales data refreshes roughly once every 24 hours, so results may be up to a day old\n\nResponse:\n- request metadata, providers queried, and a cursor pagination footer\n- sales records with sticker, charm, and inspect metadata when available",
+        "description": "Return recent sales across providers with recent-sales support, newest first.\n\nWith no filters, returns the global recent-sales feed ordered by sale time (most recent first). Optional filters narrow the results:\n- `item_id` — restrict to one catalog item (its canonical market_hash_name and phase are used)\n- `market_hash_name` (+ optional `phase`) — restrict to one item by name\n- `min_float` / `max_float` — restrict to a float-value range\n- `paint_seed` — restrict to an exact paint seed\n- `stickers` — restrict to sales containing every requested sticker name\n- `charms` — restrict to sales containing one requested charm name\n- `providers` — restrict to specific sales-capable provider keys\n- `currency` — convert values to the target currency\n\nPagination:\n- `limit` sets the page size (max 100 for Pro, 1000 for Quant)\n- pass `cursor` from the previous response's `pagination.next_cursor` to page through results; `pagination.total` is always `-1` (no total count is computed)\n\nBehavior:\n- recent-sales data refreshes roughly once every 24 hours, so results may be up to a day old\n\nResponse:\n- request metadata, providers queried, and a cursor pagination footer\n- sales records with sticker, charm, and inspect metadata when available",
         "operationId": "listRecentSales",
         "security": [
           {
@@ -2995,10 +2995,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Cursor for keyset pagination. Use next_cursor from previous response. When provided, offset is ignored and keyset pagination is used for O(1) seek.",
+              "description": "Pagination cursor. Use `next_cursor` from the previous response to fetch the next page.",
               "title": "Cursor"
             },
-            "description": "Cursor for keyset pagination. Use next_cursor from previous response. When provided, offset is ignored and keyset pagination is used for O(1) seek."
+            "description": "Pagination cursor. Use `next_cursor` from the previous response to fetch the next page."
           }
         ],
         "responses": {
@@ -4096,7 +4096,7 @@
           "Items"
         ],
         "summary": "Get Item Catalog Metadata",
-        "description": "Return catalog counts and filter option values for frontend search controls.",
+        "description": "Return the catalog item count and the available values for each `/v1/items` filter.",
         "operationId": "getItemCatalogMetadata",
         "responses": {
           "200": {
@@ -4421,11 +4421,11 @@
                 "webp"
               ],
               "type": "string",
-              "description": "Image URL format. Defaults to png; webp rewrites .png URL suffixes.",
+              "description": "Image URL format: `png` (default) or `webp` for WebP versions of the same images.",
               "default": "png",
               "title": "Format"
             },
-            "description": "Image URL format. Defaults to png; webp rewrites .png URL suffixes."
+            "description": "Image URL format: `png` (default) or `webp` for WebP versions of the same images."
           }
         ],
         "responses": {
@@ -6261,7 +6261,7 @@
           "Account / Alerts"
         ],
         "summary": "Create Alerts Batch",
-        "description": "Create multiple item-scoped account alerts in one request.\n\nRules:\n- accepts either a real API key or a session JWT bearer token\n- maximum 100 alerts per request\n- gated by the `batch_alert_creation_access` feature flag\n- enabled alerts are preflight-checked against the tier active-alert cap before inserts\n- exact duplicate alert payloads in the same request are rejected inline\n- the response preserves request order and reports per-item created/error status\n- the request consumes one API call regardless of batch size",
+        "description": "Create multiple item-scoped account alerts in one request.\n\nRules:\n- accepts either a real API key or a session JWT bearer token\n- maximum 100 alerts per request\n- available only on tiers that include batch alert creation (`403` otherwise)\n- the whole batch is rejected up front if its enabled alerts would exceed your tier's active-alert cap\n- exact duplicate alert payloads in the same request are rejected inline\n- the response preserves request order and reports per-item created/error status\n- the request consumes one API call regardless of batch size",
         "operationId": "createAlertsBatch",
         "requestBody": {
           "content": {
@@ -6746,7 +6746,7 @@
           "Account / Alerts"
         ],
         "summary": "List Alert Events",
-        "description": "List recent alert trigger events and delivery attempts for the authenticated user.\n\nBehavior:\n- accepts either a real API key or a session JWT bearer token\n- offset pagination ordered by newest event first\n- delivery rows currently reflect email delivery attempts",
+        "description": "List recent alert trigger events and delivery attempts for the authenticated user.\n\nBehavior:\n- accepts either a real API key or a session JWT bearer token\n- offset pagination ordered by newest event first\n- each event lists its delivery attempts across your configured channels (email and webhooks)",
         "operationId": "listAlertEvents",
         "security": [
           {
@@ -9594,7 +9594,7 @@
           "Inventory"
         ],
         "summary": "Get Steam Inventory by Steam ID",
-        "description": "Fetch the CS2 inventory for any Steam account by Steam64ID or vanity URL. Accepts a 17-digit Steam64ID (e.g. `76561197964243909`) or a custom URL name (e.g. `dadscap`). Vanity URL resolution requires a Steam Web API key to be configured. Includes a profile summary (persona name, avatar) when available. No data is persisted.",
+        "description": "Fetch the CS2 inventory for any Steam account by Steam64ID or vanity URL. Accepts a 17-digit Steam64ID (e.g. `76561197964243909`) or a custom URL name (e.g. `dadscap`). Includes a profile summary (persona name, avatar) when available. No data is persisted.",
         "operationId": "getSteamInventoryBySteamId",
         "security": [
           {
@@ -11262,7 +11262,7 @@
           "Portfolio"
         ],
         "summary": "Get Portfolio Value History",
-        "description": "Replay saved-portfolio holdings from the transaction ledger and return daily historical valuation points priced from stored daily market closes. This endpoint is daily-only because portfolio transactions are date-granular.",
+        "description": "Return daily historical valuation points for a saved portfolio. Each day's holdings are derived from the portfolio's recorded transactions and priced at that day's market close. This endpoint is daily-only because portfolio transactions are date-granular.",
         "operationId": "getPortfolioValueHistory",
         "security": [
           {
@@ -12987,7 +12987,7 @@
           "youpin"
         ],
         "title": "AllProviders",
-        "description": "All available provider keys.\n\nMembers are generated from canonical endpoint metadata."
+        "description": "All available provider keys."
       },
       "BatchBidItem": {
         "properties": {
@@ -13085,7 +13085,7 @@
               }
             ],
             "title": "Last Updated",
-            "description": "When record was last ingested."
+            "description": "When this data was last refreshed."
           }
         },
         "type": "object",
@@ -13335,7 +13335,7 @@
               }
             ],
             "title": "Last Updated",
-            "description": "When record was last ingested."
+            "description": "When this data was last refreshed."
           }
         },
         "type": "object",
@@ -13593,7 +13593,7 @@
               }
             ],
             "title": "Last Updated",
-            "description": "ISO 8601 UTC timestamp when this record was last ingested or processed."
+            "description": "ISO 8601 UTC timestamp when this data was last refreshed."
           }
         },
         "type": "object",
@@ -13831,7 +13831,7 @@
           "detail"
         ],
         "title": "ErrorResponse",
-        "description": "Standard error response payload returned by HTTPException."
+        "description": "Standard error response payload."
       },
       "FXRatesResponse": {
         "properties": {
@@ -14496,7 +14496,7 @@
               }
             ],
             "title": "Release Date",
-            "description": "Item release date inferred from direct item, collection, or crate metadata."
+            "description": "Item release date, when known. May be approximate — it can come from the item's collection or crate release."
           },
           "rarity_name": {
             "anyOf": [
@@ -14896,7 +14896,7 @@
             "type": "string",
             "format": "date-time",
             "title": "Last Updated",
-            "description": "ISO 8601 UTC timestamp when this record was last ingested or processed."
+            "description": "ISO 8601 UTC timestamp when this data was last refreshed."
           }
         },
         "type": "object",
@@ -15509,7 +15509,7 @@
               }
             ],
             "title": "Last Updated",
-            "description": "ISO 8601 UTC timestamp when this record was last ingested or processed."
+            "description": "ISO 8601 UTC timestamp when this data was last refreshed."
           }
         },
         "type": "object",
@@ -15956,7 +15956,7 @@
           "price_change_confirmed_24h": {
             "type": "boolean",
             "title": "Price Change Confirmed 24H",
-            "description": "Whether the 24-hour change is corroborated in direction and magnitude by the trusted marketplace panel. Market movers require this.",
+            "description": "Whether the 24-hour change is corroborated in direction and magnitude across multiple marketplaces. When `false`, treat the 24h change as unconfirmed.",
             "default": false
           },
           "price_rate_7d": {
@@ -16258,7 +16258,7 @@
           "timeframe": {
             "type": "string",
             "title": "Timeframe",
-            "description": "Requested liquidity horizon. Liquidity v2 currently normalizes all requests to its canonical 24h score, which smooths confirmed 24h/7d/30d sales evidence."
+            "description": "Requested liquidity horizon. Liquidity is always scored on the 24h horizon regardless of the requested value."
           }
         },
         "type": "object",
@@ -16287,7 +16287,7 @@
             "type": "integer",
             "minimum": -1.0,
             "title": "Total",
-            "description": "Total items available. Cursor-based endpoints may return `-1` when the total count is intentionally skipped for performance."
+            "description": "Total items available. Cursor-based endpoints may return `-1` when no total count is computed."
           },
           "has_next": {
             "type": "boolean",
@@ -18004,7 +18004,7 @@
           "market_hash_name"
         ],
         "title": "SaleRecordDetail",
-        "description": "Sale record matching CSFloat API response format."
+        "description": "One recorded sale, including float, sticker, charm, and inspect metadata when available."
       },
       "SalesFiltersMeta": {
         "properties": {
@@ -18938,7 +18938,7 @@
           "msg"
         ],
         "title": "ValidationErrorItem",
-        "description": "Single validation error entry returned by FastAPI/Pydantic."
+        "description": "Single field-level validation error entry returned for invalid request input."
       },
       "ValidationErrorResponse": {
         "properties": {
@@ -19683,7 +19683,7 @@
       "CursorPaginationMeta": {
         "title": "CursorPaginationMeta",
         "type": "object",
-        "description": "Cursor pagination metadata for keyset-based endpoints.",
+        "description": "Pagination metadata for cursor-paginated endpoints.",
         "properties": {
           "limit": {
             "type": "integer",
@@ -19697,7 +19697,7 @@
           },
           "has_prev": {
             "type": "boolean",
-            "description": "Whether this response was derived from a cursor-aware follow-up request."
+            "description": "Whether this page was requested with a cursor (`false` on the first page)."
           },
           "next_cursor": {
             "anyOf": [
