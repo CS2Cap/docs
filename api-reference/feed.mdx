@@ -24,7 +24,7 @@ Opens an SSE stream of price changes across the providers you subscribe to.
 ```bash cURL
 curl -N -sS \
   -H "Authorization: Bearer $CS2C_API_KEY" \
-  "https://api.cs2c.app/feed/prices?providers=steam&providers=csfloat&item_ids=17464"
+  "https://api.cs2c.app/v1/feed/prices?providers=steam&providers=csfloat&item_ids=17464"
 ```
 
 ```javascript Browser (EventSource)
@@ -32,7 +32,7 @@ curl -N -sS \
 // through your own backend, or pass a scoped token as a query param if your
 // deployment supports it — do not embed a raw API key in client-side code.
 const source = new EventSource(
-  "https://api.cs2c.app/feed/prices?providers=steam&providers=csfloat&item_ids=17464",
+  "https://api.cs2c.app/v1/feed/prices?providers=steam&providers=csfloat&item_ids=17464",
 );
 
 source.addEventListener("ready", (event) => {
@@ -216,7 +216,7 @@ Opens an SSE stream of buy-order (bid) changes across the providers you subscrib
 ```bash cURL
 curl -N -sS \
   -H "Authorization: Bearer $CS2C_API_KEY" \
-  "https://api.cs2c.app/feed/bids?providers=steam&providers=buff163&item_ids=17464"
+  "https://api.cs2c.app/v1/feed/bids?providers=steam&providers=buff163&item_ids=17464"
 ```
 
 ```javascript Browser (EventSource)
@@ -224,7 +224,7 @@ curl -N -sS \
 // through your own backend, or pass a scoped token as a query param if your
 // deployment supports it — do not embed a raw API key in client-side code.
 const source = new EventSource(
-  "https://api.cs2c.app/feed/bids?providers=steam&providers=buff163&item_ids=17464",
+  "https://api.cs2c.app/v1/feed/bids?providers=steam&providers=buff163&item_ids=17464",
 );
 
 const bestBid = new Map(); // keyed by `${item_id}:${provider}`

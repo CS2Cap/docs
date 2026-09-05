@@ -20,7 +20,7 @@ Returns all active child keys with their current-month request counts.
 ```bash cURL
 curl -sS \
   -H "Authorization: Bearer $CS2C_API_KEY" \
-  "https://api.cs2c.app/account/sub-keys?limit=10&offset=0"
+  "https://api.cs2c.app/v1/account/sub-keys?limit=10&offset=0"
 ```
 
 ```python Python
@@ -123,7 +123,7 @@ curl -sS -X POST \
   -H "Authorization: Bearer $CS2C_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"name":"analytics-worker","quota_requests_per_month_override":100000}' \
-  "https://api.cs2c.app/account/sub-keys"
+  "https://api.cs2c.app/v1/account/sub-keys"
 ```
 
 ```python Python
@@ -204,7 +204,7 @@ Returns one active child key and its current-month request count.
 ```bash cURL
 curl -sS \
   -H "Authorization: Bearer $CS2C_API_KEY" \
-  "https://api.cs2c.app/account/sub-keys/YOUR_KEY_ID"
+  "https://api.cs2c.app/v1/account/sub-keys/YOUR_KEY_ID"
 ```
 
 ```python Python
@@ -263,7 +263,7 @@ curl -sS -X PATCH \
   -H "Authorization: Bearer $CS2C_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"name":"analytics-worker-v2","quota_requests_per_month_override":200000}' \
-  "https://api.cs2c.app/account/sub-keys/YOUR_KEY_ID"
+  "https://api.cs2c.app/v1/account/sub-keys/YOUR_KEY_ID"
 ```
 
 ```python Python
@@ -354,7 +354,7 @@ Revokes an active child key. The key immediately stops authenticating requests.
 ```bash cURL
 curl -sS -X DELETE \
   -H "Authorization: Bearer $CS2C_API_KEY" \
-  "https://api.cs2c.app/account/sub-keys/YOUR_KEY_ID"
+  "https://api.cs2c.app/v1/account/sub-keys/YOUR_KEY_ID"
 ```
 
 ```python Python
@@ -431,7 +431,7 @@ Replaces an active child key and returns the new plaintext key once. The old chi
 ```bash cURL
 curl -sS -X POST \
   -H "Authorization: Bearer $CS2C_API_KEY" \
-  "https://api.cs2c.app/account/sub-keys/YOUR_KEY_ID/reissue"
+  "https://api.cs2c.app/v1/account/sub-keys/YOUR_KEY_ID/reissue"
 ```
 
 ```python Python

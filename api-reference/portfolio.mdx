@@ -20,7 +20,7 @@ curl -sS -X POST \
   -H "Authorization: Bearer $CS2C_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"name":"Main Portfolio"}' \
-  "https://api.cs2c.app/portfolio"
+  "https://api.cs2c.app/v1/portfolio"
 ```
 
 ```python Python
@@ -79,7 +79,7 @@ Returns all saved portfolios for your account.
 ```bash cURL
 curl -sS \
   -H "Authorization: Bearer $CS2C_API_KEY" \
-  "https://api.cs2c.app/portfolio"
+  "https://api.cs2c.app/v1/portfolio"
 ```
 
 ```python Python
@@ -146,7 +146,7 @@ Permanently deletes a portfolio and all of its saved items and transactions.
 ```bash cURL
 curl -sS -X DELETE \
   -H "Authorization: Bearer $CS2C_API_KEY" \
-  "https://api.cs2c.app/portfolio/YOUR_PORTFOLIO_ID"
+  "https://api.cs2c.app/v1/portfolio/YOUR_PORTFOLIO_ID"
 ```
 
 ```python Python
@@ -207,7 +207,7 @@ curl -sS -X POST \
   -H "Authorization: Bearer $CS2C_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"items":[{"item_id":4994,"quantity":2},{"item_id":12632,"quantity":5}],"currency":"USD"}' \
-  "https://api.cs2c.app/portfolio/value"
+  "https://api.cs2c.app/v1/portfolio/value"
 ```
 
 ```python Python
@@ -343,7 +343,7 @@ Values all items currently in a saved portfolio using live market prices.
 ```bash cURL
 curl -sS \
   -H "Authorization: Bearer $CS2C_API_KEY" \
-  "https://api.cs2c.app/portfolio/YOUR_PORTFOLIO_ID/value?currency=USD&providers=buff163"
+  "https://api.cs2c.app/v1/portfolio/YOUR_PORTFOLIO_ID/value?currency=USD&providers=buff163"
 ```
 
 ```python Python
@@ -417,7 +417,7 @@ curl -sS -X POST \
   -H "Authorization: Bearer $CS2C_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{}' \
-  "https://api.cs2c.app/portfolio/YOUR_PORTFOLIO_ID/import"
+  "https://api.cs2c.app/v1/portfolio/YOUR_PORTFOLIO_ID/import"
 ```
 
 ```python Python
@@ -493,7 +493,7 @@ Uploads a CSV file to bulk import transactions or snapshot-style holdings into a
 curl -sS -X POST \
   -H "Authorization: Bearer $CS2C_API_KEY" \
   -F "file=@transactions.csv" \
-  "https://api.cs2c.app/portfolio/YOUR_PORTFOLIO_ID/import/csv"
+  "https://api.cs2c.app/v1/portfolio/YOUR_PORTFOLIO_ID/import/csv"
 ```
 
 </CodeGroup>
@@ -520,7 +520,7 @@ Downloads portfolio data as a CSV file.
 curl -sS \
   -H "Authorization: Bearer $CS2C_API_KEY" \
   -o portfolio.csv \
-  "https://api.cs2c.app/portfolio/YOUR_PORTFOLIO_ID/export?type=transactions"
+  "https://api.cs2c.app/v1/portfolio/YOUR_PORTFOLIO_ID/export?type=transactions"
 ```
 
 </CodeGroup>
@@ -548,7 +548,7 @@ Returns the items currently stored in a portfolio.
 ```bash cURL
 curl -sS \
   -H "Authorization: Bearer $CS2C_API_KEY" \
-  "https://api.cs2c.app/portfolio/YOUR_PORTFOLIO_ID/items"
+  "https://api.cs2c.app/v1/portfolio/YOUR_PORTFOLIO_ID/items"
 ```
 
 ```python Python
@@ -607,7 +607,7 @@ curl -sS -X POST \
   -H "Authorization: Bearer $CS2C_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"item_id":4994,"quantity":2}' \
-  "https://api.cs2c.app/portfolio/YOUR_PORTFOLIO_ID/items"
+  "https://api.cs2c.app/v1/portfolio/YOUR_PORTFOLIO_ID/items"
 ```
 
 ```python Python
@@ -685,7 +685,7 @@ Removes a saved portfolio entry.
 ```bash cURL
 curl -sS -X DELETE \
   -H "Authorization: Bearer $CS2C_API_KEY" \
-  "https://api.cs2c.app/portfolio/YOUR_PORTFOLIO_ID/items/YOUR_ENTRY_ID"
+  "https://api.cs2c.app/v1/portfolio/YOUR_PORTFOLIO_ID/items/YOUR_ENTRY_ID"
 ```
 
 ```python Python
@@ -755,7 +755,7 @@ Returns the portfolio's buy/sell ledger, newest first.
 ```bash cURL
 curl -sS \
   -H "Authorization: Bearer $CS2C_API_KEY" \
-  "https://api.cs2c.app/portfolio/YOUR_PORTFOLIO_ID/transactions"
+  "https://api.cs2c.app/v1/portfolio/YOUR_PORTFOLIO_ID/transactions"
 ```
 
 ```python Python
@@ -814,7 +814,7 @@ curl -sS -X POST \
   -H "Authorization: Bearer $CS2C_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"item_id":4994,"type":"buy","quantity":1,"price":53000,"date":"2026-03-15","currency":"USD"}' \
-  "https://api.cs2c.app/portfolio/YOUR_PORTFOLIO_ID/transactions"
+  "https://api.cs2c.app/v1/portfolio/YOUR_PORTFOLIO_ID/transactions"
 ```
 
 ```python Python
@@ -935,7 +935,7 @@ curl -sS -X PATCH \
   -H "Authorization: Bearer $CS2C_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"quantity":2,"price":52500}' \
-  "https://api.cs2c.app/portfolio/YOUR_PORTFOLIO_ID/transactions/YOUR_TX_ID"
+  "https://api.cs2c.app/v1/portfolio/YOUR_PORTFOLIO_ID/transactions/YOUR_TX_ID"
 ```
 
 ```python Python
@@ -1036,7 +1036,7 @@ Permanently deletes a transaction from the portfolio ledger.
 ```bash cURL
 curl -sS -X DELETE \
   -H "Authorization: Bearer $CS2C_API_KEY" \
-  "https://api.cs2c.app/portfolio/YOUR_PORTFOLIO_ID/transactions/YOUR_TX_ID"
+  "https://api.cs2c.app/v1/portfolio/YOUR_PORTFOLIO_ID/transactions/YOUR_TX_ID"
 ```
 
 ```python Python
@@ -1102,7 +1102,7 @@ Rebuilds daily portfolio values from the transaction ledger. Returns a time seri
 ```bash cURL
 curl -sS \
   -H "Authorization: Bearer $CS2C_API_KEY" \
-  "https://api.cs2c.app/portfolio/YOUR_PORTFOLIO_ID/history?lookback=30d&currency=USD"
+  "https://api.cs2c.app/v1/portfolio/YOUR_PORTFOLIO_ID/history?lookback=30d&currency=USD"
 ```
 
 ```python Python

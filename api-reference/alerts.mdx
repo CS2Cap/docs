@@ -18,7 +18,7 @@ curl -sS -X POST \
   -H "Authorization: Bearer $CS2C_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"item_id":4994,"kind":"price_below","threshold_value":"500.00","threshold_currency":"USD"}' \
-  "https://api.cs2c.app/account/alerts"
+  "https://api.cs2c.app/v1/account/alerts"
 ```
 
 ```python Python
@@ -115,7 +115,7 @@ curl -sS -X POST \
   -H "Authorization: Bearer $CS2C_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"alerts":[{"item_id":4994,"kind":"price_below","threshold_value":"500.00","threshold_currency":"USD"},{"item_id":12632,"kind":"spread_exceeds","threshold_value":"15.0"}]}' \
-  "https://api.cs2c.app/account/alerts/batch"
+  "https://api.cs2c.app/v1/account/alerts/batch"
 ```
 
 ```python Python
@@ -211,7 +211,7 @@ Returns all configured alerts for your account, newest first, with optional filt
 ```bash cURL
 curl -sS \
   -H "Authorization: Bearer $CS2C_API_KEY" \
-  "https://api.cs2c.app/account/alerts?limit=25&search=AK-47"
+  "https://api.cs2c.app/v1/account/alerts?limit=25&search=AK-47"
 ```
 
 ```python Python
@@ -275,7 +275,7 @@ curl -sS -X PATCH \
   -H "Authorization: Bearer $CS2C_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"threshold_value":"450.00","is_enabled":true}' \
-  "https://api.cs2c.app/account/alerts/YOUR_ALERT_ID"
+  "https://api.cs2c.app/v1/account/alerts/YOUR_ALERT_ID"
 ```
 
 ```python Python
@@ -358,7 +358,7 @@ Permanently deletes an alert rule.
 ```bash cURL
 curl -sS -X DELETE \
   -H "Authorization: Bearer $CS2C_API_KEY" \
-  "https://api.cs2c.app/account/alerts/YOUR_ALERT_ID"
+  "https://api.cs2c.app/v1/account/alerts/YOUR_ALERT_ID"
 ```
 
 ```python Python
@@ -421,7 +421,7 @@ Returns recent alert trigger events and their email delivery attempts, newest fi
 ```bash cURL
 curl -sS \
   -H "Authorization: Bearer $CS2C_API_KEY" \
-  "https://api.cs2c.app/account/alerts/events?limit=25"
+  "https://api.cs2c.app/v1/account/alerts/events?limit=25"
 ```
 
 ```python Python

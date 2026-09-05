@@ -16,7 +16,7 @@ Returns metadata for the authenticated key. When called with a session JWT, it r
 ```bash cURL
 curl -sS \
   -H "Authorization: Bearer $CS2C_API_KEY" \
-  "https://api.cs2c.app/account/key"
+  "https://api.cs2c.app/v1/account/key"
 ```
 
 </CodeGroup>
@@ -110,7 +110,7 @@ Replaces your active root key and immediately revokes all child keys issued from
 ```bash cURL
 curl -sS -X POST \
   -H "Authorization: Bearer $CS2C_API_KEY" \
-  "https://api.cs2c.app/account/key/reissue"
+  "https://api.cs2c.app/v1/account/key/reissue"
 ```
 
 </CodeGroup>

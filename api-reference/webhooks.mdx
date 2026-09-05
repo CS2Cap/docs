@@ -20,7 +20,7 @@ Returns all outbound webhook destinations configured for your account.
 ```bash cURL
 curl -sS \
   -H "Authorization: Bearer $CS2C_API_KEY" \
-  "https://api.cs2c.app/account/webhooks"
+  "https://api.cs2c.app/v1/account/webhooks"
 ```
 
 ```python Python
@@ -125,7 +125,7 @@ curl -sS -X POST \
   -H "Authorization: Bearer $CS2C_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"label":"Production alerts","url":"https://hooks.example.com/cs2c","platform":"custom","is_active":true}' \
-  "https://api.cs2c.app/account/webhooks"
+  "https://api.cs2c.app/v1/account/webhooks"
 ```
 
 ```python Python
@@ -238,7 +238,7 @@ Returns outbound webhook delivery jobs for your account, newest first.
 ```bash cURL
 curl -sS \
   -H "Authorization: Bearer $CS2C_API_KEY" \
-  "https://api.cs2c.app/account/webhooks/deliveries?limit=25&offset=0"
+  "https://api.cs2c.app/v1/account/webhooks/deliveries?limit=25&offset=0"
 ```
 
 ```python Python
@@ -359,7 +359,7 @@ Returns one webhook delivery job and its full attempt history.
 ```bash cURL
 curl -sS \
   -H "Authorization: Bearer $CS2C_API_KEY" \
-  "https://api.cs2c.app/account/webhooks/deliveries/YOUR_DELIVERY_ID"
+  "https://api.cs2c.app/v1/account/webhooks/deliveries/YOUR_DELIVERY_ID"
 ```
 
 ```python Python
@@ -468,7 +468,7 @@ curl -sS -X PATCH \
   -H "Authorization: Bearer $CS2C_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"label":"Production alerts v2","is_active":false}' \
-  "https://api.cs2c.app/account/webhooks/YOUR_WEBHOOK_ID"
+  "https://api.cs2c.app/v1/account/webhooks/YOUR_WEBHOOK_ID"
 ```
 
 ```python Python
@@ -555,7 +555,7 @@ Deletes an outbound webhook destination. Pending deliveries for this destination
 ```bash cURL
 curl -sS -X DELETE \
   -H "Authorization: Bearer $CS2C_API_KEY" \
-  "https://api.cs2c.app/account/webhooks/YOUR_WEBHOOK_ID"
+  "https://api.cs2c.app/v1/account/webhooks/YOUR_WEBHOOK_ID"
 ```
 
 ```python Python
@@ -618,7 +618,7 @@ Rotates the signing secret for a webhook destination and returns the new secret 
 ```bash cURL
 curl -sS -X POST \
   -H "Authorization: Bearer $CS2C_API_KEY" \
-  "https://api.cs2c.app/account/webhooks/YOUR_WEBHOOK_ID/rotate-secret"
+  "https://api.cs2c.app/v1/account/webhooks/YOUR_WEBHOOK_ID/rotate-secret"
 ```
 
 ```python Python

@@ -16,7 +16,7 @@ Scans buy-side and sell-side providers for cross-market arbitrage opportunities 
 ```bash cURL
 curl -sS \
   -H "Authorization: Bearer $CS2C_API_KEY" \
-  "https://api.cs2c.app/market/arbitrage?min_spread_pct=5&providers_buy=csmoney_m&providers_sell=buff163&limit=25"
+  "https://api.cs2c.app/v1/market/arbitrage?min_spread_pct=5&providers_buy=csmoney_m&providers_sell=buff163&limit=25"
 ```
 
 ```python Python
@@ -182,7 +182,7 @@ Aggregates the cached 24-hour market snapshot into category-level market cap ind
 ```bash cURL
 curl -sS \
   -H "Authorization: Bearer $CS2C_API_KEY" \
-  "https://api.cs2c.app/market/indexes?group_by=weapon_type"
+  "https://api.cs2c.app/v1/market/indexes?group_by=weapon_type"
 ```
 
 ```python Python
@@ -293,7 +293,7 @@ Computes technical indicators — including RSI, MACD, Bollinger Bands, ATR, VWA
 ```bash cURL
 curl -sS \
   -H "Authorization: Bearer $CS2C_API_KEY" \
-  "https://api.cs2c.app/market/indicators?item_id=4994&interval=1d&currency=USD"
+  "https://api.cs2c.app/v1/market/indicators?item_id=4994&interval=1d&currency=USD"
 ```
 
 ```python Python
@@ -484,7 +484,7 @@ Returns a market-wide summary snapshot with one row per catalog item. Liquidity 
 ```bash cURL
 curl -sS \
   -H "Authorization: Bearer $CS2C_API_KEY" \
-  "https://api.cs2c.app/market/items"
+  "https://api.cs2c.app/v1/market/items"
 ```
 
 ```python Python
@@ -636,7 +636,7 @@ Returns per-item market analytics including a summary and per-provider depth, sp
 ```bash cURL
 curl -sS \
   -H "Authorization: Bearer $CS2C_API_KEY" \
-  "https://api.cs2c.app/market/items/4994"
+  "https://api.cs2c.app/v1/market/items/4994"
 ```
 
 ```python Python
@@ -824,7 +824,7 @@ Returns per-provider daily price history for a single item — one price point p
 ```bash cURL
 curl -sS \
   -H "Authorization: Bearer $CS2C_API_KEY" \
-  "https://api.cs2c.app/market/history/chart?item_id=16194&providers=buff163&providers=steam&currency=USD"
+  "https://api.cs2c.app/v1/market/history/chart?item_id=16194&providers=buff163&providers=steam&currency=USD"
 ```
 
 ```python Python

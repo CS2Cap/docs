@@ -119,7 +119,10 @@ When a request fails due to an authentication problem, the API returns a `401` o
 
 | Code | Status | Meaning |
 | --- | --- | --- |
-| `AUTH_INVALID_API_KEY` | `401` | The key is missing, malformed, or does not exist. |
+| `AUTH_MISSING_AUTHORIZATION` | `401` | The Authorization header is missing. |
+| `AUTH_INVALID_SCHEME` | `401` | The header does not use the Bearer scheme. |
+| `AUTH_INVALID_API_KEY_FORMAT` | `401` | The credential is empty or malformed. |
+| `AUTH_INVALID_API_KEY` | `401` | The key does not exist. |
 | `AUTH_API_KEY_REVOKED` | `401` | The key was revoked — either manually or by a reissue. |
 | `AUTH_ACCOUNT_DISABLED` | `403` | The account associated with this key has been disabled. |
 

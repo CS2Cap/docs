@@ -18,7 +18,7 @@ Returns the current lowest ask across marketplaces. You can filter by item, phas
 ```bash cURL
 curl -sS \
   -H "Authorization: Bearer $CS2C_API_KEY" \
-  "https://api.cs2c.app/prices?item_id=4994&providers=buff163&providers=csfloat&currency=USD"
+  "https://api.cs2c.app/v1/prices?item_id=4994&providers=buff163&providers=csfloat&currency=USD"
 ```
 
 ```python Python
@@ -92,7 +92,9 @@ console.log(response);
 
 ### Response example
 
-```json
+Abbreviated response (ellipsis placeholders are not JSON):
+
+```text
 {
   "meta": {...},
   "items": [
@@ -201,7 +203,7 @@ Streams the complete live prices catalog as NDJSON, with one JSON object per lin
 ```bash cURL
 curl -sS -X POST \
   -H "Authorization: Bearer $CS2C_API_KEY" \
-  "https://api.cs2c.app/prices?providers=buff163"
+  "https://api.cs2c.app/v1/prices?providers=buff163"
 ```
 
 ```python Python
@@ -282,7 +284,7 @@ curl -sS -X POST \
   -H "Authorization: Bearer $CS2C_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"item_ids":[4994,2],"providers":["buff163","csfloat"],"currency":"USD"}' \
-  "https://api.cs2c.app/prices/batch"
+  "https://api.cs2c.app/v1/prices/batch"
 ```
 
 ```python Python
@@ -341,7 +343,9 @@ console.log(response);
 
 ### Response example
 
-```json
+Abbreviated response (ellipsis placeholders are not JSON):
+
+```text
 {
   "meta": {...},
   "items": [
@@ -447,7 +451,7 @@ Returns composite OHLCV candles across all providers for the resolved item. Supp
 ```bash cURL
 curl -sS \
   -H "Authorization: Bearer $CS2C_API_KEY" \
-  "https://api.cs2c.app/prices/candles?item_id=4994&interval=1d&lookback=30d&currency=USD"
+  "https://api.cs2c.app/v1/prices/candles?item_id=4994&interval=1d&lookback=30d&currency=USD"
 ```
 
 ```python Python
@@ -535,7 +539,9 @@ console.log(response);
 
 `meta.start` and `meta.end` describe the effective query window. With `fill=false`, `data` can be sparse inside that window; use `fill=true` to forward-fill empty buckets.
 
-```json
+Abbreviated response (ellipsis placeholders are not JSON):
+
+```text
 {
   "meta": {...},
   "data": [
@@ -626,7 +632,7 @@ Returns historical price records for one item, optionally filtered to a single p
 ```bash cURL
 curl -sS \
   -H "Authorization: Bearer $CS2C_API_KEY" \
-  "https://api.cs2c.app/prices/history?item_id=4994&provider=buff163&currency=USD&limit=50"
+  "https://api.cs2c.app/v1/prices/history?item_id=4994&provider=buff163&currency=USD&limit=50"
 ```
 
 ```python Python
@@ -710,7 +716,9 @@ console.log(response);
 
 ### Response example
 
-```json
+Abbreviated response (ellipsis placeholders are not JSON):
+
+```text
 {
   "meta": {...},
   "items": [

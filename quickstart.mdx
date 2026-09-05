@@ -49,7 +49,7 @@ This guide walks you through everything you need to make a live CS2 item price r
     ```bash cURL
     curl -sS \
       -H "Authorization: Bearer $CS2C_API_KEY" \
-      "https://api.cs2c.app/prices?market_hash_name=AK-47%20%7C%20Redline%20(Field-Tested)&providers=steam&currency=USD"
+      "https://api.cs2c.app/v1/prices?market_hash_name=AK-47%20%7C%20Redline%20(Field-Tested)&providers=steam&currency=USD"
     ```
 
     ```python Python
@@ -97,11 +97,13 @@ This guide walks you through everything you need to make a live CS2 item price r
 
   <Step title="Understand the response">
 
-    Every list endpoint returns three top-level fields:
+    The `/prices` response has three top-level fields:
 
     - `items` — the records you asked for, one object per provider result
     - `meta` — response context: the currency you requested, your filter parameters, and which providers actually returned data
-    - `pagination` — total record count and paging state (`limit`, `offset`, `has_next`, `has_prev`)
+    - `pagination` — paging state. Cursor endpoints such as `/sales` and `/prices/history` use `next_cursor` and report `total: -1`; do not treat that value as a record count.
+
+    The following illustrative response shows a separate Doppler query, not the AK-47 request above.
 
     ```json
     {
@@ -158,19 +160,19 @@ This guide walks you through everything you need to make a live CS2 item price r
     ```bash cURL
     # Resolve a market_hash_name to its stable item_id
     curl -sS -H "Authorization: Bearer $CS2C_API_KEY" \
-      "https://api.cs2c.app/items?market_hash_name=AK-47%20%7C%20Redline%20(Field-Tested)"
+      "https://api.cs2c.app/v1/items?market_hash_name=AK-47%20%7C%20Redline%20(Field-Tested)"
 
     # Highest buy orders across buy-order-enabled providers (Starter/Pro/Quant)
     curl -sS -H "Authorization: Bearer $CS2C_API_KEY" \
-      "https://api.cs2c.app/bids?market_hash_name=AK-47%20%7C%20Redline%20(Field-Tested)&providers=steam"
+      "https://api.cs2c.app/v1/bids?market_hash_name=AK-47%20%7C%20Redline%20(Field-Tested)&providers=steam"
 
     # Completed sale transactions from a specific provider (Pro/Quant)
     curl -sS -H "Authorization: Bearer $CS2C_API_KEY" \
-      "https://api.cs2c.app/sales?market_hash_name=AK-47%20%7C%20Redline%20(Field-Tested)&providers=csfloat&limit=10"
+      "https://api.cs2c.app/v1/sales?market_hash_name=AK-47%20%7C%20Redline%20(Field-Tested)&providers=csfloat&limit=10"
 
     # Historical price snapshots for trend analysis (Pro/Quant)
     curl -sS -H "Authorization: Bearer $CS2C_API_KEY" \
-      "https://api.cs2c.app/prices/history?market_hash_name=AK-47%20%7C%20Redline%20(Field-Tested)&provider=steam&limit=50"
+      "https://api.cs2c.app/v1/prices/history?market_hash_name=AK-47%20%7C%20Redline%20(Field-Tested)&provider=steam&limit=50"
     ```
 
     ```python Python
@@ -253,14 +255,14 @@ This guide walks you through everything you need to make a live CS2 item price r
 
     | Status | Code | What it means |
     |--------|------|---------------|
-    | `401` | `AUTH_INVALID_API_KEY` | Your `Authorization: Bearer` header is missing, malformed, or the key has been revoked. Check the header format and regenerate your key if needed. |
+    | `401` | `AUTH_INVALID_API_KEY` | The key is not recognized. Missing headers, malformed credentials, and revoked keys have distinct codes; see [Authentication](/authentication). |
     | `429` | `RATE_LIMIT_EXCEEDED` | You're sending requests faster than your plan allows. Back off and respect the `Retry-After` response header before retrying. |
     | `429` | `RATE_LIMIT_MONTHLY_QUOTA_EXCEEDED` | You've exhausted your plan's monthly request quota. Upgrade your plan or wait for the quota to reset. |
-    | `503` | `PRICES_INDEX_UNAVAILABLE` or `BIDS_INDEX_UNAVAILABLE` | A data index is temporarily unavailable due to a refresh cycle or upstream issue. Retry with exponential backoff — this resolves quickly. |
-    | `422` | `VALIDATION_ERROR` | One or more query parameters are missing, have the wrong type, or contain an invalid value. Check the response body for a `details` field that identifies the offending parameter. |
+    | `503` | `PRICES_INDEX_UNAVAILABLE` or `BIDS_INDEX_UNAVAILABLE` | A data index is temporarily unavailable due to a refresh cycle or upstream issue. Retry with bounded exponential backoff; recovery time varies. |
+    | `422` | `VALIDATION_ERROR` | One or more query parameters are missing, have the wrong type, or contain an invalid value. Check the response body for a `detail` field that identifies the offending parameter. |
 
     <Warning>
-      Do not retry `401` or `422` errors without first fixing the underlying issue — they will not self-resolve. Only `503` and `429` errors are safe to retry automatically.
+      Do not retry `401` or `422` errors without first fixing the underlying issue — they will not self-resolve. For these read requests, retry transient `503` errors with bounded backoff and respect `Retry-After` on `429`. Monthly quota exhaustion requires waiting for the reset or upgrading your plan.
     </Warning>
 
   </Step>

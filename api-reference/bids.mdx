@@ -18,7 +18,7 @@ Returns the current highest buy order across buy-order-enabled providers. You ca
 ```bash cURL
 curl -sS \
   -H "Authorization: Bearer $CS2C_API_KEY" \
-  "https://api.cs2c.app/bids?item_id=4994&providers=buff163&providers=csfloat&currency=USD"
+  "https://api.cs2c.app/v1/bids?item_id=4994&providers=buff163&providers=csfloat&currency=USD"
 ```
 
 ```python Python
@@ -92,7 +92,9 @@ console.log(response);
 
 ### Response example
 
-```json
+Abbreviated response (ellipsis placeholders are not JSON):
+
+```text
 {
   "meta": {...},
   "items": [
@@ -199,7 +201,7 @@ Streams the complete live buy-orders catalog as NDJSON, with one JSON object per
 ```bash cURL
 curl -sS -X POST \
   -H "Authorization: Bearer $CS2C_API_KEY" \
-  "https://api.cs2c.app/bids?providers=buff163"
+  "https://api.cs2c.app/v1/bids?providers=buff163"
 ```
 
 ```python Python
@@ -280,7 +282,7 @@ curl -sS -X POST \
   -H "Authorization: Bearer $CS2C_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"item_ids":[4994,12632],"providers":["buff163","csfloat"],"currency":"USD"}' \
-  "https://api.cs2c.app/bids/batch"
+  "https://api.cs2c.app/v1/bids/batch"
 ```
 
 ```python Python
@@ -339,7 +341,9 @@ console.log(response);
 
 ### Response example
 
-```json
+Abbreviated response (ellipsis placeholders are not JSON):
+
+```text
 {
   "meta": {...},
   "items": [
