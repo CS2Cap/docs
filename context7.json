@@ -1,4 +1,16 @@
 {
   "url": "https://context7.com/cs2cap/docs",
-  "public_key": "pk_HNLPBBYMOnFVgEClCzhnJ"
+  "public_key": "pk_HNLPBBYMOnFVgEClCzhnJ",
+  "$schema": "https://context7.com/schema/context7.json",
+  "projectTitle": "CS2Cap CS2 Skin Price API",
+  "description": "CS2 skin price API: live prices, buy orders, and sales history for Counter-Strike 2 skins from Steam, Buff163, YouPin, CSFloat, Skinport and 40+ marketplaces, with price history since 2013, float, paint seed, phase and sticker data, and market analytics.",
+  "rules": [
+    "Use https://api.cs2c.app/v1 for REST requests and load the Bearer API key from an environment variable.",
+    "Use provider keys such as buff163, csfloat, and youpin; check endpoint coverage before requesting a provider.",
+    "Repeat providers for multi-provider queries; /prices/history uses the singular provider parameter.",
+    "Interpret prices in the documented minor units and response currency; USD 2550 means $25.50.",
+    "Distinguish current asks, buy orders, completed sales, and historical ask snapshots.",
+    "Follow has_next and next_cursor on cursor endpoints; total=-1 is not a record count.",
+    "Respect endpoint tier requirements and Retry-After; use bounded retries for transient failures."
+  ]
 }
