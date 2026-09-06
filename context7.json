@@ -3,7 +3,7 @@
   "public_key": "pk_HNLPBBYMOnFVgEClCzhnJ",
   "$schema": "https://context7.com/schema/context7.json",
   "projectTitle": "CS2Cap CS2 Skin Price API",
-  "description": "CS2 skin price API: live prices, buy orders, and sales history for Counter-Strike 2 skins from Steam, Buff163, YouPin, CSFloat, Skinport and 40+ marketplaces, with price history since 2013, float, paint seed, phase and sticker data, and market analytics.",
+  "description": "CS2 skin price API for live prices, buy orders, sales history and market analytics across Steam, Buff163, YouPin, CSFloat, Skinport and 40+ Counter-Strike 2 marketplaces, with history since 2013.",
   "rules": [
     "Use https://api.cs2c.app/v1 for REST requests and load the Bearer API key from an environment variable.",
     "Use provider keys such as buff163, csfloat, and youpin; check endpoint coverage before requesting a provider.",
