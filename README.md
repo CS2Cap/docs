@@ -14,8 +14,8 @@ The docs are written for API consumers: developers building pricing tools, tradi
 | `quickstart.mdx` | First-request walkthrough with example calls. |
 | `authentication.mdx` | API key authentication, account setup, and key handling. |
 | `core-concepts.mdx` | Core API concepts such as providers, items, prices, bids, sales, and currencies. |
-| `api-reference/` | Endpoint-level reference pages for prices, bids, sales, catalog, analytics, portfolio, account, sub-keys, alerts, and webhooks. |
-| `guides/` | Task-oriented guides for pricing plans, rate limits, portfolio workflows, and webhook/alert integrations. |
+| `api-reference/` | Endpoint-level reference pages for prices, bids, sales, catalog, analytics, and portfolio. |
+| `guides/` | Task-oriented guides for pricing plans, rate limits, and portfolio workflows. |
 | `reference/` | Cross-cutting reference material for fields, error codes, and provider keys. |
 | `openapi.json` | Filtered public OpenAPI spec generated from the backend contract. |
 | `changelog.mdx` | Public documentation changelog. |
@@ -34,4 +34,3 @@ The reference pages currently document the main public surfaces of the CS2Cap AP
 - Market data: `/prices`, `/bids`, `/sales`, `/items`, and provider catalog routes.
 - Analytics: market indicators, arbitrage, inventory analytics, and related Quant-tier capabilities.
 - Portfolio: holdings, transactions, Steam imports, and portfolio valuation workflows.
-- Account workflows: API keys, sub-keys, alerts, webhooks, usage, and account-level operations.

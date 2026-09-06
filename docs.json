@@ -54,8 +54,7 @@
               "guides/pricing-plans",
               "guides/rate-limits",
               "guides/liquidity-score",
-              "guides/portfolio",
-              "guides/webhooks-alerts"
+              "guides/portfolio"
             ]
           },
           {
@@ -99,15 +98,6 @@
             "pages": [
               "api-reference/inventory",
               "api-reference/portfolio"
-            ]
-          },
-          {
-            "group": "Account",
-            "pages": [
-              "api-reference/account",
-              "api-reference/alerts",
-              "api-reference/sub-keys",
-              "api-reference/webhooks"
             ]
           }
         ]

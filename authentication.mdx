@@ -97,17 +97,11 @@ console.log(response);
 
 ## Reissuing your key
 
-If your key is compromised or you want to rotate it, use the Account page or call [`POST /account/key/reissue`](/api-reference/account#post-/account/key/reissue). This root-key rotation endpoint is intentionally separate from the public SDK sub-key helpers. It:
+If your key is compromised or you want to rotate it, use your [API Keys page](https://cs2cap.com/account/api-keys). Reissuing your key:
 
 - Immediately **revokes your current key**
 - Revokes **all child keys** issued from your account
 - Returns a new key
-
-```bash
-curl -sS -X POST \
-  -H "Authorization: Bearer $CS2C_API_KEY" \
-  "https://api.cs2c.app/v1/account/key/reissue"
-```
 
 <Warning>
   Reissuing your key is irreversible. Any integrations using the old key will stop working immediately. Update all consumers before or immediately after reissuing.
