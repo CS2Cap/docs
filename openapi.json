@@ -8970,7 +8970,8 @@
             "anyOf": [
               {
                 "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "example": "1.23"
               },
               {
                 "type": "null"
@@ -9220,7 +9221,8 @@
             "anyOf": [
               {
                 "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "example": "1.23"
               },
               {
                 "type": "null"
@@ -9478,7 +9480,8 @@
             "anyOf": [
               {
                 "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "example": "1.23"
               },
               {
                 "type": "null"
@@ -10631,13 +10634,15 @@
             "type": "string",
             "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Buy Price Usd",
-            "description": "Money amount as a decimal string in USD major units (for example \"25.82\")."
+            "description": "Money amount as a decimal string in USD major units (for example \"25.82\").",
+            "example": "1.23"
           },
           "sell_price_usd": {
             "type": "string",
             "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Sell Price Usd",
-            "description": "Money amount as a decimal string in USD major units (for example \"25.82\")."
+            "description": "Money amount as a decimal string in USD major units (for example \"25.82\").",
+            "example": "1.23"
           },
           "gross_spread_pct": {
             "type": "number",
@@ -10648,13 +10653,15 @@
             "type": "string",
             "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Estimated Fees Usd",
-            "description": "Money amount as a decimal string in USD major units (for example \"25.82\")."
+            "description": "Money amount as a decimal string in USD major units (for example \"25.82\").",
+            "example": "1.23"
           },
           "net_profit_usd": {
             "type": "string",
             "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Net Profit Usd",
-            "description": "Money amount as a decimal string in USD major units (for example \"25.82\")."
+            "description": "Money amount as a decimal string in USD major units (for example \"25.82\").",
+            "example": "1.23"
           },
           "last_updated": {
             "type": "string",
@@ -10886,7 +10893,8 @@
             "type": "string",
             "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Marketcap Usd",
-            "description": "Money amount as a decimal string in USD major units (for example \"25.82\")."
+            "description": "Money amount as a decimal string in USD major units (for example \"25.82\").",
+            "example": "1.23"
           },
           "item_count": {
             "type": "integer",
@@ -10921,7 +10929,8 @@
             "type": "string",
             "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Total Marketcap Usd",
-            "description": "Money amount as a decimal string in USD major units (for example \"25.82\")."
+            "description": "Money amount as a decimal string in USD major units (for example \"25.82\").",
+            "example": "1.23"
           },
           "groups": {
             "items": {
@@ -11052,7 +11061,8 @@
             "type": "string",
             "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Close Price Usd",
-            "description": "USD-denominated value for close price."
+            "description": "USD-denominated value for close price.",
+            "example": "1.23"
           },
           "momentum": {
             "$ref": "#/components/schemas/IndicatorMomentum",
@@ -11211,7 +11221,8 @@
             "anyOf": [
               {
                 "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "example": "1.23"
               },
               {
                 "type": "null"
@@ -11377,13 +11388,15 @@
             "type": "string",
             "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Ask Usd",
-            "description": "Ask price in USD major units."
+            "description": "Ask price in USD major units.",
+            "example": "1.23"
           },
           "bid_usd": {
             "anyOf": [
               {
                 "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "example": "1.23"
               },
               {
                 "type": "null"
@@ -11396,7 +11409,8 @@
             "anyOf": [
               {
                 "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "example": "1.23"
               },
               {
                 "type": "null"
@@ -11469,7 +11483,8 @@
             "anyOf": [
               {
                 "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "example": "1.23"
               },
               {
                 "type": "null"
@@ -11494,7 +11509,8 @@
             "anyOf": [
               {
                 "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "example": "1.23"
               },
               {
                 "type": "null"
@@ -11519,7 +11535,8 @@
             "anyOf": [
               {
                 "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "example": "1.23"
               },
               {
                 "type": "null"
@@ -11544,7 +11561,8 @@
             "anyOf": [
               {
                 "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "example": "1.23"
               },
               {
                 "type": "null"
@@ -11604,7 +11622,8 @@
             "anyOf": [
               {
                 "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "example": "1.23"
               },
               {
                 "type": "null"
@@ -11617,7 +11636,8 @@
             "anyOf": [
               {
                 "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "example": "1.23"
               },
               {
                 "type": "null"
@@ -11683,7 +11703,8 @@
             "anyOf": [
               {
                 "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "example": "1.23"
               },
               {
                 "type": "null"
@@ -11708,7 +11729,8 @@
             "anyOf": [
               {
                 "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "example": "1.23"
               },
               {
                 "type": "null"
@@ -11739,7 +11761,8 @@
             "anyOf": [
               {
                 "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "example": "1.23"
               },
               {
                 "type": "null"
@@ -11764,7 +11787,8 @@
             "anyOf": [
               {
                 "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "example": "1.23"
               },
               {
                 "type": "null"
