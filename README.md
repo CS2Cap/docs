@@ -1,6 +1,6 @@
-# CS2Cap API Docs
+# CS2 Skin Price API Documentation
 
-This directory contains the public documentation source for CS2Cap's market-data API. It is a Mintlify docs project that covers onboarding, authentication, pricing, rate limits, endpoint references, provider coverage, error codes, and field semantics for the API served by this repository.
+CS2Cap is a CS2 skin price API for live prices, buy orders, sales history, and market analytics across 40+ Counter-Strike 2 marketplaces, including Steam, BUFF163, Youpin, CSFloat, GameBoost, and Skinport. This repository contains its public Mintlify documentation, including onboarding, authentication, pricing, rate limits, endpoint references, provider coverage, error codes, and field semantics.
 
 The docs are written for API consumers: developers building pricing tools, trading workflows, portfolio trackers, alerting systems, and analytics products on top of CS2Cap.
 

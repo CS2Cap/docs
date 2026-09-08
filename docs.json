@@ -140,7 +140,7 @@
       "twitter:image": "https://cs2cap.com/api/og"
     }
   },
-  "description": "One free REST API for real-time CS2 skin prices, buy orders, sales history, items, and analytics across 40+ marketplaces. Built for developers, trading tools, and data teams.",
+  "description": "CS2 skin price API for live prices, buy orders, sales history, and market analytics across 40+ Counter-Strike 2 marketplaces.",
   "fonts": {
     "family": "Geist"
   },
