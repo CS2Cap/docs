@@ -36,6 +36,7 @@ Every tier is backed by the same 40-marketplace data network with 5–10 min fre
 | [`POST /prices`](/api-reference/prices#post-/prices-—-stream-full-prices-snapshot) — full prices snapshot (NDJSON stream) | — | ✅ | ✅ |
 | [`POST /bids`](/api-reference/bids#post-/bids-—-stream-full-bids-snapshot) — full bids snapshot (NDJSON stream) | — | ✅ | ✅ |
 | [`GET /prices/history`](/api-reference/prices#get-/prices/history-—-price-history) — per-provider pricing & quantity changes (≤ 35 d) | — | ✅ | ✅ |
+| [`GET /bids/history`](/api-reference/bids#get-/bids/history-—-bid-history) — per-provider buy-order history (≤ 35 d) | — | ✅ | ✅ |
 | [`GET /sales`](/api-reference/sales#get-/sales-—-list-recent-sales) — most recent sales details _(8 providers)_ | — | ✅ | ✅ |
 | [`GET /market/items/*`](/api-reference/market-analytics#get-/market/items) — enriched item metadata | — | ✅ | ✅ |
 | [`GET /market/arbitrage`](/api-reference/market-analytics#get-/market/arbitrage) — cross-market arbitrage | — | — | ✅ |
@@ -103,7 +104,7 @@ Paid tiers are billed monthly through Stripe via card, or NOWPayments via crypto
   </Accordion>
 
   <Accordion title="Is historical data really 365 days?">
-    Yes. Pro and Quant include up to one year of per-item daily OHLCV history through [`GET /prices/candles`](/api-reference/prices#get-/prices/candles-—-price-candles-ohlcv). Granular per-provider history goes back up to 35 days through [`GET /prices/history`](/api-reference/prices#get-/prices/history-—-price-history).
+    Yes. Pro and Quant include up to one year of per-item daily OHLCV history through [`GET /prices/candles`](/api-reference/prices#get-/prices/candles-—-price-candles-ohlcv). Granular per-provider history goes back up to 35 days through [`GET /prices/history`](/api-reference/prices#get-/prices/history-—-price-history). Bid history follows the same 35-day raw / hourly / daily tiers through [`GET /bids/history`](/api-reference/bids#get-/bids/history-—-bid-history) and starts accumulating from September 2026.
   </Accordion>
 
   <Accordion title="Do I get all 40 marketplaces on Free?">

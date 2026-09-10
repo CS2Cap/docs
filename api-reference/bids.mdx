@@ -1,9 +1,9 @@
 ---
 title: "Bids API: Buy Orders Across CS2 Marketplaces"
-description: "Query the highest active buy orders across CS2 marketplaces, stream the full live bids catalog as NDJSON, or batch-lookup up to 100 items at once."
+description: "Query the highest active buy orders across CS2 marketplaces, stream the full live bids catalog as NDJSON, batch-lookup up to 100 items at once, or page through raw buy-order history."
 ---
 
-The Bids API exposes the highest active buy orders placed across CS2 marketplaces. Use it to see where demand is strongest for an item, identify arbitrage opportunities between ask and bid prices, or track buy-order depth over time. You can query individual items, batch up to 100 at once, or stream the entire live bids catalog as NDJSON.
+The Bids API exposes the highest active buy orders placed across CS2 marketplaces. Use it to see where demand is strongest for an item, identify arbitrage opportunities between ask and bid prices, or track buy-order depth over time. You can query individual items, batch up to 100 at once, or stream the entire live bids catalog as NDJSON, or page through historical buy-order records.
 
 ---
 
@@ -437,3 +437,159 @@ Abbreviated response (ellipsis placeholders are not JSON):
 <ResponseField name="names_not_found" type="string[]">
   `market_hash_names` that could not be resolved to any catalog item.
 </ResponseField>
+
+---
+
+## GET /bids/history — Bid history
+
+Returns historical buy-order records for one item, optionally filtered to a single provider. Results are ordered newest-first and use cursor pagination. Requests reaching back more than 35 days return hourly buckets; more than 365 days, daily buckets. History is available from September 2026 onward.
+
+**Tiers:** Pro, Quant
+
+<CodeGroup>
+
+```bash cURL
+curl -sS \
+  -H "Authorization: Bearer $CS2C_API_KEY" \
+  "https://api.cs2c.app/v1/bids/history?item_id=4994&provider=csfloat&currency=USD&limit=50"
+```
+
+```python Python
+import os
+
+import cs2cap
+
+configuration = cs2cap.Configuration(access_token=os.environ["CS2C_API_KEY"])
+
+with cs2cap.ApiClient(configuration) as client:
+    api = cs2cap.BidsApi(client)
+    response = api.get_bid_history(
+        item_id=4994,
+        provider="csfloat",
+        currency="USD",
+        limit=50,
+    )
+
+print(client.sanitize_for_serialization(response))
+```
+
+```typescript TypeScript
+import { BidsApi, Configuration } from "cs2cap";
+
+const accessToken = process.env.CS2C_API_KEY;
+
+if (!accessToken) {
+  throw new Error("Set CS2C_API_KEY before running this example.");
+}
+
+const api = new BidsApi(new Configuration({ accessToken }));
+const response = await api.getBidHistory({
+  itemId: 4994,
+  provider: "csfloat",
+  currency: "USD",
+  limit: 50,
+});
+
+console.log(response);
+```
+
+</CodeGroup>
+
+### Parameters
+
+<ParamField query="item_id" type="integer">
+  Filter by item ID. Takes precedence over `market_hash_name` and `phase` when provided.
+</ParamField>
+
+<ParamField query="market_hash_name" type="string">
+  Exact item name as it appears in inventory.
+</ParamField>
+
+<ParamField query="phase" type="string">
+  Doppler or Gamma phase filter. One of: `Phase 1`, `Phase 2`, `Phase 3`, `Phase 4`, `Ruby`, `Sapphire`, `Black Pearl`, `Emerald`.
+</ParamField>
+
+<ParamField query="provider" type="string">
+  A single buy-order provider key, for example `provider=csfloat`. Returns records from that provider only. Only providers with buy-order support are accepted. Valid keys: `buff163`, `buffmarket`, `c5`, `csfloat`, `dmarket`, `dupefi`, `ecosteam`, `marketcsgo`, `steam`, `waxpeer`, `whitemarket`, `youpin`. Any other value returns `422`.
+</ParamField>
+
+<ParamField query="start" type="string">
+  Inclusive ISO 8601 timestamp. Accepts `YYYY-MM-DD` or `YYYY-MM-DDThh:mm:ss`. Defaults to the last 35 days when omitted.
+</ParamField>
+
+<ParamField query="end" type="string">
+  Inclusive ISO 8601 timestamp.
+</ParamField>
+
+<ParamField query="currency" type="string" default="USD">
+  Target currency. Accepts 200+ ISO 4217 codes.
+</ParamField>
+
+<ParamField query="limit" type="integer">
+  Results per page. Range: 1–1000.
+</ParamField>
+
+<ParamField query="cursor" type="string">
+  Cursor for keyset pagination. Pass the `next_cursor` value from the previous response.
+</ParamField>
+
+### Response example
+
+Abbreviated response (ellipsis placeholders are not JSON):
+
+```text
+{
+  "meta": {...},
+  "items": [
+    {
+      "item_id": 4994,
+      "market_hash_name": "AK-47 | Redline (Field-Tested)",
+      "phase": null,
+      "provider": "CSFloat",
+      "time": "2026-09-10T11:55:00Z",
+      "highest_bid": 2450,
+      "currency": "USD",
+      "num_bids": 5
+    }
+  ],
+  "pagination": {...}
+}
+```
+
+### Response fields
+
+<ResponseField name="item_id" type="integer">
+  Catalog item ID.
+</ResponseField>
+
+<ResponseField name="market_hash_name" type="string">
+  Full item name.
+</ResponseField>
+
+<ResponseField name="phase" type="string">
+  Doppler phase or `null`.
+</ResponseField>
+
+<ResponseField name="provider" type="string">
+  Provider name for this record.
+</ResponseField>
+
+<ResponseField name="time" type="string">
+  ISO 8601 timestamp of the buy-order observation. For bucketed rows, the start of the bucket.
+</ResponseField>
+
+<ResponseField name="highest_bid" type="integer">
+  Highest bid in minor units of the response currency.
+</ResponseField>
+
+<ResponseField name="currency" type="string">
+  ISO 4217 currency code for the returned bid.
+</ResponseField>
+
+<ResponseField name="num_bids" type="integer">
+  Number of active buy orders observed at this timestamp.
+</ResponseField>
+
+<Note>
+  `pagination.total` is always `-1` on this endpoint. Use `has_next` and `next_cursor` to paginate.
+</Note>

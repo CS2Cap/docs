@@ -2172,6 +2172,383 @@
         }
       }
     },
+    "/v1/bids/history": {
+      "get": {
+        "tags": [
+          "Bids"
+        ],
+        "summary": "Get Bid History",
+        "description": "Return historical buy-order snapshots.\n\nParameters:\n- Filters: `item_id`, `market_hash_name`, `phase`, `provider` (singular buy-order provider key).\n- Time window: `start`, `end` (ISO 8601). If `start` is omitted, the\n  endpoint defaults to the last 35 days of raw history.\n- `currency`: Quote currency (default `USD`).\n- `limit`: Items per page.\n- `cursor`: Opaque cursor from `next_cursor` for the next page.\n\nResponse:\n- `items`: Historical snapshots ordered newest first. `highest_bid` is in minor units.\n- `meta`: Applied filters and time window.\n- `pagination`: Standardized pagination footer with cursor state.\n\nRequirements:\n- Valid API key with access to `/v1/bids/history`.\n- `start`/`end` must be valid ISO 8601 timestamps.\n- Requested time range must be within the endpoint retention window.\n- `limit` is capped by your tier.",
+        "operationId": "getBidHistory",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "item_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by item ID",
+              "title": "Item Id"
+            },
+            "description": "Filter by item ID"
+          },
+          {
+            "name": "market_hash_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by market hash name",
+              "title": "Market Hash Name"
+            },
+            "description": "Filter by market hash name"
+          },
+          {
+            "name": "phase",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/PhaseName"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by phase (e.g., Phase 1, Ruby, Sapphire)",
+              "title": "Phase"
+            },
+            "description": "Filter by phase (e.g., Phase 1, Ruby, Sapphire)"
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/BuyOrderProvider"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Single buy-order provider key (singular parameter, e.g. provider=csfloat).",
+              "title": "Provider"
+            },
+            "description": "Single buy-order provider key (singular parameter, e.g. provider=csfloat)."
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "ISO 8601 timestamp",
+              "title": "Start"
+            },
+            "description": "ISO 8601 timestamp"
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "ISO 8601 timestamp",
+              "title": "End"
+            },
+            "description": "ISO 8601 timestamp"
+          },
+          {
+            "name": "currency",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Target currency. Any ISO 4217 code supported by `/v1/fx` (see `/v1/fx` for the full list). Invalid codes return a 422 validation error.",
+              "default": "USD",
+              "title": "Currency"
+            },
+            "description": "Target currency. Any ISO 4217 code supported by `/v1/fx` (see `/v1/fx` for the full list). Invalid codes return a 422 validation error."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Maximum number of results to return. Defaults to the effective tier cap.",
+              "title": "Limit"
+            },
+            "description": "Maximum number of results to return. Defaults to the effective tier cap."
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Pagination cursor. Use `next_cursor` from the previous response to fetch the next page.",
+              "title": "Cursor"
+            },
+            "description": "Pagination cursor. Use `next_cursor` from the previous response to fetch the next page."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BidSnapshotPage"
+                },
+                "example": {
+                  "meta": {
+                    "currency": "USD",
+                    "filters": {
+                      "item_id": 156,
+                      "market_hash_name": "AK-47 | Redline (Field-Tested)",
+                      "provider": "csfloat",
+                      "start": "2026-09-01T00:00:00Z",
+                      "end": "2026-09-02T00:00:00Z"
+                    },
+                    "result_count": 2
+                  },
+                  "items": [
+                    {
+                      "time": "2026-09-01T12:00:00Z",
+                      "item_id": 156,
+                      "market_hash_name": "AK-47 | Redline (Field-Tested)",
+                      "provider": "CSFloat",
+                      "highest_bid": 2450,
+                      "currency": "USD",
+                      "num_bids": 5
+                    },
+                    {
+                      "time": "2026-09-01T11:55:00Z",
+                      "item_id": 156,
+                      "market_hash_name": "AK-47 | Redline (Field-Tested)",
+                      "provider": "CSFloat",
+                      "highest_bid": 2410,
+                      "currency": "USD",
+                      "num_bids": 4
+                    }
+                  ],
+                  "pagination": {
+                    "limit": 50,
+                    "has_next": true,
+                    "has_prev": false,
+                    "next_cursor": "MjAyNi0wOS0wMVQxMTo1NTowMCswMDowMHwxNTZ8Nw=="
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "UNAUTHORIZED",
+                  "detail": "Missing Authorization header"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted to access this resource.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "FORBIDDEN",
+                  "detail": "Account is disabled"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (burst or monthly quota).",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "burstRateLimit": {
+                    "summary": "Per-window rate limit exceeded",
+                    "value": {
+                      "code": "RATE_LIMIT_EXCEEDED",
+                      "detail": "Too Many Requests"
+                    }
+                  },
+                  "monthlyQuotaExceeded": {
+                    "summary": "Monthly quota exhausted",
+                    "value": {
+                      "code": "RATE_LIMIT_MONTHLY_QUOTA_EXCEEDED",
+                      "detail": "Monthly quota exceeded (500000/500000 requests)."
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying when present.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "X-RateLimit-Tier": {
+                "description": "Authenticated caller tier code.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Request limit for the rate-limit window that was exceeded.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Seconds until the rate-limit window resets.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed. The detail list contains field-specific validation errors.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Tier": {
+                "description": "Authenticated caller tier code when available.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid timestamp filters or retention window violations.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "invalidStart": {
+                    "summary": "Invalid start format",
+                    "value": {
+                      "detail": "start must be a valid ISO 8601 timestamp"
+                    }
+                  },
+                  "invalidEnd": {
+                    "summary": "Invalid end format",
+                    "value": {
+                      "detail": "end must be a valid ISO 8601 timestamp"
+                    }
+                  },
+                  "startTimeTooOld": {
+                    "summary": "start outside retention window",
+                    "value": {
+                      "detail": "start must be within the last 730 days"
+                    }
+                  },
+                  "endTimeTooOld": {
+                    "summary": "end outside retention window",
+                    "value": {
+                      "detail": "end must be within the last 730 days"
+                    }
+                  },
+                  "endBeforeStart": {
+                    "summary": "end precedes start",
+                    "value": {
+                      "detail": "end must be after start"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/bids/batch": {
       "post": {
         "tags": [
@@ -9413,6 +9790,102 @@
         ],
         "title": "BatchPricesResponse",
         "description": "Response envelope for POST /v1/prices/batch."
+      },
+      "BidSnapshot": {
+        "properties": {
+          "item_id": {
+            "type": "integer",
+            "title": "Item Id",
+            "description": "Normalized catalog item ID used by this API."
+          },
+          "market_hash_name": {
+            "type": "string",
+            "title": "Market Hash Name",
+            "description": "Canonical Steam market hash name for the item."
+          },
+          "phase": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phase",
+            "description": "Phased finish/variant label when applicable."
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider",
+            "description": "Provider key used by this API."
+          },
+          "time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Time",
+            "description": "ISO 8601 UTC timestamp of the buy-order observation."
+          },
+          "highest_bid": {
+            "type": "integer",
+            "title": "Highest Bid",
+            "description": "Money amount in minor units of the response currency (for example USD cents when currency=USD). Divide by 100 for display."
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency",
+            "description": "ISO 4217 currency code for the value context."
+          },
+          "num_bids": {
+            "type": "integer",
+            "title": "Num Bids",
+            "description": "Number of active buy orders observed at this time."
+          }
+        },
+        "type": "object",
+        "required": [
+          "item_id",
+          "market_hash_name",
+          "provider",
+          "time",
+          "highest_bid",
+          "currency",
+          "num_bids"
+        ],
+        "title": "BidSnapshot",
+        "description": "Single buy-order snapshot at a point in time."
+      },
+      "BidSnapshotPage": {
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/PriceHistoryMeta",
+            "description": "Response metadata for this payload."
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/BidSnapshot"
+            },
+            "type": "array",
+            "title": "Items",
+            "description": "List of returned items."
+          },
+          "pagination": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CursorPaginationMeta"
+              }
+            ],
+            "description": "Pagination metadata for this response."
+          }
+        },
+        "type": "object",
+        "required": [
+          "meta",
+          "items",
+          "pagination"
+        ],
+        "title": "BidSnapshotPage",
+        "description": "Paginated buy-order snapshots."
       },
       "BidsResponse": {
         "properties": {
