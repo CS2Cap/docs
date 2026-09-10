@@ -44,10 +44,6 @@ import { Configuration, BidsApi } from "cs2cap";
 
 const accessToken = process.env.CS2C_API_KEY;
 
-if (!accessToken) {
-  throw new Error("Set CS2C_API_KEY before running this example.");
-}
-
 const api = new BidsApi(new Configuration({ accessToken }));
 const response = await api.listBids({
   itemId: 4994,
@@ -225,10 +221,6 @@ import { Configuration, BidsApi } from "cs2cap";
 
 const accessToken = process.env.CS2C_API_KEY;
 
-if (!accessToken) {
-  throw new Error("Set CS2C_API_KEY before running this example.");
-}
-
 const api = new BidsApi(new Configuration({ accessToken }));
 const response = await api.streamFullBidsSnapshot({ providers: ["buff163"] });
 
@@ -309,10 +301,6 @@ print(client.sanitize_for_serialization(response))
 import { Configuration, BidsApi } from "cs2cap";
 
 const accessToken = process.env.CS2C_API_KEY;
-
-if (!accessToken) {
-  throw new Error("Set CS2C_API_KEY before running this example.");
-}
 
 const api = new BidsApi(new Configuration({ accessToken }));
 const response = await api.batchBidLookup({
@@ -477,10 +465,6 @@ print(client.sanitize_for_serialization(response))
 import { BidsApi, Configuration } from "cs2cap";
 
 const accessToken = process.env.CS2C_API_KEY;
-
-if (!accessToken) {
-  throw new Error("Set CS2C_API_KEY before running this example.");
-}
 
 const api = new BidsApi(new Configuration({ accessToken }));
 const response = await api.getBidHistory({

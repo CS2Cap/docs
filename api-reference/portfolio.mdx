@@ -44,10 +44,6 @@ import { Configuration, PortfolioApi } from "cs2cap";
 
 const accessToken = process.env.CS2C_API_KEY;
 
-if (!accessToken) {
-  throw new Error("Set CS2C_API_KEY before running this example.");
-}
-
 const api = new PortfolioApi(new Configuration({ accessToken }));
 const response = await api.createPortfolio({ portfolioCreate: { name: "Main Portfolio" } });
 
@@ -100,10 +96,6 @@ print(client.sanitize_for_serialization(response))
 import { Configuration, PortfolioApi } from "cs2cap";
 
 const accessToken = process.env.CS2C_API_KEY;
-
-if (!accessToken) {
-  throw new Error("Set CS2C_API_KEY before running this example.");
-}
 
 const api = new PortfolioApi(new Configuration({ accessToken }));
 const response = await api.listPortfolios();
@@ -172,10 +164,6 @@ import { Configuration, PortfolioApi } from "cs2cap";
 
 const accessToken = process.env.CS2C_API_KEY;
 
-if (!accessToken) {
-  throw new Error("Set CS2C_API_KEY before running this example.");
-}
-
 const portfolioId = "YOUR_PORTFOLIO_ID";
 
 const api = new PortfolioApi(new Configuration({ accessToken }));
@@ -236,10 +224,6 @@ print(client.sanitize_for_serialization(response))
 import { Configuration, PortfolioApi } from "cs2cap";
 
 const accessToken = process.env.CS2C_API_KEY;
-
-if (!accessToken) {
-  throw new Error("Set CS2C_API_KEY before running this example.");
-}
 
 const api = new PortfolioApi(new Configuration({ accessToken }));
 const response = await api.valuePortfolio({
@@ -370,10 +354,6 @@ import { Configuration, PortfolioApi } from "cs2cap";
 
 const accessToken = process.env.CS2C_API_KEY;
 
-if (!accessToken) {
-  throw new Error("Set CS2C_API_KEY before running this example.");
-}
-
 const portfolioId = "YOUR_PORTFOLIO_ID";
 
 const api = new PortfolioApi(new Configuration({ accessToken }));
@@ -443,10 +423,6 @@ print(client.sanitize_for_serialization(response))
 import { Configuration, PortfolioApi } from "cs2cap";
 
 const accessToken = process.env.CS2C_API_KEY;
-
-if (!accessToken) {
-  throw new Error("Set CS2C_API_KEY before running this example.");
-}
 
 const portfolioId = "YOUR_PORTFOLIO_ID";
 
@@ -574,10 +550,6 @@ import { Configuration, PortfolioApi } from "cs2cap";
 
 const accessToken = process.env.CS2C_API_KEY;
 
-if (!accessToken) {
-  throw new Error("Set CS2C_API_KEY before running this example.");
-}
-
 const portfolioId = "YOUR_PORTFOLIO_ID";
 
 const api = new PortfolioApi(new Configuration({ accessToken }));
@@ -633,10 +605,6 @@ print(client.sanitize_for_serialization(response))
 import { Configuration, PortfolioApi } from "cs2cap";
 
 const accessToken = process.env.CS2C_API_KEY;
-
-if (!accessToken) {
-  throw new Error("Set CS2C_API_KEY before running this example.");
-}
 
 const portfolioId = "YOUR_PORTFOLIO_ID";
 
@@ -713,10 +681,6 @@ import { Configuration, PortfolioApi } from "cs2cap";
 
 const accessToken = process.env.CS2C_API_KEY;
 
-if (!accessToken) {
-  throw new Error("Set CS2C_API_KEY before running this example.");
-}
-
 const portfolioId = "YOUR_PORTFOLIO_ID";
 const entryId = "YOUR_ENTRY_ID";
 
@@ -781,10 +745,6 @@ import { Configuration, PortfolioApi } from "cs2cap";
 
 const accessToken = process.env.CS2C_API_KEY;
 
-if (!accessToken) {
-  throw new Error("Set CS2C_API_KEY before running this example.");
-}
-
 const portfolioId = "YOUR_PORTFOLIO_ID";
 
 const api = new PortfolioApi(new Configuration({ accessToken }));
@@ -847,10 +807,6 @@ print(client.sanitize_for_serialization(response))
 import { Configuration, PortfolioApi } from "cs2cap";
 
 const accessToken = process.env.CS2C_API_KEY;
-
-if (!accessToken) {
-  throw new Error("Set CS2C_API_KEY before running this example.");
-}
 
 const portfolioId = "YOUR_PORTFOLIO_ID";
 
@@ -964,10 +920,6 @@ import { Configuration, PortfolioApi } from "cs2cap";
 
 const accessToken = process.env.CS2C_API_KEY;
 
-if (!accessToken) {
-  throw new Error("Set CS2C_API_KEY before running this example.");
-}
-
 const portfolioId = "YOUR_PORTFOLIO_ID";
 const transactionId = "YOUR_TRANSACTION_ID";
 
@@ -1064,10 +1016,6 @@ import { Configuration, PortfolioApi } from "cs2cap";
 
 const accessToken = process.env.CS2C_API_KEY;
 
-if (!accessToken) {
-  throw new Error("Set CS2C_API_KEY before running this example.");
-}
-
 const portfolioId = "YOUR_PORTFOLIO_ID";
 const transactionId = "YOUR_TRANSACTION_ID";
 
@@ -1129,10 +1077,6 @@ print(client.sanitize_for_serialization(response))
 import { Configuration, PortfolioApi } from "cs2cap";
 
 const accessToken = process.env.CS2C_API_KEY;
-
-if (!accessToken) {
-  throw new Error("Set CS2C_API_KEY before running this example.");
-}
 
 const portfolioId = "YOUR_PORTFOLIO_ID";
 

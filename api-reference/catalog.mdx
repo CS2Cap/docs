@@ -47,10 +47,6 @@ import { Configuration, ItemsApi } from "cs2cap";
 
 const accessToken = process.env.CS2C_API_KEY;
 
-if (!accessToken) {
-  throw new Error("Set CS2C_API_KEY before running this example.");
-}
-
 const api = new ItemsApi(new Configuration({ accessToken }));
 const response = await api.listItems({ q: "AK-47", rarityName: "Covert", limit: 10 });
 
@@ -316,10 +312,6 @@ import { Configuration, ItemsApi } from "cs2cap";
 
 const accessToken = process.env.CS2C_API_KEY;
 
-if (!accessToken) {
-  throw new Error("Set CS2C_API_KEY before running this example.");
-}
-
 const api = new ItemsApi(new Configuration({ accessToken }));
 const response = await api.getItemCatalogMetadata();
 
@@ -398,10 +390,6 @@ import { Configuration, ImagesApi } from "cs2cap";
 
 const accessToken = process.env.CS2C_API_KEY;
 
-if (!accessToken) {
-  throw new Error("Set CS2C_API_KEY before running this example.");
-}
-
 const api = new ImagesApi(new Configuration({ accessToken }));
 const response = await api.listGameImages();
 
@@ -472,10 +460,6 @@ print(client.sanitize_for_serialization(response))
 import { Configuration, ProvidersApi } from "cs2cap";
 
 const accessToken = process.env.CS2C_API_KEY;
-
-if (!accessToken) {
-  throw new Error("Set CS2C_API_KEY before running this example.");
-}
 
 const api = new ProvidersApi(new Configuration({ accessToken }));
 const response = await api.listProviders({ provider: "buff163" });
@@ -634,10 +618,6 @@ print(client.sanitize_for_serialization(response))
 import { Configuration, ForeignExchangeApi } from "cs2cap";
 
 const accessToken = process.env.CS2C_API_KEY;
-
-if (!accessToken) {
-  throw new Error("Set CS2C_API_KEY before running this example.");
-}
 
 const api = new ForeignExchangeApi(new Configuration({ accessToken }));
 const response = await api.getFxRates();

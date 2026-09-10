@@ -77,10 +77,6 @@ This guide walks you through everything you need to make a live CS2 item price r
 
     const accessToken = process.env.CS2C_API_KEY;
 
-    if (!accessToken) {
-      throw new Error("Set CS2C_API_KEY before running this example.");
-    }
-
     const pricesApi = new PricesApi(new Configuration({ accessToken }));
     const response = await pricesApi.listPrices({
       marketHashName: "AK-47 | Redline (Field-Tested)",

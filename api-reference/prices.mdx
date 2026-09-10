@@ -44,10 +44,6 @@ import { Configuration, PricesApi } from "cs2cap";
 
 const accessToken = process.env.CS2C_API_KEY;
 
-if (!accessToken) {
-  throw new Error("Set CS2C_API_KEY before running this example.");
-}
-
 const api = new PricesApi(new Configuration({ accessToken }));
 const response = await api.listPrices({
   itemId: 4994,
@@ -227,10 +223,6 @@ import { Configuration, PricesApi } from "cs2cap";
 
 const accessToken = process.env.CS2C_API_KEY;
 
-if (!accessToken) {
-  throw new Error("Set CS2C_API_KEY before running this example.");
-}
-
 const api = new PricesApi(new Configuration({ accessToken }));
 const response = await api.streamFullPricesSnapshot({ providers: ["buff163"] });
 
@@ -311,10 +303,6 @@ print(client.sanitize_for_serialization(response))
 import { Configuration, PricesApi } from "cs2cap";
 
 const accessToken = process.env.CS2C_API_KEY;
-
-if (!accessToken) {
-  throw new Error("Set CS2C_API_KEY before running this example.");
-}
 
 const api = new PricesApi(new Configuration({ accessToken }));
 const response = await api.batchPriceLookup({
@@ -478,10 +466,6 @@ print(client.sanitize_for_serialization(response))
 import { Configuration, PricesApi } from "cs2cap";
 
 const accessToken = process.env.CS2C_API_KEY;
-
-if (!accessToken) {
-  throw new Error("Set CS2C_API_KEY before running this example.");
-}
 
 const api = new PricesApi(new Configuration({ accessToken }));
 const response = await api.getPriceCandles({
@@ -658,10 +642,6 @@ print(client.sanitize_for_serialization(response))
 import { Configuration, PricesApi } from "cs2cap";
 
 const accessToken = process.env.CS2C_API_KEY;
-
-if (!accessToken) {
-  throw new Error("Set CS2C_API_KEY before running this example.");
-}
 
 const api = new PricesApi(new Configuration({ accessToken }));
 const response = await api.getPriceHistory({

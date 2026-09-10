@@ -73,10 +73,6 @@ import { Configuration, FeedStream } from "cs2cap";
 
 const accessToken = process.env.CS2C_API_KEY;
 
-if (!accessToken) {
-  throw new Error("Set CS2C_API_KEY before running this example.");
-}
-
 const feed = new FeedStream(new Configuration({ accessToken }));
 
 for await (const event of feed.streamPrices({

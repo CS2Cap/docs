@@ -43,10 +43,6 @@ import { Configuration, MarketIntelligenceApi } from "cs2cap";
 
 const accessToken = process.env.CS2C_API_KEY;
 
-if (!accessToken) {
-  throw new Error("Set CS2C_API_KEY before running this example.");
-}
-
 const api = new MarketIntelligenceApi(new Configuration({ accessToken }));
 const response = await api.getArbitrageOpportunities({
   limit: 25,
@@ -206,10 +202,6 @@ import { Configuration, MarketIntelligenceApi } from "cs2cap";
 
 const accessToken = process.env.CS2C_API_KEY;
 
-if (!accessToken) {
-  throw new Error("Set CS2C_API_KEY before running this example.");
-}
-
 const api = new MarketIntelligenceApi(new Configuration({ accessToken }));
 const response = await api.getMarketCapIndexes({ groupBy: "weapon_type" });
 
@@ -318,10 +310,6 @@ print(client.sanitize_for_serialization(response))
 import { Configuration, MarketIntelligenceApi } from "cs2cap";
 
 const accessToken = process.env.CS2C_API_KEY;
-
-if (!accessToken) {
-  throw new Error("Set CS2C_API_KEY before running this example.");
-}
 
 const api = new MarketIntelligenceApi(new Configuration({ accessToken }));
 const response = await api.getIndicators({ itemId: 4994, interval: "1d", currency: "USD" });
@@ -506,10 +494,6 @@ import { Configuration, MarketIntelligenceApi } from "cs2cap";
 
 const accessToken = process.env.CS2C_API_KEY;
 
-if (!accessToken) {
-  throw new Error("Set CS2C_API_KEY before running this example.");
-}
-
 const api = new MarketIntelligenceApi(new Configuration({ accessToken }));
 const response = await api.getMarketAnalyticsSnapshot();
 
@@ -659,10 +643,6 @@ print(client.sanitize_for_serialization(response))
 import { Configuration, MarketIntelligenceApi } from "cs2cap";
 
 const accessToken = process.env.CS2C_API_KEY;
-
-if (!accessToken) {
-  throw new Error("Set CS2C_API_KEY before running this example.");
-}
 
 const api = new MarketIntelligenceApi(new Configuration({ accessToken }));
 const response = await api.getItemAnalytics({ itemId: 4994 });
@@ -850,10 +830,6 @@ print(client.sanitize_for_serialization(response))
 import { Configuration, MarketIntelligenceApi } from "cs2cap";
 
 const accessToken = process.env.CS2C_API_KEY;
-
-if (!accessToken) {
-  throw new Error("Set CS2C_API_KEY before running this example.");
-}
 
 const api = new MarketIntelligenceApi(new Configuration({ accessToken }));
 const response = await api.getDeepPriceHistoryChart({

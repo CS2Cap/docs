@@ -49,10 +49,6 @@ import { Configuration, SalesApi } from "cs2cap";
 
 const accessToken = process.env.CS2C_API_KEY;
 
-if (!accessToken) {
-  throw new Error("Set CS2C_API_KEY before running this example.");
-}
-
 const api = new SalesApi(new Configuration({ accessToken }));
 const response = await api.listRecentSales({ itemId: 4994, providers: ["csfloat"], minFloat: 0.10, maxFloat: 0.20, paintSeed: 815, charms: "Semi-Precious", currency: "USD", limit: 20 });
 

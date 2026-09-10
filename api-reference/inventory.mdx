@@ -38,10 +38,6 @@ import { Configuration, InventoryApi } from "cs2cap";
 
 const accessToken = process.env.CS2C_API_KEY;
 
-if (!accessToken) {
-  throw new Error("Set CS2C_API_KEY before running this example.");
-}
-
 const api = new InventoryApi(new Configuration({ accessToken }));
 const response = await api.getSteamInventory();
 
@@ -174,10 +170,6 @@ print(client.sanitize_for_serialization(response))
 import { Configuration, InventoryApi } from "cs2cap";
 
 const accessToken = process.env.CS2C_API_KEY;
-
-if (!accessToken) {
-  throw new Error("Set CS2C_API_KEY before running this example.");
-}
 
 const api = new InventoryApi(new Configuration({ accessToken }));
 const response = await api.getSteamInventoryBySteamId({ steamId: "76561198000000000" });
