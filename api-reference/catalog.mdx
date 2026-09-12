@@ -74,7 +74,11 @@ console.log(response);
 </ParamField>
 
 <ParamField query="item_subtype" type="string">
-  Filter by item subtype (e.g. `Knives`).
+  Filter by item subtype (e.g. `Knives`). Values depend on `item_type`; the full list comes
+  from `GET /v1/items/metadata`. Stickers use `Player Autograph`, `Team Logo`, `Tournament`
+  and `Other`; graffiti and patches use `Team Logo`, `Tournament` and `Other`; every sticker
+  slab is `Sticker Slab`. The older spellings `Autograph`, `Team` and `Event` are still
+  accepted as aliases. Matching is case-insensitive.
 </ParamField>
 
 <ParamField query="weapon_type" type="string">
@@ -333,7 +337,7 @@ This endpoint takes no parameters.
   },
   "filters": {
 	"item_type": ["Agent", "Crate", "Weapon"],
-	"item_subtype": ["Weapon Case", "Autograph", "Rifles"],
+	"item_subtype": ["Weapon Case", "Player Autograph", "Rifles"],
 	"weapon_type": ["Assault Rifle", "Pistol", "Knife"],
 	"wear_name": ["Factory New", "Field-Tested", "Well-Worn"],
 	"phase": ["Phase 1", "Ruby", "Emerald"],

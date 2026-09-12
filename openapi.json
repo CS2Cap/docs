@@ -3831,7 +3831,7 @@
                   "type": "null"
                 }
               ],
-              "description": "Exact item subtype match (case-insensitive). Options depend on item_type (for example Equipment, Gloves, Rifles, Autograph, Team, Capsule Key).",
+              "description": "Exact item subtype match (case-insensitive). Options depend on item_type (for example Equipment, Gloves, Rifles, Player Autograph, Team Logo, Tournament, Capsule Key). Legacy spellings Team, Event and Autograph are accepted as aliases.",
               "enum": [
                 "Counter-Terrorist",
                 "Terrorist",
@@ -3851,13 +3851,14 @@
                 "Souvenir Package",
                 "Sticker Capsule",
                 "Weapon Case",
-                "Event",
+                "Tournament",
                 "Other",
-                "Team",
+                "Team Logo",
+                "Sticker Slab",
                 "Capsule Key",
                 "Case Key",
                 "StatTrak",
-                "Autograph",
+                "Player Autograph",
                 "Equipment",
                 "Gloves",
                 "Heavy",
@@ -3868,7 +3869,7 @@
               ],
               "title": "Item Subtype"
             },
-            "description": "Exact item subtype match (case-insensitive). Options depend on item_type (for example Equipment, Gloves, Rifles, Autograph, Team, Capsule Key)."
+            "description": "Exact item subtype match (case-insensitive). Options depend on item_type (for example Equipment, Gloves, Rifles, Player Autograph, Team Logo, Tournament, Capsule Key). Legacy spellings Team, Event and Autograph are accepted as aliases."
           },
           {
             "name": "weapon_type",
