@@ -86,6 +86,10 @@ console.log(response);
   Pagination offset.
 </ParamField>
 
+<ParamField query="exclude_stale" type="boolean" default="false">
+  Leave out buy orders that the provider's most recent scan did not include. When listing without `item_id` or `market_hash_name`, `pagination.total` still counts them, so a page can contain fewer than `limit` items.
+</ParamField>
+
 ### Response example
 
 Abbreviated response (ellipsis placeholders are not JSON):
@@ -102,7 +106,8 @@ Abbreviated response (ellipsis placeholders are not JSON):
       "highest_bid": 3001,
       "num_bids": 232,
       "timestamp": "2026-03-21T05:22:39.570895Z",
-      "last_updated": "2026-03-21T05:22:43.400024Z"
+      "last_updated": "2026-03-21T05:22:43.400024Z",
+      "stale": false
     },
     {
       "item_id": 12632,
@@ -112,7 +117,8 @@ Abbreviated response (ellipsis placeholders are not JSON):
       "highest_bid": 3923,
       "num_bids": 57053,
       "timestamp": "2026-03-21T05:00:30.858070Z",
-      "last_updated": "2026-03-21T05:00:34.493615Z"
+      "last_updated": "2026-03-21T05:00:34.493615Z",
+      "stale": false
     },
     {
       "item_id": 12632,
@@ -122,7 +128,8 @@ Abbreviated response (ellipsis placeholders are not JSON):
       "highest_bid": 3081,
       "num_bids": 310,
       "timestamp": "2026-03-21T05:22:07.475923Z",
-      "last_updated": "2026-03-21T05:22:10.170889Z"
+      "last_updated": "2026-03-21T05:22:10.170889Z",
+      "stale": false
     }
   ],
   "pagination": {...}
@@ -167,6 +174,10 @@ Abbreviated response (ellipsis placeholders are not JSON):
   When this record was last refreshed, even if the bid stayed the same.
 </ResponseField>
 
+<ResponseField name="stale" type="boolean">
+  `true` when the provider's most recent scan did not include this buy order. The bid shown is the last one observed and may no longer be active. Pass `exclude_stale=true` to leave these rows out.
+</ResponseField>
+
 <Note>
   If the item exists in the catalog but none of the selected providers currently has a buy order, the endpoint returns `200` with `items: []`.
 </Note>
@@ -190,6 +201,10 @@ Streams the complete live buy-orders catalog as NDJSON, with one JSON object per
 
 <ParamField query="providers" type="string[]">
   Optional. Repeat to restrict the stream to specific buy-order providers. Uses the same provider keys as [`GET /bids`](/api-reference/bids#get-/bids-—-list-bids). If omitted, all buy-order providers are included.
+</ParamField>
+
+<ParamField query="exclude_stale" type="boolean" default="false">
+  Leave out buy orders that the provider's most recent scan did not include. `X-Snapshot-Total` still counts them.
 </ParamField>
 
 <CodeGroup>
@@ -232,9 +247,9 @@ console.log(response);
 ### Response example
 
 ```ndjson
-{"provider":"buff163","item_id":12632,"market_hash_name":"AK-47 | Redline (Field-Tested)","phase":null,"highest_bid":3001,"num_bids":232,"timestamp":"2026-03-21T05:22:39.570895Z","last_updated":"2026-03-21T05:22:43.400024Z"}
-{"provider":"csfloat","item_id":12632,"market_hash_name":"AK-47 | Redline (Field-Tested)","phase":null,"highest_bid":2946,"num_bids":2,"timestamp":"2026-03-21T04:59:16.565601Z","last_updated":"2026-03-21T05:03:40.837477Z"}
-{"provider":"steam","item_id":2,"market_hash_name":"'Blueberries' Buckshot | NSWC SEAL","phase":null,"highest_bid":289,"num_bids":4820,"timestamp":"2026-03-22T01:41:00.000000Z","last_updated":"2026-03-22T01:41:36.221322Z"}
+{"provider":"buff163","item_id":12632,"market_hash_name":"AK-47 | Redline (Field-Tested)","phase":null,"highest_bid":3001,"num_bids":232,"timestamp":"2026-03-21T05:22:39.570895Z","last_updated":"2026-03-21T05:22:43.400024Z","stale":false}
+{"provider":"csfloat","item_id":12632,"market_hash_name":"AK-47 | Redline (Field-Tested)","phase":null,"highest_bid":2946,"num_bids":2,"timestamp":"2026-03-21T04:59:16.565601Z","last_updated":"2026-03-21T05:03:40.837477Z","stale":false}
+{"provider":"steam","item_id":2,"market_hash_name":"'Blueberries' Buckshot | NSWC SEAL","phase":null,"highest_bid":289,"num_bids":4820,"timestamp":"2026-03-22T01:41:00.000000Z","last_updated":"2026-03-22T01:41:36.221322Z","stale":false}
 ```
 
 ---
@@ -261,6 +276,10 @@ Returns current highest buy orders for up to 100 items in a single request, grou
 
 <ParamField body="currency" type="string" default="USD">
   Target currency. Use [`GET /fx`](/api-reference/catalog#get-/fx-—-fx-rates) for supported ISO 4217 codes.
+</ParamField>
+
+<ParamField body="exclude_stale" type="boolean" default="false">
+  Leave out quotes for buy orders that the provider's most recent scan did not include. An item whose only quotes are left out is listed in `items_not_found`.
 </ParamField>
 
 <Warning>
@@ -345,14 +364,16 @@ Abbreviated response (ellipsis placeholders are not JSON):
           "highest_bid": 3001,
           "num_bids": 232,
           "timestamp": "2026-03-21T05:22:39Z",
-          "last_updated": "2026-03-21T05:22:43Z"
+          "last_updated": "2026-03-21T05:22:43Z",
+          "stale": false
         },
         {
           "provider": "steam",
           "highest_bid": 3923,
           "num_bids": 57053,
           "timestamp": "2026-03-21T05:00:30Z",
-          "last_updated": "2026-03-21T05:00:34Z"
+          "last_updated": "2026-03-21T05:00:34Z",
+          "stale": false
         }
       ]
     },
@@ -366,7 +387,8 @@ Abbreviated response (ellipsis placeholders are not JSON):
           "highest_bid": 224,
           "num_bids": 1,
           "timestamp": "2026-03-21T05:27:20Z",
-          "last_updated": "2026-03-21T05:27:22Z"
+          "last_updated": "2026-03-21T05:27:22Z",
+          "stale": false
         }
       ]
     }
@@ -412,6 +434,9 @@ Abbreviated response (ellipsis placeholders are not JSON):
         </ResponseField>
         <ResponseField name="last_updated" type="string">
           When the record was last refreshed.
+        </ResponseField>
+        <ResponseField name="stale" type="boolean">
+          `true` when the provider's most recent scan did not include this buy order. The bid shown is the last one observed and may no longer be active. Pass `exclude_stale=true` to leave these quotes out.
         </ResponseField>
       </Expandable>
     </ResponseField>

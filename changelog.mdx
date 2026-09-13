@@ -5,6 +5,16 @@ description: "Public-facing API, documentation, and platform changes to CS2Cap t
 
 This changelog tracks public API, documentation, and platform changes that affect integrators. You will find new endpoints, breaking changes, deprecations, and improvements here as they ship. Non-breaking internal changes and infrastructure updates are not listed.
 
+## 2026-09 — `stale` flag on prices and bids
+
+Prices and bids rows now say whether they are still confirmed by the provider.
+
+- Every row from `GET /v1/prices`, `POST /v1/prices`, `POST /v1/prices/batch`, `GET /v1/bids`, `POST /v1/bids`, and `POST /v1/bids/batch` includes `stale`. It is `true` when the provider's most recent scan did not include the listing or buy order, so the price shown is the last one observed and may already be gone.
+- New `exclude_stale` option (query parameter on the list and stream endpoints, body field on the batch endpoints) leaves those rows out. It defaults to `false`, so existing integrations see the same rows as before.
+- With `exclude_stale=true`, `pagination.total` on broad listings (no `item_id` or `market_hash_name`) and `X-Snapshot-Total` on the streams still count stale rows, so a page can contain fewer than `limit` items.
+
+This is additive. No existing fields changed.
+
 ## 2026-08 — SDK v3.1.0: feed streaming and portfolio value fields
 
 An additive release covering everything the API gained since v3.0.0. No methods were

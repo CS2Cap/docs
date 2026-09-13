@@ -86,6 +86,10 @@ console.log(response);
   Pagination offset.
 </ParamField>
 
+<ParamField query="exclude_stale" type="boolean" default="false">
+  Leave out listings that the provider's most recent scan did not include. When listing without `item_id` or `market_hash_name`, `pagination.total` still counts them, so a page can contain fewer than `limit` items.
+</ParamField>
+
 ### Response example
 
 Abbreviated response (ellipsis placeholders are not JSON):
@@ -104,7 +108,8 @@ Abbreviated response (ellipsis placeholders are not JSON):
       "link": "https://cs2c.app/r/buff163/4994",
       "url": "https://buff.163.com/goods/42998?from=market#tag_ids=446968",
       "timestamp": "2026-03-20T13:09:25.771066Z",
-      "last_updated": "2026-03-21T05:02:44.450067Z"
+      "last_updated": "2026-03-21T05:02:44.450067Z",
+      "stale": false
     },
     {
       "provider": "csfloat",
@@ -116,7 +121,8 @@ Abbreviated response (ellipsis placeholders are not JSON):
       "link": "https://cs2c.app/r/csfloat/4994",
       "url": "https://csfloat.com/search?def_index=507&paint_index=416",
       "timestamp": "2026-03-21T05:03:40.179351Z",
-      "last_updated": "2026-03-21T05:03:40.837477Z"
+      "last_updated": "2026-03-21T05:03:40.837477Z",
+      "stale": false
     }
   ],
   "pagination": {...}
@@ -169,6 +175,10 @@ Abbreviated response (ellipsis placeholders are not JSON):
   When this record was last refreshed, even if the price stayed the same.
 </ResponseField>
 
+<ResponseField name="stale" type="boolean">
+  `true` when the provider's most recent scan did not include this listing. The price shown is the last one observed and may no longer be available. Pass `exclude_stale=true` to leave these rows out.
+</ResponseField>
+
 <Note>
   If the item exists in the catalog but none of the selected providers currently has a listing, the endpoint returns `200` with `items: []`.
 </Note>
@@ -192,6 +202,10 @@ Streams the complete live prices catalog as NDJSON, with one JSON object per lin
 
 <ParamField query="providers" type="string[]">
   Optional. Repeat to restrict the stream to specific providers. Uses the same provider keys as [`GET /prices`](/api-reference/prices#get-/prices-—-list-prices). If omitted, all providers are included.
+</ParamField>
+
+<ParamField query="exclude_stale" type="boolean" default="false">
+  Leave out listings that the provider's most recent scan did not include. `X-Snapshot-Total` still counts them.
 </ParamField>
 
 <CodeGroup>
@@ -234,9 +248,9 @@ console.log(response);
 ### Response example
 
 ```ndjson
-{"provider":"avanmarket","item_id":2,"market_hash_name":"'Blueberries' Buckshot | NSWC SEAL","phase":null,"lowest_ask":3460,"quantity":6,"link":"https://cs2c.app/r/avanmarket/2","url":"https://avan.market/en/market/cs/blueberries-buckshot-nswc-seal","timestamp":"2026-03-22T01:41:35.353783Z","last_updated":"2026-03-22T01:41:36.221322Z"}
-{"provider":"buff163","item_id":2,"market_hash_name":"'Blueberries' Buckshot | NSWC SEAL","phase":null,"lowest_ask":3187,"quantity":84,"link":"https://cs2c.app/r/buff163/2","url":"https://buff.163.com/goods/835687?from=market","timestamp":"2026-03-22T00:08:50.544878Z","last_updated":"2026-03-22T00:54:22.230624Z"}
-{"provider":"c5","item_id":2,"market_hash_name":"'Blueberries' Buckshot | NSWC SEAL","phase":null,"lowest_ask":3156,"quantity":57,"link":"https://cs2c.app/r/c5/2","url":"https://www.c5game.com/csgo/808836530722177024/item/sell","timestamp":"2026-03-22T01:27:20.020270Z","last_updated":"2026-03-22T01:42:46.706601Z"}
+{"provider":"avanmarket","item_id":2,"market_hash_name":"'Blueberries' Buckshot | NSWC SEAL","phase":null,"lowest_ask":3460,"quantity":6,"link":"https://cs2c.app/r/avanmarket/2","url":"https://avan.market/en/market/cs/blueberries-buckshot-nswc-seal","timestamp":"2026-03-22T01:41:35.353783Z","last_updated":"2026-03-22T01:41:36.221322Z","stale":false}
+{"provider":"buff163","item_id":2,"market_hash_name":"'Blueberries' Buckshot | NSWC SEAL","phase":null,"lowest_ask":3187,"quantity":84,"link":"https://cs2c.app/r/buff163/2","url":"https://buff.163.com/goods/835687?from=market","timestamp":"2026-03-22T00:08:50.544878Z","last_updated":"2026-03-22T00:54:22.230624Z","stale":false}
+{"provider":"c5","item_id":2,"market_hash_name":"'Blueberries' Buckshot | NSWC SEAL","phase":null,"lowest_ask":3156,"quantity":57,"link":"https://cs2c.app/r/c5/2","url":"https://www.c5game.com/csgo/808836530722177024/item/sell","timestamp":"2026-03-22T01:27:20.020270Z","last_updated":"2026-03-22T01:42:46.706601Z","stale":false}
 ```
 
 ---
@@ -263,6 +277,10 @@ Returns current lowest asks for up to 100 items in a single request, grouped by 
 
 <ParamField body="currency" type="string" default="USD">
   Target currency. Use [`GET /fx`](/api-reference/catalog#get-/fx-—-fx-rates) for supported ISO 4217 codes.
+</ParamField>
+
+<ParamField body="exclude_stale" type="boolean" default="false">
+  Leave out quotes for listings that the provider's most recent scan did not include. An item whose only quotes are left out is listed in `items_not_found`.
 </ParamField>
 
 <Warning>
@@ -347,7 +365,8 @@ Abbreviated response (ellipsis placeholders are not JSON):
           "lowest_ask": 531143,
           "quantity": 158,
           "timestamp": "2026-03-20T13:09:25Z",
-          "last_updated": "2026-03-21T05:02:44Z"
+          "last_updated": "2026-03-21T05:02:44Z",
+          "stale": false
         }
       ]
     },
@@ -361,14 +380,16 @@ Abbreviated response (ellipsis placeholders are not JSON):
           "lowest_ask": 3187,
           "quantity": 84,
           "timestamp": "2026-03-22T00:08:50Z",
-          "last_updated": "2026-03-22T00:54:22Z"
+          "last_updated": "2026-03-22T00:54:22Z",
+          "stale": false
         },
         {
           "provider": "steam",
           "lowest_ask": 3923,
           "quantity": 57053,
           "timestamp": "2026-03-21T05:00:30Z",
-          "last_updated": "2026-03-21T05:00:34Z"
+          "last_updated": "2026-03-21T05:00:34Z",
+          "stale": false
         }
       ]
     }

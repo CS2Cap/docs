@@ -18,7 +18,7 @@
           "Prices"
         ],
         "summary": "List Prices",
-        "description": "Return current lowest ask listings.\n\nParameters:\n- `item_id`: Exact item ID (recommended when known).\n- `market_hash_name`: Exact market name.\n- `phase`: Optional Doppler phase filter.\n- `providers`: Optional provider-key enum list (repeat `providers` to pass multiple values).\n- `currency`: Quote currency for prices (default `USD`).\n- `limit`, `offset`: Offset pagination controls.\n\nBehavior:\n- If no filters are provided, returns a broad paginated listing.\n- If `market_hash_name` is Doppler and `phase` is omitted, results aggregate across phases per provider.\n- If `market_hash_name` and `phase` are both provided, only that exact phase is returned.\n- If the item exists in the catalog but none of the queried providers currently has a\n  listing, returns `200` with an empty `items` array.\n\nResponse:\n- `meta`: Applied filters, requested providers, returned providers, currency.\n- `items`: Per-provider lowest ask entries.\n- `pagination`: `limit`, `offset`, `total`, `has_next`, `has_prev`.\n\nRequirements:\n- Valid API key with access to `/v1/prices`.\n- `limit` is capped by your tier.",
+        "description": "Return current lowest ask listings.\n\nParameters:\n- `item_id`: Exact item ID (recommended when known).\n- `market_hash_name`: Exact market name.\n- `phase`: Optional Doppler phase filter.\n- `providers`: Optional provider-key enum list (repeat `providers` to pass multiple values).\n- `currency`: Quote currency for prices (default `USD`).\n- `limit`, `offset`: Offset pagination controls.\n- `exclude_stale`: Leave out listings missing from the provider's most recent scan.\n\nBehavior:\n- If no filters are provided, returns a broad paginated listing.\n- If `market_hash_name` is Doppler and `phase` is omitted, results aggregate across phases per provider.\n- If `market_hash_name` and `phase` are both provided, only that exact phase is returned.\n- If the item exists in the catalog but none of the queried providers currently has a\n  listing, returns `200` with an empty `items` array.\n\nResponse:\n- `meta`: Applied filters, requested providers, returned providers, currency.\n- `items`: Per-provider lowest ask entries.\n- Each item carries `stale`: `true` when the provider's most recent scan did not include the listing.\n- `pagination`: `limit`, `offset`, `total`, `has_next`, `has_prev`.\n\nRequirements:\n- Valid API key with access to `/v1/prices`.\n- `limit` is capped by your tier.",
         "operationId": "listPrices",
         "security": [
           {
@@ -144,6 +144,18 @@
               "title": "Offset"
             },
             "description": "Pagination offset"
+          },
+          {
+            "name": "exclude_stale",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Leave out listings that the provider's most recent scan did not include. When listing without `item_id` or `market_hash_name`, `pagination.total` still counts them, so a page can contain fewer than `limit` items.",
+              "default": false,
+              "title": "Exclude Stale"
+            },
+            "description": "Leave out listings that the provider's most recent scan did not include. When listing without `item_id` or `market_hash_name`, `pagination.total` still counts them, so a page can contain fewer than `limit` items."
           }
         ],
         "responses": {
@@ -172,7 +184,8 @@
                       "link": "https://cs2c.app/r/avanmarket/2",
                       "url": "https://avan.market/en/market/cs/blueberries-buckshot-nswc-seal",
                       "timestamp": "2026-03-04T22:19:37.184309Z",
-                      "last_updated": "2026-03-05T05:33:52.037775Z"
+                      "last_updated": "2026-03-05T05:33:52.037775Z",
+                      "stale": false
                     }
                   ],
                   "pagination": {
@@ -357,7 +370,7 @@
           "Prices"
         ],
         "summary": "Stream Full Prices Snapshot",
-        "description": "Return the full live prices snapshot as an NDJSON stream.\n\nBehavior:\n- pro and quant tiers only\n- requires an API key (not a session token)\n- optional `providers` filter; omit to stream all providers\n- fixed USD output\n- `lowest_ask` values are returned in USD minor units\n- one JSON object per line using the `MarketItem` field set\n- per-API-key rolling 24h quota of successful stream starts (pro: 50, quant: 300, per endpoint)\n- max 1 concurrent stream per API key for this endpoint (409 otherwise)",
+        "description": "Return the full live prices snapshot as an NDJSON stream.\n\nBehavior:\n- pro and quant tiers only\n- requires an API key (not a session token)\n- optional `providers` filter; omit to stream all providers\n- optional `exclude_stale` filter leaves out listings the provider's most recent scan did not include\n- fixed USD output\n- `lowest_ask` values are returned in USD minor units\n- one JSON object per line using the `MarketItem` field set\n- per-API-key rolling 24h quota of successful stream starts (pro: 50, quant: 300, per endpoint)\n- max 1 concurrent stream per API key for this endpoint (409 otherwise)",
         "operationId": "streamFullPricesSnapshot",
         "security": [
           {
@@ -383,6 +396,18 @@
               ],
               "title": "Providers"
             }
+          },
+          {
+            "name": "exclude_stale",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Leave out listings that the provider's most recent scan did not include. `X-Snapshot-Total` still counts them.",
+              "default": false,
+              "title": "Exclude Stale"
+            },
+            "description": "Leave out listings that the provider's most recent scan did not include. `X-Snapshot-Total` still counts them."
           }
         ],
         "responses": {
@@ -437,7 +462,7 @@
                 "schema": {
                   "type": "string"
                 },
-                "example": "{\"provider\":\"steam\",\"item_id\":1,\"market_hash_name\":\"AK-47 | Redline (Field-Tested)\",\"phase\":null,\"lowest_ask\":2550,\"quantity\":3,\"link\":\"https://cs2c.app/r/steam/1\",\"url\":\"https://steamcommunity.com/market/listings/730/AK-47\",\"timestamp\":\"2026-03-18T12:00:00Z\",\"last_updated\":\"2026-03-18T12:01:00Z\"}\n"
+                "example": "{\"provider\":\"steam\",\"item_id\":1,\"market_hash_name\":\"AK-47 | Redline (Field-Tested)\",\"phase\":null,\"lowest_ask\":2550,\"quantity\":3,\"link\":\"https://cs2c.app/r/steam/1\",\"url\":\"https://steamcommunity.com/market/listings/730/AK-47\",\"timestamp\":\"2026-03-18T12:00:00Z\",\"last_updated\":\"2026-03-18T12:01:00Z\",\"stale\":false}\n"
               }
             }
           },
@@ -1431,7 +1456,8 @@
                           "lowest_ask": 2550,
                           "quantity": 14,
                           "timestamp": "2026-03-22T11:55:00Z",
-                          "last_updated": "2026-03-22T11:58:00Z"
+                          "last_updated": "2026-03-22T11:58:00Z",
+                          "stale": false
                         }
                       ]
                     }
@@ -1573,7 +1599,7 @@
           "Bids"
         ],
         "summary": "List Bids",
-        "description": "Return current highest bids from providers that support buy orders.\n\nFilters:\n- `item_id` or `market_hash_name`\n- optional `phase`\n- `providers` limited to buy-order-capable provider keys\n- `currency`, `limit`, and `offset`\n\nBehavior:\n- requesting a provider that does not support buy orders returns `400`\n\nResponse:\n- `meta` with filters and providers queried\n- flattened per-provider bid rows\n- offset pagination metadata",
+        "description": "Return current highest bids from providers that support buy orders.\n\nFilters:\n- `item_id` or `market_hash_name`\n- optional `phase`\n- `providers` limited to buy-order-capable provider keys\n- `currency`, `limit`, and `offset`\n- `exclude_stale` to leave out buy orders missing from the provider's most recent scan\n\nBehavior:\n- requesting a provider that does not support buy orders returns `400`\n\nResponse:\n- `meta` with filters and providers queried\n- flattened per-provider bid rows\n- each row carries `stale`\n- offset pagination metadata",
         "operationId": "listBids",
         "security": [
           {
@@ -1693,6 +1719,18 @@
               "title": "Offset"
             },
             "description": "Number of results to skip for pagination."
+          },
+          {
+            "name": "exclude_stale",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Leave out buy orders that the provider's most recent scan did not include. When listing without `item_id` or `market_hash_name`, `pagination.total` still counts them, so a page can contain fewer than `limit` items.",
+              "default": false,
+              "title": "Exclude Stale"
+            },
+            "description": "Leave out buy orders that the provider's most recent scan did not include. When listing without `item_id` or `market_hash_name`, `pagination.total` still counts them, so a page can contain fewer than `limit` items."
           }
         ],
         "responses": {
@@ -1727,7 +1765,8 @@
                       "highest_bid": 2550,
                       "num_bids": 5,
                       "timestamp": "2025-12-20T11:00:09.943625+00:00",
-                      "last_updated": "2025-12-20T11:05:09.943625+00:00"
+                      "last_updated": "2025-12-20T11:05:09.943625+00:00",
+                      "stale": false
                     },
                     {
                       "provider": "buff163",
@@ -1737,7 +1776,8 @@
                       "highest_bid": 2480,
                       "num_bids": 12,
                       "timestamp": "2025-12-20T11:02:15.123456+00:00",
-                      "last_updated": "2025-12-20T11:07:15.123456+00:00"
+                      "last_updated": "2025-12-20T11:07:15.123456+00:00",
+                      "stale": false
                     }
                   ],
                   "pagination": {
@@ -1935,7 +1975,7 @@
           "Bids"
         ],
         "summary": "Stream Full Bids Snapshot",
-        "description": "Return the full live bids snapshot as an NDJSON stream.\n\nBehavior:\n- pro and quant tiers only\n- requires an API key (not a session token)\n- optional `providers` filter; omit to stream all providers\n- fixed USD output\n- `highest_bid` values are returned in USD minor units\n- one JSON object per line using the `BuyOrderItem` field set\n- per-API-key rolling 24h quota of successful stream starts (pro: 50, quant: 300, per endpoint)\n- max 1 concurrent stream per API key for this endpoint (409 otherwise)",
+        "description": "Return the full live bids snapshot as an NDJSON stream.\n\nBehavior:\n- pro and quant tiers only\n- requires an API key (not a session token)\n- optional `providers` filter; omit to stream all providers\n- optional `exclude_stale` filter leaves out buy orders the provider's most recent scan did not include\n- fixed USD output\n- `highest_bid` values are returned in USD minor units\n- one JSON object per line using the `BuyOrderItem` field set\n- per-API-key rolling 24h quota of successful stream starts (pro: 50, quant: 300, per endpoint)\n- max 1 concurrent stream per API key for this endpoint (409 otherwise)",
         "operationId": "streamFullBidsSnapshot",
         "security": [
           {
@@ -1961,6 +2001,18 @@
               ],
               "title": "Providers"
             }
+          },
+          {
+            "name": "exclude_stale",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Leave out buy orders that the provider's most recent scan did not include. `X-Snapshot-Total` still counts them.",
+              "default": false,
+              "title": "Exclude Stale"
+            },
+            "description": "Leave out buy orders that the provider's most recent scan did not include. `X-Snapshot-Total` still counts them."
           }
         ],
         "responses": {
@@ -2015,7 +2067,7 @@
                 "schema": {
                   "type": "string"
                 },
-                "example": "{\"provider\":\"buff163\",\"item_id\":120,\"market_hash_name\":\"AK-47 | Redline (Field-Tested)\",\"phase\":null,\"highest_bid\":2450,\"num_bids\":5,\"timestamp\":\"2026-03-18T12:00:00Z\",\"last_updated\":\"2026-03-18T12:01:00Z\"}\n"
+                "example": "{\"provider\":\"buff163\",\"item_id\":120,\"market_hash_name\":\"AK-47 | Redline (Field-Tested)\",\"phase\":null,\"highest_bid\":2450,\"num_bids\":5,\"timestamp\":\"2026-03-18T12:00:00Z\",\"last_updated\":\"2026-03-18T12:01:00Z\",\"stale\":false}\n"
               }
             }
           },
@@ -2596,7 +2648,8 @@
                           "highest_bid": 2200,
                           "num_bids": 42,
                           "timestamp": "2026-03-22T11:55:00Z",
-                          "last_updated": "2026-03-22T11:58:00Z"
+                          "last_updated": "2026-03-22T11:58:00Z",
+                          "stale": false
                         }
                       ]
                     }
@@ -9388,6 +9441,12 @@
             ],
             "title": "Last Updated",
             "description": "When this data was last refreshed."
+          },
+          "stale": {
+            "type": "boolean",
+            "title": "Stale",
+            "description": "`true` when the provider's most recent scan did not include this buy order. The bid shown is the last one observed and may no longer be active.",
+            "default": false
           }
         },
         "type": "object",
@@ -9494,6 +9553,12 @@
             "title": "Currency",
             "description": "Target currency code for returned bids.",
             "default": "USD"
+          },
+          "exclude_stale": {
+            "type": "boolean",
+            "title": "Exclude Stale",
+            "description": "Leave out quotes for buy orders that the provider's most recent scan did not include. An item whose only quotes are left out is listed in `items_not_found`.",
+            "default": false
           }
         },
         "additionalProperties": false,
@@ -9639,6 +9704,12 @@
             ],
             "title": "Last Updated",
             "description": "When this data was last refreshed."
+          },
+          "stale": {
+            "type": "boolean",
+            "title": "Stale",
+            "description": "`true` when the provider's most recent scan did not include this listing. The price shown is the last one observed and may no longer be available.",
+            "default": false
           }
         },
         "type": "object",
@@ -9745,6 +9816,12 @@
             "title": "Currency",
             "description": "Target currency code for returned prices.",
             "default": "USD"
+          },
+          "exclude_stale": {
+            "type": "boolean",
+            "title": "Exclude Stale",
+            "description": "Leave out quotes for listings that the provider's most recent scan did not include. An item whose only quotes are left out is listed in `items_not_found`.",
+            "default": false
           }
         },
         "additionalProperties": false,
@@ -9994,6 +10071,12 @@
             ],
             "title": "Last Updated",
             "description": "ISO 8601 UTC timestamp when this data was last refreshed."
+          },
+          "stale": {
+            "type": "boolean",
+            "title": "Stale",
+            "description": "`true` when the provider's most recent scan did not include this buy order. The bid shown is the last one observed and may no longer be active.",
+            "default": false
           }
         },
         "type": "object",
@@ -11759,6 +11842,12 @@
             ],
             "title": "Last Updated",
             "description": "ISO 8601 UTC timestamp when this data was last refreshed."
+          },
+          "stale": {
+            "type": "boolean",
+            "title": "Stale",
+            "description": "`true` when the provider's most recent scan did not include this listing. The price shown is the last one observed and may no longer be available.",
+            "default": false
           }
         },
         "type": "object",
