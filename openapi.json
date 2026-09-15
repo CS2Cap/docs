@@ -818,7 +818,7 @@
                       "time": "2026-01-20T12:00:00Z",
                       "item_id": 156,
                       "market_hash_name": "AK-47 | Redline (Field-Tested)",
-                      "provider": "Steam Community Market",
+                      "provider": "steam",
                       "price": 2550,
                       "currency": "USD",
                       "quantity": 142
@@ -827,7 +827,7 @@
                       "time": "2026-01-20T11:55:00Z",
                       "item_id": 156,
                       "market_hash_name": "AK-47 | Redline (Field-Tested)",
-                      "provider": "Skinport",
+                      "provider": "skinport",
                       "price": 2490,
                       "currency": "USD",
                       "quantity": 37
@@ -2423,7 +2423,7 @@
                       "time": "2026-09-01T12:00:00Z",
                       "item_id": 156,
                       "market_hash_name": "AK-47 | Redline (Field-Tested)",
-                      "provider": "CSFloat",
+                      "provider": "csfloat",
                       "highest_bid": 2450,
                       "currency": "USD",
                       "num_bids": 5
@@ -2432,7 +2432,7 @@
                       "time": "2026-09-01T11:55:00Z",
                       "item_id": 156,
                       "market_hash_name": "AK-47 | Redline (Field-Tested)",
-                      "provider": "CSFloat",
+                      "provider": "csfloat",
                       "highest_bid": 2410,
                       "currency": "USD",
                       "num_bids": 4
