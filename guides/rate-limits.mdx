@@ -3,11 +3,11 @@ title: "Rate Limits: Per-Minute and Monthly Quotas"
 description: "Understand CS2Cap's per-minute and monthly request limits, how to read rate-limit headers, and best practices for staying within your quota."
 ---
 
-CS2Cap enforces two independent rate limits on every API key: a per-minute burst limit and a monthly quota. Exceeding either returns a `429` response with machine-readable headers that tell you exactly when you can retry. Understanding how these limits work — and which endpoints count against them — lets you design efficient integrations that never get blocked unexpectedly.
+CS2Cap enforces two independent rate limits on every API key: a per-minute burst limit, applied to each endpoint separately, and a monthly quota shared across endpoints. Exceeding either returns a `429` response with machine-readable headers that tell you exactly when you can retry. Understanding how these limits work — and which endpoints count against them — lets you design efficient integrations that never get blocked unexpectedly.
 
 ## Limits by tier
 
-| Tier | Requests / minute | Requests / month |
+| Tier | Requests / minute (per endpoint) | Requests / month |
 | --- | :-: | :-: |
 | Free | 20 | 1,000 |
 | Starter | 40 | 50,000 |
