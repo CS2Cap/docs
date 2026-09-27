@@ -204,7 +204,7 @@
             "content": {
               "application/json": {
                 "example": {
-                  "code": "UNAUTHORIZED",
+                  "code": "AUTH_MISSING_AUTHORIZATION",
                   "detail": "Missing Authorization header"
                 },
                 "schema": {
@@ -219,7 +219,7 @@
               "application/json": {
                 "example": {
                   "code": "FORBIDDEN",
-                  "detail": "Account is disabled"
+                  "detail": "Your tier (free) does not have access to /v1/prices/batch. Upgrade your subscription to access this endpoint."
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -317,26 +317,6 @@
                         }
                       ]
                     }
-                  },
-                  "limitTooHigh": {
-                    "summary": "Limit exceeds maximum",
-                    "value": {
-                      "code": "VALIDATION_ERROR",
-                      "detail": [
-                        {
-                          "type": "less_than_equal",
-                          "loc": [
-                            "query",
-                            "limit"
-                          ],
-                          "msg": "Input should be less than or equal to 1000",
-                          "input": 5000,
-                          "ctx": {
-                            "le": 1000
-                          }
-                        }
-                      ]
-                    }
                   }
                 }
               }
@@ -355,6 +335,7 @@
             "content": {
               "application/json": {
                 "example": {
+                  "code": "PRICES_INDEX_UNAVAILABLE",
                   "detail": "Prices data is temporarily unavailable. Try again shortly."
                 },
                 "schema": {
@@ -394,8 +375,10 @@
                   "type": "null"
                 }
               ],
+              "description": "Provider keys to include. Repeat the query parameter to pass multiple providers, e.g. providers=steam&providers=skinport. Omit for all providers.",
               "title": "Providers"
-            }
+            },
+            "description": "Provider keys to include. Repeat the query parameter to pass multiple providers, e.g. providers=steam&providers=skinport. Omit for all providers."
           },
           {
             "name": "exclude_stale",
@@ -471,7 +454,7 @@
             "content": {
               "application/json": {
                 "example": {
-                  "code": "UNAUTHORIZED",
+                  "code": "AUTH_MISSING_AUTHORIZATION",
                   "detail": "Missing Authorization header"
                 },
                 "schema": {
@@ -848,7 +831,7 @@
             "content": {
               "application/json": {
                 "example": {
-                  "code": "UNAUTHORIZED",
+                  "code": "AUTH_MISSING_AUTHORIZATION",
                   "detail": "Missing Authorization header"
                 },
                 "schema": {
@@ -863,7 +846,7 @@
               "application/json": {
                 "example": {
                   "code": "FORBIDDEN",
-                  "detail": "Account is disabled"
+                  "detail": "Your tier (free) does not have access to /v1/prices/batch. Upgrade your subscription to access this endpoint."
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -959,31 +942,36 @@
                   "invalidStart": {
                     "summary": "Invalid start format",
                     "value": {
-                      "detail": "start must be a valid ISO 8601 timestamp"
+                      "detail": "start must be a valid ISO 8601 timestamp",
+                      "code": "BAD_REQUEST"
                     }
                   },
                   "invalidEnd": {
                     "summary": "Invalid end format",
                     "value": {
-                      "detail": "end must be a valid ISO 8601 timestamp"
+                      "detail": "end must be a valid ISO 8601 timestamp",
+                      "code": "BAD_REQUEST"
                     }
                   },
                   "startTimeTooOld": {
                     "summary": "start outside retention window",
                     "value": {
-                      "detail": "start must be within the last 730 days"
+                      "detail": "start must be within the last 730 days",
+                      "code": "BAD_REQUEST"
                     }
                   },
                   "endTimeTooOld": {
                     "summary": "end outside retention window",
                     "value": {
-                      "detail": "end must be within the last 730 days"
+                      "detail": "end must be within the last 730 days",
+                      "code": "BAD_REQUEST"
                     }
                   },
                   "endBeforeStart": {
                     "summary": "end precedes start",
                     "value": {
-                      "detail": "end must be after start"
+                      "detail": "end must be after start",
+                      "code": "BAD_REQUEST"
                     }
                   }
                 },
@@ -1231,7 +1219,7 @@
             "content": {
               "application/json": {
                 "example": {
-                  "code": "UNAUTHORIZED",
+                  "code": "AUTH_MISSING_AUTHORIZATION",
                   "detail": "Missing Authorization header"
                 },
                 "schema": {
@@ -1246,7 +1234,7 @@
               "application/json": {
                 "example": {
                   "code": "FORBIDDEN",
-                  "detail": "Account is disabled"
+                  "detail": "Your tier (free) does not have access to /v1/prices/batch. Upgrade your subscription to access this endpoint."
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -1342,61 +1330,71 @@
                   "missingItemFilter": {
                     "summary": "Missing item filter",
                     "value": {
-                      "detail": "item_id or market_hash_name required"
+                      "detail": "item_id or market_hash_name required",
+                      "code": "BAD_REQUEST"
                     }
                   },
                   "invalidInterval": {
                     "summary": "Unsupported interval",
                     "value": {
-                      "detail": "interval must be one of: 1d, 1h, 5m"
+                      "detail": "interval must be one of: 1d, 1h, 5m",
+                      "code": "BAD_REQUEST"
                     }
                   },
                   "invalidStart": {
                     "summary": "Invalid start timestamp",
                     "value": {
-                      "detail": "start must be a valid ISO 8601 timestamp"
+                      "detail": "start must be a valid ISO 8601 timestamp",
+                      "code": "BAD_REQUEST"
                     }
                   },
                   "invalidEnd": {
                     "summary": "Invalid end timestamp",
                     "value": {
-                      "detail": "end must be a valid ISO 8601 timestamp"
+                      "detail": "end must be a valid ISO 8601 timestamp",
+                      "code": "BAD_REQUEST"
                     }
                   },
                   "invalidLookback": {
                     "summary": "Invalid lookback format",
                     "value": {
-                      "detail": "lookback must be a duration (e.g. '7d', '30d')"
+                      "detail": "lookback must be a duration (e.g. '7d', '30d')",
+                      "code": "BAD_REQUEST"
                     }
                   },
                   "startOutsideRetention": {
                     "summary": "Start outside retention window",
                     "value": {
-                      "detail": "start must be within last 30 days for 1h interval"
+                      "detail": "start must be within last 30 days for 1h interval",
+                      "code": "BAD_REQUEST"
                     }
                   },
                   "endBeforeStart": {
                     "summary": "End precedes start",
                     "value": {
-                      "detail": "end must be after start"
+                      "detail": "end must be after start",
+                      "code": "BAD_REQUEST"
                     }
                   },
                   "removedCursor": {
                     "summary": "Removed cursor parameter",
                     "value": {
-                      "detail": "cursor parameter has been removed; /v1/prices/candles no longer supports pagination"
+                      "detail": "cursor parameter has been removed; /v1/prices/candles no longer supports pagination",
+                      "code": "BAD_REQUEST"
                     }
                   },
                   "removedLimit": {
                     "summary": "Removed limit parameter",
                     "value": {
-                      "detail": "limit parameter has been removed; /v1/prices/candles no longer supports pagination"
+                      "detail": "limit parameter has been removed; /v1/prices/candles no longer supports pagination",
+                      "code": "BAD_REQUEST"
                     }
                   },
                   "legacyProvider": {
                     "summary": "Removed provider parameter",
                     "value": {
-                      "detail": "provider parameter has been removed; /v1/prices/candles now returns composite candles across all providers"
+                      "detail": "provider parameter has been removed; /v1/prices/candles now returns composite candles across all providers",
+                      "code": "BAD_REQUEST"
                     }
                   }
                 },
@@ -1475,7 +1473,7 @@
                   "$ref": "#/components/schemas/ErrorResponse"
                 },
                 "example": {
-                  "code": "UNAUTHORIZED",
+                  "code": "AUTH_MISSING_AUTHORIZATION",
                   "detail": "Missing Authorization header"
                 }
               }
@@ -1490,7 +1488,7 @@
                 },
                 "example": {
                   "code": "FORBIDDEN",
-                  "detail": "Account is disabled"
+                  "detail": "Your tier (free) does not have access to /v1/prices/batch. Upgrade your subscription to access this endpoint."
                 }
               }
             }
@@ -1796,7 +1794,7 @@
             "content": {
               "application/json": {
                 "example": {
-                  "code": "UNAUTHORIZED",
+                  "code": "AUTH_MISSING_AUTHORIZATION",
                   "detail": "Missing Authorization header"
                 },
                 "schema": {
@@ -1811,7 +1809,7 @@
               "application/json": {
                 "example": {
                   "code": "FORBIDDEN",
-                  "detail": "Account is disabled"
+                  "detail": "Your tier (free) does not have access to /v1/prices/batch. Upgrade your subscription to access this endpoint."
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -1909,26 +1907,6 @@
                         }
                       ]
                     }
-                  },
-                  "limitTooHigh": {
-                    "summary": "Limit exceeds maximum",
-                    "value": {
-                      "code": "VALIDATION_ERROR",
-                      "detail": [
-                        {
-                          "type": "less_than_equal",
-                          "loc": [
-                            "query",
-                            "limit"
-                          ],
-                          "msg": "Input should be less than or equal to 1000",
-                          "input": 5000,
-                          "ctx": {
-                            "le": 1000
-                          }
-                        }
-                      ]
-                    }
                   }
                 }
               }
@@ -1947,7 +1925,8 @@
             "content": {
               "application/json": {
                 "example": {
-                  "detail": "Providers do not support buy orders: avanmarket"
+                  "detail": "Providers do not support buy orders: avanmarket",
+                  "code": "BAD_REQUEST"
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -1960,6 +1939,7 @@
             "content": {
               "application/json": {
                 "example": {
+                  "code": "BIDS_INDEX_UNAVAILABLE",
                   "detail": "Bids data is temporarily unavailable. Try again shortly."
                 },
                 "schema": {
@@ -1999,8 +1979,10 @@
                   "type": "null"
                 }
               ],
+              "description": "Buy-order provider keys to include. Repeat `providers` to pass multiple values. Omit for all buy-order providers.",
               "title": "Providers"
-            }
+            },
+            "description": "Buy-order provider keys to include. Repeat `providers` to pass multiple values. Omit for all buy-order providers."
           },
           {
             "name": "exclude_stale",
@@ -2076,7 +2058,7 @@
             "content": {
               "application/json": {
                 "example": {
-                  "code": "UNAUTHORIZED",
+                  "code": "AUTH_MISSING_AUTHORIZATION",
                   "detail": "Missing Authorization header"
                 },
                 "schema": {
@@ -2453,7 +2435,7 @@
             "content": {
               "application/json": {
                 "example": {
-                  "code": "UNAUTHORIZED",
+                  "code": "AUTH_MISSING_AUTHORIZATION",
                   "detail": "Missing Authorization header"
                 },
                 "schema": {
@@ -2468,7 +2450,7 @@
               "application/json": {
                 "example": {
                   "code": "FORBIDDEN",
-                  "detail": "Account is disabled"
+                  "detail": "Your tier (free) does not have access to /v1/prices/batch. Upgrade your subscription to access this endpoint."
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -2564,31 +2546,36 @@
                   "invalidStart": {
                     "summary": "Invalid start format",
                     "value": {
-                      "detail": "start must be a valid ISO 8601 timestamp"
+                      "detail": "start must be a valid ISO 8601 timestamp",
+                      "code": "BAD_REQUEST"
                     }
                   },
                   "invalidEnd": {
                     "summary": "Invalid end format",
                     "value": {
-                      "detail": "end must be a valid ISO 8601 timestamp"
+                      "detail": "end must be a valid ISO 8601 timestamp",
+                      "code": "BAD_REQUEST"
                     }
                   },
                   "startTimeTooOld": {
                     "summary": "start outside retention window",
                     "value": {
-                      "detail": "start must be within the last 730 days"
+                      "detail": "start must be within the last 730 days",
+                      "code": "BAD_REQUEST"
                     }
                   },
                   "endTimeTooOld": {
                     "summary": "end outside retention window",
                     "value": {
-                      "detail": "end must be within the last 730 days"
+                      "detail": "end must be within the last 730 days",
+                      "code": "BAD_REQUEST"
                     }
                   },
                   "endBeforeStart": {
                     "summary": "end precedes start",
                     "value": {
-                      "detail": "end must be after start"
+                      "detail": "end must be after start",
+                      "code": "BAD_REQUEST"
                     }
                   }
                 },
@@ -2667,7 +2654,7 @@
                   "$ref": "#/components/schemas/ErrorResponse"
                 },
                 "example": {
-                  "code": "UNAUTHORIZED",
+                  "code": "AUTH_MISSING_AUTHORIZATION",
                   "detail": "Missing Authorization header"
                 }
               }
@@ -2682,7 +2669,7 @@
                 },
                 "example": {
                   "code": "FORBIDDEN",
-                  "detail": "Account is disabled"
+                  "detail": "Your tier (free) does not have access to /v1/prices/batch. Upgrade your subscription to access this endpoint."
                 }
               }
             }
@@ -2883,7 +2870,7 @@
             "content": {
               "application/json": {
                 "example": {
-                  "code": "UNAUTHORIZED",
+                  "code": "AUTH_MISSING_AUTHORIZATION",
                   "detail": "Missing Authorization header"
                 },
                 "schema": {
@@ -2898,7 +2885,7 @@
               "application/json": {
                 "example": {
                   "code": "FORBIDDEN",
-                  "detail": "Account is disabled"
+                  "detail": "Your tier (free) does not have access to /v1/prices/batch. Upgrade your subscription to access this endpoint."
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -3087,7 +3074,7 @@
             "content": {
               "application/json": {
                 "example": {
-                  "code": "UNAUTHORIZED",
+                  "code": "AUTH_MISSING_AUTHORIZATION",
                   "detail": "Missing Authorization header"
                 },
                 "schema": {
@@ -3102,7 +3089,7 @@
               "application/json": {
                 "example": {
                   "code": "FORBIDDEN",
-                  "detail": "Account is disabled"
+                  "detail": "Your tier (free) does not have access to /v1/prices/batch. Upgrade your subscription to access this endpoint."
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -3447,7 +3434,7 @@
             "content": {
               "application/json": {
                 "example": {
-                  "code": "UNAUTHORIZED",
+                  "code": "AUTH_MISSING_AUTHORIZATION",
                   "detail": "Missing Authorization header"
                 },
                 "schema": {
@@ -3462,7 +3449,7 @@
               "application/json": {
                 "example": {
                   "code": "FORBIDDEN",
-                  "detail": "Account is disabled"
+                  "detail": "Your tier (free) does not have access to /v1/prices/batch. Upgrade your subscription to access this endpoint."
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -3560,26 +3547,6 @@
                         }
                       ]
                     }
-                  },
-                  "limitTooHigh": {
-                    "summary": "Limit exceeds maximum",
-                    "value": {
-                      "code": "VALIDATION_ERROR",
-                      "detail": [
-                        {
-                          "type": "less_than_equal",
-                          "loc": [
-                            "query",
-                            "limit"
-                          ],
-                          "msg": "Input should be less than or equal to 50",
-                          "input": 5000,
-                          "ctx": {
-                            "le": 50
-                          }
-                        }
-                      ]
-                    }
                   }
                 }
               }
@@ -3594,14 +3561,14 @@
             }
           },
           "400": {
-            "description": "Invalid cursor or unsupported provider selection.",
+            "description": "Invalid cursor, unsupported provider selection, `min_float` greater than `max_float`, an empty `stickers` or `charms` value, or more than one `charms` value.",
             "content": {
               "application/json": {
                 "examples": {
                   "invalidCursor": {
                     "summary": "Invalid pagination cursor",
                     "value": {
-                      "code": "BAD_REQUEST",
+                      "code": "INVALID_CURSOR",
                       "detail": "invalid cursor format"
                     }
                   },
@@ -3624,7 +3591,8 @@
             "content": {
               "application/json": {
                 "example": {
-                  "detail": "Item not found: AK-47 | Redline (Field-Tested)"
+                  "detail": "Item not found: AK-47 | Redline (Field-Tested)",
+                  "code": "ITEM_NOT_FOUND"
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -3662,7 +3630,7 @@
                   "$ref": "#/components/schemas/ErrorResponse"
                 },
                 "example": {
-                  "code": "UNAUTHORIZED",
+                  "code": "AUTH_MISSING_AUTHORIZATION",
                   "detail": "Missing Authorization header"
                 }
               }
@@ -3677,7 +3645,7 @@
                 },
                 "example": {
                   "code": "FORBIDDEN",
-                  "detail": "Account is disabled"
+                  "detail": "Your tier (free) does not have access to /v1/prices/batch. Upgrade your subscription to access this endpoint."
                 }
               }
             }
@@ -4415,7 +4383,7 @@
             "content": {
               "application/json": {
                 "example": {
-                  "code": "UNAUTHORIZED",
+                  "code": "AUTH_MISSING_AUTHORIZATION",
                   "detail": "Missing Authorization header"
                 },
                 "schema": {
@@ -4430,7 +4398,7 @@
               "application/json": {
                 "example": {
                   "code": "FORBIDDEN",
-                  "detail": "Account is disabled"
+                  "detail": "Your tier (free) does not have access to /v1/prices/batch. Upgrade your subscription to access this endpoint."
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -4548,7 +4516,7 @@
                   "$ref": "#/components/schemas/ErrorResponse"
                 },
                 "example": {
-                  "code": "UNAUTHORIZED",
+                  "code": "AUTH_MISSING_AUTHORIZATION",
                   "detail": "Missing Authorization header"
                 }
               }
@@ -4563,7 +4531,7 @@
                 },
                 "example": {
                   "code": "FORBIDDEN",
-                  "detail": "Account is disabled"
+                  "detail": "Your tier (free) does not have access to /v1/prices/batch. Upgrade your subscription to access this endpoint."
                 }
               }
             }
@@ -4662,7 +4630,7 @@
           "Providers"
         ],
         "summary": "List Providers",
-        "description": "List supported marketplace providers with capability, fee, currency, and health metadata.\n\nUse the optional `provider` query parameter to fetch a single provider by key.",
+        "description": "List supported marketplace providers with capability, fee, currency, and health metadata.\n\nThe response is an object keyed by each provider's display name (for example `BUFF163`; the provider key when the name is missing or duplicated). Use the `key` field inside each entry as the stable provider identifier.\n\nUse the optional `provider` query parameter to fetch a single provider by key.",
         "operationId": "listProviders",
         "security": [
           {
@@ -4709,7 +4677,7 @@
             "content": {
               "application/json": {
                 "example": {
-                  "code": "UNAUTHORIZED",
+                  "code": "AUTH_MISSING_AUTHORIZATION",
                   "detail": "Missing Authorization header"
                 },
                 "schema": {
@@ -4724,7 +4692,7 @@
               "application/json": {
                 "example": {
                   "code": "FORBIDDEN",
-                  "detail": "Account is disabled"
+                  "detail": "Your tier (free) does not have access to /v1/prices/batch. Upgrade your subscription to access this endpoint."
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -4817,7 +4785,8 @@
             "content": {
               "application/json": {
                 "example": {
-                  "detail": "Provider not found: does-not-exist"
+                  "detail": "Provider not found: does-not-exist",
+                  "code": "PROVIDER_NOT_FOUND"
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -4882,7 +4851,7 @@
             "content": {
               "application/json": {
                 "example": {
-                  "code": "UNAUTHORIZED",
+                  "code": "AUTH_MISSING_AUTHORIZATION",
                   "detail": "Missing Authorization header"
                 },
                 "schema": {
@@ -4897,7 +4866,7 @@
               "application/json": {
                 "example": {
                   "code": "FORBIDDEN",
-                  "detail": "Account is disabled"
+                  "detail": "Your tier (free) does not have access to /v1/prices/batch. Upgrade your subscription to access this endpoint."
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -4984,6 +4953,20 @@
                 }
               }
             }
+          },
+          "503": {
+            "description": "The image directory is temporarily unavailable; retry shortly.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "SERVICE_UNAVAILABLE",
+                  "detail": "Image directory is temporarily unavailable"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -5016,10 +4999,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Maximum number of results to return. Defaults to the effective tier cap.",
+              "description": "Maximum number of results to return. Defaults to the effective tier cap; values above the tier cap or 100 are lowered to that cap.",
               "title": "Limit"
             },
-            "description": "Maximum number of results to return. Defaults to the effective tier cap."
+            "description": "Maximum number of results to return. Defaults to the effective tier cap; values above the tier cap or 100 are lowered to that cap."
           },
           {
             "name": "offset",
@@ -5137,7 +5120,7 @@
             "content": {
               "application/json": {
                 "example": {
-                  "code": "UNAUTHORIZED",
+                  "code": "AUTH_MISSING_AUTHORIZATION",
                   "detail": "Missing Authorization header"
                 },
                 "schema": {
@@ -5241,7 +5224,7 @@
             }
           },
           "400": {
-            "description": "Invalid cursor or unsupported cursor parameter.",
+            "description": "The removed `cursor` parameter was supplied; use `offset`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -5364,7 +5347,7 @@
                   "$ref": "#/components/schemas/ErrorResponse"
                 },
                 "example": {
-                  "code": "UNAUTHORIZED",
+                  "code": "AUTH_MISSING_AUTHORIZATION",
                   "detail": "Missing Authorization header"
                 }
               }
@@ -5600,7 +5583,7 @@
             "content": {
               "application/json": {
                 "example": {
-                  "code": "UNAUTHORIZED",
+                  "code": "AUTH_MISSING_AUTHORIZATION",
                   "detail": "Missing Authorization header"
                 },
                 "schema": {
@@ -5708,7 +5691,22 @@
             "content": {
               "application/json": {
                 "example": {
-                  "detail": "Item not found"
+                  "detail": "Item not found",
+                  "code": "ITEM_NOT_FOUND"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The item summary is still warming; retry shortly.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "SERVICE_UNAVAILABLE",
+                  "detail": "Item summary is warming. Try again shortly."
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -5796,7 +5794,7 @@
             "content": {
               "application/json": {
                 "example": {
-                  "code": "UNAUTHORIZED",
+                  "code": "AUTH_MISSING_AUTHORIZATION",
                   "detail": "Missing Authorization header"
                 },
                 "schema": {
@@ -6095,7 +6093,7 @@
             "content": {
               "application/json": {
                 "example": {
-                  "code": "UNAUTHORIZED",
+                  "code": "AUTH_MISSING_AUTHORIZATION",
                   "detail": "Missing Authorization header"
                 },
                 "schema": {
@@ -6194,6 +6192,20 @@
             "description": "Invalid parameters",
             "content": {
               "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Item not found",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Item not found",
+                  "code": "ITEM_NOT_FOUND"
+                },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -6371,7 +6383,7 @@
             "content": {
               "application/json": {
                 "example": {
-                  "code": "UNAUTHORIZED",
+                  "code": "AUTH_MISSING_AUTHORIZATION",
                   "detail": "Missing Authorization header"
                 },
                 "schema": {
@@ -6524,7 +6536,7 @@
                   "$ref": "#/components/schemas/ErrorResponse"
                 },
                 "example": {
-                  "code": "UNAUTHORIZED",
+                  "code": "AUTH_MISSING_AUTHORIZATION",
                   "detail": "Missing Authorization header"
                 }
               }
@@ -6680,7 +6692,7 @@
             "content": {
               "application/json": {
                 "example": {
-                  "code": "UNAUTHORIZED",
+                  "code": "AUTH_MISSING_AUTHORIZATION",
                   "detail": "Missing Authorization header"
                 },
                 "schema": {
@@ -6872,7 +6884,7 @@
                   "$ref": "#/components/schemas/ErrorResponse"
                 },
                 "example": {
-                  "code": "UNAUTHORIZED",
+                  "code": "AUTH_MISSING_AUTHORIZATION",
                   "detail": "Missing Authorization header"
                 }
               }
@@ -6887,7 +6899,7 @@
                 },
                 "example": {
                   "code": "FORBIDDEN",
-                  "detail": "Account is disabled"
+                  "detail": "Your tier (free) does not have access to /v1/prices/batch. Upgrade your subscription to access this endpoint."
                 }
               }
             }
@@ -7040,7 +7052,7 @@
             "content": {
               "application/json": {
                 "example": {
-                  "code": "UNAUTHORIZED",
+                  "code": "AUTH_MISSING_AUTHORIZATION",
                   "detail": "Missing Authorization header"
                 },
                 "schema": {
@@ -7179,7 +7191,7 @@
             "content": {
               "application/json": {
                 "example": {
-                  "code": "UNAUTHORIZED",
+                  "code": "AUTH_MISSING_AUTHORIZATION",
                   "detail": "Missing Authorization header"
                 },
                 "schema": {
@@ -7325,7 +7337,7 @@
             "content": {
               "application/json": {
                 "example": {
-                  "code": "UNAUTHORIZED",
+                  "code": "AUTH_MISSING_AUTHORIZATION",
                   "detail": "Missing Authorization header"
                 },
                 "schema": {
@@ -7340,7 +7352,7 @@
               "application/json": {
                 "example": {
                   "code": "FORBIDDEN",
-                  "detail": "Account is disabled"
+                  "detail": "Your tier (free) does not have access to /v1/prices/batch. Upgrade your subscription to access this endpoint."
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -7492,7 +7504,7 @@
             "content": {
               "application/json": {
                 "example": {
-                  "code": "UNAUTHORIZED",
+                  "code": "AUTH_MISSING_AUTHORIZATION",
                   "detail": "Missing Authorization header"
                 },
                 "schema": {
@@ -7659,7 +7671,7 @@
             "content": {
               "application/json": {
                 "example": {
-                  "code": "UNAUTHORIZED",
+                  "code": "AUTH_MISSING_AUTHORIZATION",
                   "detail": "Missing Authorization header"
                 },
                 "schema": {
@@ -7674,7 +7686,7 @@
               "application/json": {
                 "example": {
                   "code": "FORBIDDEN",
-                  "detail": "Account is disabled"
+                  "detail": "Your tier (free) does not have access to /v1/prices/batch. Upgrade your subscription to access this endpoint."
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -7824,7 +7836,7 @@
             "content": {
               "application/json": {
                 "example": {
-                  "code": "UNAUTHORIZED",
+                  "code": "AUTH_MISSING_AUTHORIZATION",
                   "detail": "Missing Authorization header"
                 },
                 "schema": {
@@ -7839,7 +7851,7 @@
               "application/json": {
                 "example": {
                   "code": "FORBIDDEN",
-                  "detail": "Account is disabled"
+                  "detail": "Your tier (free) does not have access to /v1/prices/batch. Upgrade your subscription to access this endpoint."
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -7994,7 +8006,7 @@
             "content": {
               "application/json": {
                 "example": {
-                  "code": "UNAUTHORIZED",
+                  "code": "AUTH_MISSING_AUTHORIZATION",
                   "detail": "Missing Authorization header"
                 },
                 "schema": {
@@ -8009,7 +8021,7 @@
               "application/json": {
                 "example": {
                   "code": "FORBIDDEN",
-                  "detail": "Account is disabled"
+                  "detail": "Your tier (free) does not have access to /v1/prices/batch. Upgrade your subscription to access this endpoint."
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -8190,7 +8202,7 @@
             "content": {
               "application/json": {
                 "example": {
-                  "code": "UNAUTHORIZED",
+                  "code": "AUTH_MISSING_AUTHORIZATION",
                   "detail": "Missing Authorization header"
                 },
                 "schema": {
@@ -8205,7 +8217,7 @@
               "application/json": {
                 "example": {
                   "code": "FORBIDDEN",
-                  "detail": "Account is disabled"
+                  "detail": "Your tier (free) does not have access to /v1/prices/batch. Upgrade your subscription to access this endpoint."
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -8495,7 +8507,7 @@
             "content": {
               "application/json": {
                 "example": {
-                  "code": "UNAUTHORIZED",
+                  "code": "AUTH_MISSING_AUTHORIZATION",
                   "detail": "Missing Authorization header"
                 },
                 "schema": {
@@ -8510,7 +8522,7 @@
               "application/json": {
                 "example": {
                   "code": "FORBIDDEN",
-                  "detail": "Account is disabled"
+                  "detail": "Your tier (free) does not have access to /v1/prices/batch. Upgrade your subscription to access this endpoint."
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -8672,7 +8684,7 @@
             "content": {
               "application/json": {
                 "example": {
-                  "code": "UNAUTHORIZED",
+                  "code": "AUTH_MISSING_AUTHORIZATION",
                   "detail": "Missing Authorization header"
                 },
                 "schema": {
@@ -8687,7 +8699,7 @@
               "application/json": {
                 "example": {
                   "code": "FORBIDDEN",
-                  "detail": "Account is disabled"
+                  "detail": "Your tier (free) does not have access to /v1/prices/batch. Upgrade your subscription to access this endpoint."
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -8841,7 +8853,7 @@
             "content": {
               "application/json": {
                 "example": {
-                  "code": "UNAUTHORIZED",
+                  "code": "AUTH_MISSING_AUTHORIZATION",
                   "detail": "Missing Authorization header"
                 },
                 "schema": {
@@ -8856,7 +8868,7 @@
               "application/json": {
                 "example": {
                   "code": "FORBIDDEN",
-                  "detail": "Account is disabled"
+                  "detail": "Your tier (free) does not have access to /v1/prices/batch. Upgrade your subscription to access this endpoint."
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -9018,7 +9030,7 @@
             "content": {
               "application/json": {
                 "example": {
-                  "code": "UNAUTHORIZED",
+                  "code": "AUTH_MISSING_AUTHORIZATION",
                   "detail": "Missing Authorization header"
                 },
                 "schema": {
@@ -9033,7 +9045,7 @@
               "application/json": {
                 "example": {
                   "code": "FORBIDDEN",
-                  "detail": "Account is disabled"
+                  "detail": "Your tier (free) does not have access to /v1/prices/batch. Upgrade your subscription to access this endpoint."
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -9176,7 +9188,7 @@
             "content": {
               "application/json": {
                 "example": {
-                  "code": "UNAUTHORIZED",
+                  "code": "AUTH_MISSING_AUTHORIZATION",
                   "detail": "Missing Authorization header"
                 },
                 "schema": {
@@ -9191,7 +9203,7 @@
               "application/json": {
                 "example": {
                   "code": "FORBIDDEN",
-                  "detail": "Account is disabled"
+                  "detail": "Your tier (free) does not have access to /v1/prices/batch. Upgrade your subscription to access this endpoint."
                 },
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
@@ -9468,7 +9480,7 @@
           "requested_item_count": {
             "type": "integer",
             "title": "Requested Item Count",
-            "description": "Number of item IDs in the request."
+            "description": "Number of lookups in the request: `item_ids` plus `market_hash_names`, before de-duplication."
           },
           "found_item_count": {
             "type": "integer",
@@ -9731,7 +9743,7 @@
           "requested_item_count": {
             "type": "integer",
             "title": "Requested Item Count",
-            "description": "Number of item IDs in the request."
+            "description": "Number of lookups in the request: `item_ids` plus `market_hash_names`, before de-duplication."
           },
           "found_item_count": {
             "type": "integer",
@@ -10044,7 +10056,7 @@
           "num_bids": {
             "type": "integer",
             "title": "Num Bids",
-            "description": "Num bids value."
+            "description": "Number of active buy orders."
           },
           "timestamp": {
             "anyOf": [
@@ -10057,7 +10069,7 @@
               }
             ],
             "title": "Timestamp",
-            "description": "Timestamp value."
+            "description": "ISO 8601 UTC timestamp when the provider last observed this buy order."
           },
           "last_updated": {
             "anyOf": [
@@ -10170,7 +10182,7 @@
               }
             ],
             "title": "Timestamp",
-            "description": "ISO 8601 UTC timestamp for this record."
+            "description": "ISO 8601 UTC timestamp of the rates snapshot, or null when none is loaded."
           },
           "rates": {
             "additionalProperties": {
@@ -10178,7 +10190,7 @@
             },
             "type": "object",
             "title": "Rates",
-            "description": "Rates value."
+            "description": "Map of ISO 4217 currency code to units of that currency per 1 USD."
           }
         },
         "type": "object",
@@ -10408,7 +10420,7 @@
               }
             ],
             "title": "Rsi",
-            "description": "Derived RSI signal label."
+            "description": "RSI signal: `overbought`, `oversold`, or `neutral`."
           },
           "macd": {
             "anyOf": [
@@ -10420,7 +10432,7 @@
               }
             ],
             "title": "Macd",
-            "description": "Derived MACD signal label."
+            "description": "MACD histogram signal: `bullish`, `bearish`, or `neutral`."
           },
           "trend": {
             "anyOf": [
@@ -10432,7 +10444,7 @@
               }
             ],
             "title": "Trend",
-            "description": "Market trend metrics."
+            "description": "Moving-average trend signal: `bullish`, `bearish`, or `neutral`."
           },
           "bollinger": {
             "anyOf": [
@@ -10444,7 +10456,7 @@
               }
             ],
             "title": "Bollinger",
-            "description": "Derived Bollinger Bands signal label."
+            "description": "Bollinger Bands signal: `squeeze`, `breakout_up`, `breakout_down`, or `neutral`."
           },
           "volatility": {
             "anyOf": [
@@ -10456,7 +10468,7 @@
               }
             ],
             "title": "Volatility",
-            "description": "Volatility indicator values."
+            "description": "Historical-volatility signal: `high`, `low`, or `normal`."
           },
           "composite_score": {
             "anyOf": [
@@ -10468,7 +10480,7 @@
               }
             ],
             "title": "Composite Score",
-            "description": "Composite signal score synthesized from indicator signals."
+            "description": "Weighted score of the signals above, from -1.0 (strongly bearish) to 1.0 (strongly bullish)."
           }
         },
         "type": "object",
@@ -10669,7 +10681,7 @@
               }
             ],
             "title": "Item Type",
-            "description": "Top-level item class (for example `weapon`, `gloves`, `sticker`)."
+            "description": "Top-level item class (for example `Weapon`, `Sticker`, `Agent`)."
           },
           "item_subtype": {
             "anyOf": [
@@ -10681,7 +10693,7 @@
               }
             ],
             "title": "Item Subtype",
-            "description": "Sub-classification within `item_type` (for example weapon family)."
+            "description": "Sub-classification within `item_type` (for example `Rifles`, `Gloves`, `Player Autograph`)."
           },
           "weapon_type": {
             "anyOf": [
@@ -11300,7 +11312,7 @@
           },
           "pagination": {
             "$ref": "#/components/schemas/PaginationMeta",
-            "description": "Cursor pagination metadata."
+            "description": "Offset pagination metadata."
           }
         },
         "type": "object",
@@ -11612,34 +11624,34 @@
           "interval": {
             "type": "string",
             "title": "Interval",
-            "description": "Interval value."
+            "description": "Candle interval used for indicator computation."
           },
           "close_price_usd": {
             "type": "string",
             "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Close Price Usd",
-            "description": "USD-denominated value for close price.",
+            "description": "Latest composite close price as a decimal string in major units of the requested `currency`. Despite the `_usd` suffix, it is USD only when `currency=USD`.",
             "example": "1.23"
           },
           "momentum": {
             "$ref": "#/components/schemas/IndicatorMomentum",
-            "description": "Momentum value."
+            "description": "Momentum indicators. Price-level values (SMA, EMA, Bollinger Bands) are in major units of the requested `currency`; RSI is 0-100."
           },
           "volatility": {
             "$ref": "#/components/schemas/IndicatorVolatility",
-            "description": "Volatility value."
+            "description": "Volatility indicators. ATR and Keltner Channels are in major units of the requested `currency`."
           },
           "volume": {
             "$ref": "#/components/schemas/IndicatorVolume",
-            "description": "Volume value."
+            "description": "Volume indicators. VWAP is in major units of the requested `currency`."
           },
           "signals": {
             "$ref": "#/components/schemas/IndicatorSignals",
-            "description": "Signals value."
+            "description": "Signal labels derived from the indicators."
           },
           "coverage": {
             "$ref": "#/components/schemas/IndicatorDataCoverage",
-            "description": "Coverage value."
+            "description": "How many candles were available and which indicators they support."
           }
         },
         "type": "object",
@@ -11715,7 +11727,7 @@
           "interval": {
             "type": "string",
             "title": "Interval",
-            "description": "Interval value."
+            "description": "Candle interval used for indicator computation."
           },
           "provider": {
             "anyOf": [
@@ -11727,7 +11739,7 @@
               }
             ],
             "title": "Provider",
-            "description": "Provider key used by this API."
+            "description": "Provider scope. Always `All Providers`: indicators use composite candles."
           }
         },
         "type": "object",
@@ -11791,7 +11803,7 @@
           "quantity": {
             "type": "integer",
             "title": "Quantity",
-            "description": "Quantity count for this record."
+            "description": "Number of listings available at this provider."
           },
           "link": {
             "anyOf": [
@@ -11828,7 +11840,7 @@
               }
             ],
             "title": "Timestamp",
-            "description": "ISO 8601 UTC timestamp for this record."
+            "description": "ISO 8601 UTC timestamp when the provider last observed this listing."
           },
           "last_updated": {
             "anyOf": [
@@ -11876,7 +11888,7 @@
           "providers_with_bid_side": {
             "type": "integer",
             "title": "Providers With Bid Side",
-            "description": "Providers with bid side value."
+            "description": "Providers with a bid price."
           }
         },
         "type": "object",
@@ -11914,7 +11926,7 @@
           },
           "summary": {
             "$ref": "#/components/schemas/MarketItemAnalyticsSummary",
-            "description": "Summary value."
+            "description": "Item-level summary; the same fields `/v1/market/items` returns per item."
           },
           "providers": {
             "items": {
@@ -11922,11 +11934,11 @@
             },
             "type": "array",
             "title": "Providers",
-            "description": "Providers value."
+            "description": "Per-provider price, depth, and volume metrics."
           },
           "coverage": {
             "$ref": "#/components/schemas/MarketItemAnalyticsCoverage",
-            "description": "Coverage value."
+            "description": "Counts of providers that contributed each kind of data."
           }
         },
         "type": "object",
@@ -12528,7 +12540,7 @@
           },
           "summary": {
             "$ref": "#/components/schemas/MarketItemAnalyticsSummary",
-            "description": "Summary value."
+            "description": "Item-level market summary."
           }
         },
         "type": "object",
@@ -12609,7 +12621,7 @@
           "timeframe": {
             "type": "string",
             "title": "Timeframe",
-            "description": "Requested liquidity horizon. Liquidity is always scored on the 24h horizon regardless of the requested value."
+            "description": "Liquidity scoring horizon. Always `24h`."
           }
         },
         "type": "object",
@@ -13045,7 +13057,7 @@
           "source": {
             "type": "string",
             "title": "Source",
-            "description": "How the item was added: 'steam' or 'manual'."
+            "description": "How the item was added: 'steam', 'manual', or 'csv'."
           },
           "steam_assetid": {
             "anyOf": [
@@ -13207,7 +13219,7 @@
               }
             ],
             "title": "Best Bid",
-            "description": "Highest bid price across queried providers. Money amount in minor units of the response currency (for example USD cents when currency=USD). Divide by 100 for display."
+            "description": "Reserved for the highest bid across queried providers; currently always null. Money amount in minor units of the response currency (for example USD cents when currency=USD). Divide by 100 for display."
           },
           "item_value": {
             "anyOf": [
@@ -13780,7 +13792,7 @@
             "type": "string",
             "format": "date-time",
             "title": "Time",
-            "description": "Time value."
+            "description": "ISO 8601 UTC timestamp of the price observation."
           },
           "price": {
             "type": "integer",
@@ -13795,7 +13807,7 @@
           "quantity": {
             "type": "integer",
             "title": "Quantity",
-            "description": "Quantity value."
+            "description": "Number of listings available at this observation."
           }
         },
         "type": "object",
@@ -13969,7 +13981,7 @@
               }
             ],
             "title": "Has Buy Orders",
-            "description": "Whether this payload has buy orders."
+            "description": "Whether this provider's buy orders are served by `/v1/bids`."
           },
           "has_recent_sales": {
             "anyOf": [
@@ -13981,7 +13993,7 @@
               }
             ],
             "title": "Has Recent Sales",
-            "description": "Whether this payload has recent sales."
+            "description": "Whether this provider's recent sales are served by `/v1/sales`."
           }
         },
         "type": "object",
@@ -14034,7 +14046,7 @@
           "status": {
             "type": "string",
             "title": "Status",
-            "description": "Health or processing status value."
+            "description": "Ingestion health: `up`, `degraded` (some provider jobs failing), `down`, or `unknown` (no recent health data)."
           },
           "last_checked_at": {
             "anyOf": [
@@ -14095,7 +14107,7 @@
               }
             ],
             "title": "Total Value",
-            "description": "Total estimated value of all listings in the provider's native currency (see `default_currency`)."
+            "description": "Total estimated value of all listings, in minor units of the provider's native currency (see `default_currency`)."
           },
           "total_value_usd": {
             "anyOf": [
@@ -14107,7 +14119,7 @@
               }
             ],
             "title": "Total Value Usd",
-            "description": "Total estimated value standardized to USD using current FX rates."
+            "description": "Total estimated value of all listings in USD minor units (cents), converted with current FX rates."
           }
         },
         "type": "object",
@@ -14138,7 +14150,7 @@
               }
             ],
             "title": "Code",
-            "description": "Stable machine-readable code for this payload."
+            "description": "Short uppercase provider code (for example `B163`). Use `key` to identify providers in requests and responses."
           },
           "market_type": {
             "anyOf": [
@@ -14150,7 +14162,7 @@
               }
             ],
             "title": "Market Type",
-            "description": "Provider market type classification."
+            "description": "Provider market type classification: `STORE`, `P2P`, `ESCROW`, `HYBRID`, or `TRADING`."
           },
           "default_currency": {
             "anyOf": [
@@ -14763,7 +14775,7 @@
           "total_count"
         ],
         "title": "SteamInventoryResponse",
-        "description": "Response envelope for GET /v1/portfolio/steam-inventory."
+        "description": "Response envelope for GET /v1/inventory/steam."
       },
       "SteamProfileSummary": {
         "properties": {
