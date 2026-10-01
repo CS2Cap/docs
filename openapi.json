@@ -6529,7 +6529,7 @@
             }
           },
           "401": {
-            "description": "Missing or invalid authentication credentials.",
+            "description": "Missing or invalid authentication credentials, or Steam profile does not exist.",
             "content": {
               "application/json": {
                 "schema": {
@@ -6543,7 +6543,7 @@
             }
           },
           "403": {
-            "description": "No linked Steam account.",
+            "description": "No linked Steam account or private inventory.",
             "content": {
               "application/json": {
                 "schema": {
@@ -6688,7 +6688,7 @@
             }
           },
           "401": {
-            "description": "Missing or invalid authentication credentials.",
+            "description": "Missing or invalid authentication credentials, or Steam profile does not exist.",
             "content": {
               "application/json": {
                 "example": {
