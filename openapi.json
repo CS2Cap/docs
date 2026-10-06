@@ -7440,6 +7440,16 @@
               }
             }
           },
+          "409": {
+            "description": "Portfolio is synced by the browser extension while its Steam account is still paired; unpair the account first.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "404": {
             "description": "Portfolio not found.",
             "content": {
@@ -7599,6 +7609,16 @@
                 "description": "Authenticated caller tier code when available.",
                 "schema": {
                   "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Portfolio is synced by the browser extension and cannot be edited manually.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -7939,6 +7959,16 @@
               }
             }
           },
+          "409": {
+            "description": "Portfolio is synced by the browser extension and cannot be edited manually.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "400": {
             "description": "Missing item identifier.",
             "content": {
@@ -8105,6 +8135,16 @@
                 "description": "Authenticated caller tier code when available.",
                 "schema": {
                   "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Portfolio is synced by the browser extension and cannot be edited manually.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -8324,7 +8364,7 @@
           "Portfolio"
         ],
         "summary": "Get Portfolio Value History",
-        "description": "Return daily historical valuation points for a saved portfolio. Each day's holdings are derived from the portfolio's recorded transactions and priced at that day's market close. This endpoint is daily-only because portfolio transactions are date-granular.",
+        "description": "Return daily historical valuation points for a saved portfolio. Each day's holdings are derived from the portfolio's recorded transactions and priced at that day's market close. This endpoint is daily-only because portfolio transactions are date-granular. Portfolios synced by the browser extension always use the holdings basis, whatever `basis` is requested.",
         "operationId": "getPortfolioValueHistory",
         "security": [
           {
@@ -13057,7 +13097,7 @@
           "source": {
             "type": "string",
             "title": "Source",
-            "description": "How the item was added: 'steam', 'manual', or 'csv'."
+            "description": "How the item was added: 'steam', 'manual', 'csv', or 'extension'."
           },
           "steam_assetid": {
             "anyOf": [
@@ -13395,6 +13435,23 @@
             "title": "Change 24H Pct",
             "description": "Percent change vs the previous daily close. Only present with include=value when a previous close exists."
           },
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "description": "How the portfolio is maintained: 'manual', or 'extension' when the browser extension syncs its holdings."
+          },
+          "managed_steamid": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Managed Steamid",
+            "description": "SteamID64 whose inventory the browser extension syncs into this portfolio; null for a manual portfolio. Holdings of a synced portfolio cannot be edited."
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -13413,6 +13470,7 @@
           "id",
           "name",
           "item_count",
+          "source",
           "created_at",
           "updated_at"
         ],
