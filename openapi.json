@@ -13133,6 +13133,39 @@
             "minLength": 1,
             "title": "Name",
             "description": "Display name for this portfolio."
+          },
+          "icon_shape": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "circle",
+                  "triangle",
+                  "square",
+                  "diamond",
+                  "hexagon"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Icon Shape",
+            "description": "Portfolio icon shape. Defaults to 'circle'."
+          },
+          "icon_color": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 8.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Icon Color",
+            "description": "Portfolio icon colour as a chart palette slot, 1-8. Defaults to 1."
           }
         },
         "additionalProperties": false,
@@ -13441,6 +13474,30 @@
             ],
             "title": "Steam Assetid",
             "description": "Steam asset ID if imported."
+          },
+          "gc_item_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gc Item Id",
+            "description": "Game Coordinator item id; equals the Steam asset id for current CS2 items."
+          },
+          "casket_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Casket Id",
+            "description": "Storage unit (casket) id the item sits in; null when it is in the main inventory or the row is not extension-synced."
           },
           "float_value": {
             "anyOf": [
@@ -13769,7 +13826,7 @@
           "source": {
             "type": "string",
             "title": "Source",
-            "description": "How the portfolio is maintained: 'manual', or 'extension' when the browser extension syncs its holdings."
+            "description": "How the portfolio is maintained: 'manual', 'extension' when the browser extension syncs its holdings, or 'steam_public' when they come from the public Steam inventory."
           },
           "managed_steamid": {
             "anyOf": [
@@ -13781,7 +13838,7 @@
               }
             ],
             "title": "Managed Steamid",
-            "description": "SteamID64 whose inventory the browser extension syncs into this portfolio; null for a manual portfolio. Holdings of a synced portfolio cannot be edited."
+            "description": "SteamID64 whose inventory is synced into this portfolio; null for a manual portfolio. Holdings of a synced portfolio cannot be edited."
           },
           "managed_units": {
             "anyOf": [
@@ -13797,6 +13854,25 @@
             ],
             "title": "Managed Units",
             "description": "Storage units of the synced Steam account as of its last committed sync; null for a manual portfolio or one not synced yet."
+          },
+          "icon_shape": {
+            "type": "string",
+            "enum": [
+              "circle",
+              "triangle",
+              "square",
+              "diamond",
+              "hexagon"
+            ],
+            "title": "Icon Shape",
+            "description": "Portfolio icon shape.",
+            "default": "circle"
+          },
+          "icon_color": {
+            "type": "integer",
+            "title": "Icon Color",
+            "description": "Portfolio icon colour as a chart palette slot, 1-8.",
+            "default": 1
           },
           "created_at": {
             "type": "string",
@@ -13932,6 +14008,64 @@
             "type": "array",
             "title": "Units",
             "description": "Quantity in every storage location of the item, regardless of any `casket_id` filter. Main inventory (null) first, then unit ids ordered as strings."
+          },
+          "change_24h_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change 24H Pct",
+            "description": "Percent change of best_ask vs the lowest close 24 hours ago; null when either is unknown."
+          },
+          "change_7d_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change 7D Pct",
+            "description": "Percent change of best_ask vs the lowest daily close 7 days ago; null when unknown."
+          },
+          "change_30d_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change 30D Pct",
+            "description": "Percent change of best_ask vs the lowest daily close 30 days ago; null when unknown."
+          },
+          "spark_30d": {
+            "anyOf": [
+              {
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Spark 30D",
+            "description": "30 daily lowest closes in minor units, oldest first, ending at the current best_ask (or the latest close when unpriced); null entries are days without data."
           }
         },
         "type": "object",
