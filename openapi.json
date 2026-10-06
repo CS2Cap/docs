@@ -7669,6 +7669,43 @@
               "format": "uuid",
               "title": "Portfolio Id"
             }
+          },
+          {
+            "name": "item_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only entries of this catalog item.",
+              "title": "Item Id"
+            },
+            "description": "Only entries of this catalog item."
+          },
+          {
+            "name": "casket_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 32
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only entries in this storage unit. Use `inventory` for entries outside any storage unit.",
+              "title": "Casket Id"
+            },
+            "description": "Only entries in this storage unit. Use `inventory` for entries outside any storage unit."
           }
         ],
         "responses": {
@@ -7992,6 +8029,261 @@
         }
       }
     },
+    "/v1/portfolio/{portfolio_id}/positions": {
+      "get": {
+        "tags": [
+          "Portfolio"
+        ],
+        "summary": "List Portfolio Positions",
+        "description": "Items in a saved portfolio grouped by catalog item, valued at the best ask (honoring the portfolio's pinned price provider) and paginated. Each position carries its quantity per storage unit. Totals cover every position matching the filters, not just the page. Positions without price data sort last when sorting by value. All money values are in minor units (e.g. USD cents).",
+        "operationId": "listPortfolioPositions",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "portfolio_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Portfolio Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "description": "Positions per page.",
+              "default": 50,
+              "title": "Limit"
+            },
+            "description": "Positions per page."
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Positions to skip.",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Positions to skip."
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "value",
+                "name",
+                "quantity"
+              ],
+              "type": "string",
+              "description": "Sort key.",
+              "default": "value",
+              "title": "Sort"
+            },
+            "description": "Sort key."
+          },
+          {
+            "name": "dir",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string",
+              "description": "Sort direction.",
+              "default": "desc",
+              "title": "Dir"
+            },
+            "description": "Sort direction."
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 100
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Case-insensitive substring of the market hash name.",
+              "title": "Q"
+            },
+            "description": "Case-insensitive substring of the market hash name."
+          },
+          {
+            "name": "casket_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 32
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only positions with at least one entry in this storage unit, with quantity, value and totals scoped to that unit's entries (`units` still lists every location). Use `inventory` for entries outside any storage unit.",
+              "title": "Casket Id"
+            },
+            "description": "Only positions with at least one entry in this storage unit, with quantity, value and totals scoped to that unit's entries (`units` still lists every location). Use `inventory` for entries outside any storage unit."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortfolioPositionsResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication credentials.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "AUTH_MISSING_AUTHORIZATION",
+                  "detail": "Missing Authorization header"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted to access this resource.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "FORBIDDEN",
+                  "detail": "Your tier (free) does not have access to /v1/prices/batch. Upgrade your subscription to access this endpoint."
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (burst or monthly quota).",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "burstRateLimit": {
+                    "summary": "Per-window rate limit exceeded",
+                    "value": {
+                      "code": "RATE_LIMIT_EXCEEDED",
+                      "detail": "Too Many Requests"
+                    }
+                  },
+                  "monthlyQuotaExceeded": {
+                    "summary": "Monthly quota exhausted",
+                    "value": {
+                      "code": "RATE_LIMIT_MONTHLY_QUOTA_EXCEEDED",
+                      "detail": "Monthly quota exceeded (500000/500000 requests)."
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying when present.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "X-RateLimit-Tier": {
+                "description": "Authenticated caller tier code.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "description": "Request limit for the rate-limit window that was exceeded.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Remaining requests in the rate-limit window that was exceeded.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Seconds until the rate-limit window resets.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed. The detail list contains field-specific validation errors.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Tier": {
+                "description": "Authenticated caller tier code when available.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Portfolio not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/portfolio/{portfolio_id}/items/{entry_id}": {
       "delete": {
         "tags": [
@@ -8224,6 +8516,18 @@
               "title": "Providers"
             },
             "description": "Provider keys to include. Repeat to pass multiple, e.g. providers=steam&providers=skinport. Omit for all providers."
+          },
+          {
+            "name": "line_items",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Include per-entry `line_items`. Set to false for totals only: `line_items` is returned empty and every total is unchanged.",
+              "default": true,
+              "title": "Line Items"
+            },
+            "description": "Include per-entry `line_items`. Set to false for totals only: `line_items` is returned empty and every total is unchanged."
           }
         ],
         "responses": {
@@ -11187,6 +11491,33 @@
         "title": "ItemsPaginationMeta",
         "description": "Pagination metadata for `/v1/items` full-catalog responses."
       },
+      "ManagedUnitOut": {
+        "properties": {
+          "casket_id": {
+            "type": "string",
+            "title": "Casket Id",
+            "description": "Game coordinator item id of the storage unit."
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Custom name of the storage unit; empty when unnamed."
+          },
+          "item_count": {
+            "type": "integer",
+            "title": "Item Count",
+            "description": "Number of items the storage unit holds."
+          }
+        },
+        "type": "object",
+        "required": [
+          "casket_id",
+          "name",
+          "item_count"
+        ],
+        "title": "ManagedUnitOut",
+        "description": "A storage unit of the Steam account synced into a portfolio."
+      },
       "MarketArbitrageData": {
         "properties": {
           "items": {
@@ -13452,6 +13783,21 @@
             "title": "Managed Steamid",
             "description": "SteamID64 whose inventory the browser extension syncs into this portfolio; null for a manual portfolio. Holdings of a synced portfolio cannot be edited."
           },
+          "managed_units": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ManagedUnitOut"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Managed Units",
+            "description": "Storage units of the synced Steam account as of its last committed sync; null for a manual portfolio or one not synced yet."
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -13476,6 +13822,204 @@
         ],
         "title": "PortfolioOut",
         "description": "Summary of a saved portfolio."
+      },
+      "PortfolioPositionOut": {
+        "properties": {
+          "item_id": {
+            "type": "integer",
+            "title": "Item Id",
+            "description": "Catalog item ID."
+          },
+          "market_hash_name": {
+            "type": "string",
+            "title": "Market Hash Name",
+            "description": "Steam market hash name."
+          },
+          "phase": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phase",
+            "description": "Catalog phase when applicable."
+          },
+          "quantity": {
+            "type": "integer",
+            "title": "Quantity",
+            "description": "Total units held across all entries; with a `casket_id` filter, only the units held in that storage unit."
+          },
+          "entry_count": {
+            "type": "integer",
+            "title": "Entry Count",
+            "description": "Number of stored entries (rows) behind this position, within the active storage-unit filter when one is set."
+          },
+          "entry_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entry Id",
+            "description": "Id of the single stored entry when entry_count is 1 (lets clients edit it directly); null otherwise."
+          },
+          "image_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Url",
+            "description": "Item image URL from the catalog, if known."
+          },
+          "rarity_color": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rarity Color",
+            "description": "Item rarity hex color from the catalog, if known."
+          },
+          "best_ask": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Best Ask",
+            "description": "Lowest ask across the queried providers; null when unpriced. Money amount in minor units of the response currency (for example USD cents when currency=USD). Divide by 100 for display."
+          },
+          "item_value": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Item Value",
+            "description": "best_ask * quantity (unit-scoped under a `casket_id` filter); null when unpriced. Money amount in minor units of the response currency (for example USD cents when currency=USD). Divide by 100 for display."
+          },
+          "providers": {
+            "items": {
+              "$ref": "#/components/schemas/BatchPriceQuote"
+            },
+            "type": "array",
+            "title": "Providers",
+            "description": "Per-provider price quotes, once per position."
+          },
+          "units": {
+            "items": {
+              "$ref": "#/components/schemas/PortfolioPositionUnit"
+            },
+            "type": "array",
+            "title": "Units",
+            "description": "Quantity in every storage location of the item, regardless of any `casket_id` filter. Main inventory (null) first, then unit ids ordered as strings."
+          }
+        },
+        "type": "object",
+        "required": [
+          "item_id",
+          "market_hash_name",
+          "quantity",
+          "entry_count",
+          "units"
+        ],
+        "title": "PortfolioPositionOut",
+        "description": "One item held in a portfolio, with all its entries grouped."
+      },
+      "PortfolioPositionUnit": {
+        "properties": {
+          "casket_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Casket Id",
+            "description": "Storage unit id; null for the main inventory."
+          },
+          "quantity": {
+            "type": "integer",
+            "title": "Quantity",
+            "description": "Units of the item held in this location."
+          }
+        },
+        "type": "object",
+        "required": [
+          "casket_id",
+          "quantity"
+        ],
+        "title": "PortfolioPositionUnit",
+        "description": "Quantity of a position held in one storage location."
+      },
+      "PortfolioPositionsResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/PortfolioPositionOut"
+            },
+            "type": "array",
+            "title": "Data",
+            "description": "Positions on this page."
+          },
+          "total_positions": {
+            "type": "integer",
+            "title": "Total Positions",
+            "description": "Positions matching the filters, across all pages."
+          },
+          "total_quantity": {
+            "type": "integer",
+            "title": "Total Quantity",
+            "description": "Units across all matching positions, scoped to the unit under `casket_id`."
+          },
+          "total_value": {
+            "type": "integer",
+            "title": "Total Value",
+            "description": "Value of all matching positions at best ask, in the portfolio currency, scoped to the unit under `casket_id`. Money amount in minor units of the response currency (for example USD cents when currency=USD). Divide by 100 for display."
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset",
+            "description": "Number of positions skipped."
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit",
+            "description": "Maximum positions per page."
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "total_positions",
+          "total_quantity",
+          "total_value",
+          "offset",
+          "limit"
+        ],
+        "title": "PortfolioPositionsResponse",
+        "description": "A page of grouped portfolio positions with totals over the filtered set."
       },
       "PortfolioRequest": {
         "properties": {
