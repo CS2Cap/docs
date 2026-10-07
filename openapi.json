@@ -13969,6 +13969,30 @@
             "title": "Rarity Color",
             "description": "Item rarity hex color from the catalog, if known."
           },
+          "item_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Item Type",
+            "description": "Catalog item type (for example `Weapon`, `Crate`, `Sticker`, `Agent`); knives and gloves are `Weapon`. Null when the catalog does not know the item."
+          },
+          "item_subtype": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Item Subtype",
+            "description": "Catalog subtype within `item_type` (for example `Rifles`, `Knives`, `Gloves`, `Weapon Case`); null when unknown or the type has none."
+          },
           "best_ask": {
             "anyOf": [
               {
