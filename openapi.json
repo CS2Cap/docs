@@ -9699,6 +9699,65 @@
         "title": "AllProviders",
         "description": "All available provider keys."
       },
+      "AssetAttributes": {
+        "properties": {
+          "float_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Float Value",
+            "description": "Wear float value."
+          },
+          "paint_seed": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paint Seed",
+            "description": "Paint seed / pattern template."
+          },
+          "name_tag": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name Tag",
+            "description": "Custom name tag applied to item."
+          },
+          "stickers": {
+            "items": {
+              "$ref": "#/components/schemas/StickerInfo"
+            },
+            "type": "array",
+            "title": "Stickers",
+            "description": "Applied stickers with slot and wear."
+          },
+          "charms": {
+            "items": {
+              "$ref": "#/components/schemas/CharmInfo"
+            },
+            "type": "array",
+            "title": "Charms",
+            "description": "Attached charms with pattern."
+          }
+        },
+        "type": "object",
+        "title": "AssetAttributes",
+        "description": "What sets one asset apart from other copies of the same item."
+      },
       "BatchBidItem": {
         "properties": {
           "item_id": {
@@ -14090,6 +14149,17 @@
             ],
             "title": "Spark 30D",
             "description": "30 daily lowest closes in minor units, oldest first, ending at the current best_ask (or the latest close when unpriced); null entries are days without data."
+          },
+          "attributes": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AssetAttributes"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set when the position is one asset carrying its own attributes (float, pattern, stickers, charm, name tag); such an asset is never grouped with others. Null for grouped positions."
           }
         },
         "type": "object",
@@ -15605,6 +15675,19 @@
       },
       "TransactionCreateRequest": {
         "properties": {
+          "entry_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entry Id",
+            "description": "The single asset (portfolio entry) this transaction costs; it must belong to the portfolio and hold the same item. Omit for item-level transactions."
+          },
           "item_id": {
             "anyOf": [
               {
@@ -15837,6 +15920,18 @@
             ],
             "title": "Note",
             "description": "Optional note."
+          },
+          "entry_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entry Id",
+            "description": "The portfolio entry this transaction costs; null for item-level transactions."
           },
           "currency": {
             "type": "string",
