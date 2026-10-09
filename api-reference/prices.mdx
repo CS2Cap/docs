@@ -71,7 +71,7 @@ console.log(response);
 </ParamField>
 
 <ParamField query="providers" type="string[]">
-  Provider keys to include. Repeat the parameter to pass more than one: `providers=steam&providers=buff163`. Valid keys: `avanmarket`, `buff163`, `buffmarket`, `c5`, `csdeals`, `csfloat`, `csgo500`, `csgoempire`, `csmoney_m`, `csmoney_t`, `cstrade`, `dmarket`, `dupefi`, `ecosteam`, `gameboost`, `haloskins`, `itradegg`, `lisskins`, `lootfarm`, `mannco`, `marketcsgo`, `pirateswap`, `rapidskins`, `shadowpay`, `skinbaron`, `skinflow`, `skinland`, `skinout`, `skinplace`, `skinport`, `skinscom`, `skinsmonkey`, `skinswap`, `skinswap_t`, `skinvault`, `steam`, `swapgg`, `tradeit`, `waxpeer`, `whitemarket`, `youpin`.
+  Provider keys to include. Repeat the parameter to pass more than one: `providers=steam&providers=buff163`. Valid keys: `avanmarket`, `buff163`, `buffmarket`, `c5`, `csdeals`, `csfloat`, `csgo500`, `csgoempire`, `csmoney_m`, `csmoney_t`, `cstrade`, `dmarket`, `dupefi`, `ecosteam`, `gameboost`, `haloskins`, `itradegg`, `lisskins`, `lootfarm`, `mannco`, `marketcsgo`, `pirateswap`, `rapidskins`, `shadowpay`, `skinbaron`, `skinflow`, `skinland`, `skinout`, `skinplace`, `skinport`, `skinscom`, `skinsmonkey`, `skinswap`, `skinswap_t`, `skinvault`, `steam`, `swapgg`, `tradeit`, `waxpeer`, `whitemarket`, `youpin`. When listing without `item_id` or `market_hash_name`, requested providers that have no data available right now are left out and listed in `meta.unavailable_providers`; the request returns `503` only when none of them are available.
 </ParamField>
 
 <ParamField query="currency" type="string" default="USD">
@@ -201,7 +201,7 @@ Streams the complete live prices catalog as NDJSON, with one JSON object per lin
 ### Query parameters
 
 <ParamField query="providers" type="string[]">
-  Optional. Repeat to restrict the stream to specific providers. Uses the same provider keys as [`GET /prices`](/api-reference/prices#get-/prices-—-list-prices). If omitted, all providers are included.
+  Optional. Repeat to restrict the stream to specific providers. Uses the same provider keys as [`GET /prices`](/api-reference/prices#get-/prices-—-list-prices). If omitted, all providers are included. If some requested providers have no data available right now, the stream returns the others and names the missing ones in the `X-Snapshot-Unavailable-Providers` response header (comma-separated). It returns `503` only when none of them are available.
 </ParamField>
 
 <ParamField query="exclude_stale" type="boolean" default="false">

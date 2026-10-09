@@ -132,6 +132,7 @@ Most list endpoints return these top-level fields:
 | `meta.currency` | string | ISO 4217 currency code that all price values in the response use. |
 | `meta.returned_providers` | array\[string\] | Provider keys that returned data in this response. This can be a subset of what you requested. |
 | `meta.filters` | object | Echo of the effective filters applied to the request, including `market_hash_name`, `phase`, and `providers_queried`. |
+| `meta.unavailable_providers` | array\[string\] | On `/prices` and `/bids`: providers in the query whose data is temporarily unavailable, so the response has no rows for them. Empty when every queried provider is available. |
 
 ## Item catalog fields
 

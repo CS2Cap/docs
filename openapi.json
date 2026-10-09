@@ -18,7 +18,7 @@
           "Prices"
         ],
         "summary": "List Prices",
-        "description": "Return current lowest ask listings.\n\nParameters:\n- `item_id`: Exact item ID (recommended when known).\n- `market_hash_name`: Exact market name.\n- `phase`: Optional Doppler phase filter.\n- `providers`: Optional provider-key enum list (repeat `providers` to pass multiple values).\n- `currency`: Quote currency for prices (default `USD`).\n- `limit`, `offset`: Offset pagination controls.\n- `exclude_stale`: Leave out listings missing from the provider's most recent scan.\n\nBehavior:\n- If no filters are provided, returns a broad paginated listing.\n- If `market_hash_name` is Doppler and `phase` is omitted, results aggregate across phases per provider.\n- If `market_hash_name` and `phase` are both provided, only that exact phase is returned.\n- If the item exists in the catalog but none of the queried providers currently has a\n  listing, returns `200` with an empty `items` array.\n\nResponse:\n- `meta`: Applied filters, requested providers, returned providers, currency.\n- `items`: Per-provider lowest ask entries.\n- Each item carries `stale`: `true` when the provider's most recent scan did not include the listing.\n- `pagination`: `limit`, `offset`, `total`, `has_next`, `has_prev`.\n\nRequirements:\n- Valid API key with access to `/v1/prices`.\n- `limit` is capped by your tier.",
+        "description": "Return current lowest ask listings.\n\nParameters:\n- `item_id`: Exact item ID (recommended when known).\n- `market_hash_name`: Exact market name.\n- `phase`: Optional Doppler phase filter.\n- `providers`: Optional provider-key enum list (repeat `providers` to pass multiple values).\n- `currency`: Quote currency for prices (default `USD`).\n- `limit`, `offset`: Offset pagination controls.\n- `exclude_stale`: Leave out listings missing from the provider's most recent scan.\n\nBehavior:\n- If no filters are provided, returns a broad paginated listing.\n- If `market_hash_name` is Doppler and `phase` is omitted, results aggregate across phases per provider.\n- If `market_hash_name` and `phase` are both provided, only that exact phase is returned.\n- If the item exists in the catalog but none of the queried providers currently has a\n  listing, returns `200` with an empty `items` array.\n- When listing without `item_id` or `market_hash_name`, requested providers whose data is\n  temporarily unavailable are left out and listed in `meta.unavailable_providers`; the\n  request returns `503` only when none of them are available.\n\nResponse:\n- `meta`: Applied filters, requested providers, returned providers, unavailable providers,\n  currency.\n- `items`: Per-provider lowest ask entries.\n- Each item carries `stale`: `true` when the provider's most recent scan did not include the listing.\n- `pagination`: `limit`, `offset`, `total`, `has_next`, `has_prev`.\n\nRequirements:\n- Valid API key with access to `/v1/prices`.\n- `limit` is capped by your tier.",
         "operationId": "listPrices",
         "security": [
           {
@@ -351,7 +351,7 @@
           "Prices"
         ],
         "summary": "Stream Full Prices Snapshot",
-        "description": "Return the full live prices snapshot as an NDJSON stream.\n\nBehavior:\n- pro and quant tiers only\n- requires an API key (not a session token)\n- optional `providers` filter; omit to stream all providers\n- optional `exclude_stale` filter leaves out listings the provider's most recent scan did not include\n- fixed USD output\n- `lowest_ask` values are returned in USD minor units\n- one JSON object per line using the `MarketItem` field set\n- per-API-key rolling 24h quota of successful stream starts (pro: 50, quant: 300, per endpoint)\n- max 1 concurrent stream per API key for this endpoint (409 otherwise)",
+        "description": "Return the full live prices snapshot as an NDJSON stream.\n\nBehavior:\n- pro and quant tiers only\n- requires an API key (not a session token)\n- optional `providers` filter; omit to stream all providers\n- if some requested providers are temporarily unavailable, the stream returns the others and names the missing ones in `X-Snapshot-Unavailable-Providers`; `503` only when none are available\n- optional `exclude_stale` filter leaves out listings the provider's most recent scan did not include\n- fixed USD output\n- `lowest_ask` values are returned in USD minor units\n- one JSON object per line using the `MarketItem` field set\n- per-API-key rolling 24h quota of successful stream starts (pro: 50, quant: 300, per endpoint)\n- max 1 concurrent stream per API key for this endpoint (409 otherwise)",
         "operationId": "streamFullPricesSnapshot",
         "security": [
           {
@@ -416,6 +416,13 @@
                 "schema": {
                   "type": "integer",
                   "minimum": 0
+                }
+              },
+              "X-Snapshot-Unavailable-Providers": {
+                "description": "Comma-separated requested providers whose data is temporarily unavailable, so the stream has no rows for them. Sent only when `providers` is set and at least one of them is unavailable.",
+                "schema": {
+                  "type": "string",
+                  "example": "csgoempire,gameboost"
                 }
               },
               "X-RateLimit-Limit": {
@@ -1597,7 +1604,7 @@
           "Bids"
         ],
         "summary": "List Bids",
-        "description": "Return current highest bids from providers that support buy orders.\n\nFilters:\n- `item_id` or `market_hash_name`\n- optional `phase`\n- `providers` limited to buy-order-capable provider keys\n- `currency`, `limit`, and `offset`\n- `exclude_stale` to leave out buy orders missing from the provider's most recent scan\n\nBehavior:\n- requesting a provider that does not support buy orders returns `400`\n\nResponse:\n- `meta` with filters and providers queried\n- flattened per-provider bid rows\n- each row carries `stale`\n- offset pagination metadata",
+        "description": "Return current highest bids from providers that support buy orders.\n\nFilters:\n- `item_id` or `market_hash_name`\n- optional `phase`\n- `providers` limited to buy-order-capable provider keys\n- `currency`, `limit`, and `offset`\n- `exclude_stale` to leave out buy orders missing from the provider's most recent scan\n\nBehavior:\n- requesting a provider that does not support buy orders returns `400`\n- providers whose data is temporarily unavailable are left out and listed in `meta.unavailable_providers`; `503` only when none are available\n\nResponse:\n- `meta` with filters, providers queried, and unavailable providers\n- flattened per-provider bid rows\n- each row carries `stale`\n- offset pagination metadata",
         "operationId": "listBids",
         "security": [
           {
@@ -1955,7 +1962,7 @@
           "Bids"
         ],
         "summary": "Stream Full Bids Snapshot",
-        "description": "Return the full live bids snapshot as an NDJSON stream.\n\nBehavior:\n- pro and quant tiers only\n- requires an API key (not a session token)\n- optional `providers` filter; omit to stream all providers\n- optional `exclude_stale` filter leaves out buy orders the provider's most recent scan did not include\n- fixed USD output\n- `highest_bid` values are returned in USD minor units\n- one JSON object per line using the `BuyOrderItem` field set\n- per-API-key rolling 24h quota of successful stream starts (pro: 50, quant: 300, per endpoint)\n- max 1 concurrent stream per API key for this endpoint (409 otherwise)",
+        "description": "Return the full live bids snapshot as an NDJSON stream.\n\nBehavior:\n- pro and quant tiers only\n- requires an API key (not a session token)\n- optional `providers` filter; omit to stream all providers\n- if some requested providers are temporarily unavailable, the stream returns the others and names the missing ones in `X-Snapshot-Unavailable-Providers`; `503` only when none are available\n- optional `exclude_stale` filter leaves out buy orders the provider's most recent scan did not include\n- fixed USD output\n- `highest_bid` values are returned in USD minor units\n- one JSON object per line using the `BuyOrderItem` field set\n- per-API-key rolling 24h quota of successful stream starts (pro: 50, quant: 300, per endpoint)\n- max 1 concurrent stream per API key for this endpoint (409 otherwise)",
         "operationId": "streamFullBidsSnapshot",
         "security": [
           {
@@ -2020,6 +2027,13 @@
                 "schema": {
                   "type": "integer",
                   "minimum": 0
+                }
+              },
+              "X-Snapshot-Unavailable-Providers": {
+                "description": "Comma-separated requested providers whose data is temporarily unavailable, so the stream has no rows for them. Sent only when `providers` is set and at least one of them is unavailable.",
+                "schema": {
+                  "type": "string",
+                  "example": "csgoempire,gameboost"
                 }
               },
               "X-RateLimit-Limit": {
@@ -14761,6 +14775,14 @@
             "type": "array",
             "title": "Providers Queried",
             "description": "Provider keys queried."
+          },
+          "unavailable_providers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Unavailable Providers",
+            "description": "Providers in this query whose data is temporarily unavailable, so the response has no rows for them. Empty when every queried provider is available."
           }
         },
         "type": "object",
