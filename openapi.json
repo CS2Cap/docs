@@ -9753,11 +9753,11 @@
           },
           "stickers": {
             "items": {
-              "$ref": "#/components/schemas/StickerInfo"
+              "$ref": "#/components/schemas/PlacedStickerInfo"
             },
             "type": "array",
             "title": "Stickers",
-            "description": "Applied stickers with slot and wear."
+            "description": "Applied stickers with slot, wear and placement."
           },
           "charms": {
             "items": {
@@ -13145,6 +13145,75 @@
         "title": "PhaseName",
         "description": "Doppler and other item phases - single definition."
       },
+      "PlacedStickerInfo": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Display name for this entity."
+          },
+          "slot": {
+            "type": "integer",
+            "title": "Slot",
+            "description": "Sticker slot index on the item."
+          },
+          "wear": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Wear",
+            "description": "Wear value for the sticker, when available."
+          },
+          "offset_x": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Offset X",
+            "description": "Horizontal placement offset; null when not custom-placed."
+          },
+          "offset_y": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Offset Y",
+            "description": "Vertical placement offset; null when not custom-placed."
+          },
+          "rotation": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rotation",
+            "description": "Rotation in degrees; null when not rotated."
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "slot"
+        ],
+        "title": "PlacedStickerInfo",
+        "description": "A sticker on an owned asset, with its custom placement when the owner set one."
+      },
       "PortfolioAddItemRequest": {
         "properties": {
           "item_id": {
@@ -13624,7 +13693,7 @@
             "anyOf": [
               {
                 "items": {
-                  "$ref": "#/components/schemas/StickerInfo"
+                  "$ref": "#/components/schemas/PlacedStickerInfo"
                 },
                 "type": "array"
               },
@@ -13633,7 +13702,7 @@
               }
             ],
             "title": "Stickers",
-            "description": "Applied stickers with wear."
+            "description": "Applied stickers with wear and placement."
           },
           "charms": {
             "anyOf": [
