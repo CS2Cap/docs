@@ -5,6 +5,14 @@ description: "Public-facing API, documentation, and platform changes to CS2Cap t
 
 This changelog tracks public API, documentation, and platform changes that affect integrators. You will find new endpoints, breaking changes, deprecations, and improvements here as they ship. Non-breaking internal changes and infrastructure updates are not listed.
 
+## 2026-10 — Full game catalog
+
+`GET /v1/items` keeps returning tradable items by default. Set `only_tradable=false` to include every game item. `GET /v1/items/{item_id}` resolves either kind.
+
+- Item records include `name` (display name) and `tradable`.
+- `market_hash_name` can be null for untradable items, which only appear with `only_tradable=false` or by id.
+- Prices, bids, history and analytics for an untradable item return HTTP 400 with `code: ITEM_NOT_TRADABLE`. Watchlists, alerts and portfolios refuse these items too. Batch price and bid requests omit them and include them in the existing `items_not_found` list.
+
 ## 2026-10 — Partial results when a provider is unavailable
 
 Prices and bids no longer fail outright when one of the requested providers has no data available.

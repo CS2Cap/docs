@@ -3758,7 +3758,7 @@
           "Items"
         ],
         "summary": "List Items",
-        "description": "Search the normalized CS2 item catalog with exact-match metadata filters and simple result limiting.\n\nFilters:\n- exact catalog fields such as `item_type`, `collection`, `rarity_name`, and `phase`\n- `q` for case-insensitive substring search on `market_hash_name`\n- `item_id` for direct lookup\n\nResult limiting:\n- provide `limit` to cap the number of returned items (still tier-capped, endpoint max 1000)\n- omit `limit` to return all matched items in one response, for any tier\n\nResponse:\n- item records with canonical identifiers and item metadata\n- optional `supply` values when available\n\nUse this endpoint to resolve canonical `item_id` values before calling prices, bids, sales, or market analytics.",
+        "description": "Search the normalized CS2 item catalog with exact-match metadata filters and simple result limiting.\n\nFilters:\n- exact catalog fields such as `item_type`, `collection`, `rarity_name`, and `phase`\n- `q` for case-insensitive substring search on the display name\n- `item_id` for direct lookup\n\nResult limiting:\n- provide `limit` to cap the number of returned items (still tier-capped, endpoint max 1000)\n- omit `limit` to return all matched items in one response, for any tier\n\nResponse:\n- item records with canonical identifiers and item metadata\n- optional `supply` values when available\n\nUse this endpoint to resolve canonical `item_id` values before calling prices, bids, sales, or market analytics.",
         "operationId": "listItems",
         "security": [
           {
@@ -3766,6 +3766,18 @@
           }
         ],
         "parameters": [
+          {
+            "name": "only_tradable",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Return only tradable items (default). Set false to include every item in the game, with market_hash_name null for untradable ones.",
+              "default": true,
+              "title": "Only Tradable"
+            },
+            "description": "Return only tradable items (default). Set false to include every item in the game, with market_hash_name null for untradable ones."
+          },
           {
             "name": "q",
             "in": "query",
@@ -11072,9 +11084,27 @@
             "description": "Catalog item ID used by this API."
           },
           "market_hash_name": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Market Hash Name",
-            "description": "Canonical Steam market hash name for the item."
+            "description": "Steam market name; null for items that cannot be traded."
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Display name; equals market_hash_name for tradable items."
+          },
+          "tradable": {
+            "type": "boolean",
+            "title": "Tradable",
+            "description": "Whether the item can be traded. Untradable items have no prices, history or analytics.",
+            "default": true
           },
           "phase": {
             "anyOf": [
@@ -11362,7 +11392,8 @@
         },
         "type": "object",
         "required": [
-          "market_hash_name"
+          "market_hash_name",
+          "name"
         ],
         "title": "ItemOut",
         "description": "Catalog item metadata returned by `/v1/items`."
