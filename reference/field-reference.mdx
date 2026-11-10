@@ -75,7 +75,7 @@ All price fields are returned in minor units of the response currency. See the n
 | `highest_bid` | integer | [`/bids`](/api-reference/bids) | Current best buy order price. |
 | `highest_bid_decimal` | string | [`/bids`](/api-reference/bids) | `highest_bid` as an adaptive-precision decimal string (eight places below `1.0`). Use for sub-cent currencies such as crypto. |
 | `price` | integer | [`/sales`](/api-reference/sales) | Completed sale price. |
-| `best_ask` | integer | [`/portfolio/value`](/api-reference/portfolio#valuation) | Lowest ask across all queried providers for the item. |
+| `best_ask` | integer | [`/portfolio/value`](/api-reference/portfolio#valuation) | Best ask across all queried providers for the item: the lowest, except that when three or more providers quote, a lowest ask more than 20% under the next one is skipped for that next one. |
 | `item_value` | integer | [`/portfolio/value`](/api-reference/portfolio#valuation) | `best_ask × quantity`. |
 | `total_value` | integer | [`/portfolio/value`](/api-reference/portfolio#valuation) | Sum of all `item_value` amounts in the response. |
 

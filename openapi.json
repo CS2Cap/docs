@@ -13808,7 +13808,7 @@
               }
             ],
             "title": "Best Ask",
-            "description": "Lowest ask price across queried providers. Money amount in minor units of the response currency (for example USD cents when currency=USD). Divide by 100 for display."
+            "description": "Best ask across the queried providers: the lowest, except that when three or more providers quote, a lowest ask more than 20% under the next one is skipped for that next one. Money amount in minor units of the response currency (for example USD cents when currency=USD). Divide by 100 for display."
           },
           "best_bid": {
             "anyOf": [
@@ -14176,7 +14176,7 @@
               }
             ],
             "title": "Best Ask",
-            "description": "Lowest ask across the queried providers; null when unpriced. Money amount in minor units of the response currency (for example USD cents when currency=USD). Divide by 100 for display."
+            "description": "Best ask across the queried providers: the lowest, except that when three or more providers quote, a lowest ask more than 20% under the next one is skipped for that next one; null when unpriced. Money amount in minor units of the response currency (for example USD cents when currency=USD). Divide by 100 for display."
           },
           "item_value": {
             "anyOf": [
@@ -14216,7 +14216,7 @@
               }
             ],
             "title": "Change 24H Pct",
-            "description": "Percent change of best_ask vs the lowest close 24 hours ago; null when either is unknown."
+            "description": "Percent change of best_ask vs the best close 24 hours ago; null when either is unknown."
           },
           "change_7d_pct": {
             "anyOf": [
@@ -14228,7 +14228,7 @@
               }
             ],
             "title": "Change 7D Pct",
-            "description": "Percent change of best_ask vs the lowest daily close 7 days ago; null when unknown."
+            "description": "Percent change of best_ask vs the best daily close 7 days ago; null when unknown."
           },
           "change_30d_pct": {
             "anyOf": [
@@ -14240,7 +14240,7 @@
               }
             ],
             "title": "Change 30D Pct",
-            "description": "Percent change of best_ask vs the lowest daily close 30 days ago; null when unknown."
+            "description": "Percent change of best_ask vs the best daily close 30 days ago; null when unknown."
           },
           "spark_30d": {
             "anyOf": [
@@ -14262,7 +14262,7 @@
               }
             ],
             "title": "Spark 30D",
-            "description": "30 daily lowest closes in minor units, oldest first, ending at the current best_ask (or the latest close when unpriced); null entries are days without data."
+            "description": "30 daily best closes in minor units, oldest first, ending at the current best_ask (or the latest close when unpriced); null entries are days without data."
           },
           "attributes": {
             "anyOf": [
