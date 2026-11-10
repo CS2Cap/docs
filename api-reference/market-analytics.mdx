@@ -439,7 +439,7 @@ console.log(response);
     <ResponseField name="macd" type="string">MACD signal: `bullish`, `neutral`, or `bearish`.</ResponseField>
     <ResponseField name="trend" type="string">Trend signal: `bullish`, `neutral`, or `bearish`.</ResponseField>
     <ResponseField name="bollinger" type="string">Bollinger Band signal: `overbought`, `neutral`, or `oversold`.</ResponseField>
-    <ResponseField name="volatility" type="string">Volatility regime: `high`, `normal`, or `low`.</ResponseField>
+    <ResponseField name="volatility" type="string">Volatility regime, from `historical_volatility_20` scaled to one day: `high` above 5% per day, `low` below 1% per day, otherwise `normal`.</ResponseField>
     <ResponseField name="composite_score" type="number">Blended score from -1.0 (fully bearish) to 1.0 (fully bullish).</ResponseField>
   </Expandable>
 </ResponseField>
@@ -516,6 +516,7 @@ This endpoint takes no query parameters.
         "summary": {
           "provider_count": 2,
           "best_ask_usd": "24.90",
+          "reference_price_usd": "24.90",
           "best_bid_usd": "24.90",
           "avg_spread_pct": 2.78,
           "liquidity": 78,
@@ -548,7 +549,11 @@ This endpoint takes no query parameters.
 ```
 
 <ResponseField name="data.items[].summary.best_ask_usd" type="string">
-  Decimal string best ask price in USD across providers with active listings.
+  Decimal string lowest ask in USD across providers with active listings: the cheapest place to buy.
+</ResponseField>
+
+<ResponseField name="data.items[].summary.reference_price_usd" type="string">
+  Decimal string reference price in USD: the ask of the marketplace ranked a quarter of the way up from the cheapest. One marketplace that has not repriced, or one stray listing, does not set it. Equals `best_ask_usd` when four or fewer marketplaces quote the item.
 </ResponseField>
 
 <ResponseField name="data.items[].summary.best_bid_usd" type="string">
@@ -563,12 +568,12 @@ This endpoint takes no query parameters.
   Best available estimate of the number of items in circulation.
 </ResponseField>
 
-<ResponseField name="data.items[].summary.price_diff_24h" type="string">
-  Price change over the last 24 hours, in USD.
+<ResponseField name="data.items[].summary.price_rate_24h" type="number">
+  Percentage price change over the last 24 hours: the median of the changes at the marketplaces quoting the item. One marketplace that has not repriced, or one stray listing, does not set it.
 </ResponseField>
 
-<ResponseField name="data.items[].summary.price_rate_24h" type="number">
-  Same 24h price change expressed as a percentage.
+<ResponseField name="data.items[].summary.price_diff_24h" type="string">
+  Price change over the last 24 hours at the marketplace with that median percentage change, in USD.
 </ResponseField>
 
 <ResponseField name="data.items[].summary.price_change_confirmed_24h" type="boolean">
@@ -666,6 +671,7 @@ console.log(response);
     "summary": {
       "provider_count": 5,
       "best_ask_usd": "58.41",
+      "reference_price_usd": "59.80",
       "best_bid_usd": "61.74",
       "avg_spread_pct": 41.59,
       "liquidity": 46,

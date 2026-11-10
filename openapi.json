@@ -5305,6 +5305,7 @@
                         "summary": {
                           "provider_count": 3,
                           "best_ask_usd": "24.90",
+                          "reference_price_usd": "24.90",
                           "best_bid_usd": "24.90",
                           "avg_spread_pct": 2.35,
                           "total_volume_24h": 107,
@@ -5335,6 +5336,7 @@
                         "summary": {
                           "provider_count": 3,
                           "best_ask_usd": "112.50",
+                          "reference_price_usd": "112.50",
                           "best_bid_usd": "108.10",
                           "avg_spread_pct": 4.11,
                           "total_volume_24h": 18,
@@ -5540,6 +5542,7 @@
                     "summary": {
                       "provider_count": 3,
                       "best_ask_usd": "24.90",
+                      "reference_price_usd": "24.90",
                       "best_bid_usd": "24.90",
                       "avg_spread_pct": 2.35,
                       "total_volume_24h": 107,
@@ -10897,7 +10900,7 @@
               }
             ],
             "title": "Volatility",
-            "description": "Historical-volatility signal: `high`, `low`, or `normal`."
+            "description": "Historical-volatility signal, from `historical_volatility_20` scaled to one day: `high` above 5% per day, `low` below 1% per day, otherwise `normal`."
           },
           "composite_score": {
             "anyOf": [
@@ -12680,7 +12683,21 @@
               }
             ],
             "title": "Best Ask Usd",
-            "description": "Best ask price in USD major units."
+            "description": "Lowest ask across marketplaces, in USD major units."
+          },
+          "reference_price_usd": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "example": "1.23"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference Price Usd",
+            "description": "Reference price in USD major units: the ask of the marketplace ranked a quarter of the way up from the cheapest, so one marketplace that has not repriced or one stray listing does not set it. Equals `best_ask_usd` when four or fewer marketplaces quote the item."
           },
           "best_bid_usd": {
             "anyOf": [
@@ -12773,7 +12790,7 @@
               }
             ],
             "title": "Price Rate 24H",
-            "description": "Percentage price change over the last 24 hours."
+            "description": "Percentage price change over the last 24 hours: the median of the changes at the marketplaces quoting the item."
           },
           "price_diff_24h": {
             "anyOf": [
@@ -12787,7 +12804,7 @@
               }
             ],
             "title": "Price Diff 24H",
-            "description": "Price change over the last 24 hours in USD major units."
+            "description": "Price change over the last 24 hours at the marketplace with that median percentage change, in USD major units."
           },
           "price_change_confirmed_24h": {
             "type": "boolean",
@@ -12805,7 +12822,7 @@
               }
             ],
             "title": "Price Rate 7D",
-            "description": "Percentage price change over the last 7 days."
+            "description": "Percentage price change over the last 7 days: the median of the changes at the marketplaces quoting the item."
           },
           "price_diff_7d": {
             "anyOf": [
@@ -12819,7 +12836,7 @@
               }
             ],
             "title": "Price Diff 7D",
-            "description": "Price change over the last 7 days in USD major units."
+            "description": "Price change over the last 7 days at the marketplace with that median percentage change, in USD major units."
           },
           "price_rate_30d": {
             "anyOf": [
@@ -12831,7 +12848,7 @@
               }
             ],
             "title": "Price Rate 30D",
-            "description": "Percentage price change over the last 30 days."
+            "description": "Percentage price change over the last 30 days: the median of the changes at the marketplaces quoting the item."
           },
           "price_diff_30d": {
             "anyOf": [
@@ -12845,7 +12862,7 @@
               }
             ],
             "title": "Price Diff 30D",
-            "description": "Price change over the last 30 days in USD major units."
+            "description": "Price change over the last 30 days at the marketplace with that median percentage change, in USD major units."
           },
           "sales_1d": {
             "type": "integer",
